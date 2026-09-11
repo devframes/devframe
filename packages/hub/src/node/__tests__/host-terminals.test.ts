@@ -179,6 +179,55 @@ describe('devframeTerminalHost stream lifecycle', () => {
     expect(session.buffer!.includes('line-0')).toBe(false)
   })
 
+  it('evicts one scrollback chunk without producing discarded splice results', async () => {
+    const { host, sinks } = createTerminalHost()
+    const buffer: string[] = []
+    const splice = vi.spyOn(buffer, 'splice')
+    const chunks = Array.from({ length: 1200 }, (_, i) => `line-${i}`)
+    const stream = new ReadableStream<string>({
+      start(controller) {
+        for (const chunk of chunks)
+          controller.enqueue(chunk)
+        controller.close()
+      },
+    })
+    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream, buffer }
+    host.register(session)
+    try {
+      await waitUntil(() => expect(sinks.get('t')?.closed).toBe(true))
+      expect(session.buffer).toBe(buffer)
+      expect([...buffer]).toEqual(chunks.slice(-1000))
+      expect(sinks.get('t')?.write.mock.calls).toEqual(chunks.map(chunk => [chunk]))
+      expect(splice).not.toHaveBeenCalled()
+    }
+    finally {
+      splice.mockRestore()
+      host.remove(session)
+    }
+  })
+
+  it('trims an oversized supplied scrollback buffer on the next chunk', async () => {
+    const { host, sinks } = createTerminalHost()
+    const buffer = Array.from({ length: 1500 }, (_, i) => `line-${i}`)
+    const expected = [...buffer, 'latest'].slice(-1000)
+    const stream = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue('latest')
+        controller.close()
+      },
+    })
+    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream, buffer }
+    host.register(session)
+    try {
+      await waitUntil(() => expect(sinks.get('t')?.closed).toBe(true))
+      expect(session.buffer).toBe(buffer)
+      expect(buffer).toEqual(expected)
+    }
+    finally {
+      host.remove(session)
+    }
+  })
+
   it('rejects restarting a terminated child-process session', async () => {
     const { host, sinks } = createTerminalHost()
     const session = await host.startChildProcess(

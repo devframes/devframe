@@ -4,7 +4,7 @@ import type { DevframeAuthHandler } from '../node/auth'
 import { colors } from 'devframe/utils/colors'
 import { s } from 'devframe/utils/simple-schema'
 import { DEVFRAME_AUTH_TOKEN_QUERY_PARAM, isAnonymousRpcMethod } from '../constants'
-import { buildOtpAuthUrl, exchangeTempAuthCode, getTempAuthCode, verifyAuthToken } from '../node/auth/state'
+import { buildOtpAuthUrl, describeUA, exchangeTempAuthCode, getTempAuthCodeInfo, refreshTempAuthCode, verifyAuthToken } from '../node/auth/state'
 import { getInternalContext } from '../node/hub-internals/context'
 import { defineRpcFunction } from '../rpc/define'
 
@@ -17,20 +17,18 @@ export interface CreateInteractiveAuthOptions {
    */
   clientAuthTokens?: string[]
   /**
-   * Print the current code + magic-link URL. Devframe stays headless, so
-   * there is no default banner printed automatically; call
-   * `auth.printBanner()` yourself once the server is listening. Defaults to
-   * {@link createAuthBanner}'s output; pass its result here directly to
-   * rebrand the box (title / colors), or your own function to replace the
-   * format outright.
+   * Print the current code + magic-link URL. Runs when an untrusted browser
+   * client asks for a code (`anonymous:devframe:auth:request-code`, sent by
+   * the client's `requestAuthCode()`) or when the host calls
+   * `auth.printBanner()` itself. Defaults to {@link createAuthBanner}'s
+   * output; pass its result here directly to rebrand the box (title /
+   * colors), or your own function to replace the format outright.
    */
   banner?: AuthBannerFunction
   /**
    * Called once a code exchange succeeds, so a host rendering its own
-   * banner can retract it. Fires after the rotated code is printed, so
-   * such a host drops that follow-up too and calls `auth.printBanner()`
-   * when it next wants a code on screen. Connect-time trust from a static
-   * or remote-dock token doesn't call this.
+   * banner can retract it. Connect-time trust from a static or
+   * remote-dock token doesn't call this.
    */
   onTrusted?: (info: { session: DevframeNodeRpcSession, authToken: string }) => void
   /**
@@ -40,8 +38,26 @@ export interface CreateInteractiveAuthOptions {
   serverUrl?: () => string
 }
 
+/** The browser client whose `anonymous:devframe:auth:request-code` call triggered a banner print. */
+export interface AuthBannerRequester {
+  /** Short display label parsed from the client's user agent (e.g. `Chrome 120 | macOS 14 desktop`). */
+  ua: string
+  /** The requesting page's `location.origin`. */
+  origin: string
+}
+
+/** What `options.banner` receives on each print. */
+export interface AuthBannerInfo {
+  code: string
+  url: string
+  /** Epoch-ms timestamp the code stops being redeemable at. */
+  expireAt: number
+  /** Present when a browser client requested the print; absent for a host's own `printBanner()` call. */
+  requester?: AuthBannerRequester
+}
+
 /** Signature of `options.banner`: render the current auth code + magic-link URL. */
-export type AuthBannerFunction = (info: { code: string, url: string }) => void
+export type AuthBannerFunction = (info: AuthBannerInfo) => void
 
 /** Palette for {@link createAuthBanner}'s box - one color per part, so a host can rebrand a subset. */
 export interface CreateAuthBannerColorsOptions {
@@ -70,9 +86,9 @@ export function createAuthBanner(options: CreateAuthBannerOptions = {}): AuthBan
   const title = options.title ?? 'Devframe'
   const palette: CreateAuthBannerColorsOptions = {
     border: colors.dim,
-    title: colors.bold,
+    title: x => colors.gray(colors.bold(x)),
     label: colors.dim,
-    code: colors.bold,
+    code: f => colors.green(colors.bold(f)),
     url: colors.cyan,
     ...options.colors,
   }
@@ -81,14 +97,19 @@ export function createAuthBanner(options: CreateAuthBannerOptions = {}): AuthBan
     const rows: [label: string, value: string, color: ColorFn][] = [
       ['auth code', info.code, palette.code],
       ['or open', info.url, palette.url],
+      ['expires at', new Date(info.expireAt).toLocaleTimeString(), palette.label],
     ]
+    if (info.requester) {
+      rows.push(['ua', info.requester.ua, palette.label])
+      rows.push(['origin', info.requester.origin, palette.label])
+    }
     const labelWidth = Math.max(...rows.map(([label]) => label.length))
     const contentWidth = Math.max(...rows.map(([, value]) => labelWidth + 2 + value.length))
-    const titleBarLength = title.length + 3
+    const titleBarLength = title.length + 2
     const lineWidth = Math.max(contentWidth, titleBarLength - 2)
 
     const top = [
-      palette.border(`╭─`),
+      palette.border(`╭`),
       palette.title(title),
       palette.border(`${'─'.repeat(Math.max(lineWidth + 2 - titleBarLength, 0))}╮`),
     ].join(' ')
@@ -144,13 +165,13 @@ export function createInteractiveAuth(
   const banner = options.banner ?? createAuthBanner()
 
   let bannerPrintedForCode: string | undefined
-  function printBanner(): void {
-    const code = getTempAuthCode()
+  function printBanner(info?: { requester?: AuthBannerRequester }): void {
+    const { code, expireAt } = getTempAuthCodeInfo()
     if (code === bannerPrintedForCode)
       return
     bannerPrintedForCode = code
     const url = buildOtpAuthUrl(resolveServerUrl(), code)
-    banner({ code, url })
+    banner({ code, url, expireAt, ...(info?.requester ? { requester: info.requester } : {}) })
   }
 
   const anonymousAuth = defineRpcFunction({
@@ -193,12 +214,29 @@ export function createInteractiveAuth(
       if (!session)
         return { authToken: null }
       const authToken = exchangeTempAuthCode(params.code, session, params, storage)
-      // The code was just consumed (success or a rotating failure); the
-      // next `printBanner()` call shows whatever code is current now.
-      printBanner()
       if (authToken)
         options.onTrusted?.({ session, authToken })
       return { authToken }
+    },
+  })
+
+  const anonymousAuthRequestCode = defineRpcFunction({
+    name: 'anonymous:devframe:auth:request-code',
+    type: 'action',
+    jsonSerializable: true,
+    args: [s.object({
+      ua: s.string(),
+      origin: s.string(),
+      reissue: s.optional(s.boolean()),
+    })],
+    returns: s.void(),
+    handler(params) {
+      // `reissue` rotates the code first (the manual "re-issue" button), so
+      // the print always shows a freshly-valid code; a plain request prints
+      // the current code at most once (per-code dedupe in `printBanner`).
+      if (params.reissue)
+        refreshTempAuthCode()
+      printBanner({ requester: { ua: describeUA(params.ua), origin: params.origin } })
     },
   })
 
@@ -262,7 +300,7 @@ export function createInteractiveAuth(
   }
 
   return {
-    rpcFunctions: [anonymousAuth, anonymousAuthExchange, revoke],
+    rpcFunctions: [anonymousAuth, anonymousAuthExchange, anonymousAuthRequestCode, revoke],
     authorize,
     onConnect: onConnect as DevframeAuthHandler['onConnect'],
     printBanner,

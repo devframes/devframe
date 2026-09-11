@@ -2,7 +2,7 @@ import type { DevframeMessageEntry, DevframeMessagesListDelta, DevframeRpcClient
 import type { DocksContext } from '@devframes/hub/client'
 import type { Reactive } from 'vue'
 import { reactive } from 'vue'
-import { addToast } from './toasts'
+import { addToast, dismissToast } from './toasts'
 
 export interface MessagesState {
   entries: DevframeMessageEntry[]
@@ -44,13 +44,16 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     ) as DevframeMessagesListDelta
     let newCount = 0
 
-    // A full snapshot resets any locally cached list before applying it.
-    if (result.full)
-      entryMap.clear()
-
-    // Apply removals
-    for (const id of result.removedIds)
+    /** Preserve surviving entries so a full snapshot does not notify them again. */
+    let removedIds = result.removedIds
+    if (result.full) {
+      const retainedIds = new Set(result.entries.map(entry => entry.id))
+      removedIds = [...entryMap.keys()].filter(id => !retainedIds.has(id))
+    }
+    for (const id of removedIds) {
       entryMap.delete(id)
+      dismissToast(id)
+    }
 
     // Apply new/updated entries. On initial fetch (page refresh) only entries
     // still loading toast; afterwards any notifying new or changed entry does.

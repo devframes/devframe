@@ -2,15 +2,15 @@ import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { BirpcReturn } from 'birpc'
 import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
-import type { InPageFunctionDefinitionAny } from './types'
+import type { InPageFunctionDefinitionAny, InPageFunctionType } from './types'
 import { createBirpc } from 'birpc'
+import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
 
 /**
- * Shared internals of the two endpoints: the coded error surface (browser
- * code, so plain coded `Error`s, since `nostics` diagnostics are node-side only),
- * the local function table with its receive pipeline, and the birpc wiring
- * of one `MessagePort`.
+ * Shared internals of the two endpoints: the coded error surface, the local
+ * function table with its receive pipeline, and the birpc wiring of one
+ * `MessagePort`.
  */
 
 export const DEFAULT_CALL_TIMEOUT_MS = 15_000
@@ -158,6 +158,14 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
   return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
 }
 
+export function channelMethod(type: InPageFunctionType | 'function' | undefined, name: string): string {
+  // Keep user functions, user events, and internal methods in separate wire namespaces.
+  const kind = type === 'event' ? 'event' : 'function'
+  return `devframe:in-page:${kind}:${name}`
+}
+
+const FUNCTION_METHOD_PREFIX = channelMethod('function', '')
+
 /**
  * An endpoint's local function table, resolved by name when the remote side
  * calls in. Each handler is wrapped with the receive pipeline: deserialize
@@ -166,25 +174,83 @@ export function deserializeResult(codec: InPageChannelSerialization, result: unk
  */
 export function createLocalFunctionRegistry(codec: InPageChannelSerialization): {
   register: (definition: InPageFunctionDefinitionAny) => void
+  registerInternal: (method: string, handler: (...args: unknown[]) => unknown) => void
+  on: (name: string, listener: (...args: unknown[]) => void) => () => void
   resolve: (name: string) => ((...args: unknown[]) => unknown) | undefined
 } {
-  const wrapped = new Map<string, (...args: unknown[]) => unknown>()
+  const definitions = new Map<string, InPageFunctionDefinitionAny>()
+  const listeners = new Map<string, Set<(...args: unknown[]) => void>>()
   return {
     register(definition) {
-      wrapped.set(definition.name, async (...rawArgs: unknown[]) => {
+      definitions.set(channelMethod(definition.type, definition.name), definition)
+    },
+    // The shared-state layer keys its handlers by their own fully-qualified
+    // wire methods (`devframe:in-page:page-state:*`, the panel-state events),
+    // so they register verbatim rather than through `channelMethod`.
+    registerInternal(method, handler) {
+      definitions.set(method, { name: method, handler })
+    },
+    on(name, listener) {
+      const key = channelMethod('event', name)
+      let registered = listeners.get(key)
+      if (!registered) {
+        registered = new Set()
+        listeners.set(key, registered)
+      }
+      registered.add(listener)
+      return () => {
+        registered.delete(listener)
+        if (registered.size === 0)
+          listeners.delete(key)
+      }
+    },
+    resolve(name) {
+      const definition = definitions.get(name)
+      const registered = listeners.get(name)
+      if (!definition && !registered?.size)
+        return undefined
+      return async (...rawArgs: unknown[]) => {
         const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
-        if (definition.jsonSerializable)
+        if (definition?.jsonSerializable)
           assertJsonSerializable(args, 'its arguments', definition.name)
-        if (definition.args?.length)
+        if (definition?.args?.length)
           await validateArgs(definition.name, definition.args, args)
-        const result = await definition.handler(...args)
-        if (definition.jsonSerializable)
+        const result = await definition?.handler?.(...args)
+        for (const listener of [...(listeners.get(name) ?? [])])
+          listener(...args)
+        if (definition?.type === 'event')
+          return undefined
+        if (definition?.jsonSerializable && result !== undefined)
           assertJsonSerializable(result, 'its return value', definition.name)
         return codec.serialize && result !== undefined ? codec.serialize(result) : result
-      })
+      }
     },
-    resolve: name => wrapped.get(name),
   }
+}
+
+type LocalHandler = (...args: unknown[]) => unknown
+
+/**
+ * Consult each registry in order and, only once none owns the name, fall back
+ * to the coded "not registered" error for a `function:` call (events stay
+ * silent). The fallback lives here, after every registry, so chaining a
+ * state registry ahead of the user registry never masks a real handler.
+ */
+export function resolveLocalHandler(
+  name: string,
+  registries: ((name: string) => LocalHandler | undefined)[],
+): LocalHandler | undefined {
+  for (const registry of registries) {
+    const handler = registry(name)
+    if (handler)
+      return handler
+  }
+  if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
+    return () => {
+      throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
+    }
+  }
+  return undefined
 }
 
 type RemoteFunctions = Record<string, (...args: any[]) => any>

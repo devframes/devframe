@@ -126,11 +126,16 @@ export function createSharedState<T extends object>(
           state as Objectish,
           fn as (draft: any) => void,
         )
+        if (nextState === state)
+          return
         state = nextState as T
         events.emit('updated', state, patches as SharedStatePatch[], syncId)
       }
       else {
-        state = produce(state as Objectish, fn as (draft: any) => void) as T
+        const nextState = produce(state as Objectish, fn as (draft: any) => void) as T
+        if (nextState === state)
+          return
+        state = nextState
         events.emit('updated', state, undefined, syncId)
       }
     },

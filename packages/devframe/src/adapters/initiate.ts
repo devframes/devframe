@@ -81,8 +81,8 @@ export interface InitDevframeOptions {
    * Authentication for the RPC endpoint. A handler mounted inside an app
    * server is reachable by anything that can open its socket, so it **gates
    * by default**: when unset (or `true`), devframe's interactive OTP handler
-   * is wired and its code/link banner prints once the public origin is known
-   * (derived from the first request, or `origin`). Pass a
+   * is wired and its code/link banner prints when an untrusted client asks
+   * for a code (the client's `requestAuthCode()`). Pass a
    * {@link DevframeAuthHandler} for a custom scheme, or `false` to opt out
    * for a single-user localhost setup that owns the trust boundary another
    * way. Ignored for the `ws.url` tier, since the server behind that URL owns auth.

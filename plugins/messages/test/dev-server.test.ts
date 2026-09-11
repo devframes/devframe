@@ -101,7 +101,12 @@ describe('messages dev-server (hub context)', () => {
 
 describe('messages dev-server (plain context: warn + noop)', () => {
   let server: MessagesServer
-  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  // The warning fires during `beforeAll`, and vitest clears spy call history
+  // before the first test runs, so capture the output in a plain array.
+  const warned: string[] = []
+  const warn = vi.spyOn(console, 'warn').mockImplementation((...args) => {
+    warned.push(args.map(String).join(' '))
+  })
 
   beforeAll(async () => {
     assertSpaBuilt()
@@ -114,8 +119,7 @@ describe('messages dev-server (plain context: warn + noop)', () => {
   })
 
   it('warns DP_MESSAGES_0001 when no messages host is attached', () => {
-    const output = warn.mock.calls.flat().map(String).join('\n')
-    expect(output).toContain('DP_MESSAGES_0001')
+    expect(warned.join('\n')).toContain('DP_MESSAGES_0001')
   })
 
   it('list no-ops with an empty full snapshot', async () => {

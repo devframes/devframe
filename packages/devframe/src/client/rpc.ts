@@ -21,6 +21,7 @@ import { createStaticRpcClientMode } from './rpc-static'
 import { createRpcStreamingClientHost } from './rpc-streaming'
 import { createWsRpcClientMode } from './rpc-ws'
 import { createScopedClientContext } from './scope'
+import { registerWebMcpTools } from './webmcp'
 
 export interface DevframeRpcContext {
   /**
@@ -100,6 +101,18 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
   cacheOptions?: boolean | Partial<RpcCacheOptions>
   /**
+   * Mirror `agent`-flagged client RPC functions (functions registered on
+   * `rpc.client` with an `agent` field) onto the page's WebMCP model
+   * context (`document.modelContext` / `navigator.modelContext`) as
+   * callable tools, so in-page and browser-integrated agents can invoke
+   * them; see `registerWebMcpTools`. Applies only when the browser
+   * provides a model context. Set `false` to keep the browser side off
+   * the WebMCP surface.
+   *
+   * @default true
+   */
+  webmcp?: boolean
+  /**
    * Reject a pending `rpc.call(...)` if the server hasn't answered within this
    * many milliseconds, with a {@link DevframeConnectionError} of kind
    * `'timeout'`. Guards against a live-but-unresponsive server hanging the UI.
@@ -176,6 +189,14 @@ export interface DevframeRpcClient {
    * authenticated.
    */
   requestTrustWithCode: (code: string) => Promise<boolean>
+
+  /**
+   * Ask the server to print its one-time code banner in the terminal, e.g.
+   * when a custom auth UI is shown. Pass `reissue: true` to rotate the code
+   * first (a "re-issue" button), guaranteeing a freshly-valid code; without
+   * it the server prints each code at most once.
+   */
+  requestAuthCode: (options?: { reissue?: boolean }) => Promise<void>
 
   /**
    * Call a RPC function on the server
@@ -263,6 +284,7 @@ export interface DevframeRpcClientMode {
    * token on success (for the caller to persist), or `null` on failure.
    */
   requestTrustWithCode: (code: string) => Promise<string | null>
+  requestAuthCode: DevframeRpcClient['requestAuthCode']
   call: DevframeRpcClient['call']
   callEvent: DevframeRpcClient['callEvent']
   callOptional: DevframeRpcClient['callOptional']
@@ -332,6 +354,8 @@ export async function getDevframeRpcClient(
     rpc: undefined!,
   }
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
+  // No-op when the browser provides no WebMCP model context.
+  const disposeWebMcp = options.webmcp === false ? undefined : registerWebMcpTools(clientRpc)
 
   async function fetchJsonFromBases(path: string): Promise<any> {
     const candidates = [
@@ -461,6 +485,7 @@ export async function getDevframeRpcClient(
       catch {}
       return true
     },
+    requestAuthCode: options => mode.requestAuthCode(options),
     call: gateOnBootstrapAuth(mode.call),
     callEvent: gateOnBootstrapAuth(mode.callEvent),
     callOptional: gateOnBootstrapAuth(mode.callOptional),
@@ -470,7 +495,10 @@ export async function getDevframeRpcClient(
     streaming: undefined!,
     cacheManager,
     scope: undefined!,
-    close: () => mode.close?.(),
+    close: () => {
+      disposeWebMcp?.()
+      mode.close?.()
+    },
   }
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
@@ -516,6 +544,9 @@ export async function getDevframeRpcClient(
       return
     if (typeof globalThis.prompt !== 'function')
       return
+    // Make sure the terminal actually shows a code before asking for it; the
+    // server only prints its banner on request.
+    await rpc.requestAuthCode().catch(() => {})
     while (!rpc.isTrusted) {
       // eslint-disable-next-line no-alert -- native prompt() is intentional: zero UI keeps devframe headless.
       const code = globalThis.prompt('devframe: enter the authentication code shown in your terminal')

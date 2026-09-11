@@ -1,4 +1,5 @@
 import type { DevframeHost, DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import type { AuthBannerInfo } from '../interactive-auth'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -27,7 +28,7 @@ async function createTestContext(): Promise<DevframeNodeContext> {
 
 /** Starts a fully-authenticated server with one trusted-only probe method. */
 async function startAuthenticatedServer(
-  banners: { code: string, url: string }[] = [],
+  banners: AuthBannerInfo[] = [],
   preTrust = false,
   onTrusted?: (info: { authToken: string }) => void,
 ) {
@@ -73,6 +74,7 @@ describe('recipes/interactive-auth', () => {
     expect(auth.rpcFunctions.map(fn => fn.name)).toEqual([
       'anonymous:devframe:auth',
       'anonymous:devframe:auth:exchange',
+      'anonymous:devframe:auth:request-code',
       'devframe:auth:revoke',
     ])
     expect(typeof auth.authorize).toBe('function')
@@ -93,14 +95,45 @@ describe('recipes/interactive-auth', () => {
     expect(auth.authorize('some-plugin:do-something', session)).toBe(true)
   })
 
-  it('printBanner() only prints once per code', async () => {
+  it('printBanner() only prints once per code, with the code expiry', async () => {
     const context = await createTestContext()
-    const seen: { code: string, url: string }[] = []
+    const seen: AuthBannerInfo[] = []
     const auth = createInteractiveAuth(context, { banner: info => seen.push(info) })
 
     auth.printBanner()
     auth.printBanner()
     expect(seen).toHaveLength(1)
+    expect(seen[0]!.code).toBe(getTempAuthCode())
+    expect(seen[0]!.expireAt).toBeGreaterThan(Date.now())
+    expect(seen[0]!.requester).toBeUndefined()
+  })
+
+  it('request-code RPC prints the banner with the requester, dedupes per code, and reissue rotates it', async () => {
+    const banners: AuthBannerInfo[] = []
+    const { server, host, port } = await startAuthenticatedServer(banners)
+
+    try {
+      const client = connectClient(host, port)
+      const requester = { ua: 'test', origin: 'http://localhost:5173' }
+
+      // First hit of the auth view prints the current code once.
+      await client.$call('anonymous:devframe:auth:request-code', requester)
+      await client.$call('anonymous:devframe:auth:request-code', requester)
+      expect(banners).toHaveLength(1)
+      expect(banners[0]!.code).toBe(getTempAuthCode())
+      expect(banners[0]!.expireAt).toBeGreaterThan(Date.now())
+      expect(banners[0]!.requester?.origin).toBe('http://localhost:5173')
+
+      // The manual "re-issue" button rotates the code and always prints.
+      await client.$call('anonymous:devframe:auth:request-code', { ...requester, reissue: true })
+      expect(banners).toHaveLength(2)
+      expect(banners[1]!.code).not.toBe(banners[0]!.code)
+      expect(banners[1]!.code).toBe(getTempAuthCode())
+      client.$close()
+    }
+    finally {
+      await server.close()
+    }
   })
 
   it('round-trips: untrusted connect -> exchange -> trusted -> reconnect with the returned bearer, no new code', async () => {
@@ -137,13 +170,11 @@ describe('recipes/interactive-auth', () => {
     }
   })
 
-  it('onTrusted() fires once a code exchange succeeds, after the rotated code is printed', async () => {
-    const banners: { code: string, url: string }[] = []
-    const trusted: { authToken: string, bannerCountAtCall: number, lastBannerCode?: string }[] = []
+  it('onTrusted() fires once a code exchange succeeds; an exchange never prints a banner', async () => {
+    const banners: AuthBannerInfo[] = []
+    const trusted: { authToken: string }[] = []
     const { server, host, port } = await startAuthenticatedServer(banners, false, info => trusted.push({
       authToken: info.authToken,
-      bannerCountAtCall: banners.length,
-      lastBannerCode: banners.at(-1)?.code,
     }))
 
     try {
@@ -155,8 +186,8 @@ describe('recipes/interactive-auth', () => {
       const { authToken } = await client.$call('anonymous:devframe:auth:exchange', { code, ua: 'test', origin: 'http://localhost' })
 
       expect(trusted.map(info => info.authToken)).toEqual([authToken])
-      expect(trusted[0]!.bannerCountAtCall).toBe(banners.length)
-      expect(trusted[0]!.lastBannerCode).toBe(getTempAuthCode())
+      // Printing is on-demand only (view mount / re-issue / printBanner()).
+      expect(banners).toHaveLength(0)
       client.$close()
     }
     finally {

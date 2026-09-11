@@ -15,7 +15,7 @@ import { parseUA } from 'ua-parser-modern'
  * happens here, at the server ingress, keeping the persisted label format
  * identical.
  */
-function describeUA(userAgent: string): string {
+export function describeUA(userAgent: string): string {
   const info = parseUA(userAgent)
   return [
     info.browser.name,
@@ -61,6 +61,18 @@ function ensureTempAuthCode(): string {
  */
 export function getTempAuthCode(): string {
   return ensureTempAuthCode()
+}
+
+/**
+ * The current code plus its expiry timestamp, for display (e.g. the auth
+ * banner). An already-expired code is rotated first, so the returned code is
+ * always redeemable for its remaining lifetime.
+ */
+export function getTempAuthCodeInfo(): { code: string, expireAt: number } {
+  ensureTempAuthCode()
+  if (Date.now() > tempAuthCodeExpiresAt)
+    refreshTempAuthCode()
+  return { code: tempAuthCode!, expireAt: tempAuthCodeExpiresAt }
 }
 
 /**

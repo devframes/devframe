@@ -10,11 +10,13 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 import {
   attachChannelPort,
+  channelMethod,
   createLocalFunctionRegistry,
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
   InPageChannelError,
   resolveHeartbeat,
+  resolveLocalHandler,
   serializeArgs,
   warnOnce,
   withCallDeadline,
@@ -62,8 +64,10 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const events = createEventEmitter<PanelChannelEvents>()
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+  for (const [fnName, definition] of Object.entries(options.functions))
     registry.register({ ...definition, name: fnName })
+  for (const [eventName, definition] of Object.entries(options.events ?? {}))
+    registry.register({ ...definition, name: eventName, type: 'event' })
 
   let status: InPageChannelStatus = 'connecting'
   let attached: AttachedChannelPort | undefined
@@ -84,9 +88,12 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
 
   const stateHost = createPanelStateHost<P>({
     isConnected: () => status === 'connected',
-    callEvent: (method, args) => sendEvent(method, args),
-    call: (method, args) => enqueueCall(method, args),
+    callEvent: (method, args) => sendEvent(method, serializeArgs(codec, args)),
+    call: (method, args) => enqueueCall(method, serializeArgs(codec, args)),
   })
+  const stateRegistry = createLocalFunctionRegistry(codec)
+  for (const [method, handler] of Object.entries(stateHost.handlers))
+    stateRegistry.registerInternal(method, handler)
 
   function sendEventNow(method: string, args: unknown[]): void {
     void attached?.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
@@ -138,7 +145,7 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     // another instance the user pinned to) replaces the previous port.
     attached?.dispose({ bye: true, reason: 'the panel adopted a newer port' })
     attached = attachChannelPort(port, {
-      resolveLocal: fnName => stateHost.handlers[fnName] ?? registry.resolve(fnName),
+      resolveLocal: fnName => resolveLocalHandler(fnName, [stateRegistry.resolve, registry.resolve]),
       onControl: (kind) => {
         if (kind === 'ping')
           attached?.postControl('pong')
@@ -283,8 +290,10 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
         }
       })
     },
-    call: (fnName, ...args) => enqueueCall(fnName, serializeArgs(codec, args)) as Promise<any>,
-    callEvent: (fnName, ...args) => sendEvent(fnName, serializeArgs(codec, args)),
+    call: (fnName, ...args) => enqueueCall(channelMethod('function', fnName), serializeArgs(codec, args)) as Promise<any>,
+    emit: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
+    callEvent: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
+    on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     close: () => {
       if (status === 'closed')

@@ -162,28 +162,53 @@ export type RpcDump<ARGS extends any[] = any[], RETURN = any, CONTEXT = any>
   = | RpcDumpDefinition<ARGS, RETURN>
     | RpcDumpGetter<ARGS, RETURN, CONTEXT>
 
-/**
- * Base function definition metadata.
- */
-export interface RpcFunctionDefinitionBase {
+/** Shared fields for an RPC function definition. */
+export interface RpcFunctionDefinitionBase<
+  NAME extends string = string,
+  TYPE extends RpcFunctionType = RpcFunctionType,
+  ARGS extends any[] = any[],
+  RETURN = any,
+  CONTEXT = any,
+> {
   /** Function name (unique identifier) */
-  name: string
+  name: NAME
   /** Function type (static, action, event, or query) */
-  type?: RpcFunctionType
+  type?: TYPE
+  /** Whether the function results should be cached */
+  cacheable?: boolean
   /**
-   * Declares whether this function's args/return are JSON-serializable,
-   * i.e. no `Map`, `Set`, `Date`, `BigInt`, class instances, circular
-   * references, `undefined` leaves, `Symbol`, or `Function` values.
+   * Selects the serialization format for arguments and return values.
    *
-   * - `true`: args and return are encoded with strict `JSON.stringify`
-   *   on the wire and on disk. Misshapen values throw `DF0019` at the
-   *   sender, surfacing the bug *during the offending call* rather than
-   *   silently coercing to `{}` later. Required for `agent` exposure.
-   * - `false` (default): payloads use `structured-clone-es`, which
-   *   round-trips Maps/Sets/cycles. Functions in this mode cannot be
-   *   exposed via the `agent` field; registration throws `DF0018`.
+   * - `true`: uses strict JSON encoding (default when `agent` is set).
+   * - `false` (default otherwise): uses structured-clone encoding and supports values
+   *   such as `Map`, `Set`, `Date`, and cycles. Functions using this mode
+   *   cannot be agent-exposed.
    */
   jsonSerializable?: boolean
+  /**
+   * Expose this function to agents (e.g. via the MCP adapter).
+   * When omitted, the function is not agent-exposed (default-deny).
+   */
+  agent?: RpcFunctionAgentOptions
+  /** Setup function called with context to initialize handler and dump */
+  setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<ARGS, RETURN>>
+  /** Function implementation (required if setup doesn't provide one) */
+  handler?: (...args: ARGS) => RETURN
+  /** Dump definition (setup dump takes priority) */
+  dump?: RpcDump<ARGS, RETURN, CONTEXT>
+  /**
+   * Sugar for "query in dev, single baked snapshot in build": when
+   * `true` and no `dump` is provided, the build adapter runs the
+   * handler once with no arguments and stores the result as both a
+   * no-args record and the fallback so any call variant resolves
+   * to the same snapshot. Only valid on `query` (or untyped)
+   * functions; `static` already has equivalent default behavior.
+   */
+  snapshot?: boolean
+  /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
+  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<ARGS, RETURN>>>
+  /** Single-slot fallback for primitive contexts. @internal */
+  __promise?: Thenable<RpcFunctionSetupResult<ARGS, RETURN>>
 }
 
 /**
@@ -192,11 +217,47 @@ export interface RpcFunctionDefinitionBase {
  */
 export interface RpcDumpStore<T = any> {
   /** Function definitions keyed by name */
-  definitions: Record<string, RpcFunctionDefinitionBase>
+  definitions: Record<string, Pick<RpcFunctionDefinitionBase, 'name' | 'type'>>
   /** Records keyed by '<function-name>---<hash>' or '<function-name>---fallback' */
   records: Record<string, RpcDumpRecord | (() => Promise<RpcDumpRecord>)>
   /** @internal */
   _functions?: T
+}
+
+/** RPC function definition whose handler supplies its argument and return types. */
+export interface RpcFunctionDefinitionWithoutSchemas<
+  NAME extends string,
+  TYPE extends RpcFunctionType,
+  ARGS extends any[],
+  RETURN,
+  AS extends RpcArgsSchema | undefined,
+  RS extends RpcReturnSchema | undefined,
+  CONTEXT,
+> extends RpcFunctionDefinitionBase<NAME, TYPE, ARGS, RETURN, CONTEXT> {
+  /** Standard Schema array validating (and typing) the arguments */
+  args?: AS
+  /** Standard Schema validating (and typing) the return value */
+  returns?: RS
+}
+
+/** RPC function definition whose argument and return types come from schemas. */
+export interface RpcFunctionDefinitionWithSchemas<
+  NAME extends string,
+  TYPE extends RpcFunctionType,
+  AS extends RpcArgsSchema | undefined,
+  RS extends RpcReturnSchema | undefined,
+  CONTEXT,
+> extends RpcFunctionDefinitionBase<
+    NAME,
+    TYPE,
+    InferArgsType<AS>,
+    Thenable<InferReturnType<RS>>,
+    CONTEXT
+  > {
+  /** Standard Schema array validating (and typing) the arguments */
+  args: AS
+  /** Standard Schema validating (and typing) the resolved return value */
+  returns: RS
 }
 
 /**
@@ -233,102 +294,8 @@ export type RpcFunctionDefinition<
   CONTEXT = undefined,
 >
   = [AS, RS] extends [undefined, undefined]
-    ? {
-        /** Function name (unique identifier) */
-        name: NAME
-        /** Function type (static, action, event, or query) */
-        type?: TYPE
-        /** Whether the function results should be cached */
-        cacheable?: boolean
-        /** Standard Schema array validating (and typing) the arguments */
-        args?: AS
-        /** Standard Schema validating (and typing) the return value */
-        returns?: RS
-        /**
-         * Declares whether this function's args/return are JSON-serializable
-         * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
-         *
-         * - `true`: wire and dump use strict `JSON.stringify`; misshapen
-         *   values throw `DF0019` at the call site. Required for `agent`.
-         * - `false` (default): `structured-clone-es` round-trips fancy
-         *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
-         */
-        jsonSerializable?: boolean
-        /**
-         * Expose this function to agents (e.g. via the MCP adapter).
-         * When omitted, the function is not agent-exposed (default-deny).
-         */
-        agent?: RpcFunctionAgentOptions
-        /** Setup function called with context to initialize handler and dump */
-        setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<ARGS, RETURN>>
-        /** Function implementation (required if setup doesn't provide one) */
-        handler?: (...args: ARGS) => RETURN
-        /** Dump definition (setup dump takes priority) */
-        dump?: RpcDump<ARGS, RETURN, CONTEXT>
-        /**
-         * Sugar for "query in dev, single baked snapshot in build": when
-         * `true` and no `dump` is provided, the build adapter runs the
-         * handler once with no arguments and stores the result as both a
-         * no-args record and the fallback so any call variant resolves
-         * to the same snapshot. Only valid on `query` (or untyped)
-         * functions; `static` already has equivalent default behavior.
-         */
-        snapshot?: boolean
-        /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
-        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<ARGS, RETURN>>>
-        /** Single-slot fallback for primitive contexts. @internal */
-        __promise?: Thenable<RpcFunctionSetupResult<ARGS, RETURN>>
-      }
-    : {
-        /** Function name (unique identifier) */
-        name: NAME
-        /** Function type (static, action, event, or query) */
-        type?: TYPE
-        /** Whether the function results should be cached */
-        cacheable?: boolean
-        /** Standard Schema array validating (and typing) the arguments */
-        args: AS
-        /** Standard Schema validating (and typing) the return value */
-        returns: RS
-        /**
-         * Declares whether this function's args/return are JSON-serializable
-         * (no Map/Set/Date/BigInt/cycles/class instances/undefined/Symbol/Function).
-         *
-         * - `true`: wire and dump use strict `JSON.stringify`; misshapen
-         *   values throw `DF0019` at the call site. Required for `agent`.
-         * - `false` (default): `structured-clone-es` round-trips fancy
-         *   types. Cannot be `agent`-exposed (registration throws `DF0018`).
-         */
-        jsonSerializable?: boolean
-        /**
-         * Expose this function to agents (e.g. via the MCP adapter).
-         * When omitted, the function is not agent-exposed (default-deny).
-         */
-        agent?: RpcFunctionAgentOptions
-        /** Setup function called with context to initialize handler and dump */
-        setup?: (context: CONTEXT) => Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>
-        /**
-         * Function implementation (required if setup doesn't provide one).
-         * The declared `returns` schema describes the *resolved* value:
-         * async handlers return a promise of it (the runtime always awaits).
-         */
-        handler?: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>
-        /** Dump definition (setup dump takes priority) */
-        dump?: RpcDump<InferArgsType<AS>, Thenable<InferReturnType<RS>>, CONTEXT>
-        /**
-         * Sugar for "query in dev, single baked snapshot in build": when
-         * `true` and no `dump` is provided, the build adapter runs the
-         * handler once with no arguments and stores the result as both a
-         * no-args record and the fallback so any call variant resolves
-         * to the same snapshot. Only valid on `query` (or untyped)
-         * functions; `static` already has equivalent default behavior.
-         */
-        snapshot?: boolean
-        /** Per-context setup-result cache, populated by `getRpcResolvedSetupResult`. @internal */
-        __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>>
-        /** Single-slot fallback for primitive contexts. @internal */
-        __promise?: Thenable<RpcFunctionSetupResult<InferArgsType<AS>, Thenable<InferReturnType<RS>>>>
-      }
+    ? RpcFunctionDefinitionWithoutSchemas<NAME, TYPE, ARGS, RETURN, AS, RS, CONTEXT>
+    : RpcFunctionDefinitionWithSchemas<NAME, TYPE, AS, RS, CONTEXT>
 
 export type RpcFunctionDefinitionToFunction<T extends RpcFunctionDefinitionAny>
   = T extends { args: infer AS, returns: infer RS }

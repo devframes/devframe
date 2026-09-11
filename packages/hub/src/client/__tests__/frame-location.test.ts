@@ -72,7 +72,11 @@ function fakeFrame(initialHref: string, options: { navigation?: boolean, crossOr
           }
         : undefined,
       addEventListener: (type, listener) => void listeners.get(type)!.add(listener),
-      removeEventListener: (type, listener) => void listeners.get(type)!.delete(listener),
+      get removeEventListener() {
+        if (options.crossOrigin)
+          throw new DOMException('cross-origin', 'SecurityError')
+        return (type: 'popstate' | 'hashchange', listener: Listener) => void listeners.get(type)!.delete(listener)
+      },
     }
   }
 
@@ -122,6 +126,38 @@ function fakeFrame(initialHref: string, options: { navigation?: boolean, crossOr
 }
 
 describe('watchFrameLocation', () => {
+  it('resumes location tracking after navigating through a foreign origin', () => {
+    expect.assertions(5)
+    const options = { crossOrigin: false }
+    const frame = fakeFrame('http://localhost/app/', options)
+    const onChange = vi.fn()
+    const dispose = watchFrameLocation({ iframe: frame.iframe, onChange })
+
+    options.crossOrigin = true
+    expect(() => frame.load('http://example.test/')).not.toThrow()
+    expect(onChange).toHaveBeenCalledTimes(1)
+    options.crossOrigin = false
+    frame.load('http://localhost/returned')
+    expect(onChange).toHaveBeenLastCalledWith('http://localhost/returned')
+    frame.pushState('http://localhost/next')
+    expect(onChange).toHaveBeenLastCalledWith('http://localhost/next')
+    dispose()
+    expect(frame.isDetached()).toBe(true)
+  })
+
+  it('releases remaining subscriptions when the previous window is inaccessible', () => {
+    expect.assertions(4)
+    const options = { crossOrigin: false, navigation: true }
+    const frame = fakeFrame('http://localhost/app/', options)
+    const dispose = watchFrameLocation({ iframe: frame.iframe, onChange: vi.fn() })
+
+    expect(frame.isHistoryPristine()).toBe(false)
+    options.crossOrigin = true
+    expect(dispose).not.toThrow()
+    expect(frame.isHistoryPristine()).toBe(true)
+    expect(dispose).not.toThrow()
+  })
+
   it('reports pushState and replaceState by wrapping them, and restores them on dispose', () => {
     const frame = fakeFrame('http://localhost/app/')
     const onChange = vi.fn()

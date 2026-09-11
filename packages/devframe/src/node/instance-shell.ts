@@ -494,9 +494,9 @@ function respondWith(event: H3Event, response: Response): ReadableStream | strin
 
 /**
  * The shared machinery behind `initDevframe` and `initHub`: one mount base,
- * one h3 app, one lazily-derived public origin (and the auth banner that waits
- * for it), one WebSocket binding, and the fetch / connect-middleware pair that
- * serves them. Each factory supplies only what makes it itself (its context,
+ * one h3 app, one lazily-derived public origin (which backs the auth
+ * banner's magic link), one WebSocket binding, and the fetch /
+ * connect-middleware pair that serves them. Each factory supplies only what makes it itself (its context,
  * its routes, its diagnostics) through `init` / `mount`.
  *
  * Nothing here listens on a port unless a side-car was explicitly requested:
@@ -551,8 +551,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const advertisedSsePath = options.absoluteWsPath ? sseRoutePath : sseRoute
 
   // The public origin is often unknowable at creation (the host app owns the
-  // listener), so derive it from the first request and let the auth banner
-  // wait for it, unless the caller pinned one (as a string or a getter).
+  // listener), so derive it from the first request, unless the caller pinned
+  // one. A client requests the auth banner only after fetching
+  // `__connection.json`, so the origin is known before the magic link is built.
   let derivedOrigin: string | undefined
   function explicitOrigin(): string | undefined {
     return typeof options.origin === 'function' ? options.origin() : options.origin
@@ -561,13 +562,6 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     return explicitOrigin() || derivedOrigin
   }
   let authHandler: DevframeAuthHandler | undefined
-  let bannerPrinted = false
-  function maybePrintBanner(): void {
-    if (bannerPrinted || !authHandler || !currentOrigin())
-      return
-    bannerPrinted = true
-    authHandler.printBanner()
-  }
 
   let meta: ConnectionMeta | undefined
   let registration: DevframeInstanceRegistration | undefined
@@ -612,7 +606,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
    * adopts only a loopback host or an exact `allowedOrigins` match, so a raw
    * inbound `Host`/URL authority never redirects the credential-bearing link.
    * First-valid-origin wins: an invalid candidate leaves `derivedOrigin` unset
-   * (printing/registering nothing) so a later valid one can still be adopted.
+   * (registering nothing) so a later valid one can still be adopted.
    */
   function noteOrigin(candidate: string): void {
     if (derivedOrigin === undefined && !explicitOrigin()) {
@@ -621,7 +615,6 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       if (accepted !== undefined)
         derivedOrigin = accepted
     }
-    maybePrintBanner()
     maybeRegister()
   }
 
@@ -835,9 +828,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
     await options.mount?.(ctx, meta, api)
 
-    // A pinned origin means the banner and registry record needn't wait for a
-    // first request.
-    maybePrintBanner()
+    // A pinned origin means the registry record needn't wait for a first
+    // request.
     maybeRegister()
   }
 

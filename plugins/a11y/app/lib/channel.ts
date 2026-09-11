@@ -52,6 +52,7 @@ export function createA11yChannel(): A11yChannel {
   const channel = connectPanelChannel<A11yChannelProtocol>({
     name: A11Y_CHANNEL,
     functions: {},
+    events: {},
   })
   channel.events.on('status:updated', status => setPageScriptReady(status === 'connected'))
 
@@ -71,16 +72,16 @@ export function createA11yChannel(): A11yChannel {
     pageScriptReady,
     scanning: () => state()?.scanning || localScanning(),
     activeRoute: () => state()?.activeRoute ?? null,
-    preview: node => channel.callEvent('highlight', node.id, node.target),
-    clearPreview: () => channel.callEvent('clear-highlight'),
-    setPins: pins => channel.callEvent('set-pins', pins),
+    preview: node => channel.emit('highlight', node.id, node.target),
+    clearPreview: () => channel.emit('clear-highlight'),
+    setPins: pins => channel.emit('set-pins', pins),
     rescan: () => {
       setLocalScanning(true)
-      channel.callEvent('rescan')
+      channel.emit('rescan')
     },
-    sendConfig: config => channel.callEvent('set-config', config),
-    setAutoScan: enabled => channel.callEvent('set-autoscan', enabled),
-    clearRoute: route => channel.callEvent('clear-route', route),
-    clearAll: () => channel.callEvent('clear-all'),
+    sendConfig: config => channel.emit('set-config', config),
+    setAutoScan: enabled => channel.emit('set-autoscan', enabled),
+    clearRoute: route => channel.emit('clear-route', route),
+    clearAll: () => channel.emit('clear-all'),
   }
 }

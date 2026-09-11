@@ -14,6 +14,7 @@ import {
   connectionTitle,
 } from '../../../design/design'
 import AgentSmart from './components/AgentSmart.vue'
+import ClientSmart from './components/ClientSmart.vue'
 import CommandsSmart from './components/CommandsSmart.vue'
 import FunctionsSmart from './components/FunctionsSmart.vue'
 import HistorySmart from './components/HistorySmart.vue'
@@ -22,7 +23,7 @@ import StateSmart from './components/StateSmart.vue'
 import { useRefresh } from './composables/refresh'
 import { connect, connection, isStatic } from './composables/rpc'
 
-type Tab = 'functions' | 'state' | 'agent' | 'commands' | 'history' | 'instances'
+type Tab = 'functions' | 'client' | 'state' | 'agent' | 'commands' | 'history' | 'instances'
 
 const tab = ref<Tab>('functions')
 const { refresh, loading } = useRefresh()
@@ -37,6 +38,7 @@ const connState = computed(() => connectionState(connection.status))
 
 const allTabs: { value: Tab, label: string, icon: string }[] = [
   { value: 'functions', label: 'Functions', icon: 'i-ph-function-duotone' },
+  { value: 'client', label: 'Client', icon: 'i-ph-browser-duotone' },
   { value: 'state', label: 'State', icon: 'i-ph-database-duotone' },
   { value: 'agent', label: 'Agent', icon: 'i-ph-robot-duotone' },
   { value: 'commands', label: 'Commands', icon: 'i-ph-terminal-window-duotone' },
@@ -109,6 +111,7 @@ function reload(): void {
       </div>
       <template v-else>
         <FunctionsSmart v-if="tab === 'functions'" />
+        <ClientSmart v-else-if="tab === 'client'" />
         <StateSmart v-else-if="tab === 'state'" />
         <AgentSmart v-else-if="tab === 'agent'" />
         <CommandsSmart v-else-if="tab === 'commands'" />

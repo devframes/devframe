@@ -29,6 +29,8 @@ export { RpcFunctionDefinitionAny }
 export { RpcFunctionDefinitionAnyWithContext }
 export { RpcFunctionDefinitionBase }
 export { RpcFunctionDefinitionToFunction }
+export { RpcFunctionDefinitionWithoutSchemas }
+export { RpcFunctionDefinitionWithSchemas }
 export { RpcFunctionsCollector }
 export { RpcFunctionsCollectorBase }
 export { RpcFunctionSetupResult }

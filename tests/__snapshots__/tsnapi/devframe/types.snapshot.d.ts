@@ -61,6 +61,7 @@ export { DevframeSseOptions }
 export { DevframeStorageScope }
 export { DevframeViewHost }
 export { DevframeWsOptions }
+export { DevframeWsPeer }
 export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }

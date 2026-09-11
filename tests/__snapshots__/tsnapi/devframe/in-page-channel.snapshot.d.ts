@@ -4,6 +4,7 @@
 // #region Interfaces
 export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   functions: ConnectPanelChannelOptionsFunctions<Protocol>;
+  events?: { [NAME in keyof PanelEvents<Protocol> & string]?: InPageEventOption<PanelEvents<Protocol>[NAME]>; };
   window?: Window | false;
   targets?: Window[];
   transport?: MessagePort;
@@ -13,11 +14,18 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
 }
 export interface CreatePageScriptChannelOptions<Protocol extends InPageChannelProtocol = InPageChannelProtocol> extends InPageChannelCommonOptions {
   functions: CreatePageScriptChannelOptionsFunctions<Protocol>;
+  events?: { [NAME in keyof PageScriptEvents<Protocol> & string]?: InPageEventOption<PageScriptEvents<Protocol>[NAME]>; };
   window?: Window | false;
 }
 export interface InPageChannelProtocol {
-  pageScript?: Record<string, (...args: any[]) => any>;
-  panel?: Record<string, (...args: any[]) => any>;
+  functions?: {
+    pageScript?: Record<string, (...args: any[]) => any>;
+    panel?: Record<string, (...args: any[]) => any>;
+  };
+  events?: {
+    pageScript?: Record<string, (...args: any[]) => void>;
+    panel?: Record<string, (...args: any[]) => void>;
+  };
   sharedStates?: Record<string, object>;
 }
 export interface InPageChannelRelayOptions {
@@ -34,7 +42,9 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
   readonly instanceId: string;
   readonly panels: readonly PanelPeer<P>[];
   readonly events: Pick<EventEmitter<PageScriptChannelEvents<P>>, 'on' | 'once'>;
-  callEvent: <K extends keyof PanelFunctions<P> & string>(_: K, ..._: FnArgs<PanelFunctions<P>[K]>) => void;
+  emit: <K extends keyof PanelEvents<P> & string>(_: K, ..._: FnArgs<PanelEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PanelEvents<P> & string>(_: K, ..._: FnArgs<PanelEvents<P>[K]>) => void;
+  on: <K extends keyof PageScriptEvents<P> & string>(_: K, _: (..._: FnArgs<PageScriptEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   addPanelPort: (_: MessagePort) => PanelPeer<P>;
   close: () => void;
@@ -48,7 +58,9 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
   readonly events: Pick<EventEmitter<PanelChannelEvents>, 'on' | 'once'>;
   whenConnected: (_?: number) => Promise<void>;
   call: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => Promise<FnReturn<PageScriptFunctions<P>[K]>>;
-  callEvent: <K extends keyof PageScriptFunctions<P> & string>(_: K, ..._: FnArgs<PageScriptFunctions<P>[K]>) => void;
+  emit: <K extends keyof PageScriptEvents<P> & string>(_: K, ..._: FnArgs<PageScriptEvents<P>[K]>) => void;
+  callEvent: <K extends keyof PageScriptEvents<P> & string>(_: K, ..._: FnArgs<PageScriptEvents<P>[K]>) => void;
+  on: <K extends keyof PanelEvents<P> & string>(_: K, _: (..._: FnArgs<PanelEvents<P>[K]>) => void) => () => void;
   readonly sharedState: InPageSharedStateHost<P>;
   close: () => void;
 }
@@ -67,21 +79,7 @@ export type InPageChannelErrorCode = 'timeout' |
 'invalid-args' |
 'state-uninitialized';
 export type InPageChannelStatus = 'connecting' | 'connected' | 'closed';
-export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = [AS, RS] extends [undefined, undefined] ? {
-  name: NAME;
-  type?: TYPE;
-  args?: AS;
-  returns?: RS;
-  jsonSerializable?: boolean;
-  handler: (...args: ARGS) => RETURN;
-} : {
-  name: NAME;
-  type?: TYPE;
-  args: AS;
-  returns: RS;
-  jsonSerializable?: boolean;
-  handler: (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
-};
+export type InPageFunctionDefinition<NAME extends string, TYPE extends InPageFunctionType = 'query', ARGS extends any[] = [], RETURN = void, AS extends RpcArgsSchema | undefined = undefined, RS extends RpcReturnSchema | undefined = undefined> = InPageFunctionDefinitionForType<NAME, TYPE, InPageFunctionDefinitionHandler<ARGS, RETURN, AS, RS>> & InPageFunctionDefinitionSchemas<AS, RS>;
 // #endregion
 
 // #region Classes
@@ -117,6 +115,16 @@ interface InPageChannelCommonOptions {
   serialize?: (_: unknown) => unknown;
   deserialize?: (_: unknown) => unknown;
 }
+type InPageEventOption<F> = [F] extends [never] ? never : InPageEventFunctionOption<F>;
+type InPageFunctionDefinitionForType<NAME extends string, TYPE extends InPageFunctionType, HANDLER> = TYPE extends 'event' ? InPageEventFunctionDefinition<NAME, HANDLER> : TYPE extends 'action' ? InPageActionFunctionDefinition<NAME, HANDLER> : InPageQueryFunctionDefinition<NAME, HANDLER>;
+type InPageFunctionDefinitionHandler<ARGS extends any[], RETURN, AS extends RpcArgsSchema | undefined, RS extends RpcReturnSchema | undefined> = [AS, RS] extends [undefined, undefined] ? (...args: ARGS) => RETURN : (...args: InferArgsType<AS>) => Thenable<InferReturnType<RS>>;
+type InPageFunctionDefinitionSchemas<AS extends RpcArgsSchema | undefined, RS extends RpcReturnSchema | undefined> = [AS, RS] extends [undefined, undefined] ? {
+  args?: AS;
+  returns?: RS;
+} : {
+  args: AS;
+  returns: RS;
+};
 type InPageFunctionType = 'action' | 'event' | 'query';
 interface InPageSharedStateHost<P extends InPageChannelProtocol> {
   get: <K extends keyof SharedStates<P> & string>(_: K, _?: {
@@ -127,9 +135,11 @@ interface PageScriptChannelEvents<P extends InPageChannelProtocol> {
   'panel:connected': (_: PanelPeer<P>) => void;
   'panel:disconnected': (_: PanelPeer<P>) => void;
 }
-type PageScriptFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['pageScript']>>;
+type PageScriptEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'pageScript'>;
+type PageScriptFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'pageScript'>;
 interface PanelChannelEvents {
   'status:updated': (_: InPageChannelStatus) => void;
 }
-type PanelFunctions<P extends InPageChannelProtocol> = SideFunctions<NonNullable<P['panel']>>;
+type PanelEvents<P extends InPageChannelProtocol> = SideDeclarations<P, 'events', 'panel'>;
+type PanelFunctions<P extends InPageChannelProtocol> = SideDeclarations<P, 'functions', 'panel'>;
 // #endregion

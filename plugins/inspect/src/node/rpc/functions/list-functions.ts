@@ -1,8 +1,6 @@
-import type { RpcFunctionAgentInfo, RpcFunctionInfo } from '../../types'
+import type { RpcFunctionInfo } from '../../types'
 import { defineRpcFunction } from 'devframe'
-import { argsSchemaToJson, returnSchemaToJson } from './_schema'
-
-const INVOKABLE_TYPES = new Set(['query', 'static'])
+import { projectRpcFunctionInfo } from '../../../function-info'
 
 /**
  * Enumerate every RPC function registered on the connection, projecting
@@ -22,34 +20,8 @@ export const listFunctions = defineRpcFunction({
   setup: ctx => ({
     handler: async (): Promise<RpcFunctionInfo[]> => {
       const out: RpcFunctionInfo[] = []
-      for (const [name, fn] of ctx.rpc.definitions) {
-        const type = (fn.type ?? 'query') as RpcFunctionInfo['type']
-        let agent: RpcFunctionAgentInfo | undefined
-        if (fn.agent) {
-          agent = {
-            description: fn.agent.description,
-            title: fn.agent.title,
-            safety: fn.agent.safety,
-            tags: fn.agent.tags,
-          }
-        }
-        out.push({
-          name,
-          type,
-          jsonSerializable: fn.jsonSerializable === true,
-          snapshot: (fn as { snapshot?: boolean }).snapshot === true,
-          cacheable: (fn as { cacheable?: boolean }).cacheable === true,
-          hasArgs: !!fn.args,
-          hasReturns: !!fn.returns,
-          hasDump: !!fn.dump,
-          hasSetup: !!fn.setup,
-          hasHandler: !!fn.handler,
-          invokable: INVOKABLE_TYPES.has(type),
-          agent,
-          argsSchema: argsSchemaToJson(fn.args as readonly unknown[] | undefined),
-          returnsSchema: returnSchemaToJson(fn.returns),
-        })
-      }
+      for (const [name, fn] of ctx.rpc.definitions)
+        out.push(projectRpcFunctionInfo(name, fn))
       out.sort((a, b) => a.name.localeCompare(b.name))
       return out
     },

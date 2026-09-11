@@ -1,8 +1,8 @@
 import type { BirpcReturn } from 'birpc'
 import type { RpcFunctionsCollectorBase } from 'devframe/rpc'
-import type { DevframeNodeRpcSessionMeta } from 'devframe/rpc/transports/ws-server'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { StreamReader, StreamSink } from 'devframe/utils/streaming-channel'
+import type { DevframeNodeRpcSessionMeta } from '../rpc/transports/session'
 import type { DevframeNodeContext } from './context'
 import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions } from './rpc-augments'
 
@@ -11,7 +11,8 @@ export type {
   DevframeRpcConnection,
   DevframeRpcConnectionRequest,
   DevframeRpcTransportKind,
-} from 'devframe/rpc/transports/ws-server'
+  DevframeWsPeer,
+} from '../rpc/transports/session'
 
 export interface DevframeNodeRpcSession {
   meta: DevframeNodeRpcSessionMeta

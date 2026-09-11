@@ -10,10 +10,12 @@ import { createEventEmitter } from 'devframe/utils/events'
 import { nanoid } from 'devframe/utils/nanoid'
 import {
   attachChannelPort,
+  channelMethod,
   createLocalFunctionRegistry,
   DEFAULT_CALL_TIMEOUT_MS,
   deserializeResult,
   resolveHeartbeat,
+  resolveLocalHandler,
   serializeArgs,
   warnOnce,
   withCallDeadline,
@@ -63,15 +65,17 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   let heartbeatTimer: ReturnType<typeof setInterval> | undefined
 
   const registry = createLocalFunctionRegistry(codec)
-  for (const [fnName, definition] of Object.entries(options.functions ?? {}))
+  for (const [fnName, definition] of Object.entries(options.functions))
     registry.register({ ...definition, name: fnName })
+  for (const [eventName, definition] of Object.entries(options.events ?? {}))
+    registry.register({ ...definition, name: eventName, type: 'event' })
 
   const stateHost = createPageScriptStateHost<P>(function* () {
     for (const peer of peers.values()) {
       yield {
         subscribedStates: peer.subscribedStates,
         callEventRaw: (method: string, args: unknown[]) => {
-          void peer.attached.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
+          void peer.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
         },
       }
     }
@@ -99,11 +103,14 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     internal.internalHandlers = stateHost.createPeerHandlers({
       subscribedStates: internal.subscribedStates,
       callEventRaw: (method, args) => {
-        void internal.attached.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
+        void internal.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
       },
     })
+    const stateRegistry = createLocalFunctionRegistry(codec)
+    for (const [method, handler] of Object.entries(internal.internalHandlers))
+      stateRegistry.registerInternal(method, handler)
     internal.attached = attachChannelPort(port, {
-      resolveLocal: fnName => internal.internalHandlers[fnName] ?? registry.resolve(fnName),
+      resolveLocal: fnName => resolveLocalHandler(fnName, [stateRegistry.resolve, registry.resolve]),
       onControl: (kind) => {
         if (kind === 'ping')
           internal.attached.postControl('pong')
@@ -113,7 +120,7 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     internal.peer = {
       id,
       call: (fnName, ...args) => withCallDeadline(
-        internal.attached.rpc.$call(fnName, ...serializeArgs(codec, args)).then(result => deserializeResult(codec, result)) as Promise<any>,
+        internal.attached.rpc.$call(channelMethod('function', fnName), ...serializeArgs(codec, args)).then(result => deserializeResult(codec, result)) as Promise<any>,
         callTimeoutMs,
         () => `in-page channel "${name}": call "${fnName}" to panel "${id}" timed out after ${callTimeoutMs}ms`,
       ),
@@ -174,6 +181,18 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
 
   win?.addEventListener('message', onWindowMessage)
 
+  const emit: PageScriptChannel<P>['emit'] = (fnName, ...args) => {
+    const wireArgs = serializeArgs(codec, args)
+    for (const peer of peers.values()) {
+      void peer.attached.rpc.$callRaw({
+        method: channelMethod('event', fnName),
+        args: wireArgs,
+        event: true,
+        optional: true,
+      }).catch(() => {})
+    }
+  }
+
   return {
     name,
     instanceId,
@@ -181,17 +200,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       return [...peers.values()].map(peer => peer.peer)
     },
     events: { on: events.on, once: events.once },
-    callEvent: (fnName, ...args) => {
-      const wireArgs = serializeArgs(codec, args)
-      for (const peer of peers.values()) {
-        void peer.attached.rpc.$callRaw({
-          method: fnName,
-          args: wireArgs,
-          event: true,
-          optional: true,
-        }).catch(() => {})
-      }
-    },
+    emit,
+    callEvent: emit,
+    on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     addPanelPort: port => addPeer(port, `transport:${nanoid(8)}`),
     close: () => {

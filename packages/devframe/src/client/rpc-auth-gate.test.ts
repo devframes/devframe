@@ -26,6 +26,7 @@ vi.mock('./rpc-ws', () => ({
     }),
     requestTrustWithToken: async () => true,
     requestTrustWithCode: async () => null,
+    requestAuthCode: async () => {},
     call: fakeMode.call as DevframeRpcClientMode['call'],
     callOptional: fakeMode.callOptional as DevframeRpcClientMode['callOptional'],
     callEvent: fakeMode.callEvent as DevframeRpcClientMode['callEvent'],

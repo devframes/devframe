@@ -7,8 +7,10 @@ import { IN_PAGE_CHANNEL_TAG, IN_PAGE_CHANNEL_VERSION } from './protocol'
 import { createInPageChannelRelay } from './relay'
 
 interface Protocol extends InPageChannelProtocol {
-  pageScript: { highlight: (selector: string) => string }
-  panel: Record<string, never>
+  functions: {
+    pageScript: { highlight: (selector: string) => string }
+    panel: Record<string, never>
+  }
   sharedStates: { report: { route: string, count: number } }
 }
 
