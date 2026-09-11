@@ -44,6 +44,7 @@ function channelTransport(port: MessagePort) {
  */
 export function installInspectedPageHost(host: InspectedPageHost, win: Window = window): () => void {
   const sessions = new Map<string, () => void>()
+  let activeAction: { port: MessagePort, entryId: string } | undefined
   // Replacement connections share the action queue, including teardown. An
   // older pending activation must finish and deactivate before its successor.
   let operations = Promise.resolve()
@@ -55,10 +56,19 @@ export function installInspectedPageHost(host: InspectedPageHost, win: Window = 
       return
     sessions.get(data.session)?.()
     const port = event.ports[0]
-    let activeEntry: string | undefined
     let closed = false
     const stopRelay = createInPageChannelRelay({ role: 'page', window: win, transport: channelTransport(port) })
-    const stopSelection = host.onSelection(entryId => port.postMessage({ type: 'selection', entryId }))
+    const stopSelection = host.onSelection((entryId) => {
+      if (activeAction && activeAction.entryId !== entryId)
+        activeAction = undefined
+      port.postMessage({ type: 'selection', entryId })
+    })
+    async function deactivate(entryId: string): Promise<boolean> {
+      if (activeAction?.port !== port || activeAction.entryId !== entryId)
+        return false
+      activeAction = undefined
+      return host.deactivate(entryId)
+    }
     function close() {
       if (closed)
         return
@@ -72,8 +82,8 @@ export function installInspectedPageHost(host: InspectedPageHost, win: Window = 
       // Queue teardown after in-flight activation so closing the extension
       // cannot leave an inspector enabled after its asynchronous script loads.
       operations = operations.then(async () => {
-        if (activeEntry)
-          await host.deactivate(activeEntry)
+        if (activeAction?.port === port)
+          await deactivate(activeAction.entryId)
       }).catch(() => {})
     }
     function receive(message: MessageEvent) {
@@ -91,11 +101,9 @@ export function installInspectedPageHost(host: InspectedPageHost, win: Window = 
         if (closed)
           return
         try {
-          const result = await host[method](request.entryId)
+          const result = await (method === 'deactivate' ? deactivate(request.entryId) : host[method](request.entryId))
           if (method === 'activate' && result)
-            activeEntry = request.entryId
-          if (method === 'deactivate' && activeEntry === request.entryId)
-            activeEntry = undefined
+            activeAction = { port, entryId: request.entryId }
           if (!closed)
             port.postMessage({ type: 'response', id: request.id, result })
         }

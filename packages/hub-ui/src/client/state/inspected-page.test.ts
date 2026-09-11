@@ -34,7 +34,7 @@ function setup(options: { adapter?: boolean, activate?: (id: string) => Promise<
       // The browser adapter binds this port to its known viewer and inspected
       // document. Production adapter identity checks live in packages/webext.
       if (event.source !== viewer.window || event.origin !== viewer.win.location.origin
-        || event.data?.session !== 'session-a') {
+        || event.data?.session !== new URLSearchParams(viewer.win.location.search).get('devframe-inspected-page')) {
         return
       }
       page.win.dispatch('message', {
@@ -69,14 +69,16 @@ describe('inspected page bridge', () => {
       listener(null)
     await vi.waitFor(() => expect(changed).toHaveBeenCalledExactlyOnceWith(null))
     unsubscribe()
-    await expect(target.deactivate('tracer')).resolves.toBe(true)
-    expect(s.host.deactivate).toHaveBeenCalledExactlyOnceWith('tracer')
+    await expect(target.deactivate('tracer')).resolves.toBe(false)
+    expect(s.host.deactivate).not.toHaveBeenCalled()
   })
 
   it('carries an existing panel channel through the dedicated bridge port', async () => {
     interface Protocol extends InPageChannelProtocol {
-      pageScript: { route: () => string }
-      panel: Record<string, never>
+      functions: {
+        pageScript: { route: () => string }
+        panel: Record<string, never>
+      }
     }
     const s = setup()
     const pageScript = createPageScriptChannel<Protocol>({
@@ -167,6 +169,39 @@ describe('inspected page bridge', () => {
     expect(order).toEqual(['first:start', 'first:finish', 'deactivate', 'replacement:start'])
     expect(enabled).toBe(true)
     expect(s.host.deactivate).toHaveBeenCalledExactlyOnceWith('tracer')
+  })
+
+  it.each(['disconnect', 'deactivate'])('preserves a newer session activation when the old session requests %s', async (method) => {
+    const s = setup()
+    const first = await connect(s)
+    await first.activate('tracer')
+    s.viewer.win.location.search = s.viewer.win.location.search.replace('session-a', 'session-b')
+    const second = await connect(s)
+    await second.activate('tracer')
+
+    if (method === 'disconnect')
+      first.close()
+    else
+      await expect(first.deactivate('tracer')).resolves.toBe(false)
+    // A later request is a barrier for the host's shared operation queue.
+    await second.prepare('a11y')
+    expect(s.host.deactivate).not.toHaveBeenCalled()
+    second.close()
+    await vi.waitFor(() => expect(s.host.deactivate).toHaveBeenCalledExactlyOnceWith('tracer'))
+  })
+
+  it('releases ownership when inspection ends before an embedded activation', async () => {
+    const s = setup()
+    const target = await connect(s)
+    await target.activate('tracer')
+    for (const id of [null, 'tracer']) {
+      for (const listener of s.selectionListeners)
+        listener(id)
+    }
+    target.close()
+    const replacement = await connect(s)
+    await replacement.prepare('a11y')
+    expect(s.host.deactivate).not.toHaveBeenCalled()
   })
 
   it('closes a timed-out activation and tears down when the pending action finishes', async () => {
