@@ -261,18 +261,21 @@ export function createLiveRpcClientMode(
     if (timeout <= 0)
       return trustedPromise.promise
 
-    let clear = () => {}
-    await Promise.race([
-      trustedPromise.promise.then(clear),
-      new Promise((resolve, reject) => {
-        const id = setTimeout(() => {
-          reject(new Error('[devframe] Timeout waiting for rpc to be trusted'))
-        }, timeout)
-        clear = () => clearTimeout(id)
-      }),
-    ])
-
-    return isTrusted
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try {
+      await Promise.race([
+        trustedPromise.promise,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new Error('[devframe] Timeout waiting for rpc to be trusted'))
+          }, timeout)
+        }),
+      ])
+      return isTrusted
+    }
+    finally {
+      clearTimeout(timer)
+    }
   }
 
   return {

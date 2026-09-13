@@ -445,6 +445,21 @@ export async function getDevframeRpcClient(
     }) as F
   }
 
+  /** Release authentication and transport resources even if another disposer fails. */
+  function closeRpcClient(): void {
+    try {
+      disposeWebMcp?.()
+    }
+    finally {
+      try {
+        authChannel?.close()
+      }
+      finally {
+        mode.close?.()
+      }
+    }
+  }
+
   const rpc: DevframeRpcClient = {
     events,
     get isTrusted() {
@@ -495,10 +510,7 @@ export async function getDevframeRpcClient(
     streaming: undefined!,
     cacheManager,
     scope: undefined!,
-    close: () => {
-      disposeWebMcp?.()
-      mode.close?.()
-    },
+    close: closeRpcClient,
   }
 
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
