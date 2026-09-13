@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface ClientScriptEntry {
+  eager?: boolean;
   importFrom: string;
   importName?: string;
 }
@@ -82,6 +83,7 @@ export interface DevframeDockActivation {
   params?: Record<string, unknown>;
 }
 export interface DevframeDockEntryBase {
+  clientScript?: ClientScriptEntry;
   id: string;
   title: string;
   icon: DevframeDockEntryIcon;
@@ -315,7 +317,6 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
     openExternal?: boolean;
   };
   frameId?: string;
-  clientScript?: ClientScriptEntry;
   navTarget?: NavTarget;
   subTabs?: FrameSubTabsConfig;
   remote?: boolean | RemoteDockOptions;

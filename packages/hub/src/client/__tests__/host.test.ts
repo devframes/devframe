@@ -1,6 +1,7 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { DevframeDockEntry, DevframeDockPanelState } from '../../types/docks'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { HUB_EVENTS } from '../../events'
@@ -38,6 +39,8 @@ function createStubRpc() {
   const states = new Map<string, StubSharedState<any>>()
   const definitions = new Map<string, { name: string, type: string, handler?: (...args: any[]) => any }>()
   const partial: DeepPartial<DevframeRpcClient> = {
+    isTrusted: true,
+    events: createEventEmitter<any>(),
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
         if (!states.has(key))
@@ -301,7 +304,7 @@ describe('createDevframeClientRuntime', () => {
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_CLIENT_DOCK__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_CLIENT_DOCK__(ctx)`
-    host.context.docks.register(iframeEntry('local', { clientScript: { importFrom: dataUrl } }))
+    host.context.docks.register(iframeEntry('local', { clientScript: { eager: true, importFrom: dataUrl } }))
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
     expect(received[0].current.entryMeta.id).toBe('local')
@@ -380,7 +383,7 @@ describe('createDevframeClientRuntime', () => {
     ;(globalThis as any).__DF_TEST_SCRIPT__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_SCRIPT__(ctx)`
     states.get('devframe:docks')!.push([
-      iframeEntry('scripted', { clientScript: { importFrom: dataUrl } }),
+      iframeEntry('scripted', { clientScript: { eager: true, importFrom: dataUrl } }),
     ])
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
@@ -420,4 +423,69 @@ describe('createDevframeClientRuntime', () => {
       warn.mockRestore()
     }
   })
+})
+
+it.each(['action', 'custom-render'] as const)('loads independent page and activation scripts in the headless %s runtime', async (type) => {
+  expect.assertions(5)
+  const { rpc, states } = createStubRpc()
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const attempt = vi.fn()
+  const fixture = globalThis as typeof globalThis & { __DF_ROLE_TEST__?: () => void }
+  fixture.__DF_ROLE_TEST__ = attempt
+  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DF_ROLE_TEST__()' }
+  const entry = {
+    id: 'independent-scripts',
+    type,
+    title: 'Independent scripts',
+    icon: 'ph:play',
+    clientScript: { ...script, eager: true },
+    action: script,
+    renderer: script,
+  } as DevframeDockEntry
+  try {
+    states.get('devframe:docks')!.push([entry])
+    await expect.poll(() => attempt.mock.calls.length).toBe(1)
+    expect(runtime.context.docks.selectedId).toBeNull()
+    await runtime.context.docks.switchEntry(entry.id)
+    expect(attempt).toHaveBeenCalledTimes(2)
+    await runtime.context.docks.switchEntry(null)
+    await runtime.context.docks.switchEntry(entry.id)
+    expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
+    states.get('devframe:docks')!.push([{ ...entry }])
+    expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
+  }
+  finally {
+    runtime.dispose()
+    delete fixture.__DF_ROLE_TEST__
+  }
+})
+
+it('waits for trust for eager setup and activation for lazy setup in the headless runtime', async () => {
+  expect.assertions(5)
+  const { rpc, states } = createStubRpc()
+  Object.assign(rpc, { isTrusted: false })
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const attempt = vi.fn()
+  const fixture = globalThis as typeof globalThis & { __DF_LAZY_TEST__?: () => void }
+  fixture.__DF_LAZY_TEST__ = attempt
+  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DF_LAZY_TEST__()' }
+  const eager = iframeEntry('eager', { clientScript: { ...script, eager: true } })
+  const lazy = iframeEntry('lazy', { clientScript: script })
+  try {
+    states.get('devframe:docks')!.push([eager, lazy])
+    expect(attempt).not.toHaveBeenCalled()
+    await expect(runtime.context.docks.switchEntry('lazy')).resolves.toBe(false)
+    Object.assign(rpc, { isTrusted: true })
+    rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
+    await expect.poll(() => attempt.mock.calls.length).toBe(1)
+    await runtime.context.docks.switchEntry('lazy')
+    expect(attempt).toHaveBeenCalledTimes(2)
+    await runtime.context.docks.switchEntry(null)
+    await runtime.context.docks.switchEntry('lazy')
+    expect(attempt).toHaveBeenCalledTimes(2)
+  }
+  finally {
+    runtime.dispose()
+    delete fixture.__DF_LAZY_TEST__
+  }
 })

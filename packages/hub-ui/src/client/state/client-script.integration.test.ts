@@ -1,6 +1,8 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DevframeRpcClient } from '@devframes/hub/client'
+import type {} from '@devframes/json-render/hub'
 import type { SharedState } from 'devframe/utils/shared-state'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -42,7 +44,7 @@ function createStubRpc() {
 
 declare global {
   // eslint-disable-next-line vars-on-top -- test hook called by the dynamically imported client module
-  var __DEVFRAME_CLIENT_SCRIPT_ATTEMPT__: (() => void) | undefined
+  var __DEVFRAME_CLIENT_SCRIPT_ATTEMPT__: (() => void | Promise<void>) | undefined
 }
 
 afterEach(() => {
@@ -52,6 +54,7 @@ afterEach(() => {
 
 describe('dock client scripts', () => {
   it('retries setup on a later activation after it fails', async () => {
+    expect.assertions(3)
     vi.spyOn(console, 'error').mockImplementation(() => {})
     let attempts = 0
     globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
@@ -63,11 +66,10 @@ describe('dock client scripts', () => {
     const context = await createDocksContext('embedded', rpc)
     const entry = {
       id: 'retry-client-script',
-      type: 'iframe',
+      type: 'custom-render',
       title: 'Retry client script',
       icon: 'ph:play',
-      url: '/retry',
-      clientScript: {
+      renderer: {
         importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()',
       },
     } satisfies DevframeDockEntry
@@ -80,4 +82,162 @@ describe('dock client scripts', () => {
     await expect(context.docks.switchEntry(entry.id)).resolves.toBe(true)
     expect(attempts).toBe(2)
   })
+})
+
+it.each(['iframe', 'json-render'] as const)('starts a %s page script before dock activation, once per RPC client', async (type) => {
+  expect.assertions(3)
+  let attempts = 0
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
+    attempts++
+  }
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const clientScript = { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
+  const entry = { id: `background-${type}`, type, title: 'Background page script', icon: 'ph:browser', url: '/fixture', view: { stateKey: 'fixture:view' }, clientScript } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await expect.poll(() => attempts).toBe(1)
+  expect(context.docks.selectedId).toBeNull()
+  await context.docks.switchEntry(entry.id)
+  expect(attempts).toBe(1)
+})
+
+it('waits for trust and keeps the same dock script bound separately to each RPC client', async () => {
+  expect.assertions(4)
+  let attempts = 0
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
+    attempts++
+  }
+  const first = createStubRpc()
+  const second = createStubRpc()
+  Object.assign(first.rpc, { isTrusted: false })
+  await createDocksContext('embedded', first.rpc)
+  await createDocksContext('embedded', second.rpc)
+  const entry = {
+    id: 'per-rpc-page-script',
+    type: 'iframe',
+    title: 'Page commands',
+    icon: 'ph:browser',
+    url: '/fixture',
+    clientScript: { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' },
+  } satisfies DevframeDockEntry
+  first.sharedStates.get('devframe:docks')!.push([entry])
+  await nextTick()
+  expect(attempts).toBe(0)
+  second.sharedStates.get('devframe:docks')!.push([entry])
+  await expect.poll(() => attempts).toBe(1)
+  Object.assign(first.rpc, { isTrusted: true })
+  first.rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
+  await expect.poll(() => attempts).toBe(2)
+  first.sharedStates.get('devframe:docks')!.push([{ ...entry }])
+  second.sharedStates.get('devframe:docks')!.push([{ ...entry }])
+  await nextTick()
+  expect(attempts).toBe(2)
+})
+
+it('does not invoke action docks while initializing page scripts', async () => {
+  expect.assertions(2)
+  let attempts = 0
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
+    attempts++
+  }
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const entry = {
+    id: 'explicit-action-script',
+    type: 'action',
+    title: 'Explicit action',
+    icon: 'ph:play',
+    action: { importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' },
+  } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await nextTick()
+  expect(attempts).toBe(0)
+  await context.docks.switchEntry(entry.id)
+  expect(attempts).toBe(1)
+})
+
+it.each([undefined, false] as const)('keeps page setup lazy when eager is %s', async (eager) => {
+  expect.assertions(3)
+  const attempt = vi.fn()
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = attempt
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const entry = {
+    id: 'lazy-page',
+    type: 'iframe',
+    title: 'Lazy page',
+    icon: 'ph:browser',
+    url: '/fixture',
+    clientScript: { eager, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' },
+  } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await nextTick()
+  expect(attempt).not.toHaveBeenCalled()
+  await context.docks.switchEntry(entry.id)
+  expect(attempt).toHaveBeenCalledOnce()
+  await context.docks.switchEntry(null)
+  await context.docks.switchEntry(entry.id)
+  expect(attempt).toHaveBeenCalledOnce()
+})
+
+it.each(['action', 'custom-render'] as const)('keeps the %s activation independent of its eager page script', async (type) => {
+  expect.assertions(5)
+  const attempt = vi.fn()
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = attempt
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
+  const entry = {
+    id: `two-scripts-${type}`,
+    type,
+    title: 'Independent scripts',
+    icon: 'ph:play',
+    action: script,
+    renderer: script,
+    clientScript: { ...script, eager: true },
+  } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await expect.poll(() => attempt.mock.calls.length).toBe(1)
+  expect(context.docks.selectedId).toBeNull()
+  await context.docks.switchEntry(entry.id)
+  expect(attempt).toHaveBeenCalledTimes(2)
+  await context.docks.switchEntry(null)
+  await context.docks.switchEntry(entry.id)
+  expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
+  sharedStates.get('devframe:docks')!.push([{ ...entry }])
+  await nextTick()
+  expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
+})
+
+it('awaits an eager page setup before activation and retries it after failure', async () => {
+  expect.assertions(5)
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  let complete!: () => void
+  let attempts = 0
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
+    attempts++
+    if (attempts === 1)
+      throw new Error('page setup failed')
+    if (attempts === 2)
+      return new Promise<void>((resolve) => { complete = resolve })
+  }
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
+  const entry = {
+    id: 'retry-page-before-renderer',
+    type: 'custom-render',
+    title: 'Retry page',
+    icon: 'ph:play',
+    renderer: script,
+    clientScript: { ...script, eager: true },
+  } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await expect.poll(() => attempts).toBe(1)
+  const activation = context.docks.switchEntry(entry.id)
+  await expect.poll(() => attempts).toBe(2)
+  expect(context.docks.selectedId).toBeNull()
+  complete()
+  await expect(activation).resolves.toBe(true)
+  expect(attempts).toBe(3)
 })

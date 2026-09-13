@@ -10,7 +10,8 @@ import { nextTick, ref } from 'vue'
 import { createDocksContext } from './context'
 import { executeSetupScript } from './setup-script'
 
-vi.mock('./setup-script', () => ({
+vi.mock('./setup-script', async importOriginal => ({
+  ...await importOriginal<typeof import('./setup-script')>(),
   executeSetupScript: vi.fn(async () => {}),
 }))
 

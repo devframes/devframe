@@ -81,6 +81,8 @@ export type DevframeDockEntryIcon = string | { light: string, dark: string }
 export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger'
 
 export interface DevframeDockEntryBase {
+  /** Page script run in the host page when activated, or after trust when `eager: true`. */
+  clientScript?: ClientScriptEntry
   id: string
   title: string
   icon: DevframeDockEntryIcon
@@ -172,6 +174,11 @@ export interface DevframeDockEntryBase {
 
 export interface ClientScriptEntry {
   /**
+   * Initialize after trust without waiting for dock activation.
+   * @default false
+   */
+  eager?: boolean
+  /**
    * What to import: either a **URL the host serves** (a self-contained ES
    * module, e.g. `/@fs/<abs path>` under Vite or a statically-mounted bundle
    * path), or a **bare npm specifier** (e.g.
@@ -231,10 +238,6 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * share a `frameId` may live in one group, several groups, or none.
    */
   frameId?: string
-  /**
-   * Optional client script to import into the iframe
-   */
-  clientScript?: ClientScriptEntry
   /**
    * Soft-navigation target within a shared frame. Set on a **member** dock
    * (one of several docks sharing a {@link frameId}) to describe which internal

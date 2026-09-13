@@ -1,29 +1,24 @@
 import type { ClientScriptEntry, DevframeDockUserEntry } from '@devframes/hub'
-import type { DockClientScriptContext } from '@devframes/hub/client'
+import type { DevframeRpcClient, DockClientScriptContext } from '@devframes/hub/client'
 import { clientScriptFailureHint, resolveClientModuleSpecifier } from '@devframes/hub/client'
 
-/**
- * Resolve the {@link ClientScriptEntry} a dock entry carries: an `action`'s
- * `action`, a `custom-render`'s `renderer`, or an iframe's `clientScript`.
- */
-function clientScriptOf(entry: DevframeDockUserEntry): ClientScriptEntry | undefined {
-  switch (entry.type) {
-    case 'action':
-      return entry.action
-    case 'custom-render':
-      return entry.renderer
-    case 'iframe':
-      return entry.clientScript
-    default:
-      return undefined
-  }
+export type DockScriptRole = 'clientScript' | 'action' | 'renderer'
+
+/** Page setup and activation scripts have independent initialization lifetimes. */
+export function dockScript(entry: DevframeDockUserEntry, role: DockScriptRole): ClientScriptEntry | undefined {
+  if (role === 'clientScript')
+    return entry.clientScript
+  if (role === 'action' && entry.type === 'action')
+    return entry.action
+  if (role === 'renderer' && entry.type === 'custom-render')
+    return entry.renderer
 }
 
 async function _executeSetupScript(
   entry: DevframeDockUserEntry,
   context: DockClientScriptContext,
+  script: ClientScriptEntry | undefined,
 ): Promise<void> {
-  const script = clientScriptOf(entry)
   if (!script?.importFrom)
     throw new Error(`[@devframes/hub-ui] Dock entry "${entry.id}" carries no client script to run`)
   // A bare specifier resolves through the host-advertised template; URL
@@ -53,23 +48,33 @@ async function _executeSetupScript(
     throw error
   }
 }
-const _setupPromises = new Map<string, Promise<void>>()
+const setupPromisesByRpc = new WeakMap<DevframeRpcClient, Map<string, Promise<void>>>()
+
+/** Cache setup per RPC connection, dock and role; explicit action clicks always run again. */
 export function executeSetupScript(
   entry: DevframeDockUserEntry,
   context: DockClientScriptContext,
+  role: DockScriptRole,
+  cache = role !== 'action',
 ): Promise<void> {
-  // Actions should re-execute on every click; only cache non-action scripts
-  if (entry.type !== 'action' && _setupPromises.has(entry.id))
-    return _setupPromises.get(entry.id)!
-  const promise = _executeSetupScript(entry, context)
-  if (entry.type !== 'action') {
-    _setupPromises.set(entry.id, promise)
-    promise.catch(() => {
-      // A failed setup must not poison this entry permanently. The caller still
-      // receives the rejection, while a later activation or update may retry.
-      if (_setupPromises.get(entry.id) === promise)
-        _setupPromises.delete(entry.id)
-    })
+  const script = dockScript(entry, role)
+  let setupPromises = setupPromisesByRpc.get(context.rpc)
+  if (!setupPromises) {
+    setupPromises = new Map()
+    setupPromisesByRpc.set(context.rpc, setupPromises)
   }
+  const key = JSON.stringify([entry.id, role, script?.importFrom, script?.importName ?? 'default'])
+  const existing = setupPromises.get(key)
+  if (cache && existing)
+    return existing
+  const promise = _executeSetupScript(entry, context, script)
+  if (!cache)
+    return promise
+  setupPromises.set(key, promise)
+  void promise.catch(() => {
+    /** Failed setup can retry on activation or a later dock publication. */
+    if (setupPromises.get(key) === promise)
+      setupPromises.delete(key)
+  })
   return promise
 }
