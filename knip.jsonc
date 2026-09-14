@@ -71,11 +71,7 @@
       // `import()` carrying `webpackIgnore`/`turbopackIgnore` comments -
       // deliberately invisible to bundlers (and knip) so Next never inlines
       // their node-only code. They're genuinely used at runtime.
-      // `@devframes/agentic` is install-only: devframe probes and loads it
-      // through `importRuntimeModule` string specifiers to serve the hub's
-      // aggregate MCP endpoint; it is never statically imported.
       "ignoreDependencies": [
-        "@devframes/agentic",
         "@devframes/plugin-a11y",
         "@devframes/plugin-code-server",
         "@devframes/plugin-git",
@@ -107,10 +103,7 @@
       // dock's `action.importFrom` bare specifier, resolved by Vite through
       // the hub's `clientModuleResolution` template (`/@id/{specifier}`),
       // never a static import knip's graph can see.
-      // `@devframes/agentic` is install-only: devframe probes and loads it
-      // through `importRuntimeModule` string specifiers to serve the hub's
-      // aggregate MCP endpoint; it is never statically imported.
-      "ignoreDependencies": ["@devframes/agentic", "demo-dock-client"]
+      "ignoreDependencies": ["demo-dock-client"]
     },
     // Multi-entry example package (see `packages/devframe` above for why
     // exports-mapped entries are listed explicitly): `src/index.ts` is the
@@ -133,12 +126,6 @@
       "entry": ["src/server.ts"]
     },
     "packages/devframe": {
-      // `@devframes/agentic` (devframe's own optional peer) is loaded only
-      // through `importRuntimeModule('@devframes/agentic/...')` string
-      // specifiers and a `require.resolve` probe (`src/node/agentic.ts`),
-      // never a static import knip's graph can see; the devDependency is
-      // what lets tests exercise the installed-peer path.
-      "ignoreDependencies": ["@devframes/agentic"],
       // Every `package.json#exports` subpath maps to one of these source
       // files (see `tsdown.config.ts`'s `serverEntries`/`clientEntries`).
       // Knip's package.json→dist→src source mapping needs `outDir` set on

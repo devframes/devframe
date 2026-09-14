@@ -6,10 +6,13 @@ import { build } from 'esbuild'
 import { afterEach, describe, expect, it } from 'vitest'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
+// `packages/devframe/dist/adapters/mcp.mjs` is deliberately absent: that
+// entry is a static re-export of `@devframes/agentic/mcp` (like
+// `adapters/cac` with its optional `cac` peer), so it resolves the peer by
+// design; only implicit paths must stay lazy.
 const entries = [
   'packages/devframe/dist/adapters/cac.mjs',
   'packages/devframe/dist/adapters/initiate.mjs',
-  'packages/devframe/dist/adapters/mcp.mjs',
   'packages/hub/dist/node/initiate.mjs',
   'packages/next/dist/hub.mjs',
 ]
