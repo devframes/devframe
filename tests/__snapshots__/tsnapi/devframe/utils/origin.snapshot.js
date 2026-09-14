@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function isAllowedOrigin(_, _) {}
+export function isLoopbackAddress(_) {}
 export function isLoopbackHostname(_) {}
 export function validateOriginCandidate(_, _) {}
 // #endregion

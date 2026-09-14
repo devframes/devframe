@@ -1,7 +1,7 @@
 import type { DevframeNodeContext, McpAuthorization } from 'devframe/types'
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
-import { isAllowedOrigin } from 'devframe/utils/origin'
+import { isAllowedOrigin, isLoopbackAddress } from 'devframe/utils/origin'
 import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
 
 export interface CreateMcpFetchHandlerOptions {
@@ -62,13 +62,27 @@ async function isAuthorized(req: Request, authorization: McpAuthorization): Prom
   return timingSafeEqual(token, authorization)
 }
 
+/** Connection facts a host knows about a request beyond the `Request` itself. */
+export interface McpConnectionInfo {
+  /**
+   * The connecting peer's remote address (a node socket's `remoteAddress`),
+   * used to prove a same-machine caller when the endpoint relies on the
+   * loopback origin default with no identity check. A host that can resolve a
+   * trustworthy peer address (the h3/node mount) supplies it; when it's
+   * omitted the origin gate stays the only locality signal.
+   */
+  remoteAddress?: string
+}
+
 export interface McpFetchHandler {
   /**
    * WHATWG-`fetch` handler for the MCP endpoint. Hand every method
    * (POST/GET/DELETE) on the endpoint's path to it; routing by path is the
-   * host's job.
+   * host's job. Pass {@link McpConnectionInfo} when the host can resolve the
+   * peer address so the default trust boundary can enforce same-machine
+   * locality.
    */
-  fetch: (request: Request) => Promise<Response>
+  fetch: (request: Request, connection?: McpConnectionInfo) => Promise<Response>
   /** Tear down the handler (aborts in-flight exchanges, drops the change bridge). */
   dispose: () => Promise<void>
 }
@@ -89,13 +103,19 @@ export interface McpFetchHandler {
  *
  * The origin gate guards every request: loopback-default DNS-rebinding
  * protection that (unlike the WS upgrade's `isAllowedOrigin`) also rejects
- * `Origin`-less requests, so a route-based endpoint isn't reachable by a
- * browser or a remote host (a disallowed origin gets `403`). It trusts
- * same-machine callers by default. When that isn't your trust boundary, add
- * an optional identity gate ({@link CreateMcpFetchHandlerOptions.authorization}),
- * checked after the origin gate: a bearer/callback check that proves *who* is
- * calling (a missing/invalid credential gets `401` with a
- * `WWW-Authenticate: Bearer` challenge).
+ * `Origin`-less requests, so a browser can't reach the route across origins (a
+ * disallowed origin gets `403`). The `Origin` header is only browser hardening:
+ * a non-browser client forges it. So on the zero-config default (no widened
+ * `allowedOrigins`, no identity check) a second locality gate requires the
+ * connected peer to be loopback, proven from the host-supplied
+ * {@link McpConnectionInfo.remoteAddress} (which a client cannot forge), so the
+ * "trusts same-machine callers" default holds against a remote raw client.
+ * When same-machine isn't your trust boundary, add an identity gate
+ * ({@link CreateMcpFetchHandlerOptions.authorization}), checked after the
+ * origin gate: a bearer/callback check that proves *who* is calling (a
+ * missing/invalid credential gets `401` with a `WWW-Authenticate: Bearer`
+ * challenge), which also lifts the loopback-peer restriction for authenticated
+ * callers.
  */
 export function createMcpFetchHandler(
   ctx: DevframeNodeContext,
@@ -120,7 +140,13 @@ export function createMcpFetchHandler(
     resources: () => { handler.notify.resourcesChanged() },
   })
 
-  async function handle(req: Request): Promise<Response> {
+  // The zero-config trust boundary: no widened origin allow-list and no
+  // identity check, so the endpoint trusts same-machine callers alone. A
+  // loopback `Origin` is only browser hardening (a raw client forges it), so
+  // here locality is proven from the connected peer instead.
+  const originOnlyDefault = allowedOrigins === undefined && authorization === false
+
+  async function handle(req: Request, connection?: McpConnectionInfo): Promise<Response> {
     // Origin gate: the endpoint's DNS-rebinding protection and its guard
     // against arbitrary local processes. Unlike the WS transport, an
     // `Origin`-less request is rejected: a route-based MCP endpoint would
@@ -128,6 +154,14 @@ export function createMcpFetchHandler(
     // `Origin` that is loopback or on the configured allow-list.
     const origin = req.headers.get('origin') ?? undefined
     if (allowedOrigins !== false && (origin === undefined || !isAllowedOrigin(origin, allowedOrigins ?? [])))
+      return new Response('Forbidden', { status: 403 })
+
+    // Locality gate: a raw client forges `Origin: http://localhost`, so when
+    // that default is the only trust boundary, require the connected peer to be
+    // loopback (an address it cannot forge). Opt out with `authorization` or
+    // `allowedOrigins: false`; a host that can't resolve a peer stays
+    // origin-only.
+    if (originOnlyDefault && connection?.remoteAddress !== undefined && !isLoopbackAddress(connection.remoteAddress))
       return new Response('Forbidden', { status: 403 })
 
     // Identity gate: a request that cleared the origin check still has to

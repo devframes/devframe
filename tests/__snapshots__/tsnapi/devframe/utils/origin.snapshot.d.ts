@@ -3,6 +3,7 @@
  */
 // #region Other
 export { isAllowedOrigin }
+export { isLoopbackAddress }
 export { isLoopbackHostname }
 export { validateOriginCandidate }
 // #endregion

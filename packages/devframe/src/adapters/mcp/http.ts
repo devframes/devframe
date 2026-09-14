@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe/types'
 import type { H3, H3Event } from 'h3'
 import type { CreateMcpFetchHandlerOptions } from './fetch'
-import { defineHandler } from 'h3'
+import { defineHandler, getRequestIP } from 'h3'
 import { createMcpFetchHandler } from './fetch'
 
 export interface MountMcpHttpOptions extends CreateMcpFetchHandlerOptions {}
@@ -32,7 +32,14 @@ export function mountMcpHttp(
 ): MountedMcpHttp {
   const handler = createMcpFetchHandler(ctx, options)
 
-  app.use(path, defineHandler(async event => respond(event, await handler.fetch(event.req))))
+  // `getRequestIP` (default, `xForwardedFor: false`) returns the connected
+  // socket's own address, never a client-supplied `X-Forwarded-For`, so the
+  // handler's locality gate proves a same-machine caller from an address the
+  // client cannot forge (a widened `allowedOrigins` or a proxy deployment opts
+  // out via `authorization` / `allowedOrigins: false`).
+  app.use(path, defineHandler(async event =>
+    respond(event, await handler.fetch(event.req, { remoteAddress: getRequestIP(event) })),
+  ))
 
   return {
     dispose: handler.dispose,

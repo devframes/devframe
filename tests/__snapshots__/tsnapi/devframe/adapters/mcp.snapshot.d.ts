@@ -18,8 +18,11 @@ export interface CreateMcpServerOptions {
     transport: 'stdio';
   }) => void;
 }
+export interface McpConnectionInfo {
+  remoteAddress?: string;
+}
 export interface McpFetchHandler {
-  fetch: (_: Request) => Promise<Response>;
+  fetch: (_: Request, _?: McpConnectionInfo) => Promise<Response>;
   dispose: () => Promise<void>;
 }
 export interface McpServerHandle {

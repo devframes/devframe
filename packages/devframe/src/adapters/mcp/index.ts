@@ -18,6 +18,7 @@ export {
 export {
   createMcpFetchHandler,
   type CreateMcpFetchHandlerOptions,
+  type McpConnectionInfo,
   type McpFetchHandler,
 } from './fetch'
 

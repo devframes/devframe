@@ -28,6 +28,29 @@ export function isLoopbackHostname(hostname: string): boolean {
   return isLoopbackIPv4(h)
 }
 
+/**
+ * Whether `address` is a loopback peer address as reported by a socket
+ * (`net.Socket.remoteAddress`): the IPv6 loopback `::1`, an IPv4 literal in
+ * `127.0.0.0/8`, or an IPv4-mapped IPv6 form of one (`::ffff:127.0.0.1`).
+ *
+ * Unlike {@link isLoopbackHostname} this takes a raw address, not a hostname:
+ * it never accepts a `localhost`-style name (a socket peer is always a literal
+ * address) and understands the IPv4-mapped IPv6 form the OS hands back on a
+ * dual-stack listener. Used to prove a same-machine caller from the connected
+ * peer, which a client cannot forge, rather than from the `Origin` header,
+ * which it can.
+ */
+export function isLoopbackAddress(address: string): boolean {
+  let h = address.trim().replace(/^\[|\]$/g, '') // strip IPv6 brackets
+  const zone = h.indexOf('%') // drop an IPv6 zone id (fe80::1%eth0)
+  if (zone !== -1)
+    h = h.slice(0, zone)
+  if (h === '::1')
+    return true
+  const mapped = /^::ffff:(.+)$/i.exec(h)
+  return isLoopbackIPv4(mapped ? mapped[1] : h)
+}
+
 /** A canonical dotted-decimal IPv4 literal in `127.0.0.0/8`. */
 function isLoopbackIPv4(hostname: string): boolean {
   const octets = hostname.split('.')
