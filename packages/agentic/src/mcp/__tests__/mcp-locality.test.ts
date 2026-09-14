@@ -1,6 +1,4 @@
-import type { McpAuthorization } from '../../../types/devframe'
-import type { DevframeHost } from '../../../types/host'
-import type { McpConnectionInfo } from '../fetch'
+import type { DevframeHost, McpAuthorization, McpConnectionInfo } from 'devframe/types'
 import { createHostContext } from 'devframe/node'
 import { isLoopbackAddress } from 'devframe/utils/origin'
 import { afterEach, describe, expect, it } from 'vitest'

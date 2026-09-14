@@ -1,6 +1,39 @@
 import process from 'node:process'
 import { cac } from 'cac'
-import { keepAlive, parsePortsFlag, startConnectServer } from './connect'
+import { diagnostics } from '../node/diagnostics'
+import { importRuntimeModule } from '../node/import-runtime-module'
+
+/** The surface `devframe connect` consumes from `@devframes/agentic/connect`. */
+interface AgenticConnectModule {
+  startConnectServer: (options: {
+    ports?: number[]
+    instancesDir?: string
+    timeoutMs?: number
+    authToken?: string
+  }) => Promise<{ stop: () => Promise<void> }>
+}
+
+/** Parse the repeatable `--port` flag value(s) from cac into numbers. */
+function parsePortsFlag(value: unknown): number[] {
+  const values = Array.isArray(value) ? value : value === undefined ? [] : [value]
+  return values
+    .map(v => Number(v))
+    .filter(n => Number.isInteger(n) && n > 0 && n < 65536)
+}
+
+/**
+ * Load the connector from the optional `@devframes/agentic` peer, mapping a
+ * failed load (typically: the peer is not installed) to a thrown `DF0046`.
+ */
+async function importConnect(): Promise<AgenticConnectModule> {
+  try {
+    return await importRuntimeModule<AgenticConnectModule>('@devframes/agentic/connect')
+  }
+  catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    throw diagnostics.DF0046({ reason, cause: error })
+  }
+}
 
 /**
  * The `devframe` bin is the framework's own CLI, distinct from the per-app
@@ -16,6 +49,7 @@ export async function runDevframeCli(argv: string[] = process.argv): Promise<voi
     .option('--instances-dir <dir>', 'Override the instance registry directory (default: ~/.devframe/instances, or $DEVFRAME_INSTANCES_DIR)')
     .option('--timeout <ms>', 'Probe timeout per instance in milliseconds', { default: 1000 })
     .action(async (options: { port?: unknown, instancesDir?: string, timeout?: number }) => {
+      const { startConnectServer } = await importConnect()
       await startConnectServer({
         ports: parsePortsFlag(options.port),
         instancesDir: options.instancesDir,
@@ -27,7 +61,9 @@ export async function runDevframeCli(argv: string[] = process.argv): Promise<voi
          */
         authToken: process.env.DEVFRAME_MCP_AUTH_TOKEN,
       })
-      keepAlive()
+      // Keep the connector process alive until the stdio transport closes
+      // it: stdin stays open while the MCP client holds the pipe.
+      process.stdin.resume()
     })
 
   cli.help()

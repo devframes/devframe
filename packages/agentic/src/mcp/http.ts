@@ -1,15 +1,8 @@
+import type { MountedMcpHttp, MountMcpHttpOptions } from 'devframe/internal'
 import type { DevframeNodeContext } from 'devframe/types'
 import type { H3, H3Event } from 'h3'
-import type { CreateMcpFetchHandlerOptions } from './fetch'
 import { defineHandler, getRequestIP } from 'h3'
 import { createMcpFetchHandler } from './fetch'
-
-export interface MountMcpHttpOptions extends CreateMcpFetchHandlerOptions {}
-
-export interface MountedMcpHttp {
-  /** Tear down the MCP handler (aborts in-flight exchanges, drops the change bridge). */
-  dispose: () => Promise<void>
-}
 
 /**
  * Mount a stateless MCP endpoint on an h3 app at `path`: the h3 binding over

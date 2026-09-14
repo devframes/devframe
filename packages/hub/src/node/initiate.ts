@@ -1,4 +1,4 @@
-import type { DevframeInstanceRecord, InstanceShellApi, ResolvedMcpConfig } from 'devframe/internal'
+import type { AgenticMcpModule, DevframeInstanceRecord, InstanceShellApi, ResolvedMcpConfig } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { AuthBannerFunction } from 'devframe/recipes/interactive-auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
@@ -12,7 +12,7 @@ import type { InstallDevframeOptions } from './install-devframe'
 import { readFile } from 'node:fs/promises'
 import process from 'node:process'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_DOCK_IMPORTS_FILENAME, DEVFRAME_MCP_ROUTE } from 'devframe/constants'
-import { createH3DevframeHost, createInstanceShell, importRuntimeModule, loadAutoMcpAdapter, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
+import { createH3DevframeHost, createInstanceShell, importAgenticMcp, loadAutoMcpAdapter, resolveInstanceRegister, resolveMcpConfig } from 'devframe/internal'
 import { createInteractiveAuth } from 'devframe/recipes/interactive-auth'
 import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
@@ -500,14 +500,15 @@ export function initHub(options: InitHubOptions): HubInstance {
 
       // Aggregate MCP: one Streamable-HTTP endpoint over the shared
       // context's whole registry. The omitted `'auto'` default mounts when
-      // the devframes (or an agent-flagged hub command) left a non-empty
-      // agent surface; an empty surface loads no MCP code. Origin-only
-      // unless the config opts into a bearer/callback.
+      // the agent surface is non-empty AND `@devframes/agentic` is installed
+      // (missing peer: one DF0078 warning); an explicit setting throws
+      // DF0079 without the peer. Origin-only unless the config opts into a
+      // bearer/callback.
       const mcpSetting = options.mcp ?? 'auto'
-      let mcpModule: typeof import('devframe/adapters/mcp') | undefined
+      let mcpModule: AgenticMcpModule | undefined
       let mcpConfig: ResolvedMcpConfig | undefined
       if (mcpSetting === 'auto') {
-        mcpModule = await loadAutoMcpAdapter<typeof import('devframe/adapters/mcp')>(ctx.agent)
+        mcpModule = await loadAutoMcpAdapter(ctx.agent)
         if (mcpModule)
           mcpConfig = { authorization: false }
       }
@@ -518,7 +519,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         return { context: ctx }
 
       const mcpRoute = withoutLeadingSlash(mcpConfig.path ?? DEVFRAME_MCP_ROUTE)
-      mcpModule ??= await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
+      mcpModule ??= await importAgenticMcp()
       const mounted = mcpModule.mountMcpHttp(app, ctx, joinURL(base, mcpRoute), {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',

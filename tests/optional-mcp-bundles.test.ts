@@ -23,12 +23,15 @@ afterEach(() => {
 describe('the MCP SDK stays out of consumer bundles', () => {
   it.each(entries)('bundles %s without resolving the MCP SDK', async (entry) => {
     const resolvedMcpImports: string[] = []
+    // Both the SDK and `@devframes/agentic` (the optional peer wrapping it)
+    // must stay behind `importRuntimeModule`, never statically resolvable
+    // from a consumer entry.
     const rejectMcpSdk: Plugin = {
       name: 'reject-mcp-sdk',
       setup(context) {
-        context.onResolve({ filter: /^@modelcontextprotocol\// }, (args) => {
+        context.onResolve({ filter: /^(?:@modelcontextprotocol|@devframes\/agentic)(?:\/|$)/ }, (args) => {
           resolvedMcpImports.push(args.path)
-          return { errors: [{ text: `Unexpected MCP SDK import: ${args.path}` }] }
+          return { errors: [{ text: `Unexpected MCP import: ${args.path}` }] }
         })
       },
     }

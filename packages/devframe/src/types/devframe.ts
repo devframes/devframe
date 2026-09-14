@@ -111,12 +111,15 @@ export type McpAuthorization
  *
  * - `'auto'`, the default: mount the route when the devframe exposes an
  *   agent surface (an `agent`-flagged RPC function, or a tool / resource /
- *   provider registered on `ctx.agent`). An empty agent surface mounts
- *   nothing and loads no MCP code.
- * - `true`: always mount at the default `__mcp` route.
- * - `false`: never mount.
- * - {@link McpRouteOptions}: always mount, with a custom route path, origin
- *   allow-list, or {@link McpAuthorization} identity check.
+ *   provider registered on `ctx.agent`) AND the optional `@devframes/agentic`
+ *   peer (the MCP adapter and SDK) is installed. An empty agent surface
+ *   mounts nothing and loads no MCP code; a non-empty one without the peer
+ *   warns once (DF0078) and mounts nothing.
+ * - `true`: always mount at the default `__mcp` route; a missing
+ *   `@devframes/agentic` throws DF0079.
+ * - `false`: never mount, and never probe or warn.
+ * - {@link McpRouteOptions}: always mount (like `true`), with a custom route
+ *   path, origin allow-list, or {@link McpAuthorization} identity check.
  *
  * A mounted route trusts same-machine callers by default (the loopback
  * origin gate), exactly like `mcp: true`.

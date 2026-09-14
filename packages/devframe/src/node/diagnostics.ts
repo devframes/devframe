@@ -88,8 +88,8 @@ export const diagnostics = defineDiagnostics({
       fix: 'Discovery tooling (`devframe connect`) will not see this instance. Check that the registry directory is writable, point `DEVFRAME_INSTANCES_DIR` at a writable directory, or set `DEVFRAME_DISABLE_INSTANCE_REGISTRY=1` to opt out of registration.',
     },
     DF0046: {
-      why: (p: { reason: string }) => `\`devframe connect\` requires the optional peer dependency @modelcontextprotocol/client: ${p.reason}`,
-      fix: 'Install it next to devframe (e.g. `npm install @modelcontextprotocol/client`) and run `devframe connect` again.',
+      why: (p: { reason: string }) => `\`devframe connect\` requires the optional peer dependency @devframes/agentic: ${p.reason}`,
+      fix: 'Install it next to devframe (e.g. `npm install @devframes/agentic`) and run `devframe connect` again.',
     },
     DF0047: {
       why: (p: { name: string, id: string, existing: string }) =>
@@ -210,6 +210,15 @@ export const diagnostics = defineDiagnostics({
       why: (p: { runtime: string }) =>
         `\`attach\` / \`handleUpgrade\` drive a raw \`node:http\` upgrade into crossws's Node adapter, which refuses to run on ${p.runtime}.`,
       fix: 'On Bun/Deno, serve the advertised `__ws` route from `Bun.serve` / `Deno.serve` with `attachBunWsTransport` / `attachDenoWsTransport` (see the hub-deno example), or connect over the SSE endpoint instead.',
+    },
+    DF0078: {
+      why: 'This devframe exposes agent tools, but the MCP endpoint stays off: the optional peer "@devframes/agentic" is not installed.',
+      fix: 'Install `@devframes/agentic` next to devframe to serve the MCP endpoint, or set `mcp: false` to opt out silently.',
+    },
+    DF0079: {
+      why: (p: { reason: string }) =>
+        `The \`mcp\` option is enabled, but the optional peer "@devframes/agentic" could not be loaded: ${p.reason}`,
+      fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
   },
 })

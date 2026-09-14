@@ -37,14 +37,27 @@
 // - `diagnostics`: devframe core's structured diagnostics instance
 //   (`DF00xx`), so a first-party integration built outside this package can
 //   report against the same registered codes instead of minting its own.
+// - `importAgenticMcp`: the loader for the optional `@devframes/agentic`
+//   peer's MCP adapter (thrown `DF0079` when absent); the hub's aggregate
+//   endpoint and the Next host mount through it.
+// - `argsToJsonSchema` / `returnToJsonSchema` / `stringifyForMcp` /
+//   `formatMcpError`: the pure agent-surface projections shared between the
+//   browser WebMCP registration and `@devframes/agentic/mcp`, so the two
+//   surfaces cannot drift.
+// - `probeDevframeOrigin`: the registry's origin-candidate probe,
+//   `@devframes/agentic/connect` reuses it for explicit `--port` probes.
 export { loadAutoMcpAdapter, normalizeBasePath, resolveBasePath, resolveMcpConfig } from '../adapters/_shared'
 export type { ResolvedMcpConfig } from '../adapters/_shared'
+export { formatMcpError, stringifyForMcp } from '../agent/stringify'
+export { argsToJsonSchema, returnToJsonSchema } from '../agent/to-json-schema'
 export { resolveClientAssets } from '../client-assets'
+export { importAgenticMcp } from '../node/agentic'
+export type { AgenticMcpModule, MountedMcpHttp, MountMcpHttpOptions } from '../node/agentic'
 export { diagnostics } from '../node/diagnostics'
 export { DevframeAgentHost } from '../node/host-agent'
 export * from '../node/host-h3'
 export { importRuntimeModule } from '../node/import-runtime-module'
-export { listLiveDevframeInstances, registerDevframeInstance } from '../node/instance-registry'
+export { listLiveDevframeInstances, probeDevframeOrigin, registerDevframeInstance } from '../node/instance-registry'
 export type { DevframeInstanceRecord, DevframeInstanceRegistration } from '../node/instance-registry'
 export { createInstanceShell, resolveInstanceRegister, samePath } from '../node/instance-shell'
 export type {

@@ -1,44 +1,15 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, DevframeDefinition, DevframeHost, DevframeNodeContext } from 'devframe/types'
+import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpServerHandle } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/server'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
+import { argsToJsonSchema, diagnostics, formatMcpError, returnToJsonSchema, stringifyForMcp } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
-import { DEVFRAME_EVENTS } from '../../events'
-import { diagnostics } from '../../node/diagnostics'
-import { formatMcpError, stringifyForMcp } from './stringify'
-import { argsToJsonSchema, returnToJsonSchema } from './to-json-schema'
-
-export interface CreateMcpServerOptions {
-  /**
-   * Transport to use. `createMcpServer` itself runs `'stdio'` (a standalone
-   * process with its own host context); the Streamable-HTTP transport is
-   * served route-based by the dev server instead; see `mountMcpHttp` and
-   * the `mcp` option on `createDevServer` / `createCac`'s `--mcp` flag.
-   */
-  transport?: 'stdio'
-  /**
-   * Expose shared-state keys as MCP resources.
-   * - `true` (default): every key the host publishes
-   * - `false`: none
-   * - `(key) => boolean`: filter
-   */
-  exposeSharedState?: boolean | ((key: string) => boolean)
-  /** Override the name reported in the MCP handshake. */
-  serverName?: string
-  /** Override the version reported in the MCP handshake. Defaults to `definition.version ?? '0.0.0'`. */
-  serverVersion?: string
-  /** Called once the transport is connected. */
-  onReady?: (info: { transport: 'stdio' }) => void
-}
-
-export interface McpServerHandle {
-  stop: () => Promise<void>
-}
 
 export interface BuildMcpServerOptions {
   serverName: string

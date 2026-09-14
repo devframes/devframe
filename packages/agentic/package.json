@@ -1,13 +1,13 @@
 {
-  "name": "@devframes/hub",
+  "name": "@devframes/agentic",
   "type": "module",
   "version": "0.9.19",
-  "description": "Hub layer that orchestrates devframe docks, terminals, messages, and commands on any host.",
+  "description": "Agent-surface implementation for devframe: installing it next to devframe enables the MCP adapter (devframe/adapters/mcp) and the devframe connect gateway.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/devframes/devframe#readme",
   "repository": {
-    "directory": "packages/hub",
+    "directory": "packages/agentic",
     "type": "git",
     "url": "git+https://github.com/devframes/devframe.git"
   },
@@ -15,19 +15,14 @@
   "keywords": [
     "devtools",
     "devframe",
-    "hub",
-    "docks",
-    "terminals"
+    "mcp",
+    "agent"
   ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.mjs",
-    "./build": "./dist/node/build.mjs",
-    "./client": "./dist/client/index.mjs",
-    "./constants": "./dist/constants.mjs",
-    "./initiate": "./dist/node/initiate.mjs",
-    "./node": "./dist/node/index.mjs",
-    "./types": "./dist/types/index.mjs",
+    "./mcp": "./dist/mcp/index.mjs",
+    "./connect": "./dist/connect/index.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -38,33 +33,22 @@
     "build": "tsdown",
     "watch": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "prepack": "turbo run build --filter=@devframes/hub"
+    "prepack": "turbo run build --filter=@devframes/agentic"
   },
   "peerDependencies": {
-    "@devframes/agentic": "workspace:*",
     "devframe": "workspace:*"
   },
-  "peerDependenciesMeta": {
-    "@devframes/agentic": {
-      "optional": true
-    }
-  },
   "dependencies": {
+    "@modelcontextprotocol/client": "catalog:deps",
+    "@modelcontextprotocol/server": "catalog:deps",
     "@standard-schema/spec": "catalog:deps",
-    "destr": "catalog:deps",
     "h3": "catalog:deps",
     "pathe": "catalog:deps",
-    "perfect-debounce": "catalog:deps",
-    "tinyexec": "catalog:deps",
-    "ufo": "catalog:deps",
-    "zigpty": "catalog:deps"
+    "ufo": "catalog:deps"
   },
   "devDependencies": {
-    "@devframes/agentic": "workspace:*",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
-    "get-port-please": "catalog:deps",
-    "mlly": "catalog:build",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"
   }

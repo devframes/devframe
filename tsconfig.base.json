@@ -125,7 +125,16 @@
         "./packages/devframe/src/adapters/initiate.ts"
       ],
       "devframe/adapters/mcp": [
-        "./packages/devframe/src/adapters/mcp/index.ts"
+        "./packages/devframe/src/adapters/mcp.ts"
+      ],
+      "@devframes/agentic/mcp": [
+        "./packages/agentic/src/mcp/index.ts"
+      ],
+      "@devframes/agentic/connect": [
+        "./packages/agentic/src/connect/index.ts"
+      ],
+      "@devframes/agentic": [
+        "./packages/agentic/src/index.ts"
       ],
       "@devframes/hub/build": [
         "./packages/hub/src/node/build.ts"

@@ -13,6 +13,7 @@ export default defineConfig({
   },
   test: {
     projects: [
+      'packages/agentic',
       'packages/devframe',
       'packages/hub',
       'packages/hub-ui',

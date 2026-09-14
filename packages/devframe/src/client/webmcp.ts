@@ -1,9 +1,10 @@
 import type { RpcFunctionAgentOptions, RpcFunctionDefinitionAnyWithContext, RpcFunctionsCollector, RpcFunctionType } from 'devframe/rpc'
 import { getRpcHandler } from 'devframe/rpc'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
-// Pure, browser-safe projections shared with the node-side MCP adapter, so
-// the WebMCP surface cannot drift from the MCP one.
-import { argsToJsonSchema } from '../adapters/mcp/to-json-schema'
+// Pure, browser-safe projections shared with the node-side MCP adapter
+// (`@devframes/agentic/mcp`, via `devframe/internal`), so the WebMCP surface
+// cannot drift from the MCP one.
+import { argsToJsonSchema } from '../agent/to-json-schema'
 import { toolInputToRpcArgs } from '../tool-input'
 
 /**

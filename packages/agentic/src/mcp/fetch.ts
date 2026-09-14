@@ -1,36 +1,8 @@
-import type { DevframeNodeContext, McpAuthorization } from 'devframe/types'
+import type { CreateMcpFetchHandlerOptions, DevframeNodeContext, McpAuthorization, McpConnectionInfo, McpFetchHandler } from 'devframe/types'
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
 import { isAllowedOrigin, isLoopbackAddress } from 'devframe/utils/origin'
 import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
-
-export interface CreateMcpFetchHandlerOptions {
-  /** Name reported in the MCP handshake. */
-  serverName: string
-  /** Version reported in the MCP handshake. */
-  serverVersion: string
-  /** Expose shared-state keys as MCP resources; see `buildMcpServerFromContext`. */
-  exposeSharedState: boolean | ((key: string) => boolean)
-  /**
-   * Optional identity check, layered on top of the origin gate and checked
-   * **after** it: a bearer token string (matched in constant time against
-   * `Authorization: Bearer <token>`), a `(request) => boolean` callback, or
-   * `false` (the default) for origin-only, trusting same-machine callers. A
-   * callback governs identity only and cannot relax the origin gate. See
-   * {@link McpAuthorization}.
-   */
-  authorization?: McpAuthorization
-  /**
-   * Origin allow-list beyond the loopback default. `false` disables the
-   * origin gate entirely. Default: loopback-only.
-   *
-   * Unlike the WS transport, the MCP route does **not** allow `Origin`-less
-   * requests: a route-based endpoint is reachable by any local process, so a
-   * request must carry an `Origin` that passes the gate. Native clients
-   * (e.g. `devframe connect`) send their loopback origin explicitly.
-   */
-  allowedOrigins?: readonly string[] | false
-}
 
 /**
  * Parse exactly one `Authorization: Bearer <token>` credential, returning the
@@ -60,31 +32,6 @@ async function isAuthorized(req: Request, authorization: McpAuthorization): Prom
   if (token === undefined)
     return false
   return timingSafeEqual(token, authorization)
-}
-
-/** Connection facts a host knows about a request beyond the `Request` itself. */
-export interface McpConnectionInfo {
-  /**
-   * The connecting peer's remote address (a node socket's `remoteAddress`),
-   * used to prove a same-machine caller when the endpoint relies on the
-   * loopback origin default with no identity check. A host that can resolve a
-   * trustworthy peer address (the h3/node mount) supplies it; when it's
-   * omitted the origin gate stays the only locality signal.
-   */
-  remoteAddress?: string
-}
-
-export interface McpFetchHandler {
-  /**
-   * WHATWG-`fetch` handler for the MCP endpoint. Hand every method
-   * (POST/GET/DELETE) on the endpoint's path to it; routing by path is the
-   * host's job. Pass {@link McpConnectionInfo} when the host can resolve the
-   * peer address so the default trust boundary can enforce same-machine
-   * locality.
-   */
-  fetch: (request: Request, connection?: McpConnectionInfo) => Promise<Response>
-  /** Tear down the handler (aborts in-flight exchanges, drops the change bridge). */
-  dispose: () => Promise<void>
 }
 
 /**

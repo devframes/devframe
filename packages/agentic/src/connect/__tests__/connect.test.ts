@@ -1,10 +1,9 @@
-import type { DevframeInstanceRecord } from '../node/instance-registry'
-import type { StartedServer } from '../node/instance-shell'
-import type { DevframeDefinition } from '../types/devframe'
+import type { DevframeInstanceRecord, StartedServer } from 'devframe/internal'
+import type { DevframeDefinition } from 'devframe/types'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import { createDevServer } from 'devframe/adapters/dev'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createDevServer } from '../adapters/dev'
-import { buildInstanceRequestHeaders, resolveAuthToken } from './connect'
+import { buildInstanceRequestHeaders, resolveAuthToken } from '../index'
 
 const TOKEN = 'a-high-entropy-connect-test-token'
 

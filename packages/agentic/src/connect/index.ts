@@ -1,11 +1,12 @@
 import type { Tool } from '@modelcontextprotocol/server'
-import type { DevframeInstanceRecord } from '../node/instance-registry'
-import process from 'node:process'
+import type { DevframeInstanceRecord } from 'devframe/internal'
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import { Server } from '@modelcontextprotocol/server'
+import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
+import { diagnostics, listLiveDevframeInstances, probeDevframeOrigin } from 'devframe/internal'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { Diagnostic } from 'devframe/utils/nostics'
 import { joinURL } from 'ufo'
-import { diagnostics } from '../node/diagnostics'
-import { listLiveDevframeInstances, probeDevframeOrigin } from '../node/instance-registry'
 
 export interface ConnectServerOptions {
   /**
@@ -75,14 +76,6 @@ interface IndexedInstance extends Omit<DevframeInstanceRecord, 'mcp'> {
   hint?: string
 }
 
-/** The lazily imported MCP SDK surface `devframe connect` needs. */
-interface ConnectSdk {
-  Server: typeof import('@modelcontextprotocol/server').Server
-  StdioServerTransport: typeof import('@modelcontextprotocol/server/stdio').StdioServerTransport
-  Client: typeof import('@modelcontextprotocol/client').Client
-  StreamableHTTPClientTransport: typeof import('@modelcontextprotocol/client').StreamableHTTPClientTransport
-}
-
 // Gateway tool ids follow the `devframe:<area>:<fn>` convention; the wire
 // names are their sanitized forms (`devframe_connect_list-instances`, …).
 const INDEX_TOOL = toAgentToolName('devframe:connect:list-instances')
@@ -127,9 +120,7 @@ const GATEWAY_TOOLS: Tool[] = [
  * Streamable-HTTP endpoint), and holds no domain knowledge of its own.
  */
 export async function startConnectServer(options: ConnectServerOptions = {}): Promise<ConnectServerHandle> {
-  const sdk = await importSdk()
-
-  const server = new sdk.Server(
+  const server = new Server(
     { name: 'devframe-connect', version: '0.0.0' },
     { capabilities: { tools: {} } },
   )
@@ -140,9 +131,9 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
     const { name, arguments: args } = request.params
     try {
       if (name === INDEX_TOOL)
-        return textResult(await index(sdk, options))
+        return textResult(await index(options))
       if (name === CALL_TOOL)
-        return textResult(await call(sdk, options, args ?? {}))
+        return textResult(await call(options, args ?? {}))
       return errorResult({ message: `unknown tool "${name}"`, fix: `Call ${INDEX_TOOL} or ${CALL_TOOL}.` })
     }
     catch (error) {
@@ -150,7 +141,7 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
     }
   })
 
-  const transport = new sdk.StdioServerTransport()
+  const transport = new StdioServerTransport()
   await server.connect(transport)
 
   return {
@@ -160,28 +151,8 @@ export async function startConnectServer(options: ConnectServerOptions = {}): Pr
   }
 }
 
-async function importSdk(): Promise<ConnectSdk> {
-  try {
-    const [serverMod, stdioMod, clientMod] = await Promise.all([
-      import('@modelcontextprotocol/server'),
-      import('@modelcontextprotocol/server/stdio'),
-      import('@modelcontextprotocol/client'),
-    ])
-    return {
-      Server: serverMod.Server,
-      StdioServerTransport: stdioMod.StdioServerTransport,
-      Client: clientMod.Client,
-      StreamableHTTPClientTransport: clientMod.StreamableHTTPClientTransport,
-    }
-  }
-  catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
-    throw diagnostics.DF0046({ reason, cause: error })
-  }
-}
-
 /** Discover instances: registry (prune-on-read) + explicit port probes. */
-async function index(sdk: ConnectSdk, options: ConnectServerOptions): Promise<unknown> {
+async function index(options: ConnectServerOptions): Promise<unknown> {
   const { live } = await listLiveDevframeInstances({
     instancesDir: options.instancesDir,
     timeoutMs: options.timeoutMs,
@@ -205,7 +176,7 @@ async function index(sdk: ConnectSdk, options: ConnectServerOptions): Promise<un
     }
     const url = `${record.origin}${mcp.path}`
     try {
-      entry.mcp = { url, tools: await listInstanceTools(sdk, url, resolveAuthToken(options.authToken, record)) }
+      entry.mcp = { url, tools: await listInstanceTools(url, resolveAuthToken(options.authToken, record)) }
     }
     catch (error) {
       entry.mcp = { url, error: error instanceof Error ? error.message : String(error) }
@@ -243,8 +214,8 @@ async function probePort(port: number, timeoutMs?: number): Promise<DevframeInst
   }
 }
 
-async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | undefined): Promise<{ name: string, description?: string }[]> {
-  return withInstanceClient(sdk, url, token, async (client) => {
+async function listInstanceTools(url: string, token: string | undefined): Promise<{ name: string, description?: string }[]> {
+  return withInstanceClient(url, token, async (client) => {
     const listed = await client.listTools()
     return listed.tools.map((tool: { name: string, description?: string }) => ({
       name: tool.name,
@@ -254,7 +225,6 @@ async function listInstanceTools(sdk: ConnectSdk, url: string, token: string | u
 }
 
 async function call(
-  sdk: ConnectSdk,
   options: ConnectServerOptions,
   args: { port?: number, tool?: string, args?: Record<string, unknown> },
 ): Promise<unknown> {
@@ -272,7 +242,7 @@ async function call(
     throw diagnostics.DF0051({ port: args.port })
 
   const url = `${record.origin}${record.mcp.path}`
-  return withInstanceClient(sdk, url, resolveAuthToken(options.authToken, record), async (client) => {
+  return withInstanceClient(url, resolveAuthToken(options.authToken, record), async (client) => {
     const result = await client.callTool({ name: args.tool!, arguments: args.args ?? {} })
     return {
       instance: { id: record.id, port: record.port },
@@ -285,16 +255,15 @@ async function call(
 }
 
 async function withInstanceClient<T>(
-  sdk: ConnectSdk,
   url: string,
   token: string | undefined,
-  fn: (client: InstanceType<ConnectSdk['Client']>) => Promise<T>,
+  fn: (client: Client) => Promise<T>,
 ): Promise<T> {
   // The instance's own (loopback) origin (so the route's origin gate, which
   // rejects `Origin`-less requests, accepts this native client) plus the
   // bearer (when configured), the `Authorization` header being the only place
   // the credential ever appears.
-  const transport = new sdk.StreamableHTTPClientTransport(
+  const transport = new StreamableHTTPClientTransport(
     new URL(url),
     { requestInit: { headers: buildInstanceRequestHeaders(url, token) } },
   )
@@ -302,7 +271,7 @@ async function withInstanceClient<T>(
   // `initialize` handshake for a 2025-only instance. Devframe's own route is
   // stateless 2026-07-28, but a mixed fleet (older instances, third-party
   // MCP servers reached by port) may still be 2025-era.
-  const client = new sdk.Client(
+  const client = new Client(
     { name: 'devframe-connect', version: '0.0.0' },
     { versionNegotiation: { mode: 'auto' } },
   )
@@ -354,18 +323,4 @@ function errorResult(error: ConnectErrorPayload): {
     isError: true,
     content: [{ type: 'text', text: JSON.stringify({ error }, null, 2) }],
   }
-}
-
-/** Parse the repeatable `--port` flag value(s) from cac into numbers. */
-export function parsePortsFlag(value: unknown): number[] {
-  const values = Array.isArray(value) ? value : value === undefined ? [] : [value]
-  return values
-    .map(v => Number(v))
-    .filter(n => Number.isInteger(n) && n > 0 && n < 65536)
-}
-
-/** Keep the connector process alive until the stdio transport closes it. */
-export function keepAlive(): void {
-  // stdin stays open while the MCP client holds the pipe; nothing else to do.
-  process.stdin.resume()
 }

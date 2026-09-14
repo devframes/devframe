@@ -1,8 +1,8 @@
-import type { StartedServer } from '../../../node/instance-shell'
-import type { DevframeDefinition, McpRouteOptions } from '../../../types/devframe'
+import type { StartedServer } from 'devframe/internal'
+import type { DevframeDefinition, McpRouteOptions } from 'devframe/types'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import { createDevServer } from 'devframe/adapters/dev'
 import { afterEach, describe, expect, it } from 'vitest'
-import { createDevServer } from '../../dev'
 
 const TOKEN = 'a-high-entropy-test-bearer-token'
 

@@ -1,6 +1,6 @@
 import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
-import { importRuntimeModule } from 'devframe/internal'
+import { importAgenticMcp } from 'devframe/internal'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 
@@ -81,8 +81,9 @@ export interface DevframeNextHost {
    * Serve an MCP Streamable-HTTP endpoint at `path` **in-process**, on the
    * Next app's own origin, through the same catch-all route as the SPAs (the
    * `/_next/mcp` shape). Built on `createMcpFetchHandler` from
-   * `devframe/adapters/mcp` (imported lazily, so the MCP SDK stays out of
-   * the app's bundle graph). Advertise the path in the connection meta
+   * `@devframes/agentic/mcp` (imported lazily through the optional peer, so
+   * neither it nor the MCP SDK enters the app's bundle graph; a missing peer
+   * throws DF0079). Advertise the path in the connection meta
    * (`mcp: { path }`, same origin, no port) and register the instance via
    * `registerDevframeInstance` so `devframe connect` can discover it.
    */
@@ -174,7 +175,7 @@ export function createDevframeNextHost(
       connectionMeta = meta
     },
     async mountMcp(ctx, path, mcpOptions = {}) {
-      const { createMcpFetchHandler } = await importRuntimeModule<typeof import('devframe/adapters/mcp')>('devframe/adapters/mcp')
+      const { createMcpFetchHandler } = await importAgenticMcp()
       const handler = createMcpFetchHandler(ctx, {
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',

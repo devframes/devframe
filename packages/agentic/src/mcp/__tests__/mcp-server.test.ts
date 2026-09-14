@@ -1,4 +1,4 @@
-import type { DevframeHost } from '../../../types/host'
+import type { DevframeHost } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { createHostContext } from 'devframe/node'
 import { describe, expect, it } from 'vitest'

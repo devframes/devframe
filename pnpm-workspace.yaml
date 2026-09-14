@@ -48,6 +48,7 @@ packages:
   - docs
 
 overrides:
+  '@devframes/agentic': 'workspace:*'
   '@devframes/hub': 'workspace:*'
   '@devframes/hub-ui': 'workspace:*'
   '@devframes/json-render': 'workspace:*'

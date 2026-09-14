@@ -87,6 +87,22 @@ export interface ConnectionMetaWebsocket {
   port?: number;
   host?: string;
 }
+export interface CreateMcpFetchHandlerOptions {
+  serverName: string;
+  serverVersion: string;
+  exposeSharedState: boolean | ((_: string) => boolean);
+  authorization?: McpAuthorization;
+  allowedOrigins?: readonly string[] | false;
+}
+export interface CreateMcpServerOptions {
+  transport?: 'stdio';
+  exposeSharedState?: boolean | ((_: string) => boolean);
+  serverName?: string;
+  serverVersion?: string;
+  onReady?: (_: {
+    transport: 'stdio';
+  }) => void;
+}
 export interface DevframeAgentHost {
   readonly events: EventEmitter<DevframeAgentHostEvents>;
   registerTool: (_: AgentToolInput) => AgentHandle;
@@ -415,10 +431,20 @@ export interface EventsMap {
 export interface EventUnsubscribe {
   (): void;
 }
+export interface McpConnectionInfo {
+  remoteAddress?: string;
+}
+export interface McpFetchHandler {
+  fetch: (_: Request, _?: McpConnectionInfo) => Promise<Response>;
+  dispose: () => Promise<void>;
+}
 export interface McpRouteOptions {
   path?: string;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
+}
+export interface McpServerHandle {
+  stop: () => Promise<void>;
 }
 export interface RemoteAssets {
   package: string;

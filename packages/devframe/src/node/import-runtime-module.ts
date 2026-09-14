@@ -1,4 +1,4 @@
-import { importServicePackage } from './services-install'
+import { importServicePackage, resolveServicePackage } from './services-install'
 
 /**
  * Resolve and import a package at runtime without adding it to a consumer's
@@ -10,4 +10,14 @@ import { importServicePackage } from './services-install'
  */
 export async function importRuntimeModule<T = unknown>(specifier: string): Promise<T> {
   return await importServicePackage(specifier, [import.meta.url]) as T
+}
+
+/**
+ * Whether {@link importRuntimeModule} would resolve `specifier`, without
+ * importing anything. The zero-cost probe behind optional-peer decisions.
+ *
+ * @internal
+ */
+export function isRuntimeModuleResolvable(specifier: string): boolean {
+  return resolveServicePackage(specifier, [import.meta.url]) !== undefined
 }

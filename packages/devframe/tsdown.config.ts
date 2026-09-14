@@ -116,14 +116,13 @@ const serverEntries = {
   'adapters/build': 'src/adapters/build.ts',
   'adapters/embedded': 'src/adapters/embedded.ts',
   'adapters/initiate': 'src/adapters/initiate.ts',
-  'adapters/mcp': 'src/adapters/mcp/index.ts',
   'cli/main': 'src/cli/main.ts',
   'recipes/common-rpc-functions': 'src/recipes/common-rpc-functions.ts',
   'recipes/interactive-auth': 'src/recipes/interactive-auth.ts',
 }
 
 /**
- * Three configs:
+ * Four configs:
  *
  * 1. Runtime client/agnostic build (`dts: false`). Independent rolldown
  * chunk graph so server-only imports like `devframe/rpc/transports/ws-server`
@@ -137,6 +136,11 @@ const serverEntries = {
  * `src/types/rpc-augments.ts`, produce exactly one declaration site.
  * This is what lets consumer `declare module 'devframe'` augmentations
  * propagate across every import chain.
+ * 4. The `adapters/mcp` alias, alone. Its top-level `await` (lazy-loading
+ * `@devframes/agentic/mcp` at module evaluation) would otherwise reshape
+ * the server graph's chunking - every sibling entry turns into async-safe
+ * re-export facades. An isolated graph keeps the TLA contained; the few
+ * helpers it inlines are duplicated only here.
  */
 export default defineConfig([
   {
@@ -191,6 +195,14 @@ export default defineConfig([
     deps,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: { ...clientEntries, ...serverEntries, 'adapters/mcp': 'src/adapters/mcp.ts' },
+  },
+  {
+    clean: false,
+    platform: 'node',
+    tsconfig,
+    deps: nodeDeps,
+    dts: false,
+    entry: { 'adapters/mcp': 'src/adapters/mcp.ts' },
   },
 ])

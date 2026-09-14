@@ -1,10 +1,11 @@
+import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAgentHost } from '../types/agent'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpSetting } from '../types/devframe'
 import { getPort } from 'get-port-please'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
-import { importRuntimeModule } from '../node/import-runtime-module'
+import { importAgenticMcp, isAgenticInstalled, warnAgenticMcpMissingOnce } from '../node/agentic'
 
 const DEFAULT_PORT = 9999
 
@@ -101,21 +102,24 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
 
 /**
  * Resolve the `mcp: 'auto'` default at mount time: import the MCP adapter
- * when the devframe's agent surface is non-empty, or return `undefined`
- * (mount nothing) when the surface is empty - the zero-cost path, loading
- * no MCP code at all. The adapter (and the MCP SDK behind it) loads through
- * `importRuntimeModule`, so it never enters a consumer's bundle graph.
- *
- * Generic like `importRuntimeModule`: the caller names the module type
- * (`typeof import('devframe/adapters/mcp')`) so this shared helper carries
- * no type-level dependency on the MCP adapter.
+ * from the optional `@devframes/agentic` peer when the devframe's agent
+ * surface is non-empty, or return `undefined` (mount nothing) when the
+ * surface is empty - the zero-cost path, loading no MCP code at all. A
+ * non-empty surface with the peer absent also mounts nothing, reporting a
+ * one-time DF0078 warning instead. The adapter (and the MCP SDK behind it)
+ * loads through `importRuntimeModule`, so it never enters a consumer's
+ * bundle graph.
  */
-export async function loadAutoMcpAdapter<T>(
+export async function loadAutoMcpAdapter(
   agent: Pick<DevframeAgentHost, 'hasSurface'>,
-): Promise<T | undefined> {
+): Promise<AgenticMcpModule | undefined> {
   if (!agent.hasSurface())
     return undefined
-  return await importRuntimeModule<T>('devframe/adapters/mcp')
+  if (!isAgenticInstalled()) {
+    warnAgenticMcpMissingOnce()
+    return undefined
+  }
+  return await importAgenticMcp()
 }
 
 /**

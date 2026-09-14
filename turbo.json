@@ -5,6 +5,17 @@
     "typecheck": {
       "dependsOn": ["^typecheck", "@devframes/hub-ui#build:css", "@devframes/json-render-ui#build:css"]
     },
+    // `devframe` ⇄ `@devframes/agentic` are circular in the package graph
+    // (agentic peers on devframe; devframe devDeps agentic so tests can
+    // exercise the installed-peer path), which `^typecheck` would turn into
+    // a task cycle. Both typecheck from source via `paths` aliases, so
+    // explicit dependency-free tasks break the cycle.
+    "devframe#typecheck": {
+      "dependsOn": []
+    },
+    "@devframes/agentic#typecheck": {
+      "dependsOn": []
+    },
     "@devframes/hub-ui#build:css": {
       "outputLogs": "new-only",
       "outputs": ["src/client/.generated/**"]
@@ -15,6 +26,11 @@
     },
     "devframe#build": {
       "outputLogs": "new-only",
+      "outputs": ["dist/**"]
+    },
+    "@devframes/agentic#build": {
+      "outputLogs": "new-only",
+      "dependsOn": ["devframe#build"],
       "outputs": ["dist/**"]
     },
     "@devframes/hub#build": {

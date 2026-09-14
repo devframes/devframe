@@ -14,6 +14,8 @@ export { AgentToolProviderHandle }
 export { ConnectionMeta }
 export { ConnectionMetaSse }
 export { ConnectionMetaWebsocket }
+export { CreateMcpFetchHandlerOptions }
+export { CreateMcpServerOptions }
 export { DevframeAgentHost }
 export { DevframeAgentHostEvents }
 export { DevframeCapabilities }
@@ -66,7 +68,10 @@ export { EventEmitter }
 export { EventsMap }
 export { EventUnsubscribe }
 export { McpAuthorization }
+export { McpConnectionInfo }
+export { McpFetchHandler }
 export { McpRouteOptions }
+export { McpServerHandle }
 export { McpSetting }
 export { RemoteAssets }
 export { RemoteAssetsErrorMessage }

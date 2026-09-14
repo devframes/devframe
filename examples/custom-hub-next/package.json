@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@antfu/design": "catalog:frontend",
+    "@devframes/agentic": "workspace:*",
     "@devframes/hub": "workspace:*",
     "@devframes/json-render": "workspace:*",
     "@devframes/json-render-ui": "workspace:*",

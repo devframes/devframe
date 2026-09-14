@@ -3,6 +3,7 @@ import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, Devfr
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
+import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
@@ -17,10 +18,10 @@ import { resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { resolveClientAssets } from '../client-assets'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE } from '../constants'
+import { importAgenticMcp } from '../node/agentic'
 import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
-import { importRuntimeModule } from '../node/import-runtime-module'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
 import { loadAutoMcpAdapter, normalizeBasePath, resolveMcpConfig } from './_shared'
 import { resolveDevServerPort } from './dev'
@@ -345,11 +346,14 @@ export function initDevframe(
 
 /**
  * Mount the route-based MCP server at `<base>__mcp`, before the SPA static
- * catch-all so the exact route wins. The MCP SDK is pulled in dynamically
- * only when the route mounts, keeping it out of consumer bundles: `'auto'`
- * mounts once `setup()` left a non-empty agent surface (an empty surface
- * loads no MCP code); an explicit setting mounts unconditionally. The
- * resolved config is origin-only unless it opts into a bearer/callback.
+ * catch-all so the exact route wins. The adapter (from the optional
+ * `@devframes/agentic` peer) is pulled in dynamically only when the route
+ * mounts, keeping it and the MCP SDK out of consumer bundles: `'auto'`
+ * mounts once `setup()` left a non-empty agent surface AND the peer is
+ * installed (an empty surface loads no MCP code; a non-empty one without the
+ * peer warns once and mounts nothing); an explicit setting mounts
+ * unconditionally, throwing DF0079 when the peer is absent. The resolved
+ * config is origin-only unless it opts into a bearer/callback.
  */
 async function mountMcpRoute(
   app: H3,
@@ -358,10 +362,10 @@ async function mountMcpRoute(
   base: string,
   setting: McpSetting,
 ): Promise<{ meta: ConnectionMeta['mcp'], dispose: () => Promise<void> } | undefined> {
-  let module: typeof import('./mcp') | undefined
+  let module: AgenticMcpModule | undefined
   let config: ResolvedMcpConfig | undefined
   if (setting === 'auto') {
-    module = await loadAutoMcpAdapter<typeof import('./mcp')>(context.agent)
+    module = await loadAutoMcpAdapter(context.agent)
     if (module)
       config = { authorization: false }
   }
@@ -372,15 +376,7 @@ async function mountMcpRoute(
     return undefined
 
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
-  if (!module) {
-    try {
-      module = await importRuntimeModule<typeof import('./mcp')>('devframe/adapters/mcp')
-    }
-    catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      throw diagnostics.DF0017({ transport: 'http', reason, cause: error })
-    }
-  }
+  module ??= await importAgenticMcp()
   const mounted = module.mountMcpHttp(app, context, joinURL(base, route), {
     serverName: `${def.id} (devframe)`,
     serverVersion: def.version ?? '0.0.0',

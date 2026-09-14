@@ -42,6 +42,29 @@ export function expandResolveFrom(resolveFrom: string, cwd: string): string | un
 }
 
 /**
+ * Resolve a package specifier against each `resolveFrom` candidate in order,
+ * returning the resolved absolute path or `undefined`. A pure probe: nothing
+ * is imported. The resolution base arrives as a parameter (not a literal
+ * `createRequire(import.meta.url)`), which keeps bundlers that special-case
+ * that pattern (turbopack rewrites its `.resolve()` of a dynamic specifier
+ * into a throwing stub) from touching the runtime resolution.
+ */
+export function resolveServicePackage(
+  pkg: string,
+  resolveFroms: readonly (string | null | undefined)[],
+): string | undefined {
+  for (const from of resolveFroms) {
+    if (typeof from !== 'string' || from.length === 0)
+      continue
+    try {
+      return createRequire(toRequireBase(from)).resolve(pkg)
+    }
+    catch {}
+  }
+  return undefined
+}
+
+/**
  * Import a service package's module, trying each `resolveFrom` candidate in
  * order (so a plugin-declared service resolves against the plugin's own
  * dependency tree first, then the workspace fallback). Throws the last
