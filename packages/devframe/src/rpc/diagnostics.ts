@@ -5,8 +5,8 @@ export const diagnostics = defineDiagnostics({
   codes: {
     DF0019: {
       why: (p: { name: string }) =>
-        `RPC function "${p.name}" has \`agent\` set but \`jsonSerializable\` is not \`true\`; MCP requires JSON-serializable data.`,
-      fix: 'Set `jsonSerializable: true` if the payload is JSON-safe, or remove `agent` to keep it RPC-only.',
+        `RPC function "${p.name}" has \`agent\` set but \`jsonSerializable\` is \`false\`; MCP requires JSON-serializable data.`,
+      fix: 'Remove `jsonSerializable: false`, or remove `agent` to keep it RPC-only.',
     },
     DF0020: {
       why: (p: { name: string, type: string, path: string }) =>

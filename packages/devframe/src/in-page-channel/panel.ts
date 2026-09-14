@@ -38,7 +38,7 @@ const DEFAULT_EVENT_BUFFER_LIMIT = 64
  * Connect the panel endpoint of an in-page channel.
  *
  * The panel initiates: it posts a versioned hello to every window a
- * same-tab page script can live in (its ancestor chain and its `opener`),
+ * page script can live in (its ancestor chain and those windows' openers),
  * retrying with backoff until one answers with a dedicated port, so boot
  * order never matters, and a reload of either side is just a re-handshake
  * (`WindowProxy` references survive navigations). While `connecting`,

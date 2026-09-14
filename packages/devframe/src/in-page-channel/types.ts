@@ -274,7 +274,7 @@ export interface ConnectPanelChannelOptions<Protocol extends InPageChannelProtoc
   window?: Window | false
   /**
    * Windows the hello is posted to. Defaults to the panel's ancestor chain
-   * plus its `opener`, the places a same-tab page script can live. When
+   * plus those windows' openers, the places a page script can live. When
    * empty and no `transport` is given, the endpoint stays `connecting` and
    * warns once.
    */

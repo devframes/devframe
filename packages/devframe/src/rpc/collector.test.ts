@@ -2,13 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { RpcFunctionsCollectorBase } from './collector'
 
 describe('agent gating (DF0019)', () => {
-  it('rejects registration when agent is set without jsonSerializable: true', () => {
+  it('infers jsonSerializable: true when agent is set', () => {
     const collector = new RpcFunctionsCollectorBase({})
-    expect(() => collector.register({
+    collector.register({
       name: 'plugin:fn',
       agent: { description: 'x' },
       handler: () => 0,
-    } as any)).toThrowError(/MCP requires JSON-serializable/)
+    } as any)
+    expect(collector.get('plugin:fn')?.jsonSerializable).toBe(true)
   })
 
   it('rejects when agent + jsonSerializable: false', () => {
@@ -40,14 +41,15 @@ describe('agent gating (DF0019)', () => {
     } as any)).not.toThrow()
   })
 
-  it('also enforces the gate on update()', () => {
+  it('also infers jsonSerializable: true on update()', () => {
     const collector = new RpcFunctionsCollectorBase({})
     collector.register({ name: 'plugin:fn', handler: () => 0 } as any)
-    expect(() => collector.update({
+    collector.update({
       name: 'plugin:fn',
       agent: { description: 'x' },
       handler: () => 0,
-    } as any)).toThrowError(/MCP requires JSON-serializable/)
+    } as any)
+    expect(collector.get('plugin:fn')?.jsonSerializable).toBe(true)
   })
 })
 

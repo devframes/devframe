@@ -57,6 +57,36 @@ describe('getDevframeRpcClient: connection meta base', () => {
     delete (globalThis as any)[DEVFRAME_CONNECTION_KEY]
   })
 
+  it('closes the authentication broadcast channel with the RPC client', async () => {
+    expect.assertions(1)
+    const closeChannel = vi.spyOn(FakeBroadcastChannel.prototype, 'close')
+    const rpc = await getDevframeRpcClient({
+      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+      otpParam: false,
+      simpleAuth: false,
+      webmcp: false,
+    })
+    rpc.close?.()
+    expect(closeChannel).toHaveBeenCalledExactlyOnceWith()
+  })
+
+  it('still closes the transport when closing the authentication channel fails', async () => {
+    expect.assertions(2)
+    const failure = new Error('channel cleanup failed')
+    vi.spyOn(FakeBroadcastChannel.prototype, 'close').mockImplementation(() => {
+      throw failure
+    })
+    const closeTransport = vi.spyOn(FakeWebSocket.prototype, 'close')
+    const rpc = await getDevframeRpcClient({
+      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+      otpParam: false,
+      simpleAuth: false,
+      webmcp: false,
+    })
+    expect(() => rpc.close?.()).toThrow(failure)
+    expect(closeTransport).toHaveBeenCalledExactlyOnceWith()
+  })
+
   it('publishes the meta annotated with the absolute base it resolved from', async () => {
     const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
     vi.stubGlobal('fetch', vi.fn(async () => ({

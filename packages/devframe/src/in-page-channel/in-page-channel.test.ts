@@ -675,6 +675,39 @@ function createWindowPair(origin = 'https://app.test'): { hostWin: FakeWindow, p
 const fastHello = { helloIntervalMs: 5, heartbeat: false as const }
 
 describe('in-page channel handshake', () => {
+  it.each([0, 1, 2])('connects through a popup opener with %i nested panel frames', async (depth) => {
+    const { hostWin, panelWin } = createWindowPair()
+    let popupWin = panelWin
+    for (let i = 0; i < depth; i++) {
+      const parent = createFakeWindow(hostWin.location.origin)
+      popupWin.parent = parent
+      popupWin = parent
+    }
+    popupWin.parent = popupWin
+    popupWin.opener = hostWin
+    const pageScript = createPageScriptChannel<TestProtocol>({
+      name: 'devframes:test',
+      window: asWindow(hostWin),
+      heartbeat: false,
+      functions: defaultPageScriptFunctions,
+    })
+    const panel = connectPanelChannel<TestProtocol>({
+      name: 'devframes:test',
+      window: asWindow(panelWin),
+      ...fastHello,
+      functions: defaultPanelFunctions,
+    })
+    try {
+      await panel.whenConnected(200)
+      expect(panel.pageScript?.instanceId).toBe(pageScript.instanceId)
+      await expect(panel.call('echo', 'popup')).resolves.toBe('popup')
+    }
+    finally {
+      panel.close()
+      pageScript.close()
+    }
+  })
+
   it('connects a panel to the page script and survives page-script restarts', async () => {
     const { hostWin, panelWin } = createWindowPair()
     const pageScript = createPageScriptChannel<TestProtocol>({

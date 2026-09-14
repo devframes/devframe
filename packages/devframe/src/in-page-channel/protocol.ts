@@ -92,8 +92,8 @@ export function resolveAllowedOrigins(allowedOrigins: string[] | undefined, win:
 }
 
 /**
- * Default handshake targets of a panel: its ancestor chain plus its
- * `opener`, every same-tab window a page script can live in. `WindowProxy`
+ * Default handshake targets of a panel: its ancestor chain plus the
+ * `opener` of each window, including a popup containing the panel iframe. `WindowProxy`
  * references stay valid across navigations, so hellos posted to these reach
  * a page script even after the host page reloads.
  */
@@ -111,13 +111,15 @@ export function defaultHandshakeTargets(win: Window): Window[] {
   catch {
     // Walking stopped by the browser; keep what we have.
   }
-  try {
-    const opener = win.opener as Window | null
-    if (opener && opener !== win)
-      targets.push(opener)
-  }
-  catch {
-    // Inaccessible opener; ignore.
+  for (const current of [win, ...targets]) {
+    try {
+      const opener = current.opener as Window | null
+      if (opener && opener !== win && !targets.includes(opener))
+        targets.push(opener)
+    }
+    catch {
+      // Inaccessible opener; continue with the other ancestors.
+    }
   }
   return targets
 }

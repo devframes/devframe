@@ -17,7 +17,7 @@ import type {
 } from 'devframe/types'
 import { createEventEmitter } from 'devframe/utils/events'
 import { DEVFRAME_EVENTS } from '../events'
-import { coerceAgentPositionalArgs } from './agent-args'
+import { toolInputToRpcArgs } from '../tool-input'
 import { diagnostics } from './diagnostics'
 
 interface RegisteredTool {
@@ -184,7 +184,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       // (what the MCP adapter sends after flattening), or a plain array.
       // An untyped RPC may take a single raw object, so undeclared object
       // payload wraps into one positional argument.
-      const positional = coerceAgentPositionalArgs(args, rpcDef.args as readonly unknown[] | undefined, 'wrap')
+      const positional = toolInputToRpcArgs(args, rpcDef.args?.length)
       return await this.context.rpc.invokeLocal(id as any, ...(positional as any))
     }
 

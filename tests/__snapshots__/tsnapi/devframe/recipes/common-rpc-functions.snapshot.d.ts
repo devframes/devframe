@@ -7,66 +7,10 @@ export type KnownEditor = 'atom' | 'subl' | 'sublime' | 'sublime_text' | 'wstorm
 
 // #region Variables
 /** @deprecated */
-export declare const commonRpcFunctions: readonly [{
-  name: "devframe:open-in-editor";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args: readonly [SimpleSchema<string, string>, SimpleSchema<KnownEditor | undefined, KnownEditor | undefined>];
-  returns: SimpleSchema<void, void>;
-  jsonSerializable?: boolean;
-  agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>>) | undefined;
-  handler?: ((args_0: string, args_1: KnownEditor | undefined) => Thenable<void>) | undefined;
-  dump?: RpcDump<[string, KnownEditor | undefined], Thenable<void>, undefined> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>> | undefined;
-}, {
-  name: "devframe:open-in-finder";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args: readonly [SimpleSchema<string, string>];
-  returns: SimpleSchema<void, void>;
-  jsonSerializable?: boolean;
-  agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
-  handler?: ((args_0: string) => Thenable<void>) | undefined;
-  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
-}];
+export declare const commonRpcFunctions: readonly [RpcFunctionDefinitionWithSchemas<"devframe:open-in-editor", "action", readonly [SimpleSchema<string, string>, SimpleSchema<KnownEditor | undefined, KnownEditor | undefined>], SimpleSchema<void, void>, undefined>, RpcFunctionDefinitionWithSchemas<"devframe:open-in-finder", "action", readonly [SimpleSchema<string, string>], SimpleSchema<void, void>, undefined>];
 export declare const KNOWN_EDITORS: KnownEditor[];
 /** @deprecated */
-export declare const openInEditor: {
-  name: "devframe:open-in-editor";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args: readonly [SimpleSchema<string, string>, SimpleSchema<KnownEditor | undefined, KnownEditor | undefined>];
-  returns: SimpleSchema<void, void>;
-  jsonSerializable?: boolean;
-  agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>>) | undefined;
-  handler?: ((args_0: string, args_1: KnownEditor | undefined) => Thenable<void>) | undefined;
-  dump?: RpcDump<[string, KnownEditor | undefined], Thenable<void>, undefined> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string, KnownEditor | undefined], Thenable<void>>> | undefined;
-};
+export declare const openInEditor: RpcFunctionDefinitionWithSchemas<"devframe:open-in-editor", "action", readonly [SimpleSchema<string, string>, SimpleSchema<KnownEditor | undefined, KnownEditor | undefined>], SimpleSchema<void, void>, undefined>;
 /** @deprecated */
-export declare const openInFinder: {
-  name: "devframe:open-in-finder";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args: readonly [SimpleSchema<string, string>];
-  returns: SimpleSchema<void, void>;
-  jsonSerializable?: boolean;
-  agent?: RpcFunctionAgentOptions;
-  setup?: ((context: undefined) => Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>) | undefined;
-  handler?: ((args_0: string) => Thenable<void>) | undefined;
-  dump?: RpcDump<[string], Thenable<void>, undefined> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, Thenable<RpcFunctionSetupResult<[string], Thenable<void>>>> | undefined;
-  __promise?: Thenable<RpcFunctionSetupResult<[string], Thenable<void>>> | undefined;
-};
+export declare const openInFinder: RpcFunctionDefinitionWithSchemas<"devframe:open-in-finder", "action", readonly [SimpleSchema<string, string>], SimpleSchema<void, void>, undefined>;
 // #endregion

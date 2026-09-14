@@ -2,6 +2,7 @@ import type { RpcDumpRecord, RpcFunctionDefinitionAny } from '../types'
 import {
   DEVFRAME_RPC_DUMP_DIRNAME,
 } from 'devframe/constants'
+import { ensureAgentJsonSerializable } from '../agent-json-serialization'
 import { getRpcHandler } from '../handler'
 import { dumpFunctions } from './collect'
 
@@ -131,6 +132,7 @@ export async function collectStaticRpcDump(
   const files: Record<string, StaticRpcDumpFile> = {}
 
   for (const definition of definitions) {
+    ensureAgentJsonSerializable(definition)
     const type = definition.type ?? 'query'
     const serialization: StaticRpcDumpSerialization
       = definition.jsonSerializable === true ? 'json' : 'structured-clone'

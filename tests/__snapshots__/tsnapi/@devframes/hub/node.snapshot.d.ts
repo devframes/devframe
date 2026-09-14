@@ -89,186 +89,20 @@ export declare function createSimpleClientScript(_: string | ((_: any) => void))
 
 // #region Variables
 export declare const builtinHubRpcDeclarations: readonly RpcFunctionDefinitionAny[];
-export declare const hubCommandsExecute: {
-  name: "hub:commands:execute";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>) | undefined;
-  handler?: ((id: string, ...args: any[]) => Promise<unknown>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string, ...args: any[]], Promise<unknown>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, ...args: any[]], Promise<unknown>>> | undefined;
-};
-export declare const hubDocksActivate: {
-  name: "hub:docks:activate";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
-    dockId: string;
-    params?: Record<string, unknown>;
-  }], Promise<void>>>) | undefined;
-  handler?: ((input: {
-    dockId: string;
-    params?: Record<string, unknown>;
-  }) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[input: {
-    dockId: string;
-    params?: Record<string, unknown>;
-  }], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
-    dockId: string;
-    params?: Record<string, unknown>;
-  }], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: {
-    dockId: string;
-    params?: Record<string, unknown>;
-  }], Promise<void>>> | undefined;
-};
-export declare const hubMessagesAdd: {
-  name: "hub:messages:add";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>>) | undefined;
-  handler?: ((input: DevframeMessageEntryInput) => Promise<DevframeMessageEntry>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>>> | undefined;
-};
-export declare const hubMessagesClear: {
-  name: "hub:messages:clear";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>>) | undefined;
-  handler?: (() => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[], Promise<void>>> | undefined;
-};
-export declare const hubMessagesRemove: {
-  name: "hub:messages:remove";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
-  handler?: ((id: string) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
-};
-export declare const hubMessagesUpdate: {
-  name: "hub:messages:update";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>>) | undefined;
-  handler?: ((id: string, patch: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>>> | undefined;
-};
-export declare const hubTerminalsRemove: {
-  name: "hub:terminals:remove";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
-  handler?: ((id: string) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
-};
-export declare const hubTerminalsResize: {
-  name: "hub:terminals:resize";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>>) | undefined;
-  handler?: ((id: string, cols: number, rows: number) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string, cols: number, rows: number], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, cols: number, rows: number], Promise<void>>> | undefined;
-};
-export declare const hubTerminalsRestart: {
-  name: "hub:terminals:restart";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
-  handler?: ((id: string) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
-};
-export declare const hubTerminalsTerminate: {
-  name: "hub:terminals:terminate";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>) | undefined;
-  handler?: ((id: string) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string], Promise<void>>> | undefined;
-};
-export declare const hubTerminalsWrite: {
-  name: "hub:terminals:write";
-  type?: "action" | undefined;
-  cacheable?: boolean;
-  args?: undefined;
-  returns?: undefined;
-  jsonSerializable?: boolean;
-  agent?: import("devframe").RpcFunctionAgentOptions;
-  setup?: ((context: DevframeHubContext) => import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, data: string], Promise<void>>>) | undefined;
-  handler?: ((id: string, data: string) => Promise<void>) | undefined;
-  dump?: import("devframe/rpc").RpcDump<[id: string, data: string], Promise<void>, DevframeHubContext> | undefined;
-  snapshot?: boolean;
-  __cache?: WeakMap<object, import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, data: string], Promise<void>>>> | undefined;
-  __promise?: import("devframe/rpc").Thenable<import("devframe/rpc").RpcFunctionSetupResult<[id: string, data: string], Promise<void>>> | undefined;
-};
+export declare const hubCommandsExecute: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:commands:execute", "action", [id: string, ...args: any[]], Promise<unknown>, undefined, undefined, DevframeHubContext>;
+export declare const hubDocksActivate: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:docks:activate", "action", [input: {
+  dockId: string;
+  params?: Record<string, unknown>;
+}], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubMessagesAdd: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:messages:add", "action", [input: DevframeMessageEntryInput], Promise<DevframeMessageEntry>, undefined, undefined, DevframeHubContext>;
+export declare const hubMessagesClear: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:messages:clear", "action", [], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubMessagesRemove: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:messages:remove", "action", [id: string], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubMessagesUpdate: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:messages:update", "action", [id: string, patch: Partial<DevframeMessageEntryInput>], Promise<DevframeMessageEntry | undefined>, undefined, undefined, DevframeHubContext>;
+export declare const hubTerminalsRemove: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:terminals:remove", "action", [id: string], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubTerminalsResize: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:terminals:resize", "action", [id: string, cols: number, rows: number], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubTerminalsRestart: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:terminals:restart", "action", [id: string], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubTerminalsTerminate: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:terminals:terminate", "action", [id: string], Promise<void>, undefined, undefined, DevframeHubContext>;
+export declare const hubTerminalsWrite: import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"hub:terminals:write", "action", [id: string, data: string], Promise<void>, undefined, undefined, DevframeHubContext>;
 // #endregion
 
 // #region Referenced (internal)

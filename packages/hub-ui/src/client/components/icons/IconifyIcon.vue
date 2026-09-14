@@ -31,35 +31,46 @@ const iconifyParsed = computed(() => {
 })
 
 const iconifyLoaded = ref<string | undefined>(undefined)
-watchEffect(async () => {
-  if (!iconifyParsed.value) {
-    iconifyLoaded.value = undefined
+const failed = ref(false)
+watchEffect(async (onCleanup) => {
+  let active = true
+  onCleanup(() => {
+    active = false
+  })
+  iconifyLoaded.value = undefined
+  failed.value = false
+  if (!iconifyParsed.value)
     return
-  }
   try {
-    iconifyLoaded.value = await getIconifySvg(iconifyParsed.value.collection, iconifyParsed.value.icon)
+    const svg = await getIconifySvg(iconifyParsed.value.collection, iconifyParsed.value.icon)
+    if (active)
+      iconifyLoaded.value = svg
   }
   catch {
-    // A failed icon fetch (offline / flaky CDN) should degrade to a blank icon,
-    // not throw out of the async effect and crash the surrounding panel.
-    iconifyLoaded.value = undefined
+    /** Keep fetch failures local to the icon so the surrounding panel remains usable. */
+    if (active)
+      failed.value = true
   }
 })
 </script>
 
 <template>
+  <div v-if="failed" class="i-ph:warning-duotone w-full h-full" aria-hidden="true" />
   <div
-    v-if="maskUrl !== undefined"
+    v-else-if="maskUrl !== undefined"
     aria-hidden="true"
     class="w-full h-full"
     :style="maskStyle"
   />
   <div
     v-else-if="iconifyParsed"
+    aria-hidden="true"
     v-html="iconifyLoaded"
   />
   <img
     v-else :src="icon"
+    alt=""
+    aria-hidden="true"
     class="w-full h-full m-auto"
     draggable="false"
   >

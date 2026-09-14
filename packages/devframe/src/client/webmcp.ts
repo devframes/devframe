@@ -4,7 +4,7 @@ import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 // Pure, browser-safe projections shared with the node-side MCP adapter, so
 // the WebMCP surface cannot drift from the MCP one.
 import { argsToJsonSchema } from '../adapters/mcp/to-json-schema'
-import { coerceAgentPositionalArgs } from '../node/agent-args'
+import { toolInputToRpcArgs } from '../tool-input'
 
 /**
  * Result a WebMCP tool's `execute` resolves with; mirrors the MCP
@@ -195,7 +195,7 @@ async function executeRpcTool<SetupContext>(
   args: Record<string, unknown>,
 ): Promise<WebMcpToolResult> {
   try {
-    const positional = coerceAgentPositionalArgs(args, def.args as readonly unknown[] | undefined, 'wrap')
+    const positional = toolInputToRpcArgs(args, def.args?.length)
     const handler = await getRpcHandler(def, context)
     const result = await handler(...positional)
     return { content: [{ type: 'text', text: stringifyResult(result) }] }

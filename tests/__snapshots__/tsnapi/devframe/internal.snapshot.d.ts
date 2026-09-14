@@ -15,6 +15,7 @@ export interface RpcWireCodec {
 // #endregion
 
 // #region Types
+/** @deprecated */
 export type AgentArgsFallback = 'wrap' | 'drop';
 // #endregion
 
@@ -48,6 +49,7 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
 // #endregion
 
 // #region Functions
+/** @deprecated */
 export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createRpcWireCodec(_?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>): RpcWireCodec;
@@ -58,6 +60,7 @@ export declare function peekRpcWireFrame(_: string): {
   i?: string;
 };
 export declare function resolveClientAssets(_: DevframeDefinition): StaticAssetsSource | undefined;
+export declare function toolInputToCommandArgs(_: unknown, _?: number): unknown[];
 // #endregion
 
 // #region Variables

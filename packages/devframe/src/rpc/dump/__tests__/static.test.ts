@@ -25,6 +25,26 @@ describe('collectStaticRpcDump', () => {
     expect(result.files[expectedPath]?.serialization).toBe('json')
   })
 
+  it('infers JSON serialization for directly collected coding-agent-exposed functions', async () => {
+    const getVersion = defineRpcFunction({
+      name: 'test:agent-version',
+      type: 'static',
+      agent: { description: 'Return the current version.' },
+      handler: () => '1.0.0',
+    })
+
+    const result = await collectStaticRpcDump([getVersion], {})
+    const expectedPath = `${DEVFRAME_RPC_DUMP_DIRNAME}/test~agent-version.static.json`
+
+    expect(getVersion.jsonSerializable).toBe(true)
+    expect(result.manifest['test:agent-version']).toEqual({
+      type: 'static',
+      path: expectedPath,
+      serialization: 'json',
+    })
+    expect(result.files[expectedPath]?.serialization).toBe('json')
+  })
+
   it('collects static rpc output into sharded file entries', async () => {
     const getVersion = defineRpcFunction({
       name: 'test:get-version',
