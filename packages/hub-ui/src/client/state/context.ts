@@ -309,6 +309,8 @@ export async function createDocksContext(
     if (!rpc.isTrusted)
       return false
     await runPageScript(entry)
+    if (!rpc.isTrusted)
+      return false
 
     initialRestorePending.value = false
     selectedDockId.value = entry.id

@@ -426,7 +426,7 @@ export async function createDevframeClientRuntime(
       return false
     if (entry.type === 'iframe' && entry.clientScript)
       await setupClientScript(entry.id, entry.clientScript)
-    return !disposed && entryToStateMap.get(entry.id)?.entryMeta === entry
+    return !disposed && rpc.isTrusted && entryToStateMap.get(entry.id)?.entryMeta === entry
   }
 
   async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
@@ -606,8 +606,11 @@ export async function createDevframeClientRuntime(
       if (typeof fn !== 'function')
         throw new Error(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
       const current = entryToStateMap.get(entryId)
-      if (!current || disposed || !rpc.isTrusted)
+      if (!current || disposed)
         return
+      /** Reject instead of caching skipped setup so re-authentication can retry it. */
+      if (!rpc.isTrusted)
+        throw new Error('[@devframes/hub] RPC client is no longer trusted')
       // Scope the messages client to this entry: its messages default their
       // `category` to the entry id, so the feed can attribute and group them.
       const messages = createMessagesClient(rpc, { defaults: { category: entryId } })

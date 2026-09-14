@@ -34,6 +34,9 @@ async function _executeSetupScript(
     const fn = mod[script.importName ?? 'default']
     if (typeof fn !== 'function')
       throw new Error(`[@devframes/hub-ui] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
+    /** Trust may change while the module is loading; rejection keeps setup retryable. */
+    if (!context.rpc.isTrusted)
+      throw new Error('[@devframes/hub-ui] RPC client is no longer trusted')
     await fn(context)
   }
   catch (error) {
