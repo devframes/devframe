@@ -13,13 +13,16 @@ describe('createUi branding background', () => {
     expect.assertions(6)
 
     const html = readFileSync(fileURLToPath(new URL('../dist/client/standalone/index.html', import.meta.url)), 'utf8')
+    // The build minifies the inline <style>, so match against the CSS with all
+    // whitespace stripped rather than its authored spacing.
+    const css = html.replace(/\s+/g, '')
 
     expect(html).not.toContain('__hub-ui.css')
-    expect(html).toContain('color-scheme: light')
-    expect(html).toContain('--devframes-viewer-background: #fff')
-    expect(html).toContain('--devframes-viewer-background: #111')
-    expect(html).toContain('background: var(--devframes-viewer-background)')
-    expect(html).not.toMatch(/html\.viewer-background-custom\s*\{[^}]*color-scheme:\s*normal/)
+    expect(css).toContain('color-scheme:light')
+    expect(css).toContain('--devframes-viewer-background:#fff')
+    expect(css).toContain('--devframes-viewer-background:#111')
+    expect(css).toContain('background:var(--devframes-viewer-background)')
+    expect(css).not.toMatch(/html\.viewer-background-custom\{[^}]*color-scheme:normal/)
   })
 
   it('preserves the default viewer background', () => {
