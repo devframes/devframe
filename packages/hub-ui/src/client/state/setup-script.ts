@@ -2,15 +2,13 @@ import type { ClientScriptEntry, DevframeDockUserEntry } from '@devframes/hub'
 import type { DevframeRpcClient, DockClientScriptContext } from '@devframes/hub/client'
 import { clientScriptFailureHint, resolveClientModuleSpecifier } from '@devframes/hub/client'
 
-export type DockScriptRole = 'clientScript' | 'action' | 'renderer'
-
-/** Page setup and activation scripts have independent initialization lifetimes. */
-export function dockScript(entry: DevframeDockUserEntry, role: DockScriptRole): ClientScriptEntry | undefined {
-  if (role === 'clientScript')
+/** Resolve the existing script field for this dock kind. */
+export function clientScriptOf(entry: DevframeDockUserEntry): ClientScriptEntry | undefined {
+  if (entry.type === 'iframe')
     return entry.clientScript
-  if (role === 'action' && entry.type === 'action')
+  if (entry.type === 'action')
     return entry.action
-  if (role === 'renderer' && entry.type === 'custom-render')
+  if (entry.type === 'custom-render')
     return entry.renderer
 }
 
@@ -50,20 +48,19 @@ async function _executeSetupScript(
 }
 const setupPromisesByRpc = new WeakMap<DevframeRpcClient, Map<string, Promise<void>>>()
 
-/** Cache setup per RPC connection, dock and role; explicit action clicks always run again. */
+/** Cache setup per RPC connection and dock; explicit action clicks always run again. */
 export function executeSetupScript(
   entry: DevframeDockUserEntry,
   context: DockClientScriptContext,
-  role: DockScriptRole,
-  cache = role !== 'action',
+  cache = entry.type !== 'action',
 ): Promise<void> {
-  const script = dockScript(entry, role)
+  const script = clientScriptOf(entry)
   let setupPromises = setupPromisesByRpc.get(context.rpc)
   if (!setupPromises) {
     setupPromises = new Map()
     setupPromisesByRpc.set(context.rpc, setupPromises)
   }
-  const key = JSON.stringify([entry.id, role, script?.importFrom, script?.importName ?? 'default'])
+  const key = JSON.stringify([entry.id, script?.importFrom, script?.importName ?? 'default'])
   const existing = setupPromises.get(key)
   if (cache && existing)
     return existing

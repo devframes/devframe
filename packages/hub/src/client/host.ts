@@ -424,16 +424,16 @@ export async function createDevframeClientRuntime(
   async function preparePageScript(entry: DevframeDockEntry): Promise<boolean> {
     if (!rpc.isTrusted)
       return false
-    if (entry.type !== '~builtin' && entry.clientScript)
-      await setupClientScript(entry.id, entry.clientScript, 'clientScript')
+    if (entry.type === 'iframe' && entry.clientScript)
+      await setupClientScript(entry.id, entry.clientScript)
     return !disposed && entryToStateMap.get(entry.id)?.entryMeta === entry
   }
 
   async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
     if (entry.type === 'action')
-      await setupClientScript(entry.id, entry.action, 'action', false)
+      await setupClientScript(entry.id, entry.action, false)
     else if (entry.type === 'custom-render')
-      await setupClientScript(entry.id, entry.renderer, 'renderer')
+      await setupClientScript(entry.id, entry.renderer)
   }
 
   async function switchEntry(id?: string | null): Promise<boolean> {
@@ -446,7 +446,7 @@ export async function createDevframeClientRuntime(
     const entry = entryToStateMap.get(next ?? '')?.entryMeta
     if (entry && loadScriptsEnabled && !rpc.isTrusted)
       return false
-    if (entry?.type !== '~builtin' && entry?.clientScript && loadScriptsEnabled && !await preparePageScript(entry))
+    if (entry?.type === 'iframe' && entry.clientScript && loadScriptsEnabled && !await preparePageScript(entry))
       return false
 
     const previous = selectedId
@@ -557,22 +557,23 @@ export async function createDevframeClientRuntime(
     for (const entry of currentEntries()) {
       if (entry.type === '~builtin')
         continue
-      startEagerScript(entry.id, entry.clientScript, 'clientScript')
+      if (entry.type === 'iframe')
+        startEagerScript(entry.id, entry.clientScript)
       if (entry.type === 'action')
-        startEagerScript(entry.id, entry.action, 'action')
+        startEagerScript(entry.id, entry.action)
       else if (entry.type === 'custom-render')
-        startEagerScript(entry.id, entry.renderer, 'renderer')
+        startEagerScript(entry.id, entry.renderer)
     }
   }
 
-  function startEagerScript(entryId: string, script: ClientScriptEntry | undefined, role: string): void {
+  function startEagerScript(entryId: string, script: ClientScriptEntry | undefined): void {
     if (script?.eager)
-      void setupClientScript(entryId, script, role).catch(() => {})
+      void setupClientScript(entryId, script).catch(() => {})
   }
 
-  /** Keep page and activation setup separate even when they import the same export. */
-  function setupClientScript(entryId: string, script: ClientScriptEntry, role: string, cache = true): Promise<void> {
-    const key = JSON.stringify([entryId, role, script.importFrom, script.importName ?? 'default'])
+  /** Share eager and activation setup; explicit action invocations bypass the cache. */
+  function setupClientScript(entryId: string, script: ClientScriptEntry, cache = true): Promise<void> {
+    const key = JSON.stringify([entryId, script.importFrom, script.importName ?? 'default'])
     const existing = loadedScripts.get(key)
     if (cache && existing)
       return existing

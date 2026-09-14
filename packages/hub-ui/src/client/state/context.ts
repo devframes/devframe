@@ -17,7 +17,7 @@ import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_ST
 import { createClientMessagesClient } from './messages-client'
 import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
-import { dockScript, executeSetupScript } from './setup-script'
+import { clientScriptOf, executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
 export async function createDocksContext(
@@ -238,16 +238,14 @@ export async function createDocksContext(
   }
 
   async function runPageScript(entry: DevframeDockEntry): Promise<void> {
-    if (entry.type === '~builtin' || !entry.clientScript)
+    if (entry.type !== 'iframe' || !entry.clientScript)
       return
-    await executeSetupScript(entry, scriptContext(entry), 'clientScript')
+    await executeSetupScript(entry, scriptContext(entry))
   }
 
   async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
-    if (entry.type === 'action')
-      await executeSetupScript(entry, scriptContext(entry), 'action')
-    else if (entry.type === 'custom-render')
-      await executeSetupScript(entry, scriptContext(entry), 'renderer')
+    if (entry.type === 'action' || entry.type === 'custom-render')
+      await executeSetupScript(entry, scriptContext(entry))
   }
 
   /** Only explicitly eager descriptors run before activation, after the RPC connection is trusted. */
@@ -257,12 +255,10 @@ export async function createDocksContext(
     for (const entry of entries.value) {
       if (entry.type === '~builtin')
         continue
-      for (const role of ['clientScript', 'action', 'renderer'] as const) {
-        if (!dockScript(entry, role)?.eager)
-          continue
-        /** Setup reports failures and allows the next activation or publication to retry. */
-        void executeSetupScript(entry, scriptContext(entry), role, true).catch(() => {})
-      }
+      if (!clientScriptOf(entry)?.eager)
+        continue
+      /** Setup reports failures and allows the next activation or publication to retry. */
+      void executeSetupScript(entry, scriptContext(entry), true).catch(() => {})
     }
   }
 

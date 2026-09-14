@@ -425,41 +425,6 @@ describe('createDevframeClientRuntime', () => {
   })
 })
 
-it.each(['action', 'custom-render'] as const)('loads independent page and activation scripts in the headless %s runtime', async (type) => {
-  expect.assertions(5)
-  const { rpc, states } = createStubRpc()
-  const runtime = await createDevframeClientRuntime({ rpc })
-  const attempt = vi.fn()
-  const fixture = globalThis as typeof globalThis & { __DF_ROLE_TEST__?: () => void }
-  fixture.__DF_ROLE_TEST__ = attempt
-  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DF_ROLE_TEST__()' }
-  const entry = {
-    id: 'independent-scripts',
-    type,
-    title: 'Independent scripts',
-    icon: 'ph:play',
-    clientScript: { ...script, eager: true },
-    action: script,
-    renderer: script,
-  } as DevframeDockEntry
-  try {
-    states.get('devframe:docks')!.push([entry])
-    await expect.poll(() => attempt.mock.calls.length).toBe(1)
-    expect(runtime.context.docks.selectedId).toBeNull()
-    await runtime.context.docks.switchEntry(entry.id)
-    expect(attempt).toHaveBeenCalledTimes(2)
-    await runtime.context.docks.switchEntry(null)
-    await runtime.context.docks.switchEntry(entry.id)
-    expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
-    states.get('devframe:docks')!.push([{ ...entry }])
-    expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
-  }
-  finally {
-    runtime.dispose()
-    delete fixture.__DF_ROLE_TEST__
-  }
-})
-
 it('waits for trust for eager setup and activation for lazy setup in the headless runtime', async () => {
   expect.assertions(5)
   const { rpc, states } = createStubRpc()

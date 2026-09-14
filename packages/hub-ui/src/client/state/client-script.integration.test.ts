@@ -1,6 +1,5 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DevframeRpcClient } from '@devframes/hub/client'
-import type {} from '@devframes/json-render/hub'
 import type { SharedState } from 'devframe/utils/shared-state'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
@@ -84,7 +83,7 @@ describe('dock client scripts', () => {
   })
 })
 
-it.each(['iframe', 'json-render'] as const)('starts a %s page script before dock activation, once per RPC client', async (type) => {
+it('starts an eager iframe script before dock activation, once per RPC client', async () => {
   expect.assertions(3)
   let attempts = 0
   globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
@@ -93,7 +92,7 @@ it.each(['iframe', 'json-render'] as const)('starts a %s page script before dock
   const { rpc, sharedStates } = createStubRpc()
   const context = await createDocksContext('embedded', rpc)
   const clientScript = { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
-  const entry = { id: `background-${type}`, type, title: 'Background page script', icon: 'ph:browser', url: '/fixture', view: { stateKey: 'fixture:view' }, clientScript } satisfies DevframeDockEntry
+  const entry = { id: 'background-iframe', type: 'iframe', title: 'Background page script', icon: 'ph:browser', url: '/fixture', clientScript } satisfies DevframeDockEntry
   sharedStates.get('devframe:docks')!.push([entry])
   await expect.poll(() => attempts).toBe(1)
   expect(context.docks.selectedId).toBeNull()
@@ -180,35 +179,6 @@ it.each([undefined, false] as const)('keeps page setup lazy when eager is %s', a
   expect(attempt).toHaveBeenCalledOnce()
 })
 
-it.each(['action', 'custom-render'] as const)('keeps the %s activation independent of its eager page script', async (type) => {
-  expect.assertions(5)
-  const attempt = vi.fn()
-  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = attempt
-  const { rpc, sharedStates } = createStubRpc()
-  const context = await createDocksContext('embedded', rpc)
-  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
-  const entry = {
-    id: `two-scripts-${type}`,
-    type,
-    title: 'Independent scripts',
-    icon: 'ph:play',
-    action: script,
-    renderer: script,
-    clientScript: { ...script, eager: true },
-  } satisfies DevframeDockEntry
-  sharedStates.get('devframe:docks')!.push([entry])
-  await expect.poll(() => attempt.mock.calls.length).toBe(1)
-  expect(context.docks.selectedId).toBeNull()
-  await context.docks.switchEntry(entry.id)
-  expect(attempt).toHaveBeenCalledTimes(2)
-  await context.docks.switchEntry(null)
-  await context.docks.switchEntry(entry.id)
-  expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
-  sharedStates.get('devframe:docks')!.push([{ ...entry }])
-  await nextTick()
-  expect(attempt).toHaveBeenCalledTimes(type === 'action' ? 3 : 2)
-})
-
 it('awaits an eager page setup before activation and retries it after failure', async () => {
   expect.assertions(5)
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -225,11 +195,11 @@ it('awaits an eager page setup before activation and retries it after failure', 
   const context = await createDocksContext('embedded', rpc)
   const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
   const entry = {
-    id: 'retry-page-before-renderer',
-    type: 'custom-render',
+    id: 'retry-page-before-activation',
+    type: 'iframe',
     title: 'Retry page',
     icon: 'ph:play',
-    renderer: script,
+    url: '/fixture',
     clientScript: { ...script, eager: true },
   } satisfies DevframeDockEntry
   sharedStates.get('devframe:docks')!.push([entry])
@@ -239,5 +209,5 @@ it('awaits an eager page setup before activation and retries it after failure', 
   expect(context.docks.selectedId).toBeNull()
   complete()
   await expect(activation).resolves.toBe(true)
-  expect(attempts).toBe(3)
+  expect(attempts).toBe(2)
 })

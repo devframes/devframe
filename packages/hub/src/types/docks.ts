@@ -81,8 +81,6 @@ export type DevframeDockEntryIcon = string | { light: string, dark: string }
 export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger'
 
 export interface DevframeDockEntryBase {
-  /** Page script run in the host page when activated, or after trust when `eager: true`. */
-  clientScript?: ClientScriptEntry
   id: string
   title: string
   icon: DevframeDockEntryIcon
@@ -238,6 +236,8 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * share a `frameId` may live in one group, several groups, or none.
    */
   frameId?: string
+  /** Optional page script, initialized on activation or after trust when `eager: true`. */
+  clientScript?: ClientScriptEntry
   /**
    * Soft-navigation target within a shared frame. Set on a **member** dock
    * (one of several docks sharing a {@link frameId}) to describe which internal
