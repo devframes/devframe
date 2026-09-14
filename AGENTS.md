@@ -1,228 +1,59 @@
-# AGENTS GUIDE
-
-## Positioning
-
-**`devframe`** is the framework-neutral container for one devtool integration, portable across hub UI providers. Build a single tool (its RPC, its SPA, its diagnostics, its CLI/build/embedded outputs) without caring how it'll be displayed. A devframe runs standalone (CLI, static deploy, embedded SPA) just as well as it mounts inside a hub.
-
-**`@devframes/hub`** is the framework-neutral hub layer that sits on top of devframe and provides the multi-devframe orchestration (docks, terminals, messages, commands). It does not ship UI - hub UI providers (e.g. `@vitejs/devtools-kit`) provide their own UI on top of the hub's RPC + shared-state protocol. It does ship a **headless client runtime** (`createDevframeClientRuntime()` from `@devframes/hub/client`): booted in the host page, it assembles the shared `DevframeClientContext` (panel, docks, commands, when) and imports each dock entry's client script (`action` / `custom-render` / iframe `clientScript`) into that page - how a built-in devframe like the a11y inspector runs its page script inside the user app's page. See `examples/custom-hub-vite/` for a working ~120-line Vite host demonstrating the protocol end to end.
-
-## Terminology
-
-The docs' canonical vocabulary lives in [`docs/content/8.references/1.terms.md`](docs/content/8.references/1.terms.md) - one name per concept. Every docs, README, and comment edit follows it:
-
-- **Never use bare `client`, `host`, `server`, `agent`, `plugin`, `embedded`, or `standalone` in prose.** Use a fixed compound from the terms page or a code-formatted API/package name. One exception: the directional `client → server` arrows in the RPC/events reference tables.
-- **The tool is "a devframe"** - never "integration", "frame", or "app". The ready-to-run `@devframes/plugin-*` packages are **built-in devframes**: Devframe has no plugin concept; the `plugin-` npm prefix only sets those packages apart from core packages. "Vite plugin" stays for the bundler mechanism, and RPC ids keep the literal `devframes:plugin:<slug>:` namespace because it mirrors the package names on the wire.
-- **host framework** is the environment a devframe or hub mounts into (a Vite dev server, a Next.js app, a Hono server); named forms like "the Vite host" are fine. **host page** is the browser document where the client runtime boots; **user app** is the application being developed and inspected.
-- A devframe's two halves are the **node side** and the **browser side**.
-- Browser-side terms: **client runtime** (`createDevframeClientRuntime()`), **client context**, **client script**, **page script** (a devframe's script in the user app's page - never "agent"; **coding agent** is the only agent), **RPC client** (`connectDevframe()`), **SPA**, **panel** (a devframe's SPA as a rendered surface), **surface** (any rendered browser view - say "API", not "API surface").
-- Hub terms: **hub UI provider** (a hub UI implementation - never "shell" or bare "viewer"; "external viewer" stays for cross-origin surfaces in the security docs), **dock entry** / **dock rail** / **dock panel**, **mounted devframe** (never "frame").
-- The three communication paths: **RPC** (browser side ↔ node side), the **client context** (client scripts ↔ client runtime), and the **in-page channel** (page script ↔ panel, same-origin in-browser).
-- Storage scopes: **workspace scope** (committable, per-repo), **project scope** (per-checkout), **global scope** (per-user) - never describe the project scope as "per-workspace".
-- **framework kits** are `@devframes/vite` / `@devframes/nuxt` / `@devframes/next`; refer to external products by their full names (`@vitejs/devtools-kit`, `@nuxt/devtools`).
-- Qualify the rest: embedded/standalone only as attached adjectives (embedded adapter, standalone SPA), sessions (terminal / MCP / trust session), entries (dock entry / entry point / browser entry), bridges (RPC bridge).
-
-## Stack & Structure
-
-ESM TypeScript library. Bundled with `tsdown`. Tested with `vitest`. pnpm workspaces with catalog dependencies (`pnpm-workspace.yaml`); workspace globs reserve `playground`, `docs`, `packages/*`, `examples/*` for future additions.
-
-Source layout:
-- `src/` - library code; entry `src/index.ts`
-- `test/` - vitest specs; API snapshots via `tsnapi` under `test/__snapshots__/`
-- `dist/` - `tsdown` build output (committed to npm tarball via `files`)
-
-## Development
-
-```sh
-pnpm install      # requires pnpm@11.x
-pnpm build        # tsdown
-pnpm dev          # tsdown --watch
-pnpm test         # pnpm build && vitest (api snapshot guards against stale dist)
-pnpm typecheck    # turbo run typecheck (per-package tsc --noEmit)
-pnpm lint --fix   # ESLint via @antfu/eslint-config
-pnpm knip         # unused files/dependencies/exports across every workspace
-pnpm start        # tsx src/index.ts
-```
-
-The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots compare against fresh `dist/`. `tsdown-stale-guard` enforces this in `test/api-snapshot.test.ts`.
-
-`pnpm typecheck` fans out through Turbo: every workspace package owns a `"typecheck": "tsc --noEmit"` script and its own `tsconfig.json` (extending `tsconfig.base.json` with an explicit `include`). Cross-package imports resolve to source through the `paths` aliases in `tsconfig.base.json`, so no prior build is needed. Any package added under `packages/*` or `plugins/*` is typechecked automatically once it ships that `typecheck` script - add one to every new package so it can't silently skip type errors.
-
-`pnpm typecheck` runs `scripts/verify-typecheck-coverage.ts` first - it fails the command (and CI, since CI just runs `pnpm typecheck`) if any workspace package has a `tsconfig.json` but no `typecheck` script, so a new package can't silently join the same blind spot. A package that genuinely can't typecheck yet needs a documented exception in that script, not a missing script.
-
-Ahead-of-time build artifacts that live under `src/` - the shadow-root stylesheets in `packages/hub-ui/src/client/.generated/` and `packages/json-render-ui/src/.generated/` - are **generated, not committed** (`.generated` is gitignored). Each owning package builds its own with `pnpm run build:css`, and three things guarantee the file is on disk before anything imports it: the root `postinstall` runs `turbo run build:css`, the Turbo `typecheck` task depends on both `build:css` tasks, and each package's `build` script chains `build:css` first. A new generated-under-`src` artifact follows the same shape - its own build script, declared `outputs` in `turbo.json`, and a `typecheck` dependency - rather than being checked in, since a minified single-line blob conflicts on every concurrent edit.
-
-**`starter/`** is the top-level, self-contained template for creating a new devframe (Vanilla TS, Vite SPA, playgrounds, tests). It uses real versions in its `package.json` (no catalogs, no `workspace:*`) so it's copy-paste ready for users. Pnpm links its `devframe`/`@devframes/*` dependencies to the local workspace copies during development. When `bumpp -r` bumps the repo versions, `bumpp.config.ts` runs `scripts/sync-starter-version.ts` to update the starter's dependencies to match.
-
-`pnpm knip` finds unused files, dependencies, and exports across every workspace (config in `knip.jsonc`). It runs against source directly - no prior build needed. Most workspaces need no configuration; `knip.jsonc` only carries per-workspace overrides for cases knip's defaults can't infer on their own: a package's non-`index.ts` `exports` subpaths (knip's package.json→`dist`→`src` source mapping needs a workspace `tsconfig.json` `outDir`, which conflicts with this repo's cross-workspace `src/*.ts` imports, so multi-entry packages list their `exports`-mapped entry files explicitly instead - keep that list in sync with each `tsdown.config.ts`), config files knip's plugins don't discover in a nested location (a Next.js app rooted below the workspace root, `storybook-solidjs-vite` not matching the Storybook plugin trigger), and dependencies referenced dynamically outside its static import graph (icon collections consumed by UnoCSS at build time, built-in devframe packages loaded via a runtime `import()` string). Prefer fixing the underlying gap or a scoped `ignoreDependencies`/`entry` override over a blanket `ignore`.
-
-## Conventions
-
-- RPC functions must use `defineRpcFunction`; always namespace IDs `devframes:plugin:<slug>:<fn-name>` for built-in devframes (the literal `plugin:` token mirrors the `@devframes/plugin-<slug>` package name on the wire - it is npm namespacing, not a concept).
-- **No magic event names: use the centralized event maps.** Every event, broadcast, shared-state key, and channel name lives in one of two source-of-truth maps: `DEVFRAME_EVENTS` (`packages/devframe/src/events.ts`, re-exported from `devframe/constants`) for the core runtime, and `HUB_EVENTS` (`packages/hub/src/events.ts`, re-exported from `@devframes/hub/constants`) for the hub. Reference `DEVFRAME_EVENTS.*` / `HUB_EVENTS.*` at call sites (`.events.emit`/`.on`, `rpc.broadcast({ method })`, `sharedState.get(key)`, `defineHubRpcFunction({ name })`, `rpc.call`) instead of re-typing a string literal. The two maps and the [`docs/content/8.references/3.events.md`](docs/content/8.references/3.events.md) Events Reference are kept in lockstep: adding, renaming, or removing a name means editing the map **and** that page in the same change; every name in the maps appears in the tables, and vice versa. The only literals left are unavoidable type-position keys (the `EventEmitter<…>` maps in `types/*` and the `DevframeRpcClientFunctions`/`DevframeRpcServerFunctions` augmentations), which mirror the maps; a package that deliberately avoids a hub dependency (e.g. `@devframes/plugin-terminals`, which models the hub bridge structurally) keeps a local literal rather than importing `HUB_EVENTS`.
-- **Stay validator-neutral.** `devframe` and every `@devframes/*` package must not introduce a preferred schema validator dependency - no `valibot`, `zod`, `arktype`, etc. in their runtime `dependencies`. `args`/`returns`/flag schemas are typed against [Standard Schema](https://standardschema.dev/) (`@standard-schema/spec`, types-only); first-party code that needs to author a schema uses the built-in zero-dep `devframe/utils/simple-schema` builder (deliberately minimal - not a general validator). JSON-schema conversion uses each schema's own Standard JSON Schema converter (`~standard.jsonSchema`, implemented by e.g. zod 4) when present and degrades to a permissive object otherwise - no converter library and no vendor dependency is required. Docs, by contrast, should point *users* at a real validator for their own integrations - recommend **valibot** (lightest) or **zod** (worth reusing if they already pull it via the JSON-render or MCP integrations).
-- Shared state via `devframe/utils/shared-state`; keep values serializable.
-- Utility imports use the package-path form `devframe/utils/*`, never relative `../utils/*`.
-- Dependencies go through the pnpm catalogs in `pnpm-workspace.yaml` (`cli`, `inlined`, `testing`, `types`) - add to a catalog and reference as `catalog:<name>`, don't pin versions in `package.json`.
-- **A built-in devframe's default export is its `create<X>Devframe` factory, never a pre-built instance.** Don't write `const xDevframe = createXDevframe(); export default xDevframe` (or the inline `export default createXDevframe()` equivalent) - that eagerly constructs a `DevframeDefinition` the moment the module loads, at import time, whether or not any consumer wants that exact zero-config shape; a consumer that needs its own options (an id override, a data directory, …) ends up paying for a second, discarded instance alongside the one it actually uses. Alias the factory itself as the default export instead - `export default createXDevframe` - so importing the module costs nothing beyond defining the function, and every consumer calls it (with or without options) to get their own instance: `import createA11yDevframe from '@devframes/plugin-a11y'` then `createA11yDevframe(options)`.
-
-### Framework kits: two scopes, one shape
-
-The framework kits - `@devframes/vite`, `@devframes/nuxt`, `@devframes/next` - each split their surface into **two clearly-scoped subpaths**, because a consumer is always doing one of two distinct jobs. Keep all three parallel:
-
-- **`.../single`** - **build & dev-serve a single devframe's SPA** with that tool (the "I'm authoring one devframe" scope). Vite: the `devframeVitePlugin` / `devframeViteBridge` / `devframeVite` plugins. Next: `withDevframe` + `createDevframeNextHandler`, with its React client at `.../single/client`. Nuxt: the Nuxt module (registered as `modules: ['@devframes/nuxt/single']`).
-- **`.../hub`** - **mount a whole `@devframes/hub` (many devframes) inside that tool** (the "I'm standing up devtools" scope). Wraps `initHub`, defaults the UI slot to `@devframes/hub-ui`'s `createUi()` (overridable via `ui`, or `ui: false` for headless), and ships a browser client helper at `.../hub/client` (a thin, lifecycle-managing wrapper over `@devframes/hub/client`'s `createDevframeClientRuntime`). `@devframes/hub` and `@devframes/hub-ui` are **optional peers** of these packages; `hub-ui` is loaded lazily (a bundler-ignored dynamic `import()` in the Next hub) so it stays optional and its `import.meta.url` asset lookups resolve at request time.
-- **The bare root (`.`) throws** a helpful error pointing at the two subpaths - never put real code on it.
-- **Vite and Nuxt already have native hub UI providers** (`@vitejs/devtools-kit`, `@nuxt/devtools`), so `@devframes/vite/hub` and `@devframes/nuxt/hub` still work but emit a one-time `console.warn` recommending those (silence with `{ quiet: true }`). `@devframes/next/hub` has no native counterpart, so it warns nothing.
-- The **full hub examples** (`examples/custom-hub-vite`, `examples/custom-hub-next`) consume `.../hub` on the node side but keep hand-rolling their own hub UI provider against `@devframes/hub/client` with `ui: false` - that hand-rolled hub UI provider is the whole point of those reference hosts. The **minimal** ones (`examples/hub-vite`, `examples/hub-next`, `examples/hub-deno`, `examples/hub-fastify`, `examples/hub-hono`, `examples/hub-nitro`, `examples/hub-rsbuild`, `examples/hub-sveltekit`) consume `.../hub` with the default `@devframes/hub-ui` and inject its `embedded.js`, needing no browser-side code.
-
-### Design system
-
-All five built-in plugins - and every example under `examples/` - share one design system, [`@antfu/design`](https://github.com/antfu/design), so they look and feel like one product across frameworks (Git is React/Next, terminals is Svelte, code-server is Vue, inspect is Vue, a11y is Solid, the examples are Preact/Next/vanilla). It's a dev dependency consumed at build time: its UnoCSS preset and shipped styles drive every surface, and its Vue components are the canonical reference every framework matches. There is no shared internal design package - each app wires the preset itself and owns its own component ports.
-
-- **Respect the skills.** This design system is built to the `antfu` and `antfu-design` skills (UnoCSS-first, class-based semantic tokens, dual light/dark, anti-slop) - load and follow them when building or changing any UI here. The surfaces deliberately echo the upstream devtools they descend from; reference their UI/UX when in doubt: [`antfu/node-modules-inspector`](https://github.com/antfu/node-modules-inspector), [`antfu/vite-plugin-inspect`](https://github.com/antfu/vite-plugin-inspect), [`eslint/config-inspector`](https://github.com/eslint/config-inspector), and [`vitejs/devtools` → `packages/rolldown`](https://github.com/vitejs/devtools/tree/main/packages/rolldown).
-- **One preset, wired per app.** Each consumer's `uno.config.ts` composes the same stack: `presetAnthonyDesign({ primary })` (from `@antfu/design/unocss`, tuned to devframe's sage green) + a Wind base + `presetIcons()` (Phosphor) + `transformerDirectives()` + `transformerVariantGroup()`, plus the named `z-*` layers the nav/overlay surfaces reference (`z-nav`, `z-dropdown`, `z-tooltip`, `z-toast`, `z-modal-*`, `z-drawer-*`) - `presetAnthonyDesign` blocks plain `z-<number>` so every layer is named. The shared `design/uno.config.ts` exposes this as `designConfig` (the default, on `presetWind4()`) and a `createDesignConfig({ base })` factory; keep the block identical across apps so the surfaces stay consistent.
-- **Wind4 by default, Wind3 for web components.** Ordinary surfaces (plugins served in iframes, examples in the page) use `presetWind4()`. A surface whose stylesheet is injected into a **shadow root** (`@devframes/hub-ui`'s dock custom element, `@devframes/json-render-ui`'s renderer module) must build on **`presetWind3()`** instead - pass it via `createDesignConfig({ base: presetWind3() })`, or `presetWind3()` directly. Wind4 keeps `@antfu/design`'s theme in a document `:root {}` block and registers its `--un-*` custom properties with `@property { inherits: false }`, neither of which reaches a shadow tree - so its `color-mix(var(--colors-*))` semantic utilities (`bg-base`, `color-base`, …) resolve to nothing inside a shadow root. Wind3 bakes the same shortcuts to concrete `rgb()` + `.dark` variants, self-contained in the shadow tree. Two shadow-root gotchas the ahead-of-time CSS builder must compensate for (both handled in the shared `design/build-shadow-css.ts` pipeline, consumed by `packages/{hub-ui,json-render-ui}/scripts/build-css.ts`; the Vite `unocss/vite` path for standalone SPAs and Storybook is not affected):
-  - **Plain-vs-variant shortcut drop.** When a semantic shortcut also appears **variant-prefixed** in the scanned sources (e.g. `@antfu/design`'s Tabs emits `data-[state=active]:bg-base`), a single-pass `generate(tokens)` drops the *plain* `.bg-base` / `.color-base` rule - so emit the surface tokens (`design/uno.config.ts`'s exported `shadowSurfaceSafelist`) in a **dedicated `generate()` pass** and append them.
-  - **`--un-*` collision with a Wind4 host.** `@property` registrations are document-global, so a host page built on Wind4 registers `--un-bg-opacity` / `--un-border-opacity` / `--un-text-opacity` as `@property { syntax: '<percentage>' }` for the whole document, including our shadow tree - which invalidates the *unitless* values Wind3 writes (`--un-border-opacity: 0.13`) and collapses the dependent `rgb(… / var(--un-*))` color (a visibly wrong border/background). Rename every `--un-` in the shadow stylesheet to a private prefix with `design/uno.config.ts`'s exported `namespaceShadowCssVars()` so it's immune to whatever the host registered.
-- **Tokens are semantic shortcuts.** Build UI from `@antfu/design`'s class vocabulary - surfaces `bg-base` / `bg-secondary` / `bg-active`, text `color-base` / `color-muted` / `color-faint` / `color-active`, `border-base`, `op-fade` / `op-mute` - never a hardcoded palette. Import `@antfu/design/styles.css` (or cherry-pick `@antfu/design/styles/base.css` + `scrollbar.css`) once per page; dark mode is the `.dark` class on `<html>`, flipped from the OS preference in the SPA entry.
-- **Vue uses the components directly; other frameworks port them.** The Vue surface (inspect) imports components straight from `@antfu/design/components/*` (`ActionButton`, `ActionIconButton`, `DisplayBadge`, `LayoutTabs`, `LayoutToolbar`, `LayoutCard`, …). Every non-Vue surface ports the components it needs into its own framework - React in git and the Next examples, Svelte in terminals, Solid in a11y, Preact in the Preact examples, vanilla DOM helpers in the Vite hub - mirroring the upstream component's markup, classes and behavior so it renders identically. Port on demand: recreate only what a surface uses, and keep each port faithful to its `@antfu/design` source.
-- **One nav, three buttons, one tab selector - strictly.** Every surface opens with the same top bar - a `LayoutToolbar`-style row led by a brand block (a primary-tinted `i-ph:*` icon + the product name). Buttons come in exactly three forms: a **text button** (`ActionButton` → `btn-action` / `btn-primary`), a **bordered icon button** (`ActionIconButton` → `btn-icon-square`), and a **borderless icon button** (round `btn-icon`). Multi-view tools (inspect, git) switch views with the one shared segmented selector (`LayoutTabs` `variant="segment"`: a `bg-secondary` track with `data-[state=active]:bg-base` triggers). Don't invent bespoke nav bars, button shapes, or tab styles.
-- **Icons** come from the shared Phosphor set (`i-ph:*`, duotone preferred) via `presetIcons` - use them everywhere instead of per-consumer icon libraries or bespoke SVG.
-- **A surface keeping its own component CSS** (inspect, a11y) sources every color from `@antfu/design`'s semantic shortcuts via `--at-apply` (expanded by `transformerDirectives`) rather than hardcoding a palette, so it tracks the shared theme and the `.dark` class.
-- **Plain `.ts`/vanilla views** must opt `.ts` into UnoCSS extraction (`content.pipeline.include` for Vite, or `content.filesystem` globs for the `@unocss/postcss` setup Next uses), since UnoCSS only scans framework files by default.
-- **Storybook.** Each plugin's storybook follows one setup - co-located `*.stories.*`, a `viteFinal` that adds the framework plugin + `unocss/vite` (pointed at the plugin's `uno.config`), `@antfu/design/styles.css`, a `theme` toggle on the `.dark` class, and a `bg-base color-base` decorator. The Vue surface (inspect, `@storybook/vue3-vite`) showcases the `@antfu/design` components in real use - the visual reference the React/Svelte/Solid/vanilla ports match, mirroring [`@antfu/design`'s own storybook](https://github.com/antfu/design/tree/main/storybook).
-- When making UI or using components, always check if components from `@antfu/design` can be reused, before making new components or creating inline DOM elements.
-
-### Devframe design principles
-
-These reinforce devframe's positioning as "the container for one devtool integration, portable to multiple hub UI providers". When in doubt, err on the side of "devframe provides primitives, the hub provides UX".
-
-- **Single-integration scope.** Devframe describes one tool. If a feature only makes sense when multiple tools share a UI - docking, a unified command palette, cross-tool toasts, terminal aggregation - it belongs in a hub package, not here.
-- **Headless by default.** No default startup banners, no opinionated logging to stdout, no default styling. Provide hooks (`onReady`, `cli.configure`, etc.); let the application print its own branding. Structured diagnostics via `nostics` are fine - ad-hoc `console.log`s baked into adapters are not.
-- **Mount path depends on adapter context.** Given `id: 'foo'`, the default mount path is `/__foo/` for *hosted* adapters (`vite`, `embedded`) and `/` for *standalone* adapters (`cli`, `build`). Authors override via `DevframeDefinition.basePath`. Don't hardcode mount paths in adapter code paths that may run standalone.
-- **SPAs own their basePath at runtime.** Build SPAs with relative asset paths (`vite.base: './'`); discover the effective base in the browser from the executing script's location / `document.baseURI`. `createBuild` copies SPA output verbatim - no HTML rewriting, no build-time `--base` injection. The client (`connectDevframe`) resolves `.connection.json` relative to the runtime base automatically.
-- **CLI flags compose from both sides.** The `cac` instance backing `createCac` is exposed both to the `DevframeDefinition` (`cli.configure(cli)`) - for capabilities contributed by the tool itself - and to the `createCac` caller - for flags added at the final assembly stage. Parsed flag values are forwarded to `setup(ctx, { flags })`. Never hardcode domain-specific flags into `createCac`.
-
-### Hub example parity
-
-`examples/custom-hub-vite/` (Vite plugin + vanilla client) and `examples/custom-hub-next/` (Next.js App Router + React client) are the two reference hosts, and they stay at **feature parity**. They mount the same set of plugins and demo devframes, expose the same dock rail / iframe stage / subsystem drawer, and speak the same hub protocol - the only differences should be the host framework's own plumbing (how static assets are mounted, how the side-car server starts, how the client is rendered).
-
-Any change to one lands in the other in the same PR: adding a dock, wiring a new hub subsystem, changing the drawer layout, adopting a new client-runtime API. Their READMEs mirror each other too. If a capability genuinely can't exist on one host, say so explicitly in both READMEs rather than letting the examples silently drift.
-
-## Structured Diagnostics (Error Codes)
-
-All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Never use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages in node-side code - always define a coded diagnostic. Import `defineDiagnostics` (and `Diagnostic` for `instanceof` checks) from `devframe/utils/nostics` rather than from `nostics` directly - it pre-wires devframe's ANSI console reporter, so a plugin's `diagnostics.ts` never builds its own reporter (`colors`, `ansiFormatter`) or depends on `nostics` itself.
-
-Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`). Check the existing diagnostics file to find the next available number.
-
-Range allocation:
-- `DF00xx–DF07xx` - `devframe` core (RPC, host, storage, streams, …)
-- `DF80xx–DF89xx` - `@devframes/hub`. Sub-ranges:
-  - `DF80xx` - hub context / lifecycle
-  - `DF81xx` - docks
-  - `DF82xx` - terminals
-  - `DF83xx` - messages
-  - `DF84xx` - commands
-  - `DF85xx` - built-in RPC commands
-
-### Adding a new error
-
-1. **Define the code** in the appropriate `diagnostics.ts`:
-   <!-- eslint-skip -->
-   ```ts
-   DF0033: {
-     why: (p: { name: string }) => `Something went wrong with "${p.name}"`,
-     fix: 'Optional resolution hint for the user.',
-   },
-   ```
-
-2. **Use the diagnostics** at the call site:
-   ```ts
-   import { diagnostics } from './diagnostics'
-
-   // For thrown errors - always prefix with `throw` for TypeScript control flow:
-   throw diagnostics.DF0033({ id, reason })
-
-   // For reported warnings/errors (not thrown). The default console method is `warn`;
-   // override with the 2nd-arg reporter options when needed:
-   diagnostics.DF0033({ id, reason }) // console.warn
-   diagnostics.DF0033({ id, reason }, { method: 'error' }) // console.error
-   diagnostics.DF0033({ id, reason, cause: error }, { method: 'warn' }) // attach cause
-   ```
-
-3. **Create a docs page** at `docs/content/6.errors/DF0033.md`:
-   ```md
-   ---
-   title: 'DF0033: Short Title'
-   description: 'Something went wrong with "{name}"'
-   ---
-
-   ## Message
-   > Something went wrong with "`{name}`"
-
-   ## Cause
-   When and why this occurs.
-
-   ## Example
-   Code that triggers it.
-
-   ## Fix
-   How to resolve it.
-
-   ## Source
-   - [`src/node/filename.ts`](...) - `functionName()` throws this when …
-   ```
-
-   The `## Source` section lists each call site that emits the code, with a one-line role per entry. Don't list the `diagnostics.ts` definition - it's implied.
-
-### Scope
-
-- **Node-side only.**
-- **Client-side excluded**: browser-only code keeps using `console.*` / `throw`.
-
-## Before PRs
-
-```sh
-pnpm lint && pnpm knip && pnpm test && pnpm typecheck && pnpm build
-```
-
-Follow conventional commits (`feat:`, `fix:`, etc.).
-
-## Documentation style
-
-These rules apply to every Markdown file under `docs/` once it exists (error reference pages are template-driven and exempt). Apply them on every doc edit, not just dedicated revision passes.
-
-### 1. Positive framing
-
-Describe what *is*, not what *isn't*. Replace constructions like "X is for Y, not Z" or "there is no X for Y" with the closest natural positive phrasing. Don't document features that don't exist yet - release notes are the place for "now supported" announcements; docs describe what works today.
-
-- ❌ "Build mode only; dev mode is not supported yet."
-- ✅ "Analyses production builds in Vite 8+."
-
-### 2. Use callouts sparingly
-
-Callouts (`> [!NOTE]`, `> [!TIP]`, `> [!INFO]`, `::: tip`, etc.) interrupt the reading flow and should earn their visual weight. Default to prose; reach for a callout only for genuinely critical material.
-
-- **`[!WARNING]` / `[!DANGER]`** - security hazards, footguns, breaking-change pitfalls, experimental-API stability warnings. Keep these.
-- **Bad-practice "✗" inline blocks** - fine inside code samples to contrast with a `✓` good example.
-- **Everything else** - fold into the surrounding prose.
-
-### 3. Concise and precise
-
-Trim filler intros, redundant cross-links (one link per page is enough - sidebars handle navigation), and code samples that demonstrate more than the point being made. Lead each page with one sentence that says what the reader can build with this. Strip out promises about future work, marketing language ("powerful", "seamless"), and exposition that the surrounding code already conveys.
-
-### 4. Guides teach, references list
-
-The docs separate learning material from lookup material, following the [Divio documentation system](https://docs.divio.com/documentation-system/):
-
-- **Guide pages (`docs/content/1.guide/`) are learning-oriented** - prose, code examples, and explanation. A lookup table (definition fields, options, enums, statuses, event names, route tables) belongs on a references page, with the guide keeping a one-or-two-sentence prose summary of the essentials plus a link to the reference section. Comparison and decision tables ("X vs Y", trade-off matrices) are explanation and stay in the guides; navigational link tables stay on `index.md` pages.
-- **The references section (`docs/content/8.references/`) holds the lookup tables**, grouped: [Node-Side API](docs/content/8.references/4.node-api.md), [Browser-Side API](docs/content/8.references/5.browser-api.md), and [Hub API](docs/content/8.references/6.hub-api.md), alongside the terms, when-clauses, and events pages. Each reference section opens with one line naming what the table lists and linking the guide page that teaches it. A new lookup table goes into the matching reference page (and the references `index.md`), not into a guide.
-- **The adapters, frameworks, helpers, and plugins sections are per-package reference pages** - each page is the reference for its own adapter/kit/package, so its options and RPC tables stay in place.
-
-### What goes where
-
-- Critical security / data-loss hazard → `[!WARNING]` callout.
-- Experimental API / stability caveat → `[!WARNING]` callout at the top of the page.
-- Bad-practice contrast → inline `// ✗ Bad` / `// ✓ Good` comments inside code blocks.
-- Lookup table for a guide topic → the matching `docs/content/8.references/` page; the guide keeps a prose summary + link.
-- Anything else worth saying → prose.
+# devframe maintainer guide
+
+devframe packages one devtool integration - RPC, SPA, diagnostics, CLI/build/embedded outputs - and `@devframes/hub` orchestrates many of them for hub UI providers.
+`.agents/` describes what the code does and why. It is a map, not a standard:
+where the two disagree, the packages' `src/` and test suites win, and the docs get fixed.
+
+## Rules that apply everywhere
+
+- **MUST**, **MUST NOT**, **SHOULD** and **MAY** use RFC 2119 meanings. They mark
+  real invariants - layer boundaries, wire contracts, output shapes - not house style.
+- Prose MUST follow the canonical vocabulary in
+  [`docs/content/8.references/1.terms.md`](docs/content/8.references/1.terms.md):
+  the tool is "a devframe", never bare `client`/`host`/`server`/`agent`/`plugin`
+  ([02](./.agents/02-terminology.md)).
+- Event, broadcast, shared-state and channel names MUST come from the
+  `DEVFRAME_EVENTS` / `HUB_EVENTS` maps, kept in lockstep with the Events
+  Reference - no re-typed string literals ([04](./.agents/04-conventions.md)).
+- Node-side warnings and errors MUST be coded `DF` diagnostics via
+  `devframe/utils/nostics` - no ad-hoc `console.*` / `throw new Error`
+  ([08](./.agents/08-diagnostics.md)).
+- `devframe` and every `@devframes/*` package MUST stay validator-neutral: no
+  `zod`/`valibot`/`arktype` in runtime `dependencies`; schemas type against
+  Standard Schema ([04](./.agents/04-conventions.md)).
+- Dependencies go through the pnpm catalogs (`catalog:<name>`); versions MUST NOT
+  be pinned in a `package.json` ([03](./.agents/03-stack-and-commands.md)).
+- Before a PR, all gates MUST pass:
+  `pnpm lint && pnpm knip && pnpm test && pnpm typecheck && pnpm build`.
+  Commits follow Conventional Commits.
+
+## Boundary invariants
+
+- A feature that only makes sense when multiple tools share a UI belongs in a hub
+  package; `devframe` stays single-integration and headless - no banners, no
+  default styling, no opinionated stdout ([01](./.agents/01-positioning.md)).
+- Adapter code that may run standalone MUST NOT hardcode mount paths; SPAs build
+  with relative asset paths and discover their base at runtime
+  ([01](./.agents/01-positioning.md)).
+- The framework kits keep two subpaths (`.../single`, `.../hub`) parallel across
+  Vite/Nuxt/Next; the bare root throws ([05](./.agents/05-framework-kits.md)).
+- The two reference hosts (`examples/custom-hub-vite`, `examples/custom-hub-next`)
+  stay at feature parity - a change to one lands in the other in the same PR
+  ([07](./.agents/07-hub-examples.md)).
+- UI builds on `@antfu/design` semantic tokens and its component vocabulary -
+  no hardcoded palettes, no bespoke nav/button/tab shapes; shadow-root surfaces
+  build on Wind3 ([06](./.agents/06-design-system.md)).
+
+## Find the contract
+
+| Task | Read |
+| --- | --- |
+| Layering, design principles, mount paths, CLI composition | [01 positioning](./.agents/01-positioning.md) |
+| Canonical names for every concept | [02 terminology](./.agents/02-terminology.md) |
+| Stack, repo layout, commands, typecheck/knip/starter machinery | [03 stack & commands](./.agents/03-stack-and-commands.md) |
+| RPC ids, event maps, validator neutrality, imports, factory exports | [04 conventions](./.agents/04-conventions.md) |
+| `@devframes/vite`/`nuxt`/`next` subpath shape and peers | [05 framework kits](./.agents/05-framework-kits.md) |
+| `@antfu/design` preset, tokens, ports, shadow-root CSS, Storybook | [06 design system](./.agents/06-design-system.md) |
+| Reference host parity rules | [07 hub examples](./.agents/07-hub-examples.md) |
+| `DF` codes, ranges, adding an error | [08 diagnostics](./.agents/08-diagnostics.md) |
+| Writing rules for `docs/` | [09 docs style](./.agents/09-docs-style.md) |
