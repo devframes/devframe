@@ -55,6 +55,7 @@ export declare const HUB_EVENTS: {
   };
   readonly postMessage: {
     readonly frameNav: "devframe:frame-nav";
+    readonly inspectedPage: "devframe:inspected-page:connect";
   };
   readonly broadcastChannel: {
     readonly docksActivate: "devframe:docks:activate";
