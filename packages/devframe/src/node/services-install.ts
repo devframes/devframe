@@ -51,9 +51,9 @@ export function expandResolveFrom(resolveFrom: string, cwd: string): string | un
  */
 export function resolveServicePackage(
   pkg: string,
-  resolveFroms: readonly (string | null | undefined)[],
+  resolveFrom: readonly (string | null | undefined)[],
 ): string | undefined {
-  for (const from of resolveFroms) {
+  for (const from of resolveFrom) {
     if (typeof from !== 'string' || from.length === 0)
       continue
     try {
