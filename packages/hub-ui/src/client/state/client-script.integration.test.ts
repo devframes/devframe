@@ -155,6 +155,29 @@ it('does not invoke action docks while initializing page scripts', async () => {
   expect(attempts).toBe(1)
 })
 
+it('keeps an eager custom-render renderer activation-gated so it mounts into its panel', async () => {
+  expect.assertions(2)
+  let attempts = 0
+  globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = () => {
+    attempts++
+  }
+  const { rpc, sharedStates } = createStubRpc()
+  const context = await createDocksContext('embedded', rpc)
+  const entry = {
+    id: 'eager-renderer',
+    type: 'custom-render',
+    title: 'Eager renderer',
+    icon: 'ph:play',
+    renderer: { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' },
+  } satisfies DevframeDockEntry
+  sharedStates.get('devframe:docks')!.push([entry])
+  await nextTick()
+  // A renderer needs its mounted panel, so `eager` must not run it before activation.
+  expect(attempts).toBe(0)
+  await context.docks.switchEntry(entry.id)
+  expect(attempts).toBe(1)
+})
+
 it.each([undefined, false] as const)('keeps page setup lazy when eager is %s', async (eager) => {
   expect.assertions(3)
   const attempt = vi.fn()

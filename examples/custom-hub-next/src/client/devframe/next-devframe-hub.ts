@@ -287,7 +287,8 @@ export async function nextDevframeHub(
 
       // The demo dock-client script - the same package the Vite reference
       // host loads via a bare specifier - mounted statically and attached as
-      // a momentary `action` dock by its served URL.
+      // a momentary `action` dock by its served URL. `eager: true` runs it on
+      // trust so it subscribes to `entry:activated` before the first click.
       if (demoDockClient) {
         await ctx.host.mountStatic(DEMO_CLIENT_MOUNT_BASE, demoDockClient.dir)
         ctx.docks.register({
@@ -296,7 +297,7 @@ export async function nextDevframeHub(
           title: 'Client Script Demo',
           icon: 'ph:plugs-connected-duotone',
           category: 'app',
-          action: { importFrom: demoDockClient.importFrom },
+          action: { importFrom: demoDockClient.importFrom, eager: true },
         })
       }
 

@@ -253,7 +253,9 @@ export async function createDocksContext(
     if (!rpc.isTrusted)
       return
     for (const entry of entries.value) {
-      if (entry.type === '~builtin')
+      // A `custom-render` renderer needs its mounted panel, so it stays
+      // activation-gated; only panel-independent page and action scripts run eagerly.
+      if (entry.type !== 'iframe' && entry.type !== 'action')
         continue
       if (!clientScriptOf(entry)?.eager)
         continue
@@ -398,8 +400,10 @@ export async function createDocksContext(
     name: HUB_EVENTS.broadcast.docksActivate satisfies keyof DevframeRpcClientFunctions,
     type: 'action',
     handler: (activation: { dockId: string, params?: Record<string, unknown> }) => {
+      // `switchEntry` rejects when a lazy client script fails so its cache entry
+      // stays retryable; the failure is already logged, so swallow it here.
       if (activation?.dockId)
-        switchEntry(activation.dockId)
+        void switchEntry(activation.dockId).catch(() => {})
     },
   })
 

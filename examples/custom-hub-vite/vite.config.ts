@@ -176,15 +176,16 @@ export default defineConfig({
         // Bare-specifier client script demo: `importFrom` names the npm
         // package itself, imported through Vite's own module graph via the
         // host's `clientModuleResolution` (`'/@id/{specifier}'`). The Next
-        // reference host consumes the same package as a prebuilt
-        // self-contained bundle instead (see examples/demo-dock-client).
+        // host uses the same package as a prebuilt bundle (see
+        // examples/demo-dock-client). `eager: true` runs it on trust so it
+        // subscribes to `entry:activated` before the first click.
         context.docks.register({
           type: 'action',
           id: 'example:demo-client-script',
           title: 'Client Script Demo',
           icon: 'ph:plugs-connected-duotone',
           category: 'app',
-          action: { importFrom: 'demo-dock-client' },
+          action: { importFrom: 'demo-dock-client', eager: true },
         })
 
         // Witness the missing-renderer path: a dock type nothing covers, so

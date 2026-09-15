@@ -200,8 +200,10 @@ export async function createDevframeClientRuntime(
   // unknown ids. Chain onto any handler a co-consumer already registered on
   // this rpc client rather than replacing it.
   const activateHandler = (activation: { dockId?: string } | undefined): void => {
+    // `switchEntry` rejects when a lazy client script fails so its cache entry
+    // stays retryable; the failure is already logged, so swallow it here.
     if (activation?.dockId)
-      void switchEntry(activation.dockId)
+      void switchEntry(activation.dockId).catch(() => {})
   }
   const existingActivate = rpc.client.definitions.get(DOCKS_ACTIVATE_EVENT)
   if (existingActivate) {
@@ -367,7 +369,9 @@ export async function createDevframeClientRuntime(
         return selectedId
       },
       set selectedId(id: string | null) {
-        void switchEntry(id)
+        // Setter can't surface a rejection; `switchEntry` already logs a failed
+        // client script and keeps its cache entry retryable.
+        void switchEntry(id).catch(() => {})
       },
       /**
        * A mirror of the session field, so a persisting host reads and writes the
@@ -554,15 +558,13 @@ export async function createDevframeClientRuntime(
   function loadClientScripts(): void {
     if (disposed || !rpc.isTrusted)
       return
+    // A `custom-render` renderer needs its mounted panel, so it stays
+    // activation-gated; only panel-independent page and action scripts run eagerly.
     for (const entry of currentEntries()) {
-      if (entry.type === '~builtin')
-        continue
       if (entry.type === 'iframe')
         startEagerScript(entry.id, entry.clientScript)
-      if (entry.type === 'action')
+      else if (entry.type === 'action')
         startEagerScript(entry.id, entry.action)
-      else if (entry.type === 'custom-render')
-        startEagerScript(entry.id, entry.renderer)
     }
   }
 

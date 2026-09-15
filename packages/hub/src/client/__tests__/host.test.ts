@@ -455,6 +455,35 @@ it('waits for trust for eager setup and activation for lazy setup in the headles
   }
 })
 
+it('keeps an eager custom-render renderer activation-gated in the headless runtime', async () => {
+  expect.assertions(2)
+  const { rpc, states } = createStubRpc()
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const attempt = vi.fn()
+  const fixture = globalThis as typeof globalThis & { __DF_RENDERER_TEST__?: () => void }
+  fixture.__DF_RENDERER_TEST__ = attempt
+  const entry = {
+    id: 'eager-renderer',
+    title: 'Eager renderer',
+    icon: 'ph:cube',
+    type: 'custom-render',
+    renderer: { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DF_RENDERER_TEST__()' },
+  } satisfies DevframeDockEntry
+  try {
+    states.get('devframe:docks')!.push([entry])
+    // Give any eager import a chance to resolve; a renderer needs its mounted
+    // panel, so `eager` must not run it before activation.
+    await new Promise(resolve => setTimeout(resolve, 10))
+    expect(attempt).not.toHaveBeenCalled()
+    await runtime.context.docks.switchEntry(entry.id)
+    expect(attempt).toHaveBeenCalledTimes(1)
+  }
+  finally {
+    runtime.dispose()
+    delete fixture.__DF_RENDERER_TEST__
+  }
+})
+
 it.each([false, true])('retries setup after trust is revoked during import (eager: %s)', async (eager) => {
   expect.assertions(6)
   const reportError = vi.spyOn(console, 'error').mockImplementation(() => {})
