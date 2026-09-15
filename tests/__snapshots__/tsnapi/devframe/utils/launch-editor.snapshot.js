@@ -4,3 +4,7 @@
 // #region Functions
 export function launchEditor(_, _) {}
 // #endregion
+
+// #region Variables
+export var KNOWN_EDITORS /* const */
+// #endregion

@@ -35,12 +35,8 @@ it('distinguishes void actions from declared events in both directions', () => {
   panel.emit('save', 'draft')
   // @ts-expect-error An asynchronous void action is still a function.
   panel.emit('reset')
-  // @ts-expect-error The deprecated alias has the same restriction.
-  panel.callEvent('save', 'draft')
   // @ts-expect-error A panel void action is still a function.
   pageScript.emit('save', 'draft')
-  // @ts-expect-error A panel asynchronous void action is still a function.
-  pageScript.callEvent('reset')
   // @ts-expect-error Functions cannot receive event listeners.
   pageScript.on('save', () => {})
   // @ts-expect-error Functions cannot receive event listeners.

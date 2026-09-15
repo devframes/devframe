@@ -24,21 +24,12 @@ export interface InjectDiscovery {
 }
 // #endregion
 
-// #region Types
-/** @deprecated */
-export type AgentDiscovery = InjectDiscovery;
-/** @deprecated */
-export type DataInspectorAgent = DataInspectorEndpoint;
-// #endregion
-
 // #region Functions
 export declare function createGlobalThisDataSource(): DataSourceEntry;
 export declare function exposeDataInspector(_?: ExposeDataInspectorOptions): Promise<DataInspectorEndpoint>;
 // #endregion
 
 // #region Variables
-/** @deprecated */
-export declare const AGENT_DISCOVERY_FILE: string;
 export declare const DISCOVERY_FILE: string;
 // #endregion
 

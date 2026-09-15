@@ -1,8 +1,8 @@
-import type { KnownEditor } from 'devframe/recipes/common-rpc-functions'
 import type { DevframeServiceDefinition } from 'devframe/types'
+import type { KnownEditor } from 'devframe/utils/launch-editor'
 import { realpath } from 'node:fs/promises'
 import { defineRpcFunction } from 'devframe'
-import { KNOWN_EDITORS } from 'devframe/recipes/common-rpc-functions'
+import { KNOWN_EDITORS } from 'devframe/utils/launch-editor'
 import { s } from 'devframe/utils/simple-schema'
 import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import pkg from '../package.json' with { type: 'json' }
@@ -77,8 +77,7 @@ declare module 'devframe' {
 
 /**
  * The open wire service: `open-in-editor` / `open-in-finder` RPC shared by
- * every plugin on the host, replacing per-plugin registrations of the
- * (deprecated) `devframe/recipes/common-rpc-functions` recipes. Paths may be
+ * every plugin on the host. Paths may be
  * absolute or relative to the `workspaceRoot`; the service refuses paths
  * outside the workspace root and the configured extra
  * {@link OpenServiceOptions.roots} (`DS_OPEN_0002`), and gates editor

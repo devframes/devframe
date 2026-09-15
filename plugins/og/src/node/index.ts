@@ -46,10 +46,10 @@ export function createOgDevframe(options: OgDevframeOptions = {}): DevframeDefin
     description: pkg.description,
     icon: options.icon ?? 'ph:image-square-duotone',
     basePath: options.basePath,
+    clientAssets: remoteAssets,
     cli: {
       command: id,
       port: options.port ?? 9016,
-      distDir: remoteAssets,
       auth: options.auth ?? true,
     },
     dock: { category: '~builtin' },

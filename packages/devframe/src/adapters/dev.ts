@@ -32,7 +32,7 @@ export interface CreateDevServerOptions {
    */
   flags?: Record<string, unknown>
   /**
-   * Override the definition's `clientAssets` (or deprecated `cli.distDir`).
+   * Override the definition's `clientAssets`.
    * When neither this option nor the definition's client assets are set, the
    * dev server runs in **bridge mode**: only `__connection.json` and the WS
    * endpoint are mounted; the SPA is expected to be hosted elsewhere (e.g. by
@@ -92,9 +92,9 @@ export interface CreateDevServerOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server on the dev server (Streamable-HTTP).
-   * Overrides `def.cli?.mcp`; `undefined` falls through to it, then to the
-   * `'auto'` default (mount once the agent surface is non-empty). `false`
-   * disables the route regardless. See {@link McpSetting}.
+   * `undefined` falls through to the `'auto'` default (mount once the agent
+   * surface is non-empty). `false` disables the route regardless. See
+   * {@link McpSetting}.
    */
   mcp?: McpSetting
   /**

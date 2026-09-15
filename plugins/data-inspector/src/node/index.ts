@@ -73,10 +73,10 @@ export function createDataInspectorDevframe(options: DataInspectorDevframeOption
     description: pkg.description,
     icon: options.icon ?? 'ph:crosshair-duotone',
     basePath: options.basePath,
+    clientAssets: remoteAssets,
     cli: {
       command: 'data-inspector',
       port: options.port ?? DEFAULT_PORT,
-      distDir: remoteAssets,
       auth: options.auth ?? true,
     },
     dock: { category: '~builtin' },

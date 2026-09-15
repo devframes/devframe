@@ -171,7 +171,7 @@ describe('ctx.install', () => {
     const ctx = createContext()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    await ctx.install(makeDevframe({ cli: { distDir: '/tmp/demo-dist' } }))
+    await ctx.install(makeDevframe({ clientAssets: '/tmp/demo-dist' }))
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(warn.mock.calls[0].join(' ')).toContain('DF8106')

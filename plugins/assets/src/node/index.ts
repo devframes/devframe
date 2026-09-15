@@ -121,10 +121,10 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
     icon: options.icon ?? 'ph:image-square-duotone',
     basePath: options.basePath,
     capabilities: { build: options.build ?? false },
+    clientAssets: distDir,
     cli: {
       command: 'devframe-assets',
       port: options.port ?? DEFAULT_PORT,
-      distDir,
       auth: options.auth ?? true,
       configure(cli) {
         cli.option('--read-only', 'Disable upload, rename, delete, and folder creation')

@@ -229,12 +229,3 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
     console.error('[data-inspector] inject endpoint failed to start:', error)
   })
 }
-
-/** @deprecated Renamed; use {@link DISCOVERY_FILE} (the file moved to `discovery.json`; `attach` still falls back to the old `agent.json`). */
-export const AGENT_DISCOVERY_FILE: string = DISCOVERY_FILE
-
-/** @deprecated Renamed; use {@link InjectDiscovery}. */
-export type AgentDiscovery = InjectDiscovery
-
-/** @deprecated Renamed; use {@link DataInspectorEndpoint}. */
-export type DataInspectorAgent = DataInspectorEndpoint

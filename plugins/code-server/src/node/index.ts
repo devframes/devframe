@@ -60,12 +60,12 @@ export function createCodeServerDevframe(options: CodeServerOptions = {}): Devfr
      * `/__<id>/` when hosted. Authors override via `options.basePath`.
      */
     basePath: options.basePath,
+    clientAssets: resolvedDist,
     cli: {
       command: options.command ?? 'devframe-code-server',
       port: options.port ?? DEFAULT_PORT,
       portRange: options.portRange,
       random: options.random,
-      distDir: resolvedDist,
       /**
        * Gate the standalone launcher by default; `maybeOpenBrowser` folds the
        * current OTP into the `--open` URL so the tab lands already trusted.

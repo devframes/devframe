@@ -201,7 +201,6 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     },
     events: { on: events.on, once: events.once },
     emit,
-    callEvent: emit,
     on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     addPanelPort: port => addPeer(port, `transport:${nanoid(8)}`),

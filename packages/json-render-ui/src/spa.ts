@@ -19,8 +19,8 @@ export const jsonRenderSpaDir: string = fileURLToPath(new URL('./spa/', import.m
 /**
  * Wrap a devframe definition so it serves the prebuilt {@link jsonRenderSpaDir
  * standalone SPA}. Defaults `clientAssets` to the SPA assets (an explicit
- * `clientAssets`, or the deprecated `cli.distDir`, still wins). The author
- * supplies everything else (id, name, `setup`, port, …) as usual.
+ * `clientAssets` still wins). The author supplies everything else (id, name,
+ * `setup`, port, …) as usual.
  *
  * ```ts
  * export default createJsonRenderDevframe({
@@ -33,6 +33,6 @@ export const jsonRenderSpaDir: string = fileURLToPath(new URL('./spa/', import.m
 export function createJsonRenderDevframe(definition: DevframeDefinition): DevframeDefinition {
   return {
     ...definition,
-    clientAssets: definition.clientAssets ?? definition.cli?.distDir ?? jsonRenderSpaDir,
+    clientAssets: definition.clientAssets ?? jsonRenderSpaDir,
   }
 }

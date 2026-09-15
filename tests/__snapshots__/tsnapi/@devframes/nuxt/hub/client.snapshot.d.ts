@@ -12,8 +12,6 @@ export declare function useDevframeHubClient(_?: UseDevframeHubClientOptions): R
 // #endregion
 
 // #region Other
-export { DevframeClientHost }
-export { DevframeClientHostOptions }
 export { DevframeClientRuntime }
 export { DevframeClientRuntimeOptions }
 // #endregion

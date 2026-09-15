@@ -58,10 +58,10 @@ export function createInspectDevframe(options: InspectDevframeOptions = {}): Dev
     description: pkg.description,
     icon: options.icon ?? 'ph:stethoscope-duotone',
     basePath: options.basePath,
+    clientAssets: distDir,
     cli: {
       command: id,
       port: options.port ?? 9012,
-      distDir,
       /**
        * Gate the standalone server by default; `maybeOpenBrowser` folds the
        * current OTP into the `--open` URL so the tab lands already trusted.

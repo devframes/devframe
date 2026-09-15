@@ -18,8 +18,6 @@ export function watchFrameLocation(_) {}
 
 // #region Variables
 export var CLIENT_CONTEXT_KEY /* const */
-/** @deprecated */
-export var createDevframeClientHost /* const */
 export var FRAME_NAV_CHANNEL /* const */
 export var FRAME_NAV_VERSION /* const */
 // #endregion

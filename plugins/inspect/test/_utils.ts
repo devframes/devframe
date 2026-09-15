@@ -20,14 +20,14 @@ import { serveTestContext } from '../../../tests/helpers/serve-test-context'
 const inspectDevframe = createInspectDevframe()
 
 /**
- * Resolve the inspector's SPA to a local directory. Its `distDir` is a
+ * Resolve the inspector's SPA to a local directory. Its `clientAssets` is a
  * remote-assets declaration; in this monorepo the lockstep
  * `@devframes/plugin-inspect--assets` package is workspace-linked, so
  * resolution short-circuits to its built `dist`. A store (rather than a
  * string) means that build hasn't run.
  */
 function localSpaDir(): string {
-  const resolved = resolveStaticAssetsSource(inspectDevframe.cli!.distDir!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'), inspectDevframe.importMetaUrl)
+  const resolved = resolveStaticAssetsSource(inspectDevframe.clientAssets!, path.join(os.tmpdir(), 'devframes_plugin_inspect-test'), inspectDevframe.importMetaUrl)
   if (typeof resolved !== 'string') {
     throw new TypeError(
       '[devframes_plugin_inspect] client SPA missing; run `pnpm -C plugins/inspect run build` first.',

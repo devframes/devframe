@@ -30,10 +30,6 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string }) => `Devframe id "${p.id}" is not a mountable URL segment, and the hub mounts each frame at \`<base><id>/\`.`,
       fix: 'Ids become route segments, so they may only contain letters, digits, `_`, `-`, and `.`; `:` and `*` are route-pattern markers to the underlying router, and `/` would escape the segment. Set a route-safe `id` on the definition (e.g. `my_plugin` instead of `my:plugin`).',
     },
-    DF8005: {
-      why: (p: { id: string }) => `Devframe "${p.id}" requests an MCP route, but the hub's aggregate MCP is off (\`mcp: false\`), so its tools are not exposed over MCP.`,
-      fix: 'A hub exposes one aggregate MCP endpoint over every mounted devframe, so per-devframe `mcp` settings are ignored. Drop `mcp: false` from `initHub` (the `\'auto\'` default mounts the aggregate route once agent tools exist) to surface this devframe\'s tools, or drop `mcp` from the devframe to silence this warning.',
-    },
     DF8006: {
       why: (p: { urlBase: string, base: string }) => `A static hub build writes each mount either under its base ("${p.base}") or as an absolute-path sibling of it, but "${p.urlBase}" is neither.`,
       fix: 'buildHub maps a mount under the hub base into its `outDir`, and any other mount to the deploy root (`outDir`\'s parent) by its absolute path. Give the mount an absolute base (starting with `/`) so it resolves to one of those.',

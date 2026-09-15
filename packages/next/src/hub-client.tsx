@@ -5,7 +5,7 @@ import { createDevframeClientRuntime } from '@devframes/hub/client'
 import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 import { useEffect, useState } from 'react'
 
-export type { DevframeClientHost, DevframeClientHostOptions, DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
+export type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 
 export interface UseDevframeHubClientOptions extends DevframeClientRuntimeOptions {
   /**

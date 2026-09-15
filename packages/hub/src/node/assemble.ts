@@ -107,7 +107,6 @@ export async function mountDevframes(
   ctx: DevframeHubContext,
   devframes: HubDevframeEntry[],
   base: string,
-  hubMcpEnabled: boolean,
 ): Promise<(() => Promise<void>)[]> {
   const setups: (() => Promise<void>)[] = []
   for (const { devframe: def, dock } of devframes) {
@@ -118,13 +117,6 @@ export async function mountDevframes(
     // segment entirely.
     if (!/^[\w.-]+$/.test(def.id))
       throw diagnostics.DF8004({ id: def.id })
-    // A hub exposes one aggregate MCP route over every mounted devframe, so a
-    // devframe's own `mcp` request is only meaningful when the hub's own MCP
-    // can mount (an explicit setting or the `'auto'` default). Warn when the
-    // hub turned it off, rather than silently dropping the devframe's
-    // intended agent surface.
-    if (!hubMcpEnabled && def.cli?.mcp)
-      diagnostics.DF8005({ id: def.id })
     const frameBase = withTrailingSlash(joinURL(base, def.id))
     const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
     if (run)

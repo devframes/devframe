@@ -9,7 +9,6 @@ export function stringifyForMcp(_) {}
 // #endregion
 
 // #region Other
-export { coerceAgentPositionalArgs }
 export { createContextRpcServer }
 export { createH3DevframeHost }
 export { createInstanceShell }
@@ -26,7 +25,6 @@ export { peekRpcWireFrame }
 export { probeDevframeOrigin }
 export { registerDevframeInstance }
 export { resolveBasePath }
-export { resolveClientAssets }
 export { resolveInstanceRegister }
 export { resolveMcpConfig }
 export { samePath }

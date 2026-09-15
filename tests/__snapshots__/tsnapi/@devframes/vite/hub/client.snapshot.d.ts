@@ -12,8 +12,6 @@ export declare function mountDevframeHubClient(_?: MountDevframeHubClientOptions
 // #endregion
 
 // #region Other
-export { DevframeClientHost }
-export { DevframeClientHostOptions }
 export { DevframeClientRuntime }
 export { DevframeClientRuntimeOptions }
 // #endregion

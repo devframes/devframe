@@ -110,7 +110,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF0051: {
       why: (p: { port: number }) => `The devframe instance on port ${p.port} has no MCP endpoint.`,
-      fix: 'Restart the instance with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.',
+      fix: 'Restart the instance with the --mcp flag to expose its tools, then list instances again.',
     },
     DF0052: {
       why: (p: { host: string, port: number, reason: string }) => `Failed to listen on ${p.host}:${p.port}: ${p.reason}`,

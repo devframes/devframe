@@ -201,10 +201,6 @@ export interface WhenClauseContext {
 // #region Types
 export type ConnectRemoteDevframeOptions = Omit<DevframeRpcClientOptions, 'connectionMeta' | 'authToken'>;
 export type DevframeClientContext = DocksContext;
-/** @deprecated */
-export type DevframeClientHost = DevframeClientRuntime;
-/** @deprecated */
-export type DevframeClientHostOptions = DevframeClientRuntimeOptions;
 export type DockClientType = 'embedded' | 'standalone';
 export type DockRenderer<Entry extends DevframeDockEntry = DevframeDockEntry> = (_: DockRendererMountOptions<Entry>) => DockRendererInstance | Promise<DockRendererInstance>;
 export type DockRendererManifest = Record<string, ClientScriptEntry>;
@@ -268,8 +264,6 @@ export declare function watchFrameLocation(_: WatchFrameLocationOptions): () => 
 
 // #region Variables
 export declare const CLIENT_CONTEXT_KEY: string;
-/** @deprecated */
-export declare const createDevframeClientHost: typeof createDevframeClientRuntime;
 export declare const FRAME_NAV_CHANNEL: string;
 export declare const FRAME_NAV_VERSION: number;
 // #endregion

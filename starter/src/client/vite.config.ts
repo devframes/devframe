@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 
-// Builds the standalone SPA into `dist/client` (the definition's `cli.distDir`).
+// Builds the standalone SPA into `dist/client` (the definition's `clientAssets`).
 // `base: './'` keeps every asset URL relative so the same bundle works under
 // any mount path - the CLI static build, the single playground, or a hub dock.
 export default defineConfig({
