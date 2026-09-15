@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface ClientScriptEntry {
+  eager?: boolean;
   importFrom: string;
   importName?: string;
 }

@@ -33,6 +33,8 @@ function createStubSharedState<T>(initial: T): StubSharedState<T> {
 function createStubRpc() {
   const states = new Map<string, StubSharedState<any>>()
   const partial: DeepPartial<DevframeRpcClient> = {
+    isTrusted: true,
+    events: createEventEmitter<any>(),
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
         if (!states.has(key))

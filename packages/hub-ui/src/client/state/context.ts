@@ -17,7 +17,7 @@ import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_ST
 import { createClientMessagesClient } from './messages-client'
 import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
-import { executeSetupScript } from './setup-script'
+import { clientScriptOf, executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
 export async function createDocksContext(
@@ -229,17 +229,37 @@ export async function createDocksContext(
     return null
   }
 
-  const runDockSetupScript = async (entry: DevframeDockEntry) => {
-    const hasScript = entry.type === 'action' || entry.type === 'custom-render' || (entry.type === 'iframe' && entry.clientScript)
-    if (!hasScript)
-      return
-    const messagesClient = createClientMessagesClient(rpc)
-    const scriptContext: DockClientScriptContext = reactive({
+  function scriptContext(entry: DevframeDockEntry): DockClientScriptContext {
+    return reactive({
       ...toRefs(docksContext) as any,
       current: dockEntryStateMap.get(entry.id)!,
-      messages: messagesClient,
+      messages: createClientMessagesClient(rpc),
     })
-    await executeSetupScript(entry, scriptContext)
+  }
+
+  async function runPageScript(entry: DevframeDockEntry): Promise<void> {
+    if (entry.type !== 'iframe' || !entry.clientScript)
+      return
+    await executeSetupScript(entry, scriptContext(entry))
+  }
+
+  async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
+    if (entry.type === 'action' || entry.type === 'custom-render')
+      await executeSetupScript(entry, scriptContext(entry))
+  }
+
+  /** Only explicitly eager descriptors run before activation, after the RPC connection is trusted. */
+  function startPageScripts(): void {
+    if (!rpc.isTrusted)
+      return
+    for (const entry of entries.value) {
+      if (entry.type === '~builtin')
+        continue
+      if (!clientScriptOf(entry)?.eager)
+        continue
+      /** Setup reports failures and allows the next activation or publication to retry. */
+      void executeSetupScript(entry, scriptContext(entry), true).catch(() => {})
+    }
   }
 
   // Remember selection redirects: a member tab as its frame's live tab, and a
@@ -286,11 +306,17 @@ export async function createDocksContext(
         return false
     }
 
+    if (!rpc.isTrusted)
+      return false
+    await runPageScript(entry)
+    if (!rpc.isTrusted)
+      return false
+
     initialRestorePending.value = false
     selectedDockId.value = entry.id
     sessionStore.value.open = true
 
-    await runDockSetupScript(entry)
+    await runActivationScript(entry)
     rememberEntrySelection(entry)
     return true
   }
@@ -706,6 +732,9 @@ export async function createDocksContext(
     { flush: 'post' },
   )
   void restoreAfterInitialization()
+
+  watch(entries, startPageScripts, { immediate: true })
+  rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, startPageScripts)
 
   docksContextByRpc.set(rpc, docksContext)
   return docksContext

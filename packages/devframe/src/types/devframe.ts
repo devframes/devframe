@@ -302,6 +302,11 @@ export interface DevframeDockDefaults {
    * host wiring; a URL or bare specifier passes through untouched.
    */
   clientScript?: {
+    /**
+     * Initialize after RPC trust without waiting for dock activation.
+     * @default false
+     */
+    eager?: boolean
     /** An absolute filesystem path, a served URL, or a bare npm specifier. */
     importFrom: string
     /**

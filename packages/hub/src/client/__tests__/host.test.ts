@@ -1,6 +1,7 @@
 import type { DevframeRpcClient } from 'devframe/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { DevframeDockEntry, DevframeDockPanelState } from '../../types/docks'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { HUB_EVENTS } from '../../events'
@@ -38,6 +39,8 @@ function createStubRpc() {
   const states = new Map<string, StubSharedState<any>>()
   const definitions = new Map<string, { name: string, type: string, handler?: (...args: any[]) => any }>()
   const partial: DeepPartial<DevframeRpcClient> = {
+    isTrusted: true,
+    events: createEventEmitter<any>(),
     sharedState: {
       async get(key: string, options?: { initialValue?: any }) {
         if (!states.has(key))
@@ -301,7 +304,7 @@ describe('createDevframeClientRuntime', () => {
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_CLIENT_DOCK__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_CLIENT_DOCK__(ctx)`
-    host.context.docks.register(iframeEntry('local', { clientScript: { importFrom: dataUrl } }))
+    host.context.docks.register(iframeEntry('local', { clientScript: { eager: true, importFrom: dataUrl } }))
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
     expect(received[0].current.entryMeta.id).toBe('local')
@@ -380,7 +383,7 @@ describe('createDevframeClientRuntime', () => {
     ;(globalThis as any).__DF_TEST_SCRIPT__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_SCRIPT__(ctx)`
     states.get('devframe:docks')!.push([
-      iframeEntry('scripted', { clientScript: { importFrom: dataUrl } }),
+      iframeEntry('scripted', { clientScript: { eager: true, importFrom: dataUrl } }),
     ])
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
@@ -420,4 +423,114 @@ describe('createDevframeClientRuntime', () => {
       warn.mockRestore()
     }
   })
+})
+
+it('waits for trust for eager setup and activation for lazy setup in the headless runtime', async () => {
+  expect.assertions(5)
+  const { rpc, states } = createStubRpc()
+  Object.assign(rpc, { isTrusted: false })
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const attempt = vi.fn()
+  const fixture = globalThis as typeof globalThis & { __DF_LAZY_TEST__?: () => void }
+  fixture.__DF_LAZY_TEST__ = attempt
+  const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DF_LAZY_TEST__()' }
+  const eager = iframeEntry('eager', { clientScript: { ...script, eager: true } })
+  const lazy = iframeEntry('lazy', { clientScript: script })
+  try {
+    states.get('devframe:docks')!.push([eager, lazy])
+    expect(attempt).not.toHaveBeenCalled()
+    await expect(runtime.context.docks.switchEntry('lazy')).resolves.toBe(false)
+    Object.assign(rpc, { isTrusted: true })
+    rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
+    await expect.poll(() => attempt.mock.calls.length).toBe(1)
+    await runtime.context.docks.switchEntry('lazy')
+    expect(attempt).toHaveBeenCalledTimes(2)
+    await runtime.context.docks.switchEntry(null)
+    await runtime.context.docks.switchEntry('lazy')
+    expect(attempt).toHaveBeenCalledTimes(2)
+  }
+  finally {
+    runtime.dispose()
+    delete fixture.__DF_LAZY_TEST__
+  }
+})
+
+it.each([false, true])('retries setup after trust is revoked during import (eager: %s)', async (eager) => {
+  expect.assertions(6)
+  const reportError = vi.spyOn(console, 'error').mockImplementation(() => {})
+  const { rpc, states } = createStubRpc()
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const docks = runtime.context.docks
+  const fixture = globalThis as typeof globalThis & { __DF_IMPORT_GATE_HEADLESS__?: () => Promise<void>, __DF_IMPORT_SETUP_HEADLESS__?: () => void }
+  let releaseImport!: () => void
+  const importGate = new Promise<void>((resolve) => {
+    releaseImport = resolve
+  })
+  const importing = vi.fn(() => importGate)
+  const setup = vi.fn()
+  fixture.__DF_IMPORT_GATE_HEADLESS__ = importing
+  fixture.__DF_IMPORT_SETUP_HEADLESS__ = setup
+  const entry = {
+    id: `revoked-import-${eager}`,
+    type: 'iframe',
+    title: 'Revoked import',
+    icon: 'ph:browser',
+    url: '/fixture',
+    clientScript: {
+      eager,
+      importFrom: `data:text/javascript,await globalThis.__DF_IMPORT_GATE_HEADLESS__(); export default () => globalThis.__DF_IMPORT_SETUP_HEADLESS__(); // ${eager}`,
+    },
+  } satisfies DevframeDockEntry
+  try {
+    states.get('devframe:docks')!.push([entry])
+    const activation = docks.switchEntry(entry.id)
+    const rejected = expect(activation).rejects.toThrow('no longer trusted')
+    await expect.poll(() => importing.mock.calls.length).toBe(1)
+    Object.assign(rpc, { isTrusted: false })
+    rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, false)
+    releaseImport()
+    await rejected
+    expect(setup).not.toHaveBeenCalled()
+    expect(docks.selectedId).toBeNull()
+    Object.assign(rpc, { isTrusted: true })
+    rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
+    await expect(docks.switchEntry(entry.id)).resolves.toBe(true)
+    expect(setup).toHaveBeenCalledOnce()
+  }
+  finally {
+    releaseImport()
+    delete fixture.__DF_IMPORT_GATE_HEADLESS__
+    delete fixture.__DF_IMPORT_SETUP_HEADLESS__
+    reportError.mockRestore()
+    runtime.dispose()
+  }
+})
+
+it('does not activate an iframe when trust is lost while its setup completes', async () => {
+  expect.assertions(2)
+  const { rpc, states } = createStubRpc()
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const docks = runtime.context.docks
+  const fixture = globalThis as typeof globalThis & { __DF_SETUP_REVOKE_HEADLESS__?: () => void }
+  fixture.__DF_SETUP_REVOKE_HEADLESS__ = () => {
+    Object.assign(rpc, { isTrusted: false })
+    rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, false)
+  }
+  const entry = {
+    id: 'revoked-during-setup',
+    type: 'iframe',
+    title: 'Revoked setup',
+    icon: 'ph:browser',
+    url: '/fixture',
+    clientScript: { importFrom: 'data:text/javascript,export default async () => globalThis.__DF_SETUP_REVOKE_HEADLESS__()' },
+  } satisfies DevframeDockEntry
+  try {
+    states.get('devframe:docks')!.push([entry])
+    await expect(docks.switchEntry(entry.id)).resolves.toBe(false)
+    expect(docks.selectedId).toBeNull()
+  }
+  finally {
+    delete fixture.__DF_SETUP_REVOKE_HEADLESS__
+    runtime.dispose()
+  }
 })

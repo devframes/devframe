@@ -172,6 +172,11 @@ export interface DevframeDockEntryBase {
 
 export interface ClientScriptEntry {
   /**
+   * Initialize after trust without waiting for dock activation.
+   * @default false
+   */
+  eager?: boolean
+  /**
    * What to import: either a **URL the host serves** (a self-contained ES
    * module, e.g. `/@fs/<abs path>` under Vite or a statically-mounted bundle
    * path), or a **bare npm specifier** (e.g.
@@ -231,9 +236,7 @@ export interface DevframeViewIframe extends DevframeDockEntryBase {
    * share a `frameId` may live in one group, several groups, or none.
    */
   frameId?: string
-  /**
-   * Optional client script to import into the iframe
-   */
+  /** Optional page script, initialized on activation or after trust when `eager: true`. */
   clientScript?: ClientScriptEntry
   /**
    * Soft-navigation target within a shared frame. Set on a **member** dock

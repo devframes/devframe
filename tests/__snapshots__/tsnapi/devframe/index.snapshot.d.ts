@@ -185,6 +185,7 @@ export interface DevframeDockDefaults {
   badge?: string;
   groupId?: string;
   clientScript?: {
+    eager?: boolean;
     importFrom: string;
     importName?: string;
   };

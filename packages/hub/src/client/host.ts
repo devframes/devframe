@@ -27,6 +27,7 @@ import type {
 } from './docks'
 import type { DockRenderer, DockRendererManifest, DockRenderersContext } from './renderers'
 import { connectDevframe } from 'devframe/client'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { clientScriptFailureHint, resolveClientModuleSpecifier } from '../client-modules'
 import { DEFAULT_CATEGORIES_ORDER, DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY } from '../constants'
@@ -235,15 +236,18 @@ export async function createDevframeClientRuntime(
   }
   setDevframeClientContext(context)
 
-  const loadedScripts = new Set<string>()
+  let disposed = false
+  const loadedScripts = new Map<string, Promise<void>>()
   if (loadScriptsEnabled) {
     loadClientScripts()
     disposers.push(docksState.on('updated', loadClientScripts))
+    disposers.push(rpc.events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, loadClientScripts))
   }
 
   return {
     context,
     dispose() {
+      disposed = true
       for (const off of disposers.splice(0)) off()
       for (const disposeAdapter of frameNavAdapters.values()) disposeAdapter()
       frameNavAdapters.clear()
@@ -417,11 +421,32 @@ export async function createDevframeClientRuntime(
     return ctx
   }
 
+  async function preparePageScript(entry: DevframeDockEntry): Promise<boolean> {
+    if (!rpc.isTrusted)
+      return false
+    if (entry.type === 'iframe' && entry.clientScript)
+      await setupClientScript(entry.id, entry.clientScript)
+    return !disposed && rpc.isTrusted && entryToStateMap.get(entry.id)?.entryMeta === entry
+  }
+
+  async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
+    if (entry.type === 'action')
+      await setupClientScript(entry.id, entry.action, false)
+    else if (entry.type === 'custom-render')
+      await setupClientScript(entry.id, entry.renderer)
+  }
+
   async function switchEntry(id?: string | null): Promise<boolean> {
     const next = id ?? null
-    if (next === selectedId)
+    if (next === selectedId && entryToStateMap.get(next ?? '')?.entryMeta.type !== 'action')
       return false
     if (next !== null && !entryToStateMap.has(next))
+      return false
+
+    const entry = entryToStateMap.get(next ?? '')?.entryMeta
+    if (entry && loadScriptsEnabled && !rpc.isTrusted)
+      return false
+    if (entry?.type === 'iframe' && entry.clientScript && loadScriptsEnabled && !await preparePageScript(entry))
       return false
 
     const previous = selectedId
@@ -437,6 +462,8 @@ export async function createDevframeClientRuntime(
       entryToStateMap.get(previous)?.events.emit('entry:deactivated')
     if (next)
       entryToStateMap.get(next)?.events.emit('entry:activated')
+    if (entry && loadScriptsEnabled)
+      await runActivationScript(entry)
     return true
   }
 
@@ -524,18 +551,41 @@ export async function createDevframeClientRuntime(
 
   // ── client scripts ───────────────────────────────────────────────────────
 
-  function clientScriptOf(entry: DevframeDockEntry): ClientScriptEntry | undefined {
-    return (entry as any).action ?? (entry as any).renderer ?? (entry as any).clientScript
+  function loadClientScripts(): void {
+    if (disposed || !rpc.isTrusted)
+      return
+    for (const entry of currentEntries()) {
+      if (entry.type === '~builtin')
+        continue
+      if (entry.type === 'iframe')
+        startEagerScript(entry.id, entry.clientScript)
+      if (entry.type === 'action')
+        startEagerScript(entry.id, entry.action)
+      else if (entry.type === 'custom-render')
+        startEagerScript(entry.id, entry.renderer)
+    }
   }
 
-  function loadClientScripts(): void {
-    for (const entry of currentEntries()) {
-      const script = clientScriptOf(entry)
-      if (!script?.importFrom || loadedScripts.has(entry.id))
-        continue
-      loadedScripts.add(entry.id)
-      void runClientScript(entry.id, script)
-    }
+  function startEagerScript(entryId: string, script: ClientScriptEntry | undefined): void {
+    if (script?.eager)
+      void setupClientScript(entryId, script).catch(() => {})
+  }
+
+  /** Share eager and activation setup; explicit action invocations bypass the cache. */
+  function setupClientScript(entryId: string, script: ClientScriptEntry, cache = true): Promise<void> {
+    const key = JSON.stringify([entryId, script.importFrom, script.importName ?? 'default'])
+    const existing = loadedScripts.get(key)
+    if (cache && existing)
+      return existing
+    const promise = runClientScript(entryId, script)
+    if (!cache)
+      return promise
+    loadedScripts.set(key, promise)
+    void promise.catch(() => {
+      if (loadedScripts.get(key) === promise)
+        loadedScripts.delete(key)
+    })
+    return promise
   }
 
   async function runClientScript(entryId: string, script: ClientScriptEntry): Promise<void> {
@@ -554,10 +604,13 @@ export async function createDevframeClientRuntime(
       const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
       if (typeof fn !== 'function')
-        return
+        throw new Error(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
       const current = entryToStateMap.get(entryId)
-      if (!current)
+      if (!current || disposed)
         return
+      /** Reject instead of caching skipped setup so re-authentication can retry it. */
+      if (!rpc.isTrusted)
+        throw new Error('[@devframes/hub] RPC client is no longer trusted')
       // Scope the messages client to this entry: its messages default their
       // `category` to the entry id, so the feed can attribute and group them.
       const messages = createMessagesClient(rpc, { defaults: { category: entryId } })
@@ -565,11 +618,11 @@ export async function createDevframeClientRuntime(
       await fn(scriptContext)
     }
     catch (error) {
-      loadedScripts.delete(entryId)
       console.error(
         `[@devframes/hub] failed to load client script for "${entryId}" from ${specifier}${clientScriptFailureHint(script.importFrom, specifier)}`,
         error,
       )
+      throw error
     }
   }
 }
