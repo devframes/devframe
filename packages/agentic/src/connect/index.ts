@@ -6,7 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
 import { diagnostics, listLiveDevframeInstances, probeDevframeOrigin } from 'devframe/internal'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { Diagnostic } from 'devframe/utils/nostics'
-import { joinURL } from 'ufo'
+import { joinURL } from 'devframe/utils/url'
 
 export interface ConnectServerOptions {
   /**

@@ -1,5 +1,5 @@
 import type { DevframeDocksUserSettings } from './types/settings'
-import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'ufo'
+import { cleanDoubleSlashes, withLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
 import { HUB_EVENTS } from './events'
 
 export { HUB_EVENTS } from './events'

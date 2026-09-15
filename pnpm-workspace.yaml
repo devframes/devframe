@@ -142,7 +142,6 @@ catalogs:
     structured-clone-es: ^2.0.1
     tinyexec: ^1.3.1
     tinyglobby: ^0.2.17
-    ufo: ^1.6.4
     valibot: ^1.5.0
     whenexpr: ^0.1.2
     ws: ^8.21.3

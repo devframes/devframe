@@ -1,7 +1,7 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
 import type { DevframeClientRpcHost, DevframeRpcClientMode, DevframeRpcClientOptions, RpcClientEvents } from './rpc'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
-import { withProtocol } from 'ufo'
+import { withProtocol } from 'devframe/utils/url'
 import { createLiveRpcClientMode } from './rpc-live'
 
 export interface CreateWsRpcClientModeOptions {

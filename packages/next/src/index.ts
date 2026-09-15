@@ -15,3 +15,6 @@ throw new Error(
   + '  • "@devframes/next/single" (+ "/single/client"): host one devframe\'s SPA\n'
   + '  • "@devframes/next/hub" (+ "/hub/client"): mount a devframes-hub\n',
 )
+
+// An explicit empty module so dts emit has something to say about this entry.
+export {}

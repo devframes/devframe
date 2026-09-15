@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Shadows the comark-docs layer's brand-assets page with devframe's assets.
-import { joinURL } from 'ufo'
 import logoSvg from '../../public/logo.svg?raw'
 
 definePageMeta({
@@ -11,7 +10,7 @@ const title = 'Brand assets'
 const description = 'Logos and assets for Devframe. Download SVG or PNG, or copy the raw SVG source directly.'
 
 const site = useSiteConfig()
-const canonicalUrl = computed(() => joinURL(site.url, '/logos'))
+const canonicalUrl = computed(() => new URL('/logos', site.url).href)
 
 useRobotsRule('index, follow')
 

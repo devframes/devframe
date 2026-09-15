@@ -11,4 +11,9 @@ export default defineConfig({
   tsconfig: '../../tsconfig.base.json',
   dts: true,
   platform: 'node',
+  deps: {
+    onlyBundle: [
+      'pathe',
+    ],
+  },
 })

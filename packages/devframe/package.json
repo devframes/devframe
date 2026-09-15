@@ -63,6 +63,7 @@
     "./utils/shared-state": "./dist/utils/shared-state.mjs",
     "./utils/streaming-channel": "./dist/utils/streaming-channel.mjs",
     "./utils/structured-clone": "./dist/utils/structured-clone.mjs",
+    "./utils/url": "./dist/utils/url.mjs",
     "./utils/when": "./dist/utils/when.mjs",
     "./package.json": "./package.json"
   },
@@ -94,25 +95,24 @@
     }
   },
   "dependencies": {
-    "@standard-schema/spec": "catalog:deps",
-    "birpc": "catalog:deps",
     "crossws": "catalog:deps",
-    "h3": "catalog:deps",
-    "mrmime": "catalog:deps",
-    "nostics": "catalog:deps",
-    "pathe": "catalog:deps",
-    "ufo": "catalog:deps"
+    "h3": "catalog:deps"
   },
   "devDependencies": {
     "@devframes/agentic": "workspace:*",
+    "@standard-schema/spec": "catalog:deps",
+    "birpc": "catalog:deps",
     "cac": "catalog:deps",
     "get-port-please": "catalog:deps",
     "immer": "catalog:deps",
     "launch-editor": "catalog:deps",
     "mlly": "catalog:build",
+    "mrmime": "catalog:deps",
+    "nostics": "catalog:deps",
     "obug": "catalog:deps",
     "ohash": "catalog:deps",
     "p-limit": "catalog:deps",
+    "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "structured-clone-es": "catalog:deps",
     "tinyglobby": "catalog:deps",

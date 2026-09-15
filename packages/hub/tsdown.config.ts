@@ -23,9 +23,13 @@ export default defineConfig({
       'rolldown',
     ],
     onlyBundle: [
+      '@standard-schema/spec',
       'acorn',
       'get-port-please',
       'mlly',
+      'pathe',
+      'perfect-debounce',
+      'tinyexec',
     ],
   },
 })

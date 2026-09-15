@@ -4,7 +4,7 @@ import {
   DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM,
   DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM,
 } from 'devframe/constants'
-import { withBase } from 'ufo'
+import { withBase } from 'devframe/utils/url'
 import {
   readStoredAuthToken,
   readStoredConnection,

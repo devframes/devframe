@@ -17,6 +17,9 @@ const deps = {
     /^@oxc-project\//,
     /^@devframes\//,
   ],
+  onlyBundle: [
+    'pathe',
+  ],
 }
 
 export default defineConfig([

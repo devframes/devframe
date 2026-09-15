@@ -20,8 +20,7 @@
     "comark-docs": "catalog:docs",
     "d3-shape": "catalog:frontend",
     "nuxt": "catalog:build",
-    "shiki": "catalog:deps",
-    "ufo": "catalog:deps"
+    "shiki": "catalog:deps"
   },
   "devDependencies": {
     "@types/d3-shape": "catalog:types"

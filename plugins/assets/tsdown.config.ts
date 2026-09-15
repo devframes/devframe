@@ -11,6 +11,18 @@ const nodeEntries = {
   'node/rpc/index': 'src/node/rpc/index.ts',
 }
 
+const deps = {
+  onlyBundle: [
+    'image-meta',
+    'pathe',
+    'perfect-debounce',
+    // tinyglobby and its two sub-dependencies
+    'fdir',
+    'picomatch',
+    'tinyglobby',
+  ],
+}
+
 /**
  * Two configs keep the graphs isolated:
  * 1. node runtime (`clean: true`): clears dist/;
@@ -25,6 +37,7 @@ export default defineConfig([
     clean: true,
     platform: 'node',
     tsconfig,
+    deps,
     dts: false,
     entry: nodeEntries,
   },
@@ -32,6 +45,7 @@ export default defineConfig([
     clean: false,
     platform: 'neutral',
     tsconfig,
+    deps,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
     entry: nodeEntries,

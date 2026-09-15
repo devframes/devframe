@@ -10,6 +10,11 @@ export default defineConfig({
   tsconfig: '../../tsconfig.base.json',
   dts: true,
   platform: 'node',
+  deps: {
+    onlyBundle: [
+      'pathe',
+    ],
+  },
   // The Next.js SPA under app/ is built separately (`build:spa`);
   // tsdown only compiles the node-side entries above.
 })

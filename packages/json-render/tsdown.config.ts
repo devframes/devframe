@@ -12,4 +12,12 @@ export default defineConfig({
   tsconfig: '../../tsconfig.base.json',
   dts: true,
   platform: 'neutral',
+  deps: {
+    onlyBundle: [
+      '@standard-schema/spec',
+      // types only, via `devframe/utils/nostics` (the runtime import stays
+      // external on the devframe peer)
+      'nostics',
+    ],
+  },
 })

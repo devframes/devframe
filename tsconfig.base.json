@@ -106,6 +106,9 @@
       "devframe/utils/structured-clone": [
         "./packages/devframe/src/utils/structured-clone.ts"
       ],
+      "devframe/utils/url": [
+        "./packages/devframe/src/utils/url.ts"
+      ],
       "devframe/utils/when": [
         "./packages/devframe/src/utils/when.ts"
       ],

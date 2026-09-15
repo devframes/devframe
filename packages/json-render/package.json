@@ -46,11 +46,11 @@
   },
   "dependencies": {
     "@json-render/core": "catalog:deps",
-    "@standard-schema/spec": "catalog:deps",
     "zod": "catalog:deps"
   },
   "devDependencies": {
     "@devframes/hub": "workspace:*",
+    "@standard-schema/spec": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "tsdown": "catalog:build"

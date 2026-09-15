@@ -14,3 +14,6 @@ throw new Error(
   + '  • "@devframes/vite/single": dev-serve one devframe\'s SPA with Vite\n'
   + '  • "@devframes/vite/hub": mount a devframes-hub inside a Vite app\n',
 )
+
+// An explicit empty module so dts emit has something to say about this entry.
+export {}

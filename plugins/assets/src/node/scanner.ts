@@ -1,9 +1,9 @@
 import type { Stats } from 'node:fs'
 import type { AssetInfo, AssetType } from './types'
 import fsp from 'node:fs/promises'
+import { joinURL } from 'devframe/utils/url'
 import { join } from 'pathe'
 import { glob } from 'tinyglobby'
-import { joinURL } from 'ufo'
 
 const reImage = /\.(?:png|jpe?g|jxl|gif|svg|webp|avif|ico|bmp|tiff?)$/i
 const reVideo = /\.(?:mp4|webm|ogv|mov|avi|flv|wmv|mpg|mpeg|mkv|3gp|3g2|ts|mts|m2ts|vob|ogm|ogx|rm|rmvb|asf|amv|divx|m4v|svi|viv|f4v|f4p|f4a|f4b)$/i

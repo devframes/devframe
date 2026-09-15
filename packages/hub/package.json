@@ -50,21 +50,20 @@
     }
   },
   "dependencies": {
-    "@standard-schema/spec": "catalog:deps",
     "destr": "catalog:deps",
     "h3": "catalog:deps",
-    "pathe": "catalog:deps",
-    "perfect-debounce": "catalog:deps",
-    "tinyexec": "catalog:deps",
-    "ufo": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {
     "@devframes/agentic": "workspace:*",
+    "@standard-schema/spec": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "mlly": "catalog:build",
+    "pathe": "catalog:deps",
+    "perfect-debounce": "catalog:deps",
+    "tinyexec": "catalog:deps",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"
   }

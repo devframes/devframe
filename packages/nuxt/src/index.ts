@@ -15,3 +15,6 @@ throw new Error(
   + '  • modules: ["@devframes/nuxt/single"]: Nuxt app as one devframe client\n'
   + '  • modules: ["@devframes/nuxt/hub"]: mount a devframes-hub with nuxt dev\n',
 )
+
+// An explicit empty module so dts emit has something to say about this entry.
+export {}

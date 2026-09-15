@@ -37,12 +37,10 @@
   "peerDependencies": {
     "devframe": "workspace:*"
   },
-  "dependencies": {
-    "pathe": "catalog:deps"
-  },
   "devDependencies": {
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
+    "pathe": "catalog:deps",
     "tsdown": "catalog:build",
     "vitest": "catalog:testing"
   }

@@ -67,12 +67,7 @@
   "dependencies": {
     "@devframes/service-open": "workspace:*",
     "cac": "catalog:deps",
-    "chokidar": "catalog:deps",
-    "image-meta": "catalog:deps",
-    "pathe": "catalog:deps",
-    "perfect-debounce": "catalog:deps",
-    "tinyglobby": "catalog:deps",
-    "ufo": "catalog:deps"
+    "chokidar": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
@@ -89,8 +84,12 @@
     "devframe": "workspace:*",
     "floating-vue": "catalog:frontend",
     "h3": "catalog:deps",
+    "image-meta": "catalog:deps",
+    "pathe": "catalog:deps",
+    "perfect-debounce": "catalog:deps",
     "reka-ui": "catalog:frontend",
     "storybook": "catalog:storybook",
+    "tinyglobby": "catalog:deps",
     "tsdown": "catalog:build",
     "unocss": "catalog:frontend",
     "vite": "catalog:build",

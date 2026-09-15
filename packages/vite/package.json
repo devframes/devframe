@@ -53,9 +53,6 @@
       "optional": true
     }
   },
-  "dependencies": {
-    "pathe": "catalog:deps"
-  },
   "devDependencies": {
     "@devframes/hub": "workspace:*",
     "@devframes/hub-ui": "workspace:*",
@@ -64,6 +61,7 @@
     "@types/ws": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
+    "pathe": "catalog:deps",
     "tsdown": "catalog:build",
     "vite": "catalog:build",
     "vitest": "catalog:testing",

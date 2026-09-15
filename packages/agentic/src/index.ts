@@ -12,3 +12,6 @@ throw new Error(
   + '  • import from "devframe/adapters/mcp" to serve a devframe over MCP\n'
   + '  • run "devframe connect" for the stdio discovery gateway\n',
 )
+
+// An explicit empty module so dts emit has something to say about this entry.
+export {}
