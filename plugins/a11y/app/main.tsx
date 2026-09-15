@@ -1,5 +1,9 @@
+/// <reference types="vite/client" />
+
 /* @refresh reload */
+
 import { render } from 'solid-js/web'
+import { syncPanelTheme } from '../../../design/panel-theme'
 import { App } from './app.tsx'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -20,3 +24,6 @@ if (!root)
   throw new Error('#app mount node missing from index.html')
 
 render(() => <App />, root)
+
+const stopPanelTheme = syncPanelTheme()
+import.meta.hot?.dispose(stopPanelTheme)

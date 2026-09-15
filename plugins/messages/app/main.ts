@@ -1,3 +1,6 @@
+/// <reference types="vite/client" />
+
+import { syncPanelTheme } from '../../../design/panel-theme'
 import { mountMessages } from './client/index'
 
 // The shared design tokens flip on the `.dark` class; mirror the OS preference
@@ -19,3 +22,6 @@ if (!app)
 mountMessages(app).catch((error) => {
   app.textContent = `Failed to connect: ${error instanceof Error ? error.message : String(error)}`
 })
+
+const stopPanelTheme = syncPanelTheme()
+import.meta.hot?.dispose(stopPanelTheme)

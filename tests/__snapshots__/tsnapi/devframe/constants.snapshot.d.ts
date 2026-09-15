@@ -38,6 +38,7 @@ export declare const DEVFRAME_EVENTS: {
     readonly panelStatePatch: "devframe:in-page:panel-state:patch";
   };
   readonly postMessage: {
+    readonly theme: "devframe:theme";
     readonly remoteAssetsError: "devframe:remote-assets-error";
     readonly inPageChannel: "devframe:in-page-channel";
   };

@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { syncPanelTheme } from '../../../design/panel-theme'
 import App from './app/App.vue'
 import 'virtual:uno.css'
 import 'floating-vue/dist/style.css'
@@ -15,3 +16,6 @@ applyScheme(mq.matches)
 mq.addEventListener('change', e => applyScheme(e.matches))
 
 createApp(App).mount('#app')
+
+const stopPanelTheme = syncPanelTheme()
+import.meta.hot?.dispose(stopPanelTheme)

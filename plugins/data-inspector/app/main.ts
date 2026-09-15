@@ -1,4 +1,7 @@
+/// <reference types="vite/client" />
+
 import { createApp } from 'vue'
+import { syncPanelTheme } from '../../../design/panel-theme'
 import App from './App.vue'
 import 'virtual:uno.css'
 // floating-vue's base popper/transition structure, then @antfu/design's themed
@@ -10,3 +13,6 @@ import '@antfu/design/styles.css'
 import './style.css'
 
 createApp(App).mount('#app')
+
+const stopPanelTheme = syncPanelTheme()
+import.meta.hot?.dispose(stopPanelTheme)

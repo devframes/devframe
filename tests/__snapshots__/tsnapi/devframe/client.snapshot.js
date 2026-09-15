@@ -18,6 +18,7 @@ export function createScopedClientContext(_, _) {}
 export function getDevframeConnection() {}
 export async function getDevframeRpcClient(_) {}
 export function isCallableStatus(_) {}
+export function provideDevframeTheme(_, _) {}
 export function readOtpFromUrl(_) {}
 export async function registerDevframeViewerOrigin(_, _) {}
 export function registerWebMcpTools(_, _) {}
@@ -26,6 +27,7 @@ export function resolveSseUrl(_, _, _) {}
 export function resolveWebMcpModelContext() {}
 export function resolveWsUrl(_, _, _) {}
 export async function setupDevframeConnection(_) {}
+export function watchDevframeTheme(_) {}
 // #endregion
 
 // #region Variables

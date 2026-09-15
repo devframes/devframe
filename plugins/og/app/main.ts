@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { syncPanelTheme } from '../../../design/panel-theme'
 import App from './app/app.vue'
 
 const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -10,3 +11,6 @@ applyScheme(media.matches)
 media.addEventListener('change', event => applyScheme(event.matches))
 
 createApp(App).mount('#app')
+
+const stopPanelTheme = syncPanelTheme()
+import.meta.hot?.dispose(stopPanelTheme)

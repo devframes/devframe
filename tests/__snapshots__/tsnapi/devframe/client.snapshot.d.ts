@@ -111,6 +111,13 @@ export interface DevframeServicesClient {
   keys: () => string[];
   state: () => Promise<SharedState<DevframeServicesState>>;
 }
+export interface DevframeTheme {
+  primaryColor?: string;
+}
+export interface DevframeThemeProvider {
+  update: (_: DevframeTheme) => void;
+  dispose: () => void;
+}
 export interface RegisterWebMcpToolsOptions {
   modelContext?: WebMcpModelContext;
 }
@@ -208,6 +215,7 @@ export declare function createScopedClientContext<NS extends string = string>(_:
 export declare function getDevframeConnection(): DevframeConnection | undefined;
 export declare function getDevframeRpcClient(_?: DevframeRpcClientOptions): Promise<DevframeRpcClient>;
 export declare function isCallableStatus(_: DevframeConnectionStatus): boolean;
+export declare function provideDevframeTheme(_: HTMLIFrameElement, _: DevframeTheme): DevframeThemeProvider;
 export declare function readOtpFromUrl(_?: string): string | undefined;
 export declare function registerDevframeViewerOrigin(_: DevframeConnection, _?: any): Promise<boolean>;
 export declare function registerWebMcpTools<LocalFunctions, SetupContext>(_: RpcFunctionsCollector<LocalFunctions, SetupContext>, _?: RegisterWebMcpToolsOptions): () => void;
@@ -216,6 +224,7 @@ export declare function resolveSseUrl(_: ConnectionMeta['sse'], _: string, _: Ws
 export declare function resolveWebMcpModelContext(): WebMcpModelContext | undefined;
 export declare function resolveWsUrl(_: ConnectionMeta['websocket'], _: string, _: WsUrlLocation): string;
 export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptions): Promise<DevframeConnection>;
+export declare function watchDevframeTheme(_: (_: DevframeTheme) => void): () => void;
 // #endregion
 
 // #region Variables

@@ -6,7 +6,9 @@ import type { IframePanes } from 'iframe-pane'
 import type { CSSProperties } from 'vue'
 import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub/client'
 import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
+import { provideDevframeTheme } from 'devframe/client'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { useBranding } from '../../state/branding'
 import { useSettings } from '../../state/settings-defaults'
 import ViewAssetsError from './ViewAssetsError.vue'
 import ViewIframeLoading from './ViewIframeLoading.vue'
@@ -19,6 +21,7 @@ const props = defineProps<{
 }>()
 
 const settings = useSettings(props.context)
+const branding = useBranding()
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
 const addressBarControls = computed(() => typeof props.entry.addressBar === 'object' ? props.entry.addressBar : undefined)
 const showAddressBar = computed(() => settings.value.showIframeAddressBar || Boolean(props.entry.addressBar))
@@ -211,6 +214,7 @@ function openExternally() {
 let mountedTarget: HTMLDivElement | null = null
 let onIframeLoad: (() => void) | undefined
 let stopLocationWatch: (() => void) | undefined
+let disposeTheme: (() => void) | undefined
 
 onMounted(() => {
   const existed = props.panes.has(paneKey.value)
@@ -232,6 +236,9 @@ onMounted(() => {
     style: { boxShadow: 'none', outline: 'none' },
   })
   const iframe = pane.iframe
+  const themeProvider = provideDevframeTheme(iframe, { primaryColor: branding.value.primaryColor })
+  disposeTheme = themeProvider.dispose
+  watchEffect(() => themeProvider.update({ primaryColor: branding.value.primaryColor }))
 
   // Follow the frame wherever it goes: a document load, but also an SPA
   // router's `pushState`/`replaceState` and back/forward, none of which fire
@@ -315,6 +322,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  disposeTheme?.()
   window.removeEventListener('message', onWindowMessage)
   const pane = props.panes.get(paneKey.value)
   if (pane && onIframeLoad)
