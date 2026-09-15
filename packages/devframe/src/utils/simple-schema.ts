@@ -1,6 +1,14 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 
 /**
+ * Re-exported [Standard Schema](https://standardschema.dev/) contract types so
+ * integrations can type `args`/`returns`/view schemas against Standard Schema
+ * through the devframe peer, without taking their own `@standard-schema/spec`
+ * dependency (devframe inlines the declarations into its own `.d.mts`).
+ */
+export type { StandardSchemaV1 } from '@standard-schema/spec'
+
+/**
  * A tiny, zero-dependency [Standard Schema](https://standardschema.dev/)
  * builder.
  *

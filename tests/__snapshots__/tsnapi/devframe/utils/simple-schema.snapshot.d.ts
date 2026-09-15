@@ -48,3 +48,7 @@ export declare const s: {
 // #region Referenced (internal)
 type InferObject<T extends Record<string, StandardSchemaV1>, Mode extends 'input' | 'output'> = Prettify<{ [K in keyof T as undefined extends InferField<T[K], Mode> ? never : K]: InferField<T[K], Mode>; } & { [K in keyof T as undefined extends InferField<T[K], Mode> ? K : never]?: InferField<T[K], Mode>; }>;
 // #endregion
+
+// #region Other
+export { StandardSchemaV1 }
+// #endregion

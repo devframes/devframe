@@ -1789,9 +1789,6 @@ importers:
       '@devframes/hub':
         specifier: workspace:*
         version: link:../hub
-      '@standard-schema/spec':
-        specifier: catalog:deps
-        version: 1.1.0
       '@types/node':
         specifier: catalog:types
         version: 26.5.1

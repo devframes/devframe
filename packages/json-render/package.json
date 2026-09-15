@@ -50,7 +50,6 @@
   },
   "devDependencies": {
     "@devframes/hub": "workspace:*",
-    "@standard-schema/spec": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "tsdown": "catalog:build"

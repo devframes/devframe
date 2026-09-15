@@ -10,6 +10,7 @@ export { createConsoleReporter }
 export { defineDiagnostics }
 export { defineProdDiagnostics }
 export { DevframeDefineDiagnosticsOptions }
+export { DevframeDiagnostics }
 export { Diagnostic }
 export { DiagnosticCallParams }
 export { DiagnosticDefinition }

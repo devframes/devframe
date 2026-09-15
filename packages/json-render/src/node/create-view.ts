@@ -1,6 +1,6 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
+import type { StandardSchemaV1 } from 'devframe/utils/simple-schema'
 import type { DevframeJsonRenderSpec, JsonRenderStatePatch, JsonRenderView } from '../types'
 import type { JsonRenderIndex } from '../view-index'
 import { createSharedState } from 'devframe/utils/shared-state'

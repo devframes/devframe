@@ -22,10 +22,5 @@ export default defineConfig({
       'postcss',
       'rolldown',
     ],
-    onlyBundle: [
-      '@standard-schema/spec',
-      'acorn',
-      'get-port-please',
-    ],
   },
 })

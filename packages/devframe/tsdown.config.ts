@@ -26,7 +26,7 @@ const deps = {
     '@jridgewell/trace-mapping',
   ],
   /**
-   * `whenexpr` is runtime-only bundled (see `onlyBundle` below); its
+   * `whenexpr` is a devDependency, so its runtime is bundled in; its
    * declaration file mixes type-only and value named exports
    * (`export { type WhenExpression, evaluateWhen, ... }`) in a way that
    * trips up rolldown's dts bundler when it tries to inline the type
@@ -38,27 +38,6 @@ const deps = {
   dts: {
     neverBundle: ['whenexpr'],
   },
-  onlyBundle: [
-    '@standard-schema/spec',
-    'acorn',
-    'birpc',
-    'get-port-please',
-    'immer',
-    'launch-editor',
-    'mlly',
-    'mrmime',
-    'obug',
-    'ohash',
-    'p-limit',
-    'perfect-debounce',
-    'picocolors',
-    'shell-quote',
-    'structured-clone-es',
-    'tinyexec',
-    'ua-parser-modern',
-    'whenexpr',
-    'yocto-queue',
-  ],
 }
 
 // The node build reaches `devframe/utils/shared-state` through the same

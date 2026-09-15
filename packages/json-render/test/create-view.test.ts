@@ -1,5 +1,5 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { DevframeHost, DevframeNodeContext } from 'devframe'
+import type { StandardSchemaV1 } from 'devframe/utils/simple-schema'
 import type { DevframeJsonRenderSpec } from '../src/types'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'

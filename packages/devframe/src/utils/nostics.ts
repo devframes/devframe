@@ -41,12 +41,25 @@ export function defineDiagnostics<
   docsBase?: string | ((code: keyof Codes) => string | undefined)
   codes: Codes
   reporters?: Reporters
-}): Diagnostics<Codes, readonly [typeof devframeReporter, ...Reporters]> {
+}): DevframeDiagnostics<Codes, Reporters> {
   return defineNosticsDiagnostics({
     ...options,
     reporters: [devframeReporter, ...(options.reporters ?? [])],
-  }) as Diagnostics<Codes, readonly [typeof devframeReporter, ...Reporters]>
+  }) as DevframeDiagnostics<Codes, Reporters>
 }
+
+/**
+ * The `Diagnostics` object returned by devframe's {@link defineDiagnostics}
+ * (devframe's ANSI console reporter is always prepended). Integrations that
+ * export their own `defineDiagnostics(...)` result as public API annotate it
+ * with this type, so the reference resolves through `devframe/utils/nostics`
+ * rather than inlining `nostics`'s types or taking a direct `nostics`
+ * dependency.
+ */
+export type DevframeDiagnostics<
+  Codes extends Record<string, DiagnosticDefinition>,
+  Reporters extends readonly AnyDiagnosticReporter[] = [],
+> = Diagnostics<Codes, readonly [typeof devframeReporter, ...Reporters]>
 
 export {
   createConsoleReporter,
