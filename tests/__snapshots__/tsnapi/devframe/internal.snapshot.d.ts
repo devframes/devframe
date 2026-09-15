@@ -60,7 +60,7 @@ export declare function toolInputToCommandArgs(_: unknown, _?: number): unknown[
 // #endregion
 
 // #region Variables
-export declare const diagnostics: Diagnostics<{
+export declare const diagnostics: import("nostics").Diagnostics<{
   readonly DF0006: {
     readonly why: (p: {
       name: string;
@@ -371,7 +371,7 @@ export declare const diagnostics: Diagnostics<{
     }) => string;
     readonly fix: "Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.";
   };
-}, readonly [(d: Diagnostic, { method }?: {
+}, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void]>;
 // #endregion

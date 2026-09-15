@@ -5,9 +5,4 @@ export default defineConfig({
   tsconfig: '../../tsconfig.base.json',
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
   entry: { index: 'src/index.ts' },
-  deps: {
-    onlyBundle: [
-      'pathe',
-    ],
-  },
 })

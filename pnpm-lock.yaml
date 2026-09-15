@@ -1572,6 +1572,9 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@standard-schema/spec':
         specifier: catalog:deps
@@ -1582,9 +1585,6 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../devframe
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
@@ -1600,6 +1600,12 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
+      nostics:
+        specifier: catalog:deps
+        version: 1.2.0
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@devframes/agentic':
         specifier: workspace:*
@@ -1628,9 +1634,6 @@ importers:
       mrmime:
         specifier: catalog:deps
         version: 2.0.1
-      nostics:
-        specifier: catalog:deps
-        version: 1.2.0
       obug:
         specifier: catalog:deps
         version: 3.0.0
@@ -1640,9 +1643,6 @@ importers:
       p-limit:
         specifier: catalog:deps
         version: 7.3.2
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       perfect-debounce:
         specifier: catalog:deps
         version: 2.1.0
@@ -1679,6 +1679,12 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      tinyexec:
+        specifier: catalog:deps
+        version: 1.3.1
       zigpty:
         specifier: catalog:deps
         version: 0.2.1
@@ -1698,15 +1704,9 @@ importers:
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       perfect-debounce:
         specifier: catalog:deps
         version: 2.1.0
-      tinyexec:
-        specifier: catalog:deps
-        version: 1.3.1
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
@@ -1922,6 +1922,10 @@ importers:
         version: 3.5.42(typescript@6.0.3)
 
   packages/vite:
+    dependencies:
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@devframes/hub':
         specifier: workspace:*
@@ -1944,9 +1948,6 @@ importers:
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
@@ -2028,6 +2029,18 @@ importers:
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
+      image-meta:
+        specifier: catalog:deps
+        version: 0.2.2
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
+      perfect-debounce:
+        specifier: catalog:deps
+        version: 2.1.0
+      tinyglobby:
+        specifier: catalog:deps
+        version: 0.2.17
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -2071,24 +2084,12 @@ importers:
       h3:
         specifier: catalog:deps
         version: 2.0.1-rc.31(crossws@0.4.12(srvx@0.12.7))
-      image-meta:
-        specifier: catalog:deps
-        version: 0.2.2
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
-      perfect-debounce:
-        specifier: catalog:deps
-        version: 2.1.0
       reka-ui:
         specifier: catalog:frontend
         version: 2.10.4(vue@3.5.42(typescript@6.0.3))
       storybook:
         specifier: ^10.6.0
         version: 10.6.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      tinyglobby:
-        specifier: catalog:deps
-        version: 0.2.17
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
@@ -2262,6 +2263,9 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@antfu/design':
         specifier: catalog:frontend
@@ -2317,9 +2321,6 @@ importers:
       next:
         specifier: catalog:frontend
         version: 16.3.5(@babel/core@7.29.0(supports-color@10.2.2))(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@26.5.1)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       react:
         specifier: catalog:frontend
         version: 19.3.0
@@ -2654,6 +2655,10 @@ importers:
         version: 5.0.0(@opentelemetry/api@1.9.1)(@types/node@26.5.1)(vite@8.3.0(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.13)(yaml@2.9.0))
 
   services/open:
+    dependencies:
+      pathe:
+        specifier: catalog:deps
+        version: 2.0.3
     devDependencies:
       '@types/node':
         specifier: catalog:types
@@ -2661,9 +2666,6 @@ importers:
       devframe:
         specifier: workspace:*
         version: link:../../packages/devframe
-      pathe:
-        specifier: catalog:deps
-        version: 2.0.3
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)

@@ -41,13 +41,13 @@
   "dependencies": {
     "@modelcontextprotocol/client": "catalog:deps",
     "@modelcontextprotocol/server": "catalog:deps",
-    "h3": "catalog:deps"
+    "h3": "catalog:deps",
+    "pathe": "catalog:deps"
   },
   "devDependencies": {
     "@standard-schema/spec": "catalog:deps",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
-    "pathe": "catalog:deps",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"
   }

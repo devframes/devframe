@@ -59,7 +59,8 @@
     "@devframes/service-git": "workspace:*",
     "@devframes/service-shiki": "workspace:*",
     "cac": "catalog:deps",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "pathe": "catalog:deps"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
@@ -80,7 +81,6 @@
     "diff": "catalog:frontend",
     "h3": "catalog:deps",
     "next": "catalog:frontend",
-    "pathe": "catalog:deps",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
     "storybook": "catalog:storybook",

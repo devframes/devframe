@@ -52,6 +52,8 @@
   "dependencies": {
     "destr": "catalog:deps",
     "h3": "catalog:deps",
+    "pathe": "catalog:deps",
+    "tinyexec": "catalog:deps",
     "zigpty": "catalog:deps"
   },
   "devDependencies": {
@@ -60,9 +62,7 @@
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
-    "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
-    "tinyexec": "catalog:deps",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"
   }
