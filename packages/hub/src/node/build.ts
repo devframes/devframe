@@ -183,7 +183,7 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
   const devframes = await resolveDevframesInput(options.devframes ?? [])
   for (const input of options.services ?? [])
     void ctx.services.install(input)
-  const setups = await mountDevframes(ctx, devframes, base, false)
+  const setups = await mountDevframes(ctx, devframes, base)
 
   await ctx.services.ready()
   for (const run of setups)

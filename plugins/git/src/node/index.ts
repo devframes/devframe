@@ -67,10 +67,10 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
     description: pkg.description,
     icon: 'ph:git-branch-duotone',
     basePath: options.basePath,
+    clientAssets: distDir,
     cli: {
       command: 'devframe-git',
       port: options.port ?? 9710,
-      distDir,
       /**
        * Gate the standalone server by default; `maybeOpenBrowser` folds the
        * current OTP into the `--open` URL so the tab lands already trusted.

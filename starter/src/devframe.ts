@@ -4,7 +4,7 @@ import pkg from '../package.json' with { type: 'json' }
 import { NAMESPACE, serverFunctions } from './rpc/index.ts'
 import { BASE_PATH } from './shared/base-path.ts'
 
-const distDir = fileURLToPath(new URL('../dist/client', import.meta.url))
+const clientAssets = fileURLToPath(new URL('../dist/client', import.meta.url))
 
 /**
  * The single `DevframeDefinition` every surface consumes: the CLI
@@ -21,10 +21,10 @@ export default defineDevframe({
   description: pkg.description,
   icon: 'ph:rocket-launch-duotone',
   basePath: BASE_PATH,
+  clientAssets,
   cli: {
     command: 'devframe-starter',
     port: 7391,
-    distDir,
     // `auth` is deliberately left unset: gated by default (devframe's
     // interactive OTP handshake - a 6-digit code printed to the terminal
     // that trusts the browser before it can call any RPC function).

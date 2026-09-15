@@ -124,9 +124,8 @@ export async function loadAutoMcpAdapter(
 
 /**
  * Resolve the `mcp` entry a `__connection.json` should advertise for a dev
- * server started with the given `mcp` option (falling back to `def.cli?.mcp`,
- * exactly like `createDevServer`), or `undefined` when the route is
- * disabled. `'auto'` (the omitted default) resolves at mount time against
+ * server started with the given `mcp` option, or `undefined` when the route
+ * is disabled. `'auto'` (the omitted default) resolves at mount time against
  * the live agent surface, so hand-rolled meta advertises it only for an
  * explicit setting; the adapters advertise the actually-mounted route
  * themselves.
@@ -138,11 +137,10 @@ export async function loadAutoMcpAdapter(
  * same-server default).
  */
 export function resolveMcpConnectionMeta(
-  def: DevframeDefinition,
   mcp: McpSetting | undefined,
   port?: number,
 ): ConnectionMeta['mcp'] {
-  const config = resolveMcpConfig(mcp ?? def.cli?.mcp)
+  const config = resolveMcpConfig(mcp)
   if (!config)
     return undefined
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)

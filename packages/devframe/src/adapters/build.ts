@@ -8,7 +8,6 @@ import process from 'node:process'
 import { colors as c } from 'devframe/utils/colors'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { resolve } from 'pathe'
-import { resolveClientAssets } from '../client-assets'
 import {
   DEVFRAME_CONNECTION_META_FILENAME,
   DEVFRAME_RPC_DUMP_MANIFEST_FILENAME,
@@ -25,9 +24,8 @@ export interface CreateBuildOptions {
   /**
    * Override the SPA dist to copy into `outDir`: a local directory or a
    * remote-assets declaration (materialized in full at build time). When
-   * omitted the adapter reads `devframe.clientAssets` (or the deprecated
-   * `devframe.cli?.distDir`); authors typically set this once on the
-   * definition itself.
+   * omitted the adapter reads `devframe.clientAssets`; authors typically set
+   * this once on the definition itself.
    */
   distDir?: StaticAssetsSource
   /**
@@ -61,7 +59,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
     throw diagnostics.DF0042({ id: d.id })
 
   const outDir = resolve(options.outDir ?? 'dist-static')
-  const distSource = options.distDir ?? resolveClientAssets(d)
+  const distSource = options.distDir ?? d.clientAssets
   if (!distSource)
     throw new Error(`[devframe] createBuild: no client assets for "${d.id}". Set \`clientAssets\` on the definition or pass it as an option.`)
 

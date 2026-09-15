@@ -2,7 +2,7 @@ import type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devfr
 import { createDevframeClientRuntime } from '@devframes/hub/client'
 import { DEVFRAMES_HUB_BASE } from '@devframes/hub/constants'
 
-export type { DevframeClientHost, DevframeClientHostOptions, DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
+export type { DevframeClientRuntime, DevframeClientRuntimeOptions } from '@devframes/hub/client'
 
 export interface MountDevframeHubClientOptions extends DevframeClientRuntimeOptions {
   /**

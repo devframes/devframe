@@ -33,18 +33,3 @@ export function toolInputToRpcArgs(input: unknown, argumentCount?: number): unkn
 export function toolInputToCommandArgs(input: unknown, argumentCount?: number): unknown[] {
   return collectPositionalArgs(input, argumentCount) ?? []
 }
-
-/** @deprecated Use {@link toolInputToRpcArgs} or {@link toolInputToCommandArgs}. */
-export type AgentArgsFallback = 'wrap' | 'drop'
-
-/** @deprecated Use {@link toolInputToRpcArgs} or {@link toolInputToCommandArgs}. */
-export function coerceAgentPositionalArgs(
-  input: unknown,
-  schemas: readonly unknown[] | undefined,
-  fallback: AgentArgsFallback = 'wrap',
-): unknown[] {
-  const argumentCount = schemas?.length
-  return fallback === 'drop'
-    ? toolInputToCommandArgs(input, argumentCount)
-    : toolInputToRpcArgs(input, argumentCount)
-}

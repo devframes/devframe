@@ -16,7 +16,6 @@ import { mountStaticHandler } from 'devframe/utils/serve-static'
 import { H3 } from 'h3'
 import { resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
-import { resolveClientAssets } from '../client-assets'
 import { DEVFRAME_CONNECTION_META_FILENAME, DEVFRAME_MCP_ROUTE } from '../constants'
 import { importAgenticMcp } from '../node/agentic'
 import { createHostContext } from '../node/context'
@@ -37,8 +36,8 @@ export interface InitDevframeOptions {
    */
   base: string
   /**
-   * Override the definition's `clientAssets` (or deprecated `cli.distDir`).
-   * When neither is set (or `false` is passed to suppress the definition's
+   * Override the definition's `clientAssets`.
+   * When it is unset (or `false` is passed to suppress the definition's
    * own client assets), the handler runs in **bridge mode**: only
    * `__connection.json`, the WS endpoint, and the MCP route (when enabled) are
    * served; the SPA is hosted elsewhere.
@@ -91,9 +90,9 @@ export interface InitDevframeOptions {
   auth?: boolean | DevframeAuthHandler
   /**
    * Expose a route-based MCP server (Streamable-HTTP) at `<base>__mcp` and
-   * advertise it in `__connection.json`. Overrides `def.cli?.mcp`;
-   * `undefined` falls through to it, then to the `'auto'` default (mount
-   * once the agent surface is non-empty). See {@link McpSetting}.
+   * advertise it in `__connection.json`. `undefined` falls through to the
+   * `'auto'` default (mount once the agent surface is non-empty). See
+   * {@link McpSetting}.
    */
   mcp?: McpSetting
   /**
@@ -255,7 +254,7 @@ export function initDevframe(
   options: InitDevframeOptions,
 ): DevframeInstance {
   const base = normalizeBasePath(options.base)
-  const distDir = options.distDir === false ? undefined : options.distDir ?? resolveClientAssets(def)
+  const distDir = options.distDir === false ? undefined : options.distDir ?? def.clientAssets
   const app = options.app ?? new H3()
   const host = options.host ?? def.cli?.host ?? 'localhost'
 
@@ -307,7 +306,7 @@ export function initDevframe(
       await context.services.ready()
       await def.setup(context, setupInfo)
 
-      const mcp = await mountMcpRoute(app, context, def, base, options.mcp ?? def.cli?.mcp ?? 'auto')
+      const mcp = await mountMcpRoute(app, context, def, base, options.mcp ?? 'auto')
 
       return {
         context,

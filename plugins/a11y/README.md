@@ -61,7 +61,7 @@ path, so the hub serves it same-origin and `devframes: ['@devframes/plugin-a11y'
 works with no host wiring. The hub's client runtime (`createDevframeClientRuntime`
 from `@devframes/hub/client`) then imports it into the host page and calls its default
 export with the client-script context. A host can also serve the module itself (e.g.
-via `/@fs/…` under Vite) by attaching `a11yPageScriptBundlePath` as a per-mount
+via `/@fs/…` under Vite) by attaching `a11yClientScriptBundlePath` as a per-mount
 `clientScript`. Booted that way, the page script also
 mirrors the active route's scan into the hub's **messages feed**: a summary entry
 driven through the loading → idle lifecycle plus one entry per violated rule,
@@ -119,7 +119,7 @@ pnpm -C plugins/a11y dev         # from source: same, at /__devframes_plugin_a11
 
 | Path | Export | Purpose |
 |------|--------|---------|
-| `src/index.ts` | `.` | `createA11yDevframe()` (also the default export), declaring the page script as its dock's client script; `a11yPageScriptBundlePath` is that module, for hosts that serve it themselves |
+| `src/index.ts` | `.` | `createA11yDevframe()` (also the default export), declaring the page script as its dock's client script; `a11yClientScriptBundlePath` is that module, for hosts that serve it themselves |
 | `src/node/index.ts` | `/node` | `setupA11y(ctx, options?)` registers the RPC functions with the runtime config |
 | `src/cli.ts` | `/cli` | `createA11yCli()` backs the `devframes_plugin_a11y` bin |
 | `src/client/index.ts` | `/client` | `connectA11y()`, a typed browser RPC client wrapper |

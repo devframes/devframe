@@ -685,12 +685,3 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
     ([a], [b]) => (categoryOrder[a] ?? 0) - (categoryOrder[b] ?? 0),
   )
 }
-
-/** @deprecated Renamed; use {@link DevframeClientRuntimeOptions}. */
-export type DevframeClientHostOptions = DevframeClientRuntimeOptions
-
-/** @deprecated Renamed; use {@link DevframeClientRuntime}. */
-export type DevframeClientHost = DevframeClientRuntime
-
-/** @deprecated Renamed; use {@link createDevframeClientRuntime}. */
-export const createDevframeClientHost: typeof createDevframeClientRuntime = createDevframeClientRuntime

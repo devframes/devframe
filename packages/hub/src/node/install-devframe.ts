@@ -2,7 +2,6 @@ import type { DevframeDefinition } from 'devframe/types'
 import type { ClientScriptEntry, DevframeViewIframe } from '../types/docks'
 import type { DevframeHubContext, HubMountedFrame } from './context'
 import { existsSync } from 'node:fs'
-import { resolveClientAssets } from 'devframe/internal'
 import { resolveBasePath } from 'devframe/node/hub-internals'
 import { basename, dirname, isAbsolute, resolve } from 'pathe'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -72,7 +71,7 @@ async function serveDevframeAssets(
   id: string,
   base: string,
 ): Promise<void> {
-  const clientAssets = resolveClientAssets(d)
+  const clientAssets = d.clientAssets
   if (!clientAssets)
     return
   // Serve the hub's connection meta under the devframe's base so its SPA

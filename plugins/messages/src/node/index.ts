@@ -58,10 +58,10 @@ export function createMessagesDevframe(options: MessagesDevframeOptions = {}): D
     description: pkg.description,
     icon: options.icon ?? 'ph:notification-duotone',
     basePath: options.basePath,
+    clientAssets: remoteAssets,
     cli: {
       command: id,
       port: options.port ?? DEFAULT_PORT,
-      distDir: remoteAssets,
       /**
        * Gate the standalone server by default; `maybeOpenBrowser` folds the
        * current OTP into the `--open` URL so the tab lands already trusted.

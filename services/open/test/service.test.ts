@@ -11,7 +11,10 @@ import { createOpenService } from '../src/index'
 
 const launchEditor = vi.fn()
 const open = vi.fn()
-vi.mock('devframe/utils/launch-editor', () => ({ launchEditor: (...args: unknown[]) => launchEditor(...args) }))
+vi.mock('devframe/utils/launch-editor', async importOriginal => ({
+  ...await importOriginal<typeof import('devframe/utils/launch-editor')>(),
+  launchEditor: (...args: unknown[]) => launchEditor(...args),
+}))
 vi.mock('devframe/utils/open', () => ({ open: async (...args: unknown[]) => open(...args) }))
 
 const tempDirs: string[] = []

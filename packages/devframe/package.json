@@ -33,7 +33,6 @@
     "./node": "./dist/node/index.mjs",
     "./node/auth": "./dist/node/auth.mjs",
     "./node/hub-internals": "./dist/node/hub-internals.mjs",
-    "./recipes/common-rpc-functions": "./dist/recipes/common-rpc-functions.mjs",
     "./recipes/interactive-auth": "./dist/recipes/interactive-auth.mjs",
     "./rpc": "./dist/rpc/index.mjs",
     "./rpc/client": "./dist/rpc/client.mjs",

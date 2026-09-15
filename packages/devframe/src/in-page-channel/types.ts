@@ -355,11 +355,6 @@ export interface PageScriptChannel<P extends InPageChannelProtocol> {
     name: K,
     ...args: FnArgs<PanelEvents<P>[K]>
   ) => void
-  /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PanelEvents<P> & string>(
-    name: K,
-    ...args: FnArgs<PanelEvents<P>[K]>
-  ) => void
   /** Subscribe to an event emitted by a panel. Returns an unsubscribe function. */
   on: <K extends keyof PageScriptEvents<P> & string>(
     name: K,
@@ -409,11 +404,6 @@ export interface PanelChannel<P extends InPageChannelProtocol> {
    * (up to `eventBufferLimit`) and flushed on connect.
    */
   emit: <K extends keyof PageScriptEvents<P> & string>(
-    name: K,
-    ...args: FnArgs<PageScriptEvents<P>[K]>
-  ) => void
-  /** @deprecated Use `emit()` instead. */
-  callEvent: <K extends keyof PageScriptEvents<P> & string>(
     name: K,
     ...args: FnArgs<PageScriptEvents<P>[K]>
   ) => void

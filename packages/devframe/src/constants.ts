@@ -43,7 +43,8 @@ export const DEVFRAME_SSE_SESSION_HEADER = 'x-birpc-session'
  * Route the Streamable-HTTP MCP endpoint is bound to, relative to a
  * devframe's base path. Sits next to `__connection.json` and the WS route
  * so an MCP client reaches it on the same origin the SPA loaded from; the
- * dev server shares one port for HTTP, WS, and MCP. Opt-in via `cli.mcp`.
+ * dev server shares one port for HTTP, WS, and MCP. Opt-in via the host's
+ * `mcp` setting.
  */
 export const DEVFRAME_MCP_ROUTE = '__mcp'
 export const DEVFRAME_RPC_DUMP_MANIFEST_FILENAME = '__rpc-dump/index.json'

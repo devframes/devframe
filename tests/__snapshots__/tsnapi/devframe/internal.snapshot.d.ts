@@ -14,11 +14,6 @@ export interface RpcWireCodec {
 }
 // #endregion
 
-// #region Types
-/** @deprecated */
-export type AgentArgsFallback = 'wrap' | 'drop';
-// #endregion
-
 // #region Classes
 export declare class DevframeAgentHost implements DevframeAgentHost$1 {
   readonly context: DevframeNodeContext;
@@ -50,8 +45,6 @@ export declare class DevframeAgentHost implements DevframeAgentHost$1 {
 
 // #region Functions
 export declare function argsToJsonSchema(_: readonly StandardSchemaV1[] | undefined): unknown;
-/** @deprecated */
-export declare function coerceAgentPositionalArgs(_: unknown, _: readonly unknown[] | undefined, _?: AgentArgsFallback): unknown[];
 export declare function createH3DevframeHost(_: CreateH3DevframeHostOptions): DevframeHost;
 export declare function createRpcWireCodec(_?: ReadonlyMap<string, Pick<RpcFunctionDefinitionAny, 'jsonSerializable'>>): RpcWireCodec;
 export declare function formatMcpError(_: unknown): string;
@@ -61,7 +54,6 @@ export declare function peekRpcWireFrame(_: string): {
   t?: string;
   i?: string;
 };
-export declare function resolveClientAssets(_: DevframeDefinition): StaticAssetsSource | undefined;
 export declare function returnToJsonSchema(_: StandardSchemaV1 | undefined): unknown;
 export declare function stringifyForMcp(_: unknown): string;
 export declare function toolInputToCommandArgs(_: unknown, _?: number): unknown[];
@@ -222,7 +214,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     readonly why: (p: {
       port: number;
     }) => string;
-    readonly fix: "Restart the instance with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.";
+    readonly fix: "Restart the instance with the --mcp flag to expose its tools, then list instances again.";
   };
   readonly DF0052: {
     readonly why: (p: {

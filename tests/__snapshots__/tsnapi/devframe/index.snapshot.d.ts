@@ -136,8 +136,6 @@ export interface DevframeCliOptions {
   host?: string;
   open?: boolean | string;
   auth?: boolean | DevframeAuthHandler;
-  mcp?: McpSetting;
-  distDir?: StaticAssetsSource;
   ws?: DevframeWsOptions | false;
   sse?: boolean | DevframeSseOptions;
   configure?: (_: CAC) => void;
@@ -567,8 +565,6 @@ export type StaticAssetsSource = string | RemoteAssets;
 
 // #region Functions
 export declare function defineDevframe(_: DevframeDefinition): DevframeDefinition;
-/** @deprecated */
-export declare function resolveClientAssets(_: DevframeDefinition): StaticAssetsSource | undefined;
 // #endregion
 
 // #region Variables

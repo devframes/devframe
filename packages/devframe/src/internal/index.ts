@@ -29,11 +29,6 @@
 // - `resolveBasePath` / `normalizeBasePath`: the mount-base resolution
 //   `initDevframe` itself uses; a bridge (`@devframes/vite`) that mounts a
 //   devframe onto a host it doesn't own reuses the exact same defaulting.
-// - `resolveClientAssets`: the definition → static-assets-source
-//   resolution every UI-serving adapter uses (`clientAssets`, falling back to
-//   the legacy `cli.distDir`), so a bridge that serves a devframe's SPA itself
-//   (`@devframes/vite`, `@devframes/next`, the hub's `ctx.install`) resolves it
-//   identically.
 // - `diagnostics`: devframe core's structured diagnostics instance
 //   (`DF00xx`), so a first-party integration built outside this package can
 //   report against the same registered codes instead of minting its own.
@@ -50,7 +45,6 @@ export { loadAutoMcpAdapter, normalizeBasePath, resolveBasePath, resolveMcpConfi
 export type { ResolvedMcpConfig } from '../adapters/_shared'
 export { formatMcpError, stringifyForMcp } from '../agent/stringify'
 export { argsToJsonSchema, returnToJsonSchema } from '../agent/to-json-schema'
-export { resolveClientAssets } from '../client-assets'
 export { importAgenticMcp } from '../node/agentic'
 export type { AgenticMcpModule, MountedMcpHttp, MountMcpHttpOptions } from '../node/agentic'
 export { diagnostics } from '../node/diagnostics'
@@ -75,5 +69,4 @@ export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rp
 export { normalizeHttpServerUrl } from '../node/utils'
 export { createRpcWireCodec, peekRpcWireFrame } from '../rpc/wire-codec'
 export type { RpcWireCodec } from '../rpc/wire-codec'
-export { coerceAgentPositionalArgs, toolInputToCommandArgs } from '../tool-input'
-export type { AgentArgsFallback } from '../tool-input'
+export { toolInputToCommandArgs } from '../tool-input'

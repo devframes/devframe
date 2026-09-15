@@ -256,9 +256,8 @@ export interface InitHubOptions {
    * exposes an agent surface. `true` mounts it
    * unconditionally with the loopback origin gate (trusting same-machine
    * callers), an object opts into an {@link McpRouteOptions.authorization}
-   * identity check, `false` keeps it off. A mounted devframe's own `mcp`
-   * setting is ignored: the hub's aggregate route covers them all (`DF8005`
-   * warns when one asks for MCP while this is `false`).
+   * identity check, `false` keeps it off. The hub's aggregate route covers
+   * every mounted devframe's tools.
    */
   mcp?: McpSetting
   /**
@@ -464,7 +463,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       // collection alongside every devframe's own declared services.
       for (const input of options.services ?? [])
         void ctx.services.install(input)
-      const setups = await mountDevframes(ctx, devframes, base, options.mcp !== false)
+      const setups = await mountDevframes(ctx, devframes, base)
 
       // Construct every collected service once, then run the setups, so a
       // devframe's setup consumes services (its own or another devframe's)

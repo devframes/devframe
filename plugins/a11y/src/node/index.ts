@@ -46,12 +46,6 @@ function resolveClientScriptBundle(): string {
   }
 }
 
-/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
-export const a11yPageScriptBundlePath: string = a11yClientScriptBundlePath
-
-/** @deprecated Renamed; use {@link a11yClientScriptBundlePath}. */
-export const a11yAgentBundlePath: string = a11yClientScriptBundlePath
-
 export interface A11yDevframeOptions {
   /** Override the devframe id (and the default CLI command / mount path). */
   id?: string
@@ -114,10 +108,10 @@ export function createA11yDevframe(options: A11yDevframeOptions = {}): DevframeD
       category: '~builtin',
       clientScript: { importFrom: a11yClientScriptBundlePath },
     },
+    clientAssets: distDir,
     cli: {
       command: id,
       port: options.port ?? 9899,
-      distDir,
     },
     setup(ctx) {
       setupA11y(ctx, {

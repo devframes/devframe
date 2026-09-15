@@ -167,7 +167,7 @@ export interface ConnectionMeta {
   sse?: string | ConnectionMetaSse
   /**
    * Present when the dev server exposes a route-based MCP endpoint
-   * (`cli.mcp`). Advertises the MCP Streamable-HTTP route so in-browser
+   * (the host's `mcp` setting). Advertises the MCP Streamable-HTTP route so in-browser
    * tooling (e.g. an MCP inspector) can discover it without guessing the
    * path. `path` is relative to `__connection.json`'s location, like the
    * WebSocket `path`. `port` is set when the endpoint lives on a side-car

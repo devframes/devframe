@@ -292,7 +292,6 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     },
     call: (fnName, ...args) => enqueueCall(channelMethod('function', fnName), serializeArgs(codec, args)) as Promise<any>,
     emit: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
-    callEvent: (fnName, ...args) => sendEvent(channelMethod('event', fnName), serializeArgs(codec, args)),
     on: (fnName, listener) => registry.on(fnName, listener as (...args: unknown[]) => void),
     sharedState: stateHost,
     close: () => {

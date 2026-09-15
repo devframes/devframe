@@ -6,8 +6,6 @@ export default createA11yDevframe
 // #endregion
 
 // #region Other
-export { a11yAgentBundlePath }
 export { a11yClientScriptBundlePath }
-export { a11yPageScriptBundlePath }
 export { createA11yDevframe }
 // #endregion

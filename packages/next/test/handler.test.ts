@@ -64,21 +64,6 @@ describe('createDevframeNextHandler', () => {
     expect(() => createDevframeNextHandler(def)).toThrow(/clientAssets/)
   })
 
-  it('falls back to the deprecated cli.distDir', async () => {
-    const dist = mkdtempSync(join(tmpdir(), 'df-next-legacy-'))
-    writeFileSync(join(dist, 'index.html'), '<!doctype html><title>ok</title>')
-
-    const def = makeDef('')
-    def.clientAssets = undefined
-    def.cli = { distDir: dist }
-
-    handler = createDevframeNextHandler(def, { host: '127.0.0.1' })
-    await handler.ready
-
-    const index = await handler.fetch(new Request('http://localhost:3000/__test-next/'))
-    expect(index.status).toBe(200)
-  })
-
   it('forwards the mcp option and advertises the side-car endpoint', async () => {
     const dist = mkdtempSync(join(tmpdir(), 'df-next-mcp-'))
     writeFileSync(join(dist, 'index.html'), '<!doctype html><title>ok</title>')

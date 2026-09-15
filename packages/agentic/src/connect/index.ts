@@ -82,7 +82,7 @@ const INDEX_TOOL = toAgentToolName('devframe:connect:list-instances')
 const CALL_TOOL = toAgentToolName('devframe:connect:call-tool')
 
 const MCP_DISABLED_HINT
-  = 'This instance runs without an MCP route. Restart it with the --mcp flag (or set `cli.mcp: true` on its definition) to expose its tools, then list instances again.'
+  = 'This instance runs without an MCP route. Restart it with the --mcp flag to expose its tools, then list instances again.'
 
 const GATEWAY_TOOLS: Tool[] = [
   {

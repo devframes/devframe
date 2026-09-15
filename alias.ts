@@ -96,7 +96,6 @@ export const alias = {
   '@devframes/plugin-terminals': p('terminals/src/node/index.ts'),
   '@devframes/plugin-git': p('git/src/node/index.ts'),
   'devframe/recipes/interactive-auth': r('devframe/src/recipes/interactive-auth.ts'),
-  'devframe/recipes/common-rpc-functions': r('devframe/src/recipes/common-rpc-functions.ts'),
   'devframe/client': r('devframe/src/client/index.ts'),
   'devframe': r('devframe/src'),
   '@devframes/plugin-data-inspector/inject': p('data-inspector/src/inject/index.ts'),

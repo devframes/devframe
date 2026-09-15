@@ -6,7 +6,7 @@ import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from '
 import type { Plugin } from 'vite'
 import process from 'node:process'
 import { initDevframe } from 'devframe/initiate'
-import { diagnostics, normalizeBasePath, resolveBasePath, resolveClientAssets } from 'devframe/internal'
+import { diagnostics, normalizeBasePath, resolveBasePath } from 'devframe/internal'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { serveStaticNodeMiddleware } from 'devframe/utils/serve-static'
 import { join, resolve } from 'pathe'
@@ -62,7 +62,7 @@ export interface DevframeVitePluginOptions {
  */
 export function devframeVitePlugin(d: DevframeDefinition, options: DevframeVitePluginOptions = {}): DevframeVitePlugin {
   const base = normalizeMountBase(options.base ?? resolveBasePath(d, 'hosted'))
-  const distDir = resolveClientAssets(d)
+  const distDir = d.clientAssets
 
   return {
     name: `devframe:${d.id}`,
@@ -115,9 +115,9 @@ export interface DevframeViteBridgeOptions {
   /**
    * Expose the bridge's route-based MCP server (Streamable-HTTP) at
    * `<base>__mcp` (on the Vite app's own origin) and advertise it in the
-   * bridge's `__connection.json`. Overrides `def.cli?.mcp`, `undefined`
-   * falls through to it, then to the `'auto'` default (mount once the agent
-   * surface is non-empty); `false` disables the route regardless.
+   * bridge's `__connection.json`. `undefined` falls through to the `'auto'`
+   * default (mount once the agent surface is non-empty); `false` disables the
+   * route regardless.
    */
   mcp?: McpSetting
   /**

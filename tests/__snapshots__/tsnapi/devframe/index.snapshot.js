@@ -3,8 +3,6 @@
  */
 // #region Functions
 export function defineDevframe(_) {}
-/** @deprecated */
-export function resolveClientAssets(_) {}
 // #endregion
 
 // #region Variables

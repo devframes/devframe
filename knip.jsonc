@@ -21,13 +21,7 @@
   "ignoreIssues": {
     "plugins/*/src/node/index.ts": ["duplicates"],
     "plugins/*/src/index.ts": ["duplicates"],
-    "services/*/src/index.ts": ["duplicates"],
-    // Deprecated rename aliases (old name re-exported next to its canonical
-    // replacement, kept for back-compat until the next major): the terms-page
-    // renames left `createDevframeClientHost` → `createDevframeClientRuntime`
-    // and `AGENT_DISCOVERY_FILE` → `DISCOVERY_FILE` aliases behind.
-    "packages/hub/src/client/host.ts": ["duplicates"],
-    "plugins/data-inspector/src/inject/index.ts": ["duplicates"]
+    "services/*/src/index.ts": ["duplicates"]
   },
   "workspaces": {
     ".": {
@@ -142,7 +136,7 @@
         "src/internal/index.ts",
         "src/node/index.ts",
         "src/node/{auth,hub-internals}/index.ts",
-        "src/recipes/{common-rpc-functions,interactive-auth}.ts",
+        "src/recipes/interactive-auth.ts",
         "src/rpc/{index,client,server}.ts",
         "src/rpc/dump/index.ts",
         "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-deno,ws-client,ws-server}.ts",
@@ -207,7 +201,7 @@
     },
     "plugins/inspect": {
       // The lockstep assets package is referenced only as a runtime string
-      // (`${pkg.name}--assets` in `cli.distDir`), never imported, so knip
+      // (`${pkg.name}--assets` in `clientAssets`), never imported, so knip
       // can't see the dev-only workspace link that makes it resolvable in
       // the monorepo. Repeat the `plugins/*` entry glob (a workspace config
       // replaces, not merges, it).
@@ -225,7 +219,7 @@
       "project": []
     },
     // Each plugin's lockstep `--assets` package is referenced only as a
-    // runtime string (`${pkg.name}--assets` in `cli.distDir`), never imported,
+    // runtime string (`${pkg.name}--assets` in `clientAssets`), never imported,
     // so knip can't see the dev-only workspace link. A workspace config
     // replaces (not merges) the `plugins/*` glob's `entry`, so repeat it.
     "plugins/og": {

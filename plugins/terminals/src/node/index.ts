@@ -70,10 +70,10 @@ export function createTerminalsDevframe(options: TerminalsOptions = {}): Devfram
      * `/__<id>/` when hosted. Authors override via `options.basePath`.
      */
     basePath: options.basePath,
+    clientAssets: distDir,
     cli: {
       command: options.command ?? 'devframe-terminals',
       port: options.port ?? DEFAULT_PORT,
-      distDir,
       /**
        * Gate the standalone server by default, since shell access is sensitive.
        * `maybeOpenBrowser` folds the current OTP into the `--open` URL so

@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { initDevframe } from 'devframe/initiate'
-import { normalizeBasePath, resolveBasePath, resolveClientAssets } from 'devframe/internal'
+import { normalizeBasePath, resolveBasePath } from 'devframe/internal'
 
 export interface CreateDevframeNextHandlerOptions {
   /**
@@ -43,10 +43,9 @@ export interface CreateDevframeNextHandlerOptions {
   /**
    * Expose the route-based MCP server (Streamable-HTTP) at `<base>__mcp`,
    * on the Next app's own origin, through the same catch-all route as the
-   * SPA, and advertise it in the handler's `__connection.json`. Overrides
-   * `def.cli?.mcp`, `undefined` falls through to it, then to the `'auto'`
-   * default (mount once the agent surface is non-empty); `false` disables
-   * the route regardless.
+   * SPA, and advertise it in the handler's `__connection.json`. `undefined`
+   * falls through to the `'auto'` default (mount once the agent surface is
+   * non-empty); `false` disables the route regardless.
    */
   mcp?: InitDevframeOptions['mcp']
   /**
@@ -118,7 +117,7 @@ export function createDevframeNextHandler(
   def: DevframeDefinition,
   options: CreateDevframeNextHandlerOptions = {},
 ): DevframeNextHandler {
-  const distDir = resolveClientAssets(def)
+  const distDir = def.clientAssets
   if (!distDir) {
     throw new Error(
       `[@devframes/next] createDevframeNextHandler("${def.id}") needs a built SPA to serve, but "clientAssets" is not set on the devframe definition.`,
