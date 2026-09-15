@@ -60,7 +60,6 @@
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
-    "mlly": "catalog:build",
     "pathe": "catalog:deps",
     "perfect-debounce": "catalog:deps",
     "tinyexec": "catalog:deps",

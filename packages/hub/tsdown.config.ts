@@ -26,7 +26,6 @@ export default defineConfig({
       '@standard-schema/spec',
       'acorn',
       'get-port-please',
-      'mlly',
       'pathe',
       'perfect-debounce',
       'tinyexec',
