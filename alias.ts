@@ -28,6 +28,7 @@ export const alias = {
   'devframe/utils/agent-tool-name': r('devframe/src/utils/agent-tool-name.ts'),
   'devframe/utils/colors': r('devframe/src/utils/colors.ts'),
   'devframe/utils/crypto-token': r('devframe/src/utils/crypto-token.ts'),
+  'devframe/utils/debounce': r('devframe/src/utils/debounce.ts'),
   'devframe/utils/events': r('devframe/src/utils/events.ts'),
   'devframe/utils/hash': r('devframe/src/utils/hash.ts'),
   'devframe/utils/launch-editor': r('devframe/src/utils/launch-editor.ts'),

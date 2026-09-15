@@ -70,7 +70,6 @@
     "chokidar": "catalog:deps",
     "image-meta": "catalog:deps",
     "pathe": "catalog:deps",
-    "perfect-debounce": "catalog:deps",
     "tinyglobby": "catalog:deps"
   },
   "devDependencies": {

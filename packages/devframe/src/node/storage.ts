@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 import process from 'node:process'
+import { debounce } from 'devframe/utils/debounce'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { dirname } from 'pathe'
-import { debounce } from 'perfect-debounce'
 import { diagnostics } from './diagnostics'
 
 export interface CreateStorageOptions<T extends object> {

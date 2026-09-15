@@ -48,6 +48,7 @@
     "./utils/agent-tool-name": "./dist/utils/agent-tool-name.mjs",
     "./utils/colors": "./dist/utils/colors.mjs",
     "./utils/crypto-token": "./dist/utils/crypto-token.mjs",
+    "./utils/debounce": "./dist/utils/debounce.mjs",
     "./utils/events": "./dist/utils/events.mjs",
     "./utils/get-port": "./dist/utils/get-port.mjs",
     "./utils/hash": "./dist/utils/hash.mjs",

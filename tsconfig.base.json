@@ -67,6 +67,9 @@
       "devframe/utils/crypto-token": [
         "./packages/devframe/src/utils/crypto-token.ts"
       ],
+      "devframe/utils/debounce": [
+        "./packages/devframe/src/utils/debounce.ts"
+      ],
       "devframe/utils/events": [
         "./packages/devframe/src/utils/events.ts"
       ],

@@ -1,7 +1,7 @@
 import type { DevframeNodeContext } from 'devframe'
 import process from 'node:process'
 import { watch } from 'chokidar'
-import { debounce } from 'perfect-debounce'
+import { debounce } from 'devframe/utils/debounce'
 import { CHANGED_EVENT } from './constants'
 
 /**

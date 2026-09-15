@@ -1704,9 +1704,6 @@ importers:
       get-port-please:
         specifier: catalog:deps
         version: 3.2.0
-      perfect-debounce:
-        specifier: catalog:deps
-        version: 2.1.0
       tsdown:
         specifier: catalog:build
         version: 0.23.0(@volar/typescript@2.4.28(typescript@6.0.3))(oxc-resolver@11.24.2)(tsx@4.23.13)(typescript@6.0.3)
@@ -2035,9 +2032,6 @@ importers:
       pathe:
         specifier: catalog:deps
         version: 2.0.3
-      perfect-debounce:
-        specifier: catalog:deps
-        version: 2.1.0
       tinyglobby:
         specifier: catalog:deps
         version: 0.2.17

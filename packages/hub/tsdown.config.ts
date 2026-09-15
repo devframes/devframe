@@ -26,7 +26,6 @@ export default defineConfig({
       '@standard-schema/spec',
       'acorn',
       'get-port-please',
-      'perfect-debounce',
     ],
   },
 })

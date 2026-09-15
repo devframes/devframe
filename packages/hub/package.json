@@ -62,7 +62,6 @@
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
-    "perfect-debounce": "catalog:deps",
     "tsdown": "catalog:build",
     "valibot": "catalog:deps"
   }
