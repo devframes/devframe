@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import type { ShortcutRow } from '../../state/keybindings'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
-import { filterCommandsByWhen, findCommandDeep, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS, walkCommands } from '../../state/keybindings'
+import { filterCommandsByWhen, findCommandDeep, formatKeybinding, getShortcutRows, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
 import { useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
 
@@ -15,13 +16,6 @@ const commandsCtx = props.context.commands
 const settings = useSettings(props.context)
 const shortcutOverrides = computed(() => settings.value.commandShortcuts ?? {})
 const shortcutSearch = ref('')
-
-interface ShortcutRow {
-  command: DevframeCommandEntry
-  parentTitle?: string
-  /** Nesting level: 0 for a top-level command, +1 per ancestor. */
-  depth: number
-}
 
 // This page is only reachable with the dock open and the palette closed, so `when`
 // is evaluated against that context rather than the live one. `dockOpen`/`paletteOpen`
@@ -35,26 +29,7 @@ const availableCommands = computed(() => filterCommandsByWhen(
   { ...props.context.when.context, dockOpen: true, paletteOpen: false },
 ))
 
-/**
- * One row per command at every depth, in tree order, so anything the palette
- * can run can be given a shortcut here.
- *
- * Nesting runs deeper than a parent and its children: a dock group's members sit
- * two levels below the `Docks` command, and a devframe's own `children` go deeper
- * still.
- */
-const shortcutRows = computed<ShortcutRow[]>(() => {
-  const rows: ShortcutRow[] = []
-  walkCommands(availableCommands.value, (cmd, ancestors) => {
-    const parentTitle = ancestors.at(-1)?.title
-    rows.push({
-      command: cmd,
-      ...(parentTitle ? { parentTitle } : {}),
-      depth: ancestors.length,
-    })
-  })
-  return rows
-})
+const shortcutRows = computed(() => getShortcutRows(availableCommands.value))
 
 const filteredShortcutRows = computed(() => {
   if (!shortcutSearch.value)
