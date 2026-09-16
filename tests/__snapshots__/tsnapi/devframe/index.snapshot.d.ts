@@ -226,6 +226,7 @@ export interface DevframeNodeRpcSessionMeta {
   uploadingStreams?: Set<string>;
 }
 export interface DevframeRpcClientFunctions {
+  'devframe:agent:invoke-client-tool': (_: string, _: Record<string, unknown>) => Promise<unknown>;
   'devframe:auth:revoked': () => Promise<void>;
   'devframe:streaming:chunk': (_: string, _: string, _: number, _: any) => Promise<void>;
   'devframe:streaming:end': (_: string, _: string, _?: {
@@ -254,6 +255,7 @@ export interface DevframeRpcOptions {
   snapshot?: DevframeSnapshotRpcEntry[];
 }
 export interface DevframeRpcServerFunctions {
+  'devframe:agent:sync-client-tools': (_: BrowserAgentToolManifest[]) => Promise<void>;
   'anonymous:devframe:auth': (_: {
     authToken: string;
     ua: string;

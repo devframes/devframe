@@ -3,6 +3,7 @@ import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessio
 import type { AsyncLocalStorage } from 'node:async_hooks'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createDebug } from 'obug'
+import { removeClientAgentSession } from './client-agent'
 import { diagnostics } from './diagnostics'
 import { createRpcSharedStateServerHost } from './rpc-shared-state'
 import { createRpcStreamingServerHost } from './rpc-streaming'
@@ -53,6 +54,7 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
    */
   _emitSessionDisconnected(meta: DevframeNodeRpcSessionMeta): void {
     this.streaming._onSessionDisconnected(meta)
+    removeClientAgentSession(this.context, meta)
   }
 
   async invokeLocal<

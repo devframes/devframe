@@ -11,6 +11,7 @@ import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
 import { withBase } from 'devframe/utils/url'
+import { setupBrowserAgentRpcBridge } from './browser-agent-rpc'
 import { setupDevframeConnection } from './connection'
 import { storeAuthToken } from './connection-storage'
 import { authenticateWithUrlOtp } from './otp'
@@ -356,6 +357,7 @@ export async function getDevframeRpcClient(
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
   // No-op when the browser provides no WebMCP model context.
   const disposeWebMcp = options.webmcp === false ? undefined : registerWebMcpTools(clientRpc)
+  let disposeBrowserAgentBridge: (() => void) | undefined
 
   async function fetchJsonFromBases(path: string): Promise<any> {
     const candidates = [
@@ -448,6 +450,7 @@ export async function getDevframeRpcClient(
   /** Release authentication and transport resources even if another disposer fails. */
   function closeRpcClient(): void {
     try {
+      disposeBrowserAgentBridge?.()
       disposeWebMcp?.()
     }
     finally {
@@ -595,6 +598,8 @@ export async function getDevframeRpcClient(
     () => { bootstrapAuthSettled = true },
     () => { bootstrapAuthSettled = true },
   )
+
+  disposeBrowserAgentBridge = setupBrowserAgentRpcBridge(rpc)
 
   // Listen for auth updates from other tabs (e.g., the auth page, or another
   // tab that just completed a code exchange).

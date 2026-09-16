@@ -1,6 +1,6 @@
 import type { EventEmitter } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
-import type { RpcArgsSchema, RpcReturnSchema, Thenable } from '../rpc/types'
+import type { RpcArgsSchema, RpcFunctionAgentOptions, RpcReturnSchema, Thenable } from '../rpc/types'
 import type { InferArgsType, InferReturnType } from '../rpc/utils'
 
 /**
@@ -64,12 +64,17 @@ type ProtocolHandler<F> = F extends (...args: any[]) => any
  */
 export type InPageFunctionType = 'action' | 'event' | 'query'
 
-interface InPageFunctionDefinitionBase<NAME extends string> {
+interface InPageDefinitionBase<NAME extends string> {
   name: NAME
   jsonSerializable?: boolean
 }
 
-interface InPageEventFunctionDefinition<NAME extends string, HANDLER> extends InPageFunctionDefinitionBase<NAME> {
+interface InPageFunctionDefinitionBase<NAME extends string> extends InPageDefinitionBase<NAME> {
+  /** Expose this function through DevFrame's browser-to-node agent bridge. */
+  agent?: RpcFunctionAgentOptions
+}
+
+interface InPageEventFunctionDefinition<NAME extends string, HANDLER> extends InPageDefinitionBase<NAME> {
   type: 'event'
   handler?: HANDLER
 }
@@ -122,7 +127,8 @@ type InPageFunctionDefinitionHandler<
  * An in-page channel function definition: the `defineRpcFunction` authoring
  * shape (`name`, `type`, Standard-Schema `args`/`returns`,
  * `jsonSerializable`, `handler`) narrowed to the browser: there is no
- * `dump`/`snapshot`/`cacheable`/`agent`. When `jsonSerializable` is `true`,
+ * `dump`/`snapshot`/`cacheable`. An optional `agent` exposes the function to
+ * DevFrame's browser-to-node agent bridge. When `jsonSerializable` is `true`,
  * payloads are strictly validated at the receiving endpoint and misshapen
  * values reject the call with a descriptive `InPageChannelError` instead of
  * a cryptic `DataCloneError` in the port. Event definitions may omit their
@@ -153,7 +159,7 @@ export type InPageFunctionDefinitionAny = InPageFunctionDefinition<string, any, 
  *
  * @internal
  */
-interface InPageFunctionOptionBase {
+interface InPageDefinitionOptionBase {
   /** Optional Standard Schema array validating the arguments. */
   args?: RpcArgsSchema
   /** Optional Standard Schema validating the resolved return value. */
@@ -161,7 +167,12 @@ interface InPageFunctionOptionBase {
   jsonSerializable?: boolean
 }
 
-interface InPageEventFunctionOption<F> extends InPageFunctionOptionBase {
+interface InPageFunctionOptionBase extends InPageDefinitionOptionBase {
+  /** Expose this function through DevFrame's browser-to-node agent bridge. */
+  agent?: RpcFunctionAgentOptions
+}
+
+interface InPageEventFunctionOption<F> extends InPageDefinitionOptionBase {
   type?: 'event'
   handler?: ProtocolHandler<F>
 }
