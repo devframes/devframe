@@ -4,6 +4,7 @@ import {
   listBrowserAgentTools,
   onBrowserAgentToolsChanged,
 } from './browser-agent'
+import { resolveClientId } from './client-id'
 
 export interface BrowserAgentInvocationDefinition {
   name: 'devframe:agent:invoke-client-tool'
@@ -16,6 +17,7 @@ interface BrowserAgentRpcClient {
   client: { register: (definition: BrowserAgentInvocationDefinition) => void }
   callOptional: (
     method: 'devframe:agent:sync-client-tools',
+    clientId: string,
     tools: BrowserAgentToolManifest[],
   ) => Promise<unknown>
   events: {
@@ -57,7 +59,7 @@ export function setupBrowserAgentRpcBridge(rpc: BrowserAgentRpcClient): () => vo
       if (manifests.length === 0 && lastSyncedCount === 0)
         return
       lastSyncedCount = manifests.length
-      await rpc.callOptional('devframe:agent:sync-client-tools', manifests).catch(() => {})
+      await rpc.callOptional('devframe:agent:sync-client-tools', resolveClientId(), manifests).catch(() => {})
     })
   }
 

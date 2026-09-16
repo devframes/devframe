@@ -15,6 +15,8 @@ interface ClientAgentSession {
 interface ClientAgentState {
   sessions: Map<DevframeNodeRpcSessionMeta, {
     session: ClientAgentSession
+    /** Stable per-tab id the browser reports, so reconnecting tabs stay identifiable (see #394). */
+    clientId: string
     tools: BrowserAgentToolManifest[]
   }>
   notifyChanged: () => void
@@ -53,10 +55,11 @@ function getState(context: ClientAgentContext): ClientAgentState {
 export function syncClientAgentTools(
   context: ClientAgentContext,
   session: ClientAgentSession,
+  clientId: string,
   tools: BrowserAgentToolManifest[],
 ): void {
   const state = getState(context)
-  state.sessions.set(session.meta, { session, tools })
+  state.sessions.set(session.meta, { session, clientId, tools })
   state.notifyChanged()
 }
 

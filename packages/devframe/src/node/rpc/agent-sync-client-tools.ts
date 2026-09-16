@@ -7,10 +7,10 @@ export const agentSyncClientTools = defineRpcFunction({
   type: 'action',
   jsonSerializable: true,
   setup: context => ({
-    handler(tools: BrowserAgentToolManifest[]): void {
+    handler(clientId: string, tools: BrowserAgentToolManifest[]): void {
       const session = context.rpc.getCurrentRpcSession()
       if (session)
-        syncClientAgentTools(context, session, tools)
+        syncClientAgentTools(context, session, clientId, tools)
     },
   }),
 })

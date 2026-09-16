@@ -23,6 +23,6 @@ declare module 'devframe/types' {
     'devframe:agent:invoke-tool': (id: string, args: unknown) => Promise<unknown>
     'devframe:agent:list-resources': () => Promise<readonly import('devframe/types').AgentResource[]>
     'devframe:agent:read-resource': (id: string) => Promise<import('devframe/types').AgentResourceContent>
-    'devframe:agent:sync-client-tools': (tools: import('../../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
+    'devframe:agent:sync-client-tools': (clientId: string, tools: import('../../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
   }
 }

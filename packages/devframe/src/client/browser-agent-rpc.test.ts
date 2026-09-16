@@ -19,9 +19,10 @@ describe('browser agent RPC bridge', () => {
       },
       callOptional(
         method: 'devframe:agent:sync-client-tools',
+        clientId: string,
         tools: BrowserAgentToolManifest[],
       ) {
-        return callOptional(method, tools)
+        return callOptional(method, clientId, tools)
       },
       events: { on: () => () => {} },
     }
@@ -36,6 +37,7 @@ describe('browser agent RPC bridge', () => {
     disposals.push(setupBrowserAgentRpcBridge(rpc))
     await vi.waitFor(() => expect(callOptional).toHaveBeenCalledWith(
       'devframe:agent:sync-client-tools',
+      expect.any(String),
       [{
         id: 'todos:add',
         description: 'Add a todo.',

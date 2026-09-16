@@ -255,7 +255,7 @@ export interface DevframeRpcOptions {
   snapshot?: DevframeSnapshotRpcEntry[];
 }
 export interface DevframeRpcServerFunctions {
-  'devframe:agent:sync-client-tools': (_: BrowserAgentToolManifest[]) => Promise<void>;
+  'devframe:agent:sync-client-tools': (_: string, _: BrowserAgentToolManifest[]) => Promise<void>;
   'anonymous:devframe:auth': (_: {
     authToken: string;
     ua: string;

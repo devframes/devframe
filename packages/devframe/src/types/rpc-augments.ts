@@ -53,8 +53,8 @@ export interface DevframeRpcClientFunctions {
  * To be extended
  */
 export interface DevframeRpcServerFunctions {
-  /** Replace this connection's browser-agent tool manifest. @internal */
-  'devframe:agent:sync-client-tools': (tools: import('../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
+  /** Replace this connection's browser-agent tool manifest, tagged with the calling tab's stable client id. @internal */
+  'devframe:agent:sync-client-tools': (clientId: string, tools: import('../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
   /**
    * Authenticate a connection with a previously-issued bearer token; resolves
    * whether the connection is now trusted. The interactive handler is provided

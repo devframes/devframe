@@ -20,7 +20,7 @@ describe('client agent tools', () => {
       rpc: { $callRaw: callRaw },
     }
 
-    syncClientAgentTools(context, session, [{
+    syncClientAgentTools(context, session, 'tab-abc', [{
       id: 'pinia-colada:refetch',
       description: 'Refetch matching queries.',
       safety: 'action',
