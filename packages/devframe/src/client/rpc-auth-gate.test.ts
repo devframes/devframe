@@ -145,4 +145,29 @@ describe('getDevframeRpcClient: auth bootstrap gates outbound calls', () => {
     // `close?:` exists to keep working.
     expect(() => rpc.close?.()).not.toThrow()
   })
+
+  const INVOKE_CLIENT_TOOL = 'devframe:agent:invoke-client-tool'
+
+  it('loads the browser-agent bridge only when the node advertises MCP', async () => {
+    const { getDevframeRpcClient } = await import('./rpc')
+    const rpc = await getDevframeRpcClient({
+      connectionMeta: { ...connectionMeta, mcp: { path: '__mcp' } },
+      otpParam: false,
+      simpleAuth: false,
+    })
+    // The bridge lives in its own chunk and registers this handler once loaded.
+    await vi.waitFor(() => expect(rpc.client.definitions.has(INVOKE_CLIENT_TOOL)).toBe(true))
+  })
+
+  it('leaves the browser-agent bridge unloaded without MCP', async () => {
+    const { getDevframeRpcClient } = await import('./rpc')
+    const rpc = await getDevframeRpcClient({
+      connectionMeta,
+      otpParam: false,
+      simpleAuth: false,
+    })
+    // Give any stray dynamic import time to resolve; it must not.
+    await new Promise(resolve => setTimeout(resolve, 20))
+    expect(rpc.client.definitions.has(INVOKE_CLIENT_TOOL)).toBe(false)
+  })
 })
