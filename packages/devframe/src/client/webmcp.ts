@@ -1,9 +1,10 @@
-import type { RpcFunctionAgentOptions, RpcFunctionDefinitionAnyWithContext, RpcFunctionsCollector, RpcFunctionType } from 'devframe/rpc'
+import type { RpcFunctionAgentOptions, RpcFunctionDefinitionAnyWithContext, RpcFunctionsCollector } from 'devframe/rpc'
 import { getRpcHandler } from 'devframe/rpc'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 // Pure, browser-safe projections shared with the node-side MCP adapter
 // (`@devframes/agentic/mcp`, via `devframe/internal`), so the WebMCP surface
 // cannot drift from the MCP one.
+import { resolveAgentSafety } from '../agent/safety'
 import { argsToJsonSchema } from '../agent/to-json-schema'
 import { toolInputToRpcArgs } from '../tool-input'
 
@@ -132,14 +133,15 @@ export function registerWebMcpTools<LocalFunctions, SetupContext>(
     }
 
     const controller = new AbortController()
+    const safety = resolveAgentSafety(def.type, agent)
     const result = modelContext.registerTool({
       name,
       description: agent.description,
       inputSchema: argsToJsonSchema(def.args),
       annotations: {
         title: agent.title ?? def.name,
-        readOnlyHint: resolveSafety(def, agent) === 'read',
-        destructiveHint: resolveSafety(def, agent) === 'destructive',
+        readOnlyHint: safety === 'read',
+        destructiveHint: safety === 'destructive',
       },
       execute: args => executeRpcTool(def, clientRpc.context, args),
     }, { signal: controller.signal })
@@ -178,16 +180,6 @@ export function registerWebMcpTools<LocalFunctions, SetupContext>(
       unregister()
     registered.clear()
   }
-}
-
-function resolveSafety(
-  def: RpcFunctionDefinitionAnyWithContext<any>,
-  agent: RpcFunctionAgentOptions,
-): 'read' | 'action' | 'destructive' {
-  if (agent.safety)
-    return agent.safety
-  const type: RpcFunctionType = def.type ?? 'query'
-  return type === 'static' || type === 'query' ? 'read' : 'action'
 }
 
 async function executeRpcTool<SetupContext>(

@@ -62,13 +62,31 @@ describe('in-page channel agent tools', () => {
     expect(listBrowserAgentTools().some(tool => tool.id === 'devframes:test:add')).toBe(false)
   })
 
-  it('rejects agent exposure without strict JSON serialization', () => {
+  it('infers strict JSON serialization when agent is set', () => {
+    const channel = createPageScriptChannel<TestProtocol>({
+      name: 'devframes:inferred',
+      window: false,
+      heartbeat: false,
+      functions: {
+        add: {
+          agent: { description: 'Add two numbers.' },
+          handler: (a, b) => ({ sum: a + b }),
+        },
+        hidden: { handler: () => 'internal' },
+      },
+    })
+    expect(listBrowserAgentTools().some(tool => tool.id === 'devframes:inferred:add')).toBe(true)
+    channel.close()
+  })
+
+  it('rejects agent exposure with explicit jsonSerializable: false', () => {
     expect(() => createPageScriptChannel<TestProtocol>({
       name: 'devframes:invalid',
       window: false,
       functions: {
         add: {
           agent: { description: 'Add two numbers.' },
+          jsonSerializable: false,
           handler: (a, b) => ({ sum: a + b }),
         },
         hidden: { handler: () => 'internal' },

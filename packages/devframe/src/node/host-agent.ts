@@ -1,4 +1,4 @@
-import type { RpcFunctionDefinitionAnyWithContext, RpcFunctionType } from 'devframe/rpc'
+import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
 import type {
   AgentHandle,
   AgentManifest,
@@ -16,6 +16,7 @@ import type {
   RpcFunctionAgentOptions,
 } from 'devframe/types'
 import { createEventEmitter } from 'devframe/utils/events'
+import { resolveAgentSafety } from '../agent/safety'
 import { DEVFRAME_EVENTS } from '../events'
 import { toolInputToRpcArgs } from '../tool-input'
 import { diagnostics } from './diagnostics'
@@ -261,8 +262,7 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       if (!agent.description || typeof agent.description !== 'string')
         throw diagnostics.DF0014({ name })
 
-      const type: RpcFunctionType = def.type ?? 'query'
-      const safety = agent.safety ?? inferSafety(type)
+      const safety = resolveAgentSafety(def.type, agent)
       out.push({
         id: name,
         kind: 'rpc',
@@ -286,10 +286,4 @@ export class DevframeAgentHost implements DevframeAgentHostType {
       return def
     return undefined
   }
-}
-
-function inferSafety(type: RpcFunctionType): 'read' | 'action' | 'destructive' {
-  if (type === 'static' || type === 'query')
-    return 'read'
-  return 'action'
 }

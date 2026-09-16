@@ -1,5 +1,3 @@
-import type { RpcFunctionAgentOptions } from 'devframe/rpc'
-
 export interface BrowserAgentToolManifest {
   id: string
   title?: string
@@ -41,24 +39,10 @@ export function registerBrowserAgentTool(tool: BrowserAgentTool): () => void {
 }
 
 export function listBrowserAgentTools(): BrowserAgentTool[] {
-  const unique = new Map<string, BrowserAgentTool>()
-  for (const tool of tools.values()) {
-    if (!unique.has(tool.id))
-      unique.set(tool.id, tool)
-  }
-  return [...unique.values()]
+  return [...tools.values()]
 }
 
 export function onBrowserAgentToolsChanged(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
-}
-
-export function resolveBrowserAgentSafety(
-  type: string | undefined,
-  agent: RpcFunctionAgentOptions,
-): BrowserAgentToolManifest['safety'] {
-  if (agent.safety)
-    return agent.safety
-  return type === 'static' || type === 'query' || type == null ? 'read' : 'action'
 }

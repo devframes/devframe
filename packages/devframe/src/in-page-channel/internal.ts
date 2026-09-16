@@ -4,8 +4,9 @@ import type { RpcArgsSchema } from '../rpc/types'
 import type { InPageChannelControlFrame } from './protocol'
 import type { InPageFunctionDefinitionAny, InPageFunctionType } from './types'
 import { createBirpc } from 'birpc'
+import { resolveAgentSafety } from '../agent/safety'
 import { argsToJsonSchema } from '../agent/to-json-schema'
-import { registerBrowserAgentTool, resolveBrowserAgentSafety } from '../client/browser-agent'
+import { registerBrowserAgentTool } from '../client/browser-agent'
 import { toolInputToRpcArgs } from '../tool-input'
 import { diagnostics } from './diagnostics'
 import { isControlFrame } from './protocol'
@@ -189,8 +190,13 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
   return {
     definitions,
     register(definition) {
-      if ('agent' in definition && definition.agent && definition.jsonSerializable !== true)
-        throw diagnostics.DF0080({ name: definition.name })
+      // `agent` implies strict JSON serialization, since MCP consumes
+      // JSON-shaped data; an explicit `jsonSerializable: false` conflicts.
+      if ('agent' in definition && definition.agent) {
+        if (definition.jsonSerializable === false)
+          throw diagnostics.DF0080({ name: definition.name })
+        definition.jsonSerializable = true
+      }
       definitions.set(channelMethod(definition.type, definition.name), definition)
     },
     // The shared-state layer keys its handlers by their own fully-qualified
@@ -276,7 +282,7 @@ export function registerInPageAgentTools(
       id: `${channelName}:${definition.name}`,
       title: agent.title ?? definition.name,
       description: agent.description,
-      safety: resolveBrowserAgentSafety(definition.type, agent),
+      safety: resolveAgentSafety(definition.type, agent),
       tags: agent.tags,
       inputSchema: argsToJsonSchema(definition.args),
       invoke: (args) => {
