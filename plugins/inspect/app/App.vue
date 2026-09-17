@@ -67,7 +67,7 @@ function reload(): void {
         <span>Devframe Inspector</span>
       </div>
 
-      <LayoutTabs v-model="tab" :tabs="tabs" variant="segment" />
+      <LayoutTabs v-model="tab" :tabs="tabs" variant="segment" class="min-w-0 overflow-x-auto" />
 
       <template #search>
         <div />
