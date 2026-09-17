@@ -1,7 +1,30 @@
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, walkCommands } from './keybindings'
+import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, getShortcutRows, walkCommands } from './keybindings'
+
+describe('getShortcutRows', () => {
+  it('omits opted-out commands while retaining their bindable descendants and palette-hidden commands', () => {
+    const commands: DevframeCommandEntry[] = [
+      { id: 'open-file', title: 'Open File', source: 'server', allowShortcuts: false },
+      {
+        id: 'tools',
+        title: 'Tools',
+        source: 'client',
+        allowShortcuts: false,
+        children: [
+          { id: 'open-selected', title: 'Open Selected', source: 'client', allowShortcuts: true },
+          { id: 'open-path', title: 'Open Path', source: 'client', allowShortcuts: false },
+        ],
+      },
+      { id: 'palette', title: 'Palette', source: 'client', showInPalette: false },
+    ]
+    expect(getShortcutRows(commands).map(row => ({ id: row.command.id, parentTitle: row.parentTitle, depth: row.depth }))).toEqual([
+      { id: 'open-selected', parentTitle: 'Tools', depth: 1 },
+      { id: 'palette', parentTitle: undefined, depth: 0 },
+    ])
+  })
+})
 
 /**
  * Dock-navigation commands nest two deep (`Docks` › a group › its members), and

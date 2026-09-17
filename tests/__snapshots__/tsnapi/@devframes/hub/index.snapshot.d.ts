@@ -53,6 +53,7 @@ export interface DevframeCommandBase {
   category?: string;
   showInPalette?: boolean | 'without-children';
   when?: string;
+  allowShortcuts?: boolean;
   keybindings?: DevframeCommandKeybinding[];
 }
 export interface DevframeCommandHandle {
