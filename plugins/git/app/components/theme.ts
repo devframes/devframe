@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { applyPanelBranding } from '../../../../design/panel-theme'
 
 export type Theme = 'light' | 'dark'
 
@@ -27,6 +28,8 @@ function systemTheme(): Theme {
  */
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('dark')
+
+  useEffect(() => applyPanelBranding(), [])
 
   useEffect(() => {
     setTheme(readStored() ?? systemTheme())

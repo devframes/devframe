@@ -366,7 +366,7 @@ ul.discovery-view-editor-hints-popup {
   --at-apply: 'bg-#8882 color-active';
 }
 .discovery-view-editor-hint .match {
-  --at-apply: 'color-primary-700 dark:color-primary-300';
+  --at-apply: 'color-active';
   font-weight: 600;
 }
 .discovery-view-editor-hint::before {
