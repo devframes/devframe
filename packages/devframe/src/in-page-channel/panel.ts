@@ -201,29 +201,33 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       warnOnce(`in-page channel "${name}": transport lost (${reason}) and the panel has no handshake targets, so it stays disconnected`)
   }
 
+  function postHandshake(kind: 'hello' | 'cancel'): void {
+    const message = {
+      channel: IN_PAGE_CHANNEL_TAG,
+      v: IN_PAGE_CHANNEL_VERSION,
+      kind,
+      name,
+      panelId,
+      instanceId: options.instanceId,
+    }
+    for (const target of targets) {
+      for (const origin of allowedOrigins) {
+        try {
+          target.postMessage(message, origin)
+        }
+        catch {
+          // An unreachable target must not block the remaining targets.
+        }
+      }
+    }
+  }
+
   function startHelloLoop(): void {
     if (helloTimer || !canHandshake || status !== 'connecting')
       return
     let delay = options.helloIntervalMs ?? DEFAULT_HELLO_INTERVAL_MS
     const tick = (): void => {
-      const hello = {
-        channel: IN_PAGE_CHANNEL_TAG,
-        v: IN_PAGE_CHANNEL_VERSION,
-        kind: 'hello' as const,
-        name,
-        panelId,
-        instanceId: options.instanceId,
-      }
-      for (const target of targets) {
-        for (const origin of allowedOrigins) {
-          try {
-            target.postMessage(hello, origin)
-          }
-          catch {
-            // Unreachable target/origin pair; the loop keeps retrying.
-          }
-        }
-      }
+      postHandshake('hello')
       delay = Math.min(delay * 1.5, HELLO_INTERVAL_CAP_MS)
       helloTimer = setTimeout(tick, delay)
     }
@@ -302,6 +306,9 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
       setStatus('closed')
       disposeAgentTools()
       stopTimers()
+      // Pending relays have no port on which to receive the graceful bye yet.
+      if (canHandshake)
+        postHandshake('cancel')
       win?.removeEventListener('message', onWindowMessage)
       attached?.dispose({ bye: true, reason: 'the panel closed the channel' })
       attached = undefined
