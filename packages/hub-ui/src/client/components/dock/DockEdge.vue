@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
+import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
 import type { DockEdge as DockEdgePosition, DockLayout } from './dock-layout'
 import { useEventListener } from '@vueuse/core'
-import { computed, h, onMounted, ref, useTemplateRef } from 'vue'
-import { getEntryGroup } from '../../state/dock-settings'
-import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
+import { computed, h, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { BUILTIN_ENTRY_SETTINGS } from '../../constants'
+import { docksSplitGroupsBySize, getEntryGroup } from '../../state/dock-settings'
+import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useDocksOverflowPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
 import BrandMark from '../icons/BrandMark.vue'
 import ViewEntry from '../views/ViewEntry.vue'
 import { resolveDockEdge, resolveDockLayout } from './dock-layout'
+import DockEntries from './DockEntries.vue'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockGroupSidebar from './DockGroupSidebar.vue'
+import DockOverflowButton from './DockOverflowButton.vue'
 import DockPanelResizer from './DockPanelResizer.vue'
 
 const props = defineProps<{
@@ -31,7 +35,43 @@ const panes = useIframePanes(viewsContainer, context.panel, () => getEntryPaneKe
 
 const isVertical = computed(() => store.position === 'left' || store.position === 'right')
 
-const groupedEntries = computed(() => context.docks.groupedEntries)
+const settingsEntries = computed(() => context.docks.groupedEntries.flatMap(([, entries]) => entries.filter(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id)))
+const groupedEntries = computed(() => context.docks.groupedEntries
+  .map(([category, entries]): DevframeDockEntriesGrouped[number] => [category, entries.filter(entry => entry.id !== BUILTIN_ENTRY_SETTINGS.id)])
+  .filter(([, entries]) => entries.length > 0))
+const toolbarEntries = useTemplateRef<HTMLElement>('toolbarEntries')
+const settingsDock = useTemplateRef<HTMLElement>('settingsDock')
+const toolbarSize = ref({ width: 0, height: 0, item: 32, gap: 2 })
+
+watch([toolbarEntries, settingsDock], ([el, pinned], _prev, onCleanup) => {
+  if (!el || !pinned)
+    return
+  const view = el.ownerDocument.defaultView
+  const ResizeObserverCtor = view?.ResizeObserver ?? globalThis.ResizeObserver
+  if (!ResizeObserverCtor)
+    return
+  const observer = new ResizeObserverCtor((entries) => {
+    const bounds = entries.find(entry => entry.target === el)?.contentRect
+    const style = view?.getComputedStyle(el)
+    toolbarSize.value = {
+      width: bounds?.width ?? toolbarSize.value.width,
+      height: bounds?.height ?? toolbarSize.value.height,
+      item: pinned.querySelector('button')?.offsetWidth || 32,
+      gap: Number.parseFloat(style?.columnGap ?? '') || 0,
+    }
+  })
+  observer.observe(el)
+  observer.observe(pinned)
+  onCleanup(() => observer.disconnect())
+}, { immediate: true, flush: 'post' })
+
+const splitEntries = computed(() => {
+  const { width, height, item, gap } = toolbarSize.value
+  // Category dividers use m1 (four gap-0.5 units) and a 1.5px border.
+  const separatorSize = gap * 4 + 1.5
+  const settingsSize = settingsEntries.value.length ? item + separatorSize + gap * 2 : 0
+  return docksSplitGroupsBySize(groupedEntries.value, (isVertical.value ? height : width) - settingsSize, item, gap, separatorSize)
+})
 const selectedEntry = computed(() => context.docks.selected)
 const activeGroup = computed(() => getEntryGroup(context.docks.entries, selectedEntry.value))
 const hasPanelContent = computed(() => {
@@ -59,9 +99,10 @@ function bringUp() {
   }, +store.inactiveTimeout || 0)
 }
 
-// An open group menu popover anchors to a toolbar button, so collapsing the
+// An open menu popover anchors to a toolbar button, so collapsing the
 // toolbar out from under it would leave the menu floating, detached from it.
 const docksGroupPanel = useDocksGroupPanel()
+const docksOverflowPanel = useDocksOverflowPanel()
 
 const isCollapsed = computed(() => {
   if (!settings.value.autoCollapseEdgeToolbar)
@@ -70,7 +111,7 @@ const isCollapsed = computed(() => {
     return false
   if (context.panel.isDragging)
     return false
-  if (docksGroupPanel.value)
+  if (docksGroupPanel.value || docksOverflowPanel.value)
     return false
   if (hasPanelContent.value)
     return false
@@ -422,21 +463,46 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
     <!-- Toolbar -->
     <div class="relative flex items-center shrink-0 select-none py1" :class="toolbarClass">
       <div
-        class="flex items-center flex-1 w-full transition-opacity duration-300"
+        class="flex items-center flex-1 min-w-0 min-h-0 w-full transition-opacity duration-300"
         :class="[isVertical ? 'flex-col' : 'flex-row', isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100']"
       >
         <div
-          class="flex items-center flex-1 flex-wrap gap-0.5 px1"
-          :class="isVertical ? 'flex-col py1' : 'flex-row px1'"
+          ref="toolbarEntries"
+          class="flex items-center flex-1 min-w-0 min-h-0 gap-0.5 px1 [&>*]:shrink-0"
+          :class="isVertical ? 'flex-col py1 w-full' : 'flex-row'"
         >
           <DockEntriesWithCategories
             :context="context"
-            :groups="groupedEntries"
+            :groups="splitEntries.visible"
             :is-vertical="isVertical"
             :rotate="false"
             :selected="selectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
+          <DockOverflowButton
+            v-if="splitEntries.overflow.length"
+            :context="context"
+            :groups="splitEntries.overflow"
+            :is-vertical="false"
+            :placement="positionDropdownPlacement[store.position]"
+            :selected="selectedEntry"
+            @select="(e) => context.docks.switchEntry(e?.id)"
+            @activity="bringUp"
+          />
+          <div
+            v-if="settingsEntries.length && groupedEntries.length"
+            class="border-base m1"
+            :class="isVertical ? 'w-20px h-px border-b-1.5' : 'h-20px w-px border-r-1.5'"
+          />
+          <div ref="settingsDock" class="shrink-0">
+            <DockEntries
+              :context="context"
+              :entries="settingsEntries"
+              :is-vertical="false"
+              :selected="selectedEntry"
+              @select="(e) => context.docks.switchEntry(e?.id)"
+            />
+          </div>
         </div>
 
         <!-- Position dropdown & float toggle -->

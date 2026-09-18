@@ -2,7 +2,7 @@
 import type { DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { watchDebounced } from '@vueuse/core'
-import { computed, h, ref, useTemplateRef } from 'vue'
+import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { getGroupMembers, getGroupMembersGrouped, resolveGroupPreferredChild } from '../../state/dock-settings'
 import { setDocksGroupPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
@@ -74,6 +74,11 @@ function hidePanel() {
   isPanelVisible.value = false
   setDocksGroupPanel(null)
 }
+
+onBeforeUnmount(() => {
+  if (docksGroupPanel.value?.el === groupButton.value)
+    hidePanel()
+})
 
 function togglePanel() {
   if (isPanelVisible.value)

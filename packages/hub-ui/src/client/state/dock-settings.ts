@@ -523,6 +523,38 @@ export function docksSplitGroupsWithCapacity(
   return { visible: reduced.visible, overflow, recent: recentEntry }
 }
 
+/** Split an edge toolbar's entries using its available main-axis space. */
+export function docksSplitGroupsBySize(
+  groups: DevframeDockEntriesGrouped,
+  availableSize: number,
+  itemSize: number,
+  gap: number,
+  separatorSize: number,
+): SplitGroupsResult {
+  const total = groups.reduce((count, [, items]) => count + items.length, 0)
+  const separators = Math.max(0, groups.length - 1)
+  const fullSize = total * itemSize + separators * separatorSize + Math.max(0, total + separators - 1) * gap
+  if (fullSize <= availableSize)
+    return docksSplitGroupsWithCapacity(groups, total)
+
+  // Reserve the overflow button first. Each visible entry/divider adds its
+  // size plus a gap to the button or the next entry.
+  let remaining = availableSize - itemSize
+  let capacity = 0
+  for (const [index, [, items]] of groups.entries()) {
+    if (index > 0)
+      remaining -= separatorSize + gap
+    const count = Math.min(items.length, Math.max(0, Math.floor(remaining / (itemSize + gap))))
+    capacity += count
+    remaining -= count * (itemSize + gap)
+    if (count < items.length)
+      break
+  }
+  // Preserve a lone overflow entry: folding it inline can add a category
+  // divider that exceeds the measured space.
+  return { ...splitGroupsAt(groups, capacity), recent: null }
+}
+
 /**
  * Resolve a persisted recent-dock id (`DockSessionStorage.recentDockId`) to
  * the entry the float bar can raise, or `null` when the id no longer maps to a

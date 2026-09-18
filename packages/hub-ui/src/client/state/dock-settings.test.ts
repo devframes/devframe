@@ -1,7 +1,7 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { docksSplitGroupsWithCapacity, resolveGroupPreferredChild, resolveNextRecentDockId, resolveRecentDockEntry } from './dock-settings'
+import { docksSplitGroupsBySize, docksSplitGroupsWithCapacity, resolveGroupPreferredChild, resolveNextRecentDockId, resolveRecentDockEntry } from './dock-settings'
 
 function iframe(id: string, extra: Partial<DevframeDockEntry> = {}): DevframeDockEntry {
   return { id, type: 'iframe', url: '/', title: id.toUpperCase(), icon: 'ph:cube-duotone', ...extra } as DevframeDockEntry
@@ -22,6 +22,53 @@ function ids(groups: DevframeDockEntriesGrouped): string[] {
 // Five top-level docks on a 3-slot bar: [a] [b] [c] | [overflow: d, e]
 const [a, b, c, d, e] = ['a', 'b', 'c', 'd', 'e'].map(id => iframe(id))
 const rail: DevframeDockEntriesGrouped = [['default', [a, b, c, d, e]]]
+
+describe('docksSplitGroupsBySize', () => {
+  const splitAt = (groups: DevframeDockEntriesGrouped, size: number) => docksSplitGroupsBySize(groups, size, 32, 2, 9.5)
+
+  it('restores every entry when the toolbar fits exactly, without reserving overflow', () => {
+    expect(ids(splitAt(rail, 168).visible)).toEqual(['a', 'b', 'c', 'd', 'e'])
+    expect(splitAt(rail, 168).overflow).toEqual([])
+    expect(ids(splitAt(rail, 167).overflow)).toEqual(['d', 'e'])
+  })
+
+  it('reserves the more button and preserves category order in a small toolbar', () => {
+    const groups: DevframeDockEntriesGrouped = [['first', [a, b]], ['second', [c, d, e]]]
+    const split = splitAt(groups, 145.5)
+    expect(split.visible).toEqual([['first', [a, b]], ['second', [c]]])
+    expect(split.overflow).toEqual([['second', [d, e]]])
+    expect(ids(splitAt(groups, 145).visible)).toEqual(['a', 'b'])
+  })
+
+  it('keeps a lone category overflow from folding back with an extra divider', () => {
+    const groups: DevframeDockEntriesGrouped = [['first', [a, b]], ['second', [c]]]
+    // Three icons fit (100px), but their category divider does not (111.5px).
+    const split = splitAt(groups, 100)
+    expect(ids(split.visible)).toEqual(['a', 'b'])
+    expect(ids(split.overflow)).toEqual(['c'])
+    expect(ids(splitAt(groups, 99.5).visible)).toEqual(['a'])
+    expect(ids(splitAt(groups, 111.5).visible)).toEqual(['a', 'b', 'c'])
+    expect(splitAt(groups, 111.5).overflow).toEqual([])
+  })
+
+  it('can put all entries in the menu when only the more button fits', () => {
+    const split = splitAt(rail, 32)
+    expect(split.visible).toEqual([])
+    expect(ids(split.overflow)).toEqual(['a', 'b', 'c', 'd', 'e'])
+  })
+
+  it('fits the rendered entries, dividers and menu across resize boundaries without losing entries', () => {
+    const groups: DevframeDockEntriesGrouped = [['first', [a, b]], ['second', [c]], ['third', [d, e]]]
+    for (let available = 32; available <= 200; available += 0.5) {
+      const split = splitAt(groups, available)
+      const buttons = ids(split.visible).length + Number(split.overflow.length > 0)
+      const dividers = Math.max(0, split.visible.length - 1)
+      const renderedSize = buttons * 32 + dividers * 9.5 + Math.max(0, buttons + dividers - 1) * 2
+      expect(renderedSize).toBeLessThanOrEqual(available)
+      expect([...ids(split.visible), ...ids(split.overflow)]).toEqual(['a', 'b', 'c', 'd', 'e'])
+    }
+  })
+})
 
 describe('docksSplitGroupsWithCapacity', () => {
   it('splits naturally without a recent entry', () => {

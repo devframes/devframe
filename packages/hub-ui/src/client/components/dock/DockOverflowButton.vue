@@ -2,8 +2,9 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
+import type { FloatingPopoverProps } from '../../state/floating-tooltip'
 import { watchDebounced } from '@vueuse/core'
-import { computed, h, ref, useTemplateRef } from 'vue'
+import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { setDocksOverflowPanel, useDocksOverflowPanel } from '../../state/floating-tooltip'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockEntry from './DockEntry.vue'
@@ -13,6 +14,7 @@ const props = defineProps<{
   isVertical: boolean
   groups: DevframeDockEntriesGrouped
   selected: DevframeDockEntry | null
+  placement?: FloatingPopoverProps['placement']
 }>()
 
 const emit = defineEmits<{
@@ -38,6 +40,15 @@ function showOverflowPanel() {
   setDocksOverflowPanel({
     content: () => h('div', {
       class: 'flex gap-0 flex-wrap max-w-220px',
+      // Edge menus also need room for the toolbar, popover padding and gap.
+      // Float mode keeps its existing sizing when no placement is supplied.
+      style: props.placement
+        ? {
+            maxWidth: `min(220px, calc(100vw - ${props.placement === 'left' || props.placement === 'right' ? 80 : 36}px))`,
+            maxHeight: `calc(100vh - ${props.placement === 'top' || props.placement === 'bottom' ? 80 : 36}px)`,
+            overflow: 'auto',
+          }
+        : undefined,
       onMousemove: () => emit('activity'),
     }, [
       h(DockEntriesWithCategories, {
@@ -52,6 +63,7 @@ function showOverflowPanel() {
       }),
     ]),
     el: overflowButton.value,
+    placement: props.placement,
   })
 }
 
@@ -75,6 +87,11 @@ function hideOverflowPanel() {
   isOverflowPanelVisible.value = false
   setDocksOverflowPanel(null)
 }
+
+onBeforeUnmount(() => {
+  if (docksOverflowPanel.value?.el === overflowButton.value)
+    hideOverflowPanel()
+})
 </script>
 
 <template>
