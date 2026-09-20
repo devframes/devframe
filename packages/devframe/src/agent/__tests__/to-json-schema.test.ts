@@ -49,7 +49,8 @@ describe('returnToJsonSchema', () => {
       .toEqual({ type: 'object', properties: { ok: { type: 'boolean' } } })
   })
 
-  it('falls back to permissive for validators without a native converter', () => {
-    expect(returnToJsonSchema(v.object({ ok: v.boolean() }))).toEqual(PERMISSIVE)
+  it('yields no schema for validators without a native converter', () => {
+    expect(returnToJsonSchema(v.object({ ok: v.boolean() }))).toBeUndefined()
+    expect(returnToJsonSchema(v.array(v.object({ ok: v.boolean() })))).toBeUndefined()
   })
 })

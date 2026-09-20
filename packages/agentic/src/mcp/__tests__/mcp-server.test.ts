@@ -1,6 +1,7 @@
 import type { DevframeHost } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { createHostContext } from 'devframe/node'
+import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { buildMcpServerFromContext } from '../build-server'
 
@@ -159,6 +160,35 @@ describe('mcp adapter (in-memory)', () => {
       expect(content[0]!.type).toBe('text')
       expect(JSON.parse(content[0]!.text)).toEqual({ echoed: { foo: 'bar' } })
       expect(result.structuredContent).toEqual({ echoed: { foo: 'bar' } })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('calls an rpc-backed tool whose return schema has no native converter', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.rpc.register({
+        name: 'list-things',
+        type: 'query',
+        jsonSerializable: true,
+        args: [],
+        returns: v.array(v.object({ id: v.string() })),
+        agent: { description: 'Lists things.' },
+        handler: () => [{ id: 'a' }, { id: 'b' }],
+      } as never)
+
+      const listed = await client.listTools()
+      const tool = listed.tools.find(t => t.name.endsWith('list-things'))
+      expect(tool).toBeDefined()
+      expect(tool!.outputSchema).toBeUndefined()
+
+      const result = await client.callTool({ name: tool!.name, arguments: {} })
+      expect(result.isError).toBeFalsy()
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(JSON.parse(content[0]!.text)).toEqual([{ id: 'a' }, { id: 'b' }])
+      expect(result.structuredContent).toBeUndefined()
     }
     finally {
       await cleanup()

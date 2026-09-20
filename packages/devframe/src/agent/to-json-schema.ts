@@ -29,10 +29,19 @@ function safeToJsonSchema(schema: StandardSchemaV1): unknown {
 
 /**
  * JSON Schema for an RPC return value on the agent/MCP surface.
+ *
+ * Unlike args, a return value has no permissive fallback: the schema is
+ * advertised as an MCP `outputSchema`, which obliges the tool to return a
+ * matching object on every call. A validator without a native converter
+ * (e.g. valibot) yields no output schema rather than an unfounded object
+ * one, so array- and primitive-returning tools still work.
  * @internal
  */
 export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
   if (!schema)
+    return undefined
+  const standard = schema['~standard'] as MaybeJsonSchema
+  if (!standard.jsonSchema)
     return undefined
   return safeToJsonSchema(schema)
 }
