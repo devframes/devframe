@@ -32,9 +32,11 @@ function safeToJsonSchema(schema: StandardSchemaV1): unknown {
  *
  * Unlike args, a return value has no permissive fallback: the schema is
  * advertised as an MCP `outputSchema`, which obliges the tool to return a
- * matching object on every call. A validator without a native converter
- * (e.g. valibot) yields no output schema rather than an unfounded object
- * one, so array- and primitive-returning tools still work.
+ * matching object on every call. A validator with no native converter
+ * (e.g. valibot), or one whose converter cannot express the schema, yields
+ * no output schema rather than an unfounded object one, so array- and
+ * primitive-returning tools still work. Conversion uses the converter's
+ * `output`, since a transforming validator returns its output type.
  * @internal
  */
 export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknown {
@@ -43,7 +45,12 @@ export function returnToJsonSchema(schema: StandardSchemaV1 | undefined): unknow
   const standard = schema['~standard'] as MaybeJsonSchema
   if (!standard.jsonSchema)
     return undefined
-  return safeToJsonSchema(schema)
+  try {
+    return standard.jsonSchema.output({ target: 'draft-2020-12' })
+  }
+  catch {
+    return undefined
+  }
 }
 
 /**

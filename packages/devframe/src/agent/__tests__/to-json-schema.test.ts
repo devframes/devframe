@@ -53,4 +53,35 @@ describe('returnToJsonSchema', () => {
     expect(returnToJsonSchema(v.object({ ok: v.boolean() }))).toBeUndefined()
     expect(returnToJsonSchema(v.array(v.object({ ok: v.boolean() })))).toBeUndefined()
   })
+
+  it('yields no schema when the converter cannot express the schema', () => {
+    const throwing = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: {
+          input: () => { throw new Error('unsupported') },
+          output: () => { throw new Error('unsupported') },
+        },
+      } as StandardSchemaV1['~standard'],
+    }
+    expect(returnToJsonSchema(throwing)).toBeUndefined()
+  })
+
+  it('converts the output type, not the input type', () => {
+    const transforming = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: {
+          input: () => ({ type: 'string' }),
+          output: () => ({ type: 'object', properties: { parsed: { type: 'number' } } }),
+        },
+      } as StandardSchemaV1['~standard'],
+    }
+    expect(returnToJsonSchema(transforming))
+      .toEqual({ type: 'object', properties: { parsed: { type: 'number' } } })
+  })
 })
