@@ -1,5 +1,8 @@
 import type { DevframeTerminalSession } from '../../types/terminals'
 import type { DevframeHubContext } from '../context'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import process from 'node:process'
 import { describe, expect, it, vi } from 'vitest'
 import { hasNative } from 'zigpty'
@@ -71,8 +74,8 @@ function createTerminalHost() {
   }
 }
 
-async function waitUntil(assertion: () => void): Promise<void> {
-  const deadline = Date.now() + 1000
+async function waitUntil(assertion: () => void, timeout = 1000): Promise<void> {
+  const deadline = Date.now() + timeout
   let lastError: unknown
   while (Date.now() < deadline) {
     try {
@@ -394,6 +397,104 @@ describe('devframeTerminalHost child-process status lifecycle', () => {
     expect(session.status).toBe('running')
 
     await session.terminate()
+  })
+})
+
+// On Windows, tinyexec runs anything that isn't a `.exe`/`.com` (e.g. the
+// `node_modules/.bin/*.cmd` shims package managers generate) through
+// `cmd.exe /d /s /c`, so the pid the host holds belongs to `cmd.exe`, not to
+// the program the shim starts. Killing only that pid leaves the real process
+// orphaned (still holding its ports).
+describe.runIf(process.platform === 'win32')('devframeTerminalHost child-process tree on Windows', { timeout: 20_000 }, () => {
+  function isAlive(pid: number): boolean {
+    try {
+      process.kill(pid, 0)
+      return true
+    }
+    catch {
+      return false
+    }
+  }
+
+  async function startShimSession(host: DevframeTerminalsHost, id: string) {
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-terminals-shim-'))
+    writeFileSync(join(dir, 'child.cjs'), 'console.log("pid:" + process.pid); setInterval(() => {}, 1000)\n')
+    const shim = join(dir, 'child.cmd')
+    writeFileSync(shim, `@"${NODE}" "%~dp0\\child.cjs" %*\r\n`)
+    const session = await host.startChildProcess({ command: shim, args: [], cwd: dir }, { id, title: id })
+    let pid = 0
+    await waitUntil(() => {
+      const match = session.buffer?.join('').match(/pid:(\d+)/)
+      expect(match).toBeTruthy()
+      pid = Number(match![1])
+    }, 10_000)
+    // The host holds the `cmd.exe` wrapper, not the node child.
+    expect(session.getChildProcess()?.pid).not.toBe(pid)
+    return { session, pid, cleanup: () => rmSync(dir, { recursive: true, force: true }) }
+  }
+
+  it('terminate() kills the process started by a .cmd shim', async () => {
+    const { host } = createTerminalHost()
+    const { session, pid, cleanup } = await startShimSession(host, 'shim-terminate')
+    try {
+      await session.terminate()
+      await waitUntil(() => expect(isAlive(pid)).toBe(false), 5000)
+      expect(session.status).toBe('stopped')
+    }
+    finally {
+      if (isAlive(pid))
+        process.kill(pid)
+      cleanup()
+    }
+  })
+
+  it('terminate() reports a stopped, killed run rather than a crash', async () => {
+    const { host, sinks } = createTerminalHost()
+    const { session, pid, cleanup } = await startShimSession(host, 'shim-result')
+    const result = session.getResult()
+    try {
+      await session.terminate()
+      await waitUntil(() => expect(sinks.get('shim-result')?.closed).toBe(true))
+      const output = await result
+      expect(output.exitCode).toBeUndefined()
+      expect(result.killed).toBe(true)
+      expect(session.status).toBe('stopped')
+    }
+    finally {
+      if (isAlive(pid))
+        process.kill(pid)
+      cleanup()
+    }
+  })
+
+  it('restart() kills the previous run started by a .cmd shim', async () => {
+    const { host } = createTerminalHost()
+    const { session, pid, cleanup } = await startShimSession(host, 'shim-restart')
+    try {
+      await session.restart()
+      await waitUntil(() => expect(isAlive(pid)).toBe(false), 5000)
+      expect(session.status).toBe('running')
+      await session.terminate()
+    }
+    finally {
+      if (isAlive(pid))
+        process.kill(pid)
+      cleanup()
+    }
+  })
+
+  it('cancelling the stream kills the process started by a .cmd shim', async () => {
+    const { host } = createTerminalHost()
+    const { session, pid, cleanup } = await startShimSession(host, 'shim-cancel')
+    try {
+      host.remove(session)
+      await waitUntil(() => expect(isAlive(pid)).toBe(false), 5000)
+    }
+    finally {
+      if (isAlive(pid))
+        process.kill(pid)
+      cleanup()
+    }
   })
 })
 
