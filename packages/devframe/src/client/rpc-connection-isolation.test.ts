@@ -32,7 +32,7 @@ const channel = vi.fn(class {
   postMessage = vi.fn()
   close = closeChannel
 })
-const options = { isolateConnection: true, otpParam: false, simpleAuth: false, webmcp: false } as const
+const options = { otpParam: false, simpleAuth: false, webmcp: false } as const
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -49,14 +49,14 @@ afterEach(() => {
 })
 
 it('keeps independent authentication and reconnection local while closing transports', async () => {
-  expect.assertions(11)
+  expect.assertions(12)
   const first = await getDevframeRpcClient({
     ...options,
-    connection: { ...sharedConnection, metaBaseUrl: 'http://first.example/__connection.json', authToken: 'first-token' },
+    connection: { ...sharedConnection, metaBaseUrl: 'http://first.example/__connection.json', authToken: 'first-token', isolated: true },
   })
   const second = await getDevframeRpcClient({
     ...options,
-    connection: { ...sharedConnection, metaBaseUrl: 'http://second.example/__connection.json', authToken: 'second-token' },
+    connection: { ...sharedConnection, metaBaseUrl: 'http://second.example/__connection.json', authToken: 'second-token', isolated: true },
   })
   try {
     expect(await first.requestTrustWithCode('first-code')).toBe(true)
@@ -66,6 +66,7 @@ it('keeps independent authentication and reconnection local while closing transp
     try {
       expect(recreated.connection.metaBaseUrl).toBe('http://second.example/__connection.json')
       expect(recreated.connection.authToken).toBe('second-token')
+      expect(recreated.connection.isolated).toBe(true)
       expect(await recreated.requestTrustWithToken('second-updated')).toBe(true)
       expect(first.connection.authToken).toBe('issued-first-code')
       expect(Reflect.get(globalThis, '__DEVFRAME_CONNECTION_AUTH_TOKEN__')).toBe('shared-token')
@@ -83,13 +84,11 @@ it('keeps independent authentication and reconnection local while closing transp
   expect(transport.close).toHaveBeenCalledTimes(3)
 })
 
-it.each([{}, { isolateConnection: false }])('preserves shared OTP persistence and broadcasts with %j', async (settings) => {
+it.each([{}, { isolated: false }])('preserves shared OTP persistence and broadcasts with %j', async (settings) => {
   expect.assertions(6)
   const rpcClient = await getDevframeRpcClient({
     ...options,
-    isolateConnection: undefined,
-    ...settings,
-    connection: sharedConnection,
+    connection: { ...sharedConnection, ...settings },
   })
   try {
     expect(await rpcClient.requestTrustWithCode('shared-code')).toBe(true)

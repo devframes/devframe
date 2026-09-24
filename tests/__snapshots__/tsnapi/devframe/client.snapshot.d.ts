@@ -6,6 +6,7 @@ export interface DevframeConnection {
   connectionMeta: ConnectionMeta;
   metaBaseUrl: string;
   authToken?: string;
+  isolated?: boolean;
 }
 export interface DevframeRpcClient {
   events: EventEmitter<RpcClientEvents>;
@@ -125,8 +126,12 @@ export interface RpcStreamingClientHost {
   upload: <T = unknown>(_: string, _: string) => StreamSink<T>;
 }
 export interface SetupDevframeConnectionOptions {
-  isolateConnection?: boolean;
-  connection?: DevframeConnection;
+  connection?: DevframeConnection | {
+    isolated: boolean;
+    connectionMeta?: never;
+    metaBaseUrl?: never;
+    authToken?: never;
+  };
   connectionMeta?: ConnectionMeta;
   baseURL?: string | string[];
   authToken?: string;

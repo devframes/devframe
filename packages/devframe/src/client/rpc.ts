@@ -327,17 +327,6 @@ export function resolveClientTransport(
   throw new Error('[devframe] This server advertises no RPC transport (backend "none"), so there is nothing to connect to. Enable the WebSocket or SSE endpoint on the server, or use its static/MCP surfaces instead.')
 }
 
-function createAuthChannel(isolateConnection = false): BroadcastChannel | undefined {
-  if (isolateConnection)
-    return undefined
-
-  try {
-    /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
-    return new BroadcastChannel('devframe-auth')
-  }
-  catch {}
-}
-
 export async function getDevframeRpcClient(
   options: DevframeRpcClientOptions = {},
 ): Promise<DevframeRpcClient> {
@@ -436,11 +425,16 @@ export async function getDevframeRpcClient(
           wsOptions: options.wsOptions,
         })
 
-  const authChannel = createAuthChannel(options.isolateConnection)
+  /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
+  let authChannel: BroadcastChannel | undefined
+  try {
+    authChannel = connection.isolated ? undefined : new BroadcastChannel('devframe-auth')
+  }
+  catch {}
 
   function updateAuthToken(token: string): void {
     connection = { ...connection, authToken: token }
-    if (!options.isolateConnection)
+    if (!connection.isolated)
       storeAuthToken(token)
   }
 

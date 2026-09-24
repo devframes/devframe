@@ -23,20 +23,18 @@ export interface DevframeConnection {
   metaBaseUrl: string
   /** Previously issued bearer token, when the connection is already trusted. */
   authToken?: string
+  /** Skip shared browser caches and authentication broadcasts. Retained when reconnecting. */
+  isolated?: boolean
 }
 
 export interface SetupDevframeConnectionOptions {
-  /**
-   * Keep connection discovery and credentials local to this RPC client.
-   * Skips shared window/localStorage reads and writes, and authentication
-   * broadcasts. Explicit connections, metadata and credentials still apply.
-   * Pass this option again when reusing a prepared connection.
-   *
-   * @default false
-   */
-  isolateConnection?: boolean
-  /** Reuse a complete connection prepared in another viewer or JavaScript realm. */
-  connection?: DevframeConnection
+  /** Reuse a prepared connection, or configure isolation before resolving its metadata. */
+  connection?: DevframeConnection | {
+    isolated: boolean
+    connectionMeta?: never
+    metaBaseUrl?: never
+    authToken?: never
+  }
   /** Use a pre-known descriptor while deriving its source URL from `baseURL`. */
   connectionMeta?: ConnectionMeta
   /** Base URL, or fallback list, used to locate `__connection.json`. */
@@ -124,9 +122,9 @@ export async function setupDevframeConnection(
   const authToken = options.authToken ?? connection.authToken ?? connection.connectionMeta.authToken
   const resolvedConnection = withAuthToken(
     connection,
-    options.isolateConnection ? authToken : readStoredAuthToken(authToken),
+    connection.isolated ? authToken : readStoredAuthToken(authToken),
   )
-  if (options.isolateConnection)
+  if (connection.isolated)
     return resolvedConnection
 
   storeConnection(resolvedConnection)
@@ -136,7 +134,7 @@ export async function setupDevframeConnection(
 async function resolveDevframeConnection(
   options: SetupDevframeConnectionOptions,
 ): Promise<DevframeConnection> {
-  if (options.connection)
+  if (options.connection?.connectionMeta)
     return options.connection
 
   const bases = Array.isArray(options.baseURL)
@@ -152,10 +150,11 @@ async function resolveDevframeConnection(
        */
       metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
       authToken: options.connectionMeta.authToken,
+      isolated: options.connection?.isolated,
     }
   }
 
-  const existing = options.isolateConnection ? undefined : getDevframeConnection()
+  const existing = options.connection?.isolated ? undefined : getDevframeConnection()
   if (existing)
     return existing
 
@@ -181,6 +180,7 @@ async function resolveDevframeConnection(
           ? new URL(connectionMeta.baseUrl, loadedFrom).href
           : loadedFrom,
         authToken: connectionMeta.authToken,
+        isolated: options.connection?.isolated,
       }
     }
     catch (error) {

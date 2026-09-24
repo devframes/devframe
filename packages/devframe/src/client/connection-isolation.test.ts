@@ -12,6 +12,7 @@ const storedConnection: DevframeConnection = {
 const explicitConnection: DevframeConnection = {
   connectionMeta: { backend: 'static' },
   metaBaseUrl: 'http://explicit.example/__connection.json',
+  isolated: true,
 }
 const getItem = vi.fn<Storage['getItem']>()
 const setItem = vi.fn<Storage['setItem']>()
@@ -43,7 +44,6 @@ describe('isolated connection setup', () => {
     expect.assertions(5)
     const connection = await setupDevframeConnection({
       connection: explicitConnection,
-      isolateConnection: true,
     })
     expect(connection).toBe(explicitConnection)
     expect(connection.authToken).toBeUndefined()
@@ -52,20 +52,22 @@ describe('isolated connection setup', () => {
     expect(readGlobal('__DEVFRAME_CONNECTION__')).toBe(storedConnection)
   })
 
-  it('fetches the requested base despite a different cached connection', async () => {
-    expect.assertions(6)
+  it('fetches the requested base and retains isolation when reusing its descriptor', async () => {
+    expect.assertions(8)
     fetchMetadata.mockResolvedValue(
       Response.json({ backend: 'static', authToken: 'metadata-token' }),
     )
     const connection = await setupDevframeConnection({
       baseURL: 'http://requested.example/provider/',
-      isolateConnection: true,
+      connection: { isolated: true },
     })
     expect(fetchMetadata).toHaveBeenCalledExactlyOnceWith(
       'http://requested.example/provider/__connection.json',
     )
     expect(connection.metaBaseUrl).toBe('http://requested.example/provider/__connection.json')
     expect(connection.authToken).toBe('metadata-token')
+    expect(connection.isolated).toBe(true)
+    expect(await setupDevframeConnection({ connection })).toBe(connection)
     expect(getItem).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
     expect(readGlobal('__DEVFRAME_CONNECTION__')).toBe(storedConnection)
@@ -77,7 +79,7 @@ describe('isolated connection setup', () => {
       connectionMeta: { backend: 'static', authToken: 'metadata-token' },
       baseURL: 'http://requested.example/',
       authToken: 'explicit-token',
-      isolateConnection: true,
+      connection: { isolated: true },
     })
     expect(connection.authToken).toBe('explicit-token')
     expect(connection.metaBaseUrl).toBe('http://requested.example/__connection.json')
@@ -87,7 +89,7 @@ describe('isolated connection setup', () => {
     expect(readGlobal('__DEVFRAME_CONNECTION_META__')).toBe(storedConnection.connectionMeta)
   })
 
-  it.each([{}, { isolateConnection: false }])(
+  it.each([{}, { connection: { isolated: false } }])(
     'retains default cache discovery with %j',
     async (options) => {
       expect.assertions(5)
@@ -119,7 +121,7 @@ describe('isolated connection setup', () => {
     fetchMetadata.mockResolvedValue(Response.json({ backend: 'static', baseUrl: './nested/__connection.json' }))
     const connection = await setupDevframeConnection({
       baseURL: 'http://requested.example/',
-      isolateConnection: true,
+      connection: { isolated: true },
     })
     expect(connection.metaBaseUrl).toBe('http://requested.example/nested/__connection.json')
     expect(connection.authToken).toBeUndefined()
