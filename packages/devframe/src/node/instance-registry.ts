@@ -180,7 +180,7 @@ function originCandidates(origin: string): string[] {
 export interface ProbedDevframeOrigin {
   /** The origin that answered (may be an explicit address family for a `localhost` bind). */
   origin: string
-  /** The parsed `__connection.json` payload (`{}` when unparseable). */
+  /** The parsed `__connection.json` payload (always a JSON object). */
   meta: { mcp?: { path: string, port?: number } }
 }
 
@@ -188,7 +188,9 @@ export interface ProbedDevframeOrigin {
  * Probe `<origin><basePath>__connection.json`, trying each dialable
  * candidate for the origin (see {@link originCandidates}). The single
  * probe primitive behind both registry liveness checks and the
- * connector's explicit `--port` probes.
+ * connector's explicit `--port` probes. A candidate counts only when it
+ * answers `2xx` with a JSON object; anything else (an HTML SPA fallback, a
+ * JSON array, an unparseable body) is treated as "no devframe here".
  *
  * @internal
  */
@@ -205,8 +207,14 @@ export async function probeDevframeOrigin(
       })
       if (!response.ok)
         continue
-      const meta = await response.json().catch(() => ({})) as ProbedDevframeOrigin['meta']
-      return { origin: candidate, meta }
+      // Only a JSON object is connection meta. Host frameworks with an SPA
+      // fallback (Vite serving `index.html` for any unknown path) answer a
+      // wrong base with `200 text/html`; that is not a devframe, so it must
+      // not pass as a live instance with no MCP route.
+      const meta: unknown = await response.json().catch(() => undefined)
+      if (!meta || typeof meta !== 'object' || Array.isArray(meta))
+        continue
+      return { origin: candidate, meta: meta as ProbedDevframeOrigin['meta'] }
     }
     catch {
       // Try the next candidate.

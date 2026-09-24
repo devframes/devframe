@@ -7,6 +7,7 @@ import { join } from 'pathe'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   listLiveDevframeInstances,
+  probeDevframeOrigin,
   readDevframeInstances,
   registerDevframeInstance,
 } from './instance-registry'
@@ -139,6 +140,85 @@ describe('instance registry', () => {
     }
     finally {
       await new Promise<void>(resolve => server.close(() => resolve()))
+    }
+  })
+})
+
+describe('probeDevframeOrigin', () => {
+  // A host with an SPA fallback: every unknown path answers `200 text/html`
+  // (Vite serving `index.html`); the real meta lives under `/__devtools/`.
+  async function startSpaFallbackServer(): Promise<{ origin: string, port: number, close: () => Promise<void> }> {
+    const server = createServer((req, res) => {
+      if (req.url === '/__devtools/__connection.json') {
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end('{"backend":"websocket","mcp":{"path":"__mcp"}}')
+        return
+      }
+      if (req.url === '/array/__connection.json') {
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end('[]')
+        return
+      }
+      res.writeHead(200, { 'content-type': 'text/html' })
+      res.end('<!doctype html><html><body><div id="app"></div></body></html>')
+    })
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+    const port = (server.address() as AddressInfo).port
+    return {
+      origin: `http://127.0.0.1:${port}`,
+      port,
+      close: () => new Promise<void>(resolve => server.close(() => resolve())),
+    }
+  }
+
+  it('does not take an HTML SPA fallback for a devframe', async () => {
+    const spa = await startSpaFallbackServer()
+    try {
+      expect(await probeDevframeOrigin(spa.origin, '/', 2000)).toBeNull()
+    }
+    finally {
+      await spa.close()
+    }
+  })
+
+  it('does not take a non-object JSON body for connection meta', async () => {
+    const spa = await startSpaFallbackServer()
+    try {
+      expect(await probeDevframeOrigin(spa.origin, '/array/', 2000)).toBeNull()
+    }
+    finally {
+      await spa.close()
+    }
+  })
+
+  it('finds the connection meta under a non-root base', async () => {
+    const spa = await startSpaFallbackServer()
+    try {
+      const probed = await probeDevframeOrigin(spa.origin, '/__devtools/', 2000)
+      expect(probed).toEqual({ origin: spa.origin, meta: { backend: 'websocket', mcp: { path: '__mcp' } } })
+    }
+    finally {
+      await spa.close()
+    }
+  })
+
+  it('prunes a registry record whose port now serves an unrelated SPA', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-registry-'))
+    const spa = await startSpaFallbackServer()
+    try {
+      registerDevframeInstance(makeRecord({
+        pid: 2000,
+        port: spa.port,
+        origin: spa.origin,
+      }), { instancesDir: dir })
+
+      const { live, pruned } = await listLiveDevframeInstances({ instancesDir: dir, timeoutMs: 2000 })
+      expect(live).toEqual([])
+      expect(pruned.map(r => r.pid)).toEqual([2000])
+      expect(readdirSync(dir)).toEqual([])
+    }
+    finally {
+      await spa.close()
     }
   })
 })
