@@ -330,6 +330,7 @@ export function resolveClientTransport(
 export async function getDevframeRpcClient(
   options: DevframeRpcClientOptions = {},
 ): Promise<DevframeRpcClient> {
+  const isolateConnection = options.isolateConnection === true
   // Default to a relative base: the SPA owns its mount path at runtime, so
   // connection meta and dump shards live alongside `index.html`. An embedded
   // surface inside a host page must pass an explicit `baseURL` - its
@@ -428,7 +429,8 @@ export async function getDevframeRpcClient(
   // Channel name kept for cross-tab interop with the Vite DevTools auth page.
   let authChannel: BroadcastChannel | undefined
   try {
-    authChannel = new BroadcastChannel('devframe-auth')
+    if (!isolateConnection)
+      authChannel = new BroadcastChannel('devframe-auth')
   }
   catch {}
 
@@ -485,8 +487,8 @@ export async function getDevframeRpcClient(
     ensureTrusted: mode.ensureTrusted,
     requestTrust: mode.requestTrust,
     requestTrustWithToken: async (token: string) => {
-      // Update stored token for future reconnections
-      storeAuthToken(token)
+      if (!isolateConnection)
+        storeAuthToken(token)
       connection = { ...connection, authToken: token }
       return mode.requestTrustWithToken(token)
     },
@@ -494,9 +496,9 @@ export async function getDevframeRpcClient(
       const token = await mode.requestTrustWithCode(code)
       if (!token)
         return false
-      // Persist the node-issued token and share it with sibling tabs so they
-      // become trusted without re-entering the code.
-      storeAuthToken(token)
+      /** Shared mode also persists the issued token for sibling tabs. */
+      if (!isolateConnection)
+        storeAuthToken(token)
       connection = { ...connection, authToken: token }
       try {
         authChannel?.postMessage({ type: 'auth-update', authToken: token })

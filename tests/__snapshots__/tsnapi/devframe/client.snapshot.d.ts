@@ -125,6 +125,7 @@ export interface RpcStreamingClientHost {
   upload: <T = unknown>(_: string, _: string) => StreamSink<T>;
 }
 export interface SetupDevframeConnectionOptions {
+  isolateConnection?: boolean;
   connection?: DevframeConnection;
   connectionMeta?: ConnectionMeta;
   baseURL?: string | string[];

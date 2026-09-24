@@ -26,6 +26,15 @@ export interface DevframeConnection {
 }
 
 export interface SetupDevframeConnectionOptions {
+  /**
+   * Keep connection discovery and credentials local to this RPC client.
+   * Skips shared window/localStorage reads and writes, and authentication
+   * broadcasts. Explicit connections, metadata and credentials still apply.
+   * Pass this option again when reusing a prepared connection.
+   *
+   * @default false
+   */
+  isolateConnection?: boolean
   /** Reuse a complete connection prepared in another viewer or JavaScript realm. */
   connection?: DevframeConnection
   /** Use a pre-known descriptor while deriving its source URL from `baseURL`. */
@@ -111,17 +120,27 @@ export function getDevframeConnection(): DevframeConnection | undefined {
 export async function setupDevframeConnection(
   options: SetupDevframeConnectionOptions = {},
 ): Promise<DevframeConnection> {
+  const isolateConnection = options.isolateConnection === true
+  function resolveAuthToken(authToken: string | undefined): string | undefined {
+    if (isolateConnection)
+      return authToken
+    return readStoredAuthToken(authToken)
+  }
+  function finishConnectionSetup(connection: DevframeConnection): DevframeConnection {
+    if (!isolateConnection)
+      storeConnection(connection)
+    return connection
+  }
   if (options.connection) {
     const connection = withAuthToken(
       options.connection,
-      readStoredAuthToken(
+      resolveAuthToken(
         options.authToken
         ?? options.connection.authToken
         ?? options.connection.connectionMeta.authToken,
       ),
     )
-    storeConnection(connection)
-    return connection
+    return finishConnectionSetup(connection)
   }
 
   const bases = Array.isArray(options.baseURL)
@@ -136,26 +155,24 @@ export async function setupDevframeConnection(
        * supplied descriptor resolves from the caller's explicit base.
        */
       metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
-      authToken: readStoredAuthToken(
+      authToken: resolveAuthToken(
         options.authToken ?? options.connectionMeta.authToken,
       ),
     }
-    storeConnection(connection)
-    return connection
+    return finishConnectionSetup(connection)
   }
 
-  const existing = getDevframeConnection()
+  const existing = isolateConnection ? undefined : getDevframeConnection()
   if (existing) {
     const connection = withAuthToken(
       existing,
-      readStoredAuthToken(
+      resolveAuthToken(
         options.authToken
         ?? existing.authToken
         ?? existing.connectionMeta.authToken,
       ),
     )
-    storeConnection(connection)
-    return connection
+    return finishConnectionSetup(connection)
   }
 
   const errors: Error[] = []
@@ -179,12 +196,11 @@ export async function setupDevframeConnection(
         metaBaseUrl: connectionMeta.baseUrl
           ? new URL(connectionMeta.baseUrl, loadedFrom).href
           : loadedFrom,
-        authToken: readStoredAuthToken(
+        authToken: resolveAuthToken(
           options.authToken ?? connectionMeta.authToken,
         ),
       }
-      storeConnection(connection)
-      return connection
+      return finishConnectionSetup(connection)
     }
     catch (error) {
       errors.push(error as Error)
