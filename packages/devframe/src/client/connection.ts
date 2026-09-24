@@ -120,60 +120,44 @@ export function getDevframeConnection(): DevframeConnection | undefined {
 export async function setupDevframeConnection(
   options: SetupDevframeConnectionOptions = {},
 ): Promise<DevframeConnection> {
-  const isolateConnection = options.isolateConnection === true
-  function resolveAuthToken(authToken: string | undefined): string | undefined {
-    if (isolateConnection)
-      return authToken
-    return readStoredAuthToken(authToken)
-  }
-  function finishConnectionSetup(connection: DevframeConnection): DevframeConnection {
-    if (!isolateConnection)
-      storeConnection(connection)
-    return connection
-  }
-  if (options.connection) {
-    const connection = withAuthToken(
-      options.connection,
-      resolveAuthToken(
-        options.authToken
-        ?? options.connection.authToken
-        ?? options.connection.connectionMeta.authToken,
-      ),
-    )
-    return finishConnectionSetup(connection)
-  }
+  const connection = await resolveDevframeConnection(options)
+  const authToken = options.authToken ?? connection.authToken ?? connection.connectionMeta.authToken
+  const resolvedConnection = withAuthToken(
+    connection,
+    options.isolateConnection ? authToken : readStoredAuthToken(authToken),
+  )
+  if (options.isolateConnection)
+    return resolvedConnection
+
+  storeConnection(resolvedConnection)
+  return resolvedConnection
+}
+
+async function resolveDevframeConnection(
+  options: SetupDevframeConnectionOptions,
+): Promise<DevframeConnection> {
+  if (options.connection)
+    return options.connection
 
   const bases = Array.isArray(options.baseURL)
     ? options.baseURL
     : [options.baseURL ?? './']
 
   if (options.connectionMeta) {
-    const connection: DevframeConnection = {
+    return {
       connectionMeta: options.connectionMeta,
       /**
        * Preserve the established connectionMeta behavior: an explicitly
        * supplied descriptor resolves from the caller's explicit base.
        */
       metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
-      authToken: resolveAuthToken(
-        options.authToken ?? options.connectionMeta.authToken,
-      ),
+      authToken: options.connectionMeta.authToken,
     }
-    return finishConnectionSetup(connection)
   }
 
-  const existing = isolateConnection ? undefined : getDevframeConnection()
-  if (existing) {
-    const connection = withAuthToken(
-      existing,
-      resolveAuthToken(
-        options.authToken
-        ?? existing.authToken
-        ?? existing.connectionMeta.authToken,
-      ),
-    )
-    return finishConnectionSetup(connection)
-  }
+  const existing = options.isolateConnection ? undefined : getDevframeConnection()
+  if (existing)
+    return existing
 
   const errors: Error[] = []
   for (const base of bases) {
@@ -186,7 +170,7 @@ export async function setupDevframeConnection(
 
       const connectionMeta = await response.json() as ConnectionMeta
       const loadedFrom = response.url || metaUrl
-      const connection: DevframeConnection = {
+      return {
         connectionMeta,
         /**
          * A served `baseUrl` re-points relative resolution (RPC dump shards,
@@ -196,11 +180,8 @@ export async function setupDevframeConnection(
         metaBaseUrl: connectionMeta.baseUrl
           ? new URL(connectionMeta.baseUrl, loadedFrom).href
           : loadedFrom,
-        authToken: resolveAuthToken(
-          options.authToken ?? connectionMeta.authToken,
-        ),
+        authToken: connectionMeta.authToken,
       }
-      return finishConnectionSetup(connection)
     }
     catch (error) {
       errors.push(error as Error)

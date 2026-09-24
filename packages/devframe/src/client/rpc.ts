@@ -327,10 +327,20 @@ export function resolveClientTransport(
   throw new Error('[devframe] This server advertises no RPC transport (backend "none"), so there is nothing to connect to. Enable the WebSocket or SSE endpoint on the server, or use its static/MCP surfaces instead.')
 }
 
+function createAuthChannel(isolateConnection = false): BroadcastChannel | undefined {
+  if (isolateConnection)
+    return undefined
+
+  try {
+    /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
+    return new BroadcastChannel('devframe-auth')
+  }
+  catch {}
+}
+
 export async function getDevframeRpcClient(
   options: DevframeRpcClientOptions = {},
 ): Promise<DevframeRpcClient> {
-  const isolateConnection = options.isolateConnection === true
   // Default to a relative base: the SPA owns its mount path at runtime, so
   // connection meta and dump shards live alongside `index.html`. An embedded
   // surface inside a host page must pass an explicit `baseURL` - its
@@ -426,13 +436,13 @@ export async function getDevframeRpcClient(
           wsOptions: options.wsOptions,
         })
 
-  // Channel name kept for cross-tab interop with the Vite DevTools auth page.
-  let authChannel: BroadcastChannel | undefined
-  try {
-    if (!isolateConnection)
-      authChannel = new BroadcastChannel('devframe-auth')
+  const authChannel = createAuthChannel(options.isolateConnection)
+
+  function updateAuthToken(token: string): void {
+    connection = { ...connection, authToken: token }
+    if (!options.isolateConnection)
+      storeAuthToken(token)
   }
-  catch {}
 
   // Gate outbound calls behind the auth bootstrap below. Without it, a
   // caller's first RPC calls, fired the moment `connectDevframe()` resolves,
@@ -487,19 +497,14 @@ export async function getDevframeRpcClient(
     ensureTrusted: mode.ensureTrusted,
     requestTrust: mode.requestTrust,
     requestTrustWithToken: async (token: string) => {
-      if (!isolateConnection)
-        storeAuthToken(token)
-      connection = { ...connection, authToken: token }
+      updateAuthToken(token)
       return mode.requestTrustWithToken(token)
     },
     requestTrustWithCode: async (code: string) => {
       const token = await mode.requestTrustWithCode(code)
       if (!token)
         return false
-      /** Shared mode also persists the issued token for sibling tabs. */
-      if (!isolateConnection)
-        storeAuthToken(token)
-      connection = { ...connection, authToken: token }
+      updateAuthToken(token)
       try {
         authChannel?.postMessage({ type: 'auth-update', authToken: token })
       }
