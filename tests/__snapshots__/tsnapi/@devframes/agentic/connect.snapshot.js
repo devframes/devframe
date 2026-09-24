@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function buildInstanceRequestHeaders(_, _) {}
+export async function probePort(_, _, _) {}
 export function resolveAuthToken(_, _) {}
 export async function startConnectServer(_) {}
 // #endregion

@@ -1,9 +1,12 @@
 import type { DevframeInstanceRecord, StartedServer } from 'devframe/internal'
 import type { DevframeDefinition } from 'devframe/types'
+import type { Server } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import { createServer } from 'node:http'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { createDevServer } from 'devframe/adapters/dev'
 import { afterEach, describe, expect, it } from 'vitest'
-import { buildInstanceRequestHeaders, resolveAuthToken } from '../index'
+import { buildInstanceRequestHeaders, probePort, resolveAuthToken } from '../index'
 
 const TOKEN = 'a-high-entropy-connect-test-token'
 
@@ -56,6 +59,52 @@ describe('buildInstanceRequestHeaders', () => {
     expect(url).not.toContain(TOKEN)
     // …nor does a registry record carry any credential field to leak.
     expect(JSON.stringify(makeRecord())).not.toContain(TOKEN)
+  })
+})
+
+describe('probePort', () => {
+  let server: Server | undefined
+
+  afterEach(async () => {
+    await new Promise<void>(resolve => (server ? server.close(() => resolve()) : resolve()))
+    server = undefined
+  })
+
+  // A Vite-like host: the hub's meta lives under `/__devtools/` and every
+  // other path falls back to the app's `index.html` with `200 text/html`.
+  async function startBasedHub(): Promise<number> {
+    server = createServer((req, res) => {
+      if (req.url === '/__devtools/__connection.json') {
+        res.writeHead(200, { 'content-type': 'application/json' })
+        res.end('{"backend":"websocket","mcp":{"path":"__mcp"}}')
+        return
+      }
+      res.writeHead(200, { 'content-type': 'text/html' })
+      res.end('<!doctype html><html><body></body></html>')
+    })
+    await new Promise<void>(resolve => server!.listen(0, '127.0.0.1', resolve))
+    return (server.address() as AddressInfo).port
+  }
+
+  it('finds a hub mounted under a base and resolves its MCP path against it', async () => {
+    const port = await startBasedHub()
+    const record = await probePort(port, '/__devtools/', 2000)
+    expect(record).toMatchObject({
+      port,
+      basePath: '/__devtools/',
+      mcp: { path: '/__devtools/__mcp' },
+    })
+  })
+
+  it('normalizes a base given without slashes', async () => {
+    const port = await startBasedHub()
+    const record = await probePort(port, '__devtools', 2000)
+    expect(record).toMatchObject({ basePath: '/__devtools/', mcp: { path: '/__devtools/__mcp' } })
+  })
+
+  it('reports no instance (not an MCP-less one) when the root only serves the SPA fallback', async () => {
+    const port = await startBasedHub()
+    expect(await probePort(port, undefined, 2000)).toBeNull()
   })
 })
 
