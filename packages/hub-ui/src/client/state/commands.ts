@@ -144,6 +144,12 @@ function setupShortcutListener(
   execute: (id: string, ...args: any[]) => Promise<unknown>,
 ) {
   const handler = (e: KeyboardEvent) => {
+    // Let the shortcut editor record keys without executing their commands.
+    // composedPath reaches the input through shadow DOM; structural checks also
+    // work for elements belonging to the popup window's realm.
+    if (e.composedPath().some(target => (target as Element).classList?.contains('shortcut-key-input')))
+      return
+
     const pressed = normalizeKeyEvent(e)
     if (!pressed || pressed === 'Mod' || pressed === 'Shift' || pressed === 'Alt')
       return
