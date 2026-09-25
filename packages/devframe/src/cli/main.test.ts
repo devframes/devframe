@@ -33,5 +33,6 @@ describe('runDevframeCli', () => {
     await runDevframeCli(['node', 'devframe', 'connect', '--help'])
     expect(info).toHaveBeenCalledTimes(1)
     expect(info.mock.calls[0]![0]).toContain('--port')
+    expect(info.mock.calls[0]![0]).toContain('--base <path>')
   })
 })

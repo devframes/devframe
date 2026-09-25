@@ -7,6 +7,7 @@ export interface ConnectServerHandle {
 }
 export interface ConnectServerOptions {
   ports?: number[];
+  base?: string;
   instancesDir?: string;
   timeoutMs?: number;
   authToken?: string | ((_: DevframeInstanceRecord) => string | undefined);
@@ -15,6 +16,7 @@ export interface ConnectServerOptions {
 
 // #region Functions
 export declare function buildInstanceRequestHeaders(_: string, _: string | undefined): Record<string, string>;
+export declare function probePort(_: number, _?: string, _?: number): Promise<DevframeInstanceRecord | null>;
 export declare function resolveAuthToken(_: ConnectServerOptions['authToken'], _: DevframeInstanceRecord): string | undefined;
 export declare function startConnectServer(_?: ConnectServerOptions): Promise<ConnectServerHandle>;
 // #endregion

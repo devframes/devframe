@@ -6,15 +6,24 @@ import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
 import { diagnostics, listLiveDevframeInstances, probeDevframeOrigin } from 'devframe/internal'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { Diagnostic } from 'devframe/utils/nostics'
-import { joinURL } from 'devframe/utils/url'
+import { joinURL, withLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
 
 export interface ConnectServerOptions {
   /**
    * Explicit ports to probe besides the registry, for instances started
    * before the registry existed, or reachable only by convention. Each port
-   * is probed at `/` (`http://localhost:<port>/__connection.json`).
+   * is probed at {@link ConnectServerOptions.base} (default `/`, i.e.
+   * `http://localhost:<port>/__connection.json`).
    */
   ports?: number[]
+  /**
+   * Base path the explicit {@link ConnectServerOptions.ports} probes look for
+   * `__connection.json` under, for a devframe or hub mounted below the root
+   * of its host (e.g. `/__devtools/` for Vite DevTools). The advertised MCP
+   * path is resolved against it. Default `/`. Registry records carry their
+   * own base and ignore this.
+   */
+  base?: string
   /** Override the registry directory (`DEVFRAME_INSTANCES_DIR` also applies). */
   instancesDir?: string
   /** Probe timeout per instance, ms. Default 1000. */
@@ -164,7 +173,7 @@ async function index(options: ConnectServerOptions): Promise<unknown> {
   for (const port of options.ports ?? []) {
     if (records.some(r => r.port === port))
       continue
-    const probed = await probePort(port, options.timeoutMs)
+    const probed = await probePort(port, options.base, options.timeoutMs)
     if (probed)
       records.push(probed)
   }
@@ -189,26 +198,29 @@ async function index(options: ConnectServerOptions): Promise<unknown> {
   return {
     instances,
     ...(instances.length === 0
-      ? { hint: 'No running devframe instances found. Start a devframe dev server (with --mcp for tools), or pass --port <n> to devframe connect if the instance predates the registry.' }
+      ? { hint: 'No running devframe instances found. Start a devframe dev server (with --mcp for tools), or pass --port <n> to devframe connect if the instance predates the registry (plus --base <path> when it is mounted below the root, e.g. --base /__devtools/).' }
       : {}),
   }
 }
 
 /**
- * Probe an explicit port for a devframe serving `__connection.json` at `/`,
- * reusing the registry's origin-candidate probe (a `localhost`-bound server
- * may listen on either address family).
+ * Probe an explicit port for a devframe serving `__connection.json` under
+ * `base` (default `/`), reusing the registry's origin-candidate probe (a
+ * `localhost`-bound server may listen on either address family). The
+ * advertised MCP path is relative to that base, as in the registry records
+ * the instance shell writes. Exported for focused tests.
  */
-async function probePort(port: number, timeoutMs?: number): Promise<DevframeInstanceRecord | null> {
-  const probed = await probeDevframeOrigin(`http://localhost:${port}`, '/', timeoutMs)
+export async function probePort(port: number, base = '/', timeoutMs?: number): Promise<DevframeInstanceRecord | null> {
+  const basePath = withTrailingSlash(withLeadingSlash(base))
+  const probed = await probeDevframeOrigin(`http://localhost:${port}`, basePath, timeoutMs)
   if (!probed)
     return null
-  const mcpPath = probed.meta.mcp ? joinURL('/', probed.meta.mcp.path) : null
+  const mcpPath = probed.meta.mcp ? joinURL(basePath, probed.meta.mcp.path) : null
   return {
     pid: -1,
     port,
     origin: probed.origin,
-    basePath: '/',
+    basePath,
     id: `port-${port}`,
     rootDir: '',
     mcp: mcpPath ? { path: mcpPath } : null,
@@ -232,7 +244,7 @@ async function call(
     timeoutMs: options.timeoutMs,
   })
   const record = live.find(record => record.port === args.port && record.mcp)
-    ?? await probePort(args.port, options.timeoutMs)
+    ?? await probePort(args.port, options.base, options.timeoutMs)
   if (!record)
     throw diagnostics.DF0050({ port: args.port })
   if (!record.mcp)

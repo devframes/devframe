@@ -7,6 +7,7 @@ import { importRuntimeModule } from '../node/import-runtime-module'
 interface AgenticConnectModule {
   startConnectServer: (options: {
     ports?: number[]
+    base?: string
     instancesDir?: string
     timeoutMs?: number
     authToken?: string
@@ -46,12 +47,14 @@ export async function runDevframeCli(argv: string[] = process.argv): Promise<voi
   cli
     .command('connect', 'Run the devframe MCP connector on stdio (discovers running devframe dev servers and proxies their tools)')
     .option('--port <port>', 'Probe an explicit port besides the instance registry (repeatable)')
+    .option('--base <path>', 'Base path the --port probes look for __connection.json under, for a devframe mounted below the root (e.g. /__devtools/ for Vite DevTools)', { default: '/' })
     .option('--instances-dir <dir>', 'Override the instance registry directory (default: ~/.devframe/instances, or $DEVFRAME_INSTANCES_DIR)')
     .option('--timeout <ms>', 'Probe timeout per instance in milliseconds', { default: 1000 })
-    .action(async (options: { port?: unknown, instancesDir?: string, timeout?: number }) => {
+    .action(async (options: { port?: unknown, base?: unknown, instancesDir?: string, timeout?: number }) => {
       const { startConnectServer } = await importConnect()
       await startConnectServer({
         ports: parsePortsFlag(options.port),
+        base: typeof options.base === 'string' ? options.base : undefined,
         instancesDir: options.instancesDir,
         timeoutMs: options.timeout,
         /**
