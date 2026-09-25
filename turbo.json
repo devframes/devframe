@@ -69,43 +69,43 @@
     },
     "@devframes/plugin-code-server#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-terminals#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-inspect#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-og#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-data-inspector#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-messages#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/hub#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-assets#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
@@ -171,13 +171,13 @@
     },
     "@devframes/plugin-git#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },
     "@devframes/plugin-a11y#build": {
       "outputLogs": "new-only",
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/panel-theme.ts", "$TURBO_ROOT$/packages/hub-ui/src/client/primary-ramp.css"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "dependsOn": ["devframe#build", "@devframes/vite#build", "@devframes/json-render#build"],
       "outputs": ["dist/**", "assets-pkg/dist/**"]
     },

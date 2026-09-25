@@ -8,7 +8,7 @@ import { App } from './app.tsx'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 import './styles.css'
-import '../../../packages/hub-ui/src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 // Shared design tokens flip on the `.dark` class; mirror the OS preference onto
 // <html> (the other devframe plugins follow the same approach).

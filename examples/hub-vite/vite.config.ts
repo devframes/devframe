@@ -83,7 +83,7 @@ export default defineConfig({
        * Rebrand the reference UI to Vite's own purple in one field, no CSS:
        * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
        * which the dock reads at connect time and feeds into `--devframe-primary`
-       * (see `@devframes/hub-ui`'s `primary-ramp.css`). Passing `ui` overrides
+       * (see the shared `design/primary-ramp.css`). Passing `ui` overrides
        * the default `createUi()` the plugin would otherwise use.
        */
       ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),

@@ -40,7 +40,7 @@ export const hub: HubInstance = globalRef.__hubFastifyMinimal ??= initHub({
    * Rebrand the reference UI to Fastify's own black in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
-   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   * (see the shared `design/primary-ramp.css`).
    */
   ui: createUi({ branding: { primaryColor: '#2f2f2f', productName: 'Devframes on Fastify' } }),
   /**

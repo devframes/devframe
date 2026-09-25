@@ -79,7 +79,7 @@ export default defineConfig({
          * CSS: `createUi`'s `branding` option publishes
          * `ConnectionMeta.configs.ui.branding`, which the dock reads at
          * connect time and feeds into `--devframe-primary` (see
-         * `@devframes/hub-ui`'s `primary-ramp.css`).
+         * the shared `design/primary-ramp.css`).
          */
         ui: createUi({ branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' } }),
         /**

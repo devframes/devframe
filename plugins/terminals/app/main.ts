@@ -2,7 +2,7 @@
 
 import { applyPanelBranding } from '../../../design/panel-theme'
 import { mountTerminals } from './client/index'
-import '../../../packages/hub-ui/src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 const app = document.getElementById('app')
 if (!app)

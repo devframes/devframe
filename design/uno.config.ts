@@ -140,8 +140,8 @@ export const shadowSurfaceSafelist: string[] = [
 ]
 
 /**
- * The primary-ramp stops a shadow-root surface's `primary-ramp.css` exposes
- * as overridable `--colors-primary-<stop>` custom properties (derived from
+ * The primary-ramp stops the shared `design/primary-ramp.css` exposes as
+ * overridable `--colors-primary-<stop>` custom properties (derived from
  * `--devframe-primary`). Must match that file's declarations exactly.
  */
 const OVERRIDABLE_PRIMARY_STOPS = ['DEFAULT', '600', '500', '400', '300'] as const

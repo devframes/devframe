@@ -1,9 +1,11 @@
 /*
- * Primary color as a single overridable variable: `--devframe-primary`.
- *
- * Appended AFTER the UnoCSS output (see `scripts/build-css.ts`) so this block
- * wins over Wind3's own `:root, :host` primary declarations, and imported after
- * `virtual:uno.css` in the Storybook preview for the same reason.
+ * Primary color as a single overridable variable: `--devframe-primary`. Shared
+ * by every devframe surface: appended after each shadow-root build's UnoCSS
+ * output (the hub-ui dock, the json-render renderer module; see
+ * `build-shadow-css.ts`), imported last by every built-in devframe panel SPA so
+ * it inherits a rebranded hub's accent, and imported after `virtual:uno.css` in
+ * the hub-ui Storybook preview. It always wins over Wind's own `:root, :host`
+ * primary declarations because it comes last.
  *
  * Each stop (`--colors-primary-*`) is derived from `--devframe-primary` via
  * `color-mix`. When `--devframe-primary` is unset, the intermediate
@@ -11,28 +13,31 @@
  * references an unset var with no fallback), so each `--colors-primary-<stop>`
  * falls back to the exact devframe default hex; the default look is preserved,
  * and only an explicit override derives a new ramp. The vars inherit through
- * the tree, so setting `--devframe-primary` on the dock host retints
- * everything, and setting it on a group's chrome container retints just that
- * group (the group-accent mechanism).
+ * the tree, so setting `--devframe-primary` on a host (the dock host, a viewer
+ * mount container, or a panel's `<html>`) retints everything below it, and
+ * setting it on a group's chrome container retints just that group (the
+ * group-accent mechanism).
  *
- * The dock's shadow root is built on Wind3, which bakes `primary`-based
- * utilities (`text-primary`, `bg-primary`, `btn-primary`, `ring-primary-500`,
- * …) to literal `rgb()` triplets rather than referencing these variables, so
- * `scripts/build-css.ts` rewires those baked colors into CSS relative-color
- * syntax reading `--colors-primary-<stop>` (see `rewireBakedPrimaryColors` in
- * `design/uno.config.ts`) so this block actually retints them, not just the
- * handful of rules (the glow gradient below) that reference the variables
- * directly. The stops declared here (`DEFAULT`/`600`/`500`/`400`/`300`) must
- * match `OVERRIDABLE_PRIMARY_STOPS` there.
+ * A shadow root built on Wind3 bakes `primary`-based utilities (`text-primary`,
+ * `bg-primary`, `btn-primary`, `ring-primary-500`, …) to literal `rgb()`
+ * triplets rather than referencing these variables, so `build-shadow-css.ts`
+ * rewires those baked colors into CSS relative-color syntax reading
+ * `--colors-primary-<stop>` (see `rewireBakedPrimaryColors` in `uno.config.ts`)
+ * so this block actually retints them, not just the handful of rules (the dock's
+ * glow gradient) that reference the variables directly. The stops declared here
+ * (`DEFAULT`/`600`/`500`/`400`/`300`) must match `OVERRIDABLE_PRIMARY_STOPS`
+ * there.
  *
- * `:host` is the effective selector inside the dock's shadow root; `:root` is
- * for the light-DOM Storybook preview (it matches nothing in the shadow root).
+ * `:host` is the effective selector inside a shadow root; `:root` is for the
+ * light-DOM panel SPAs and the Storybook preview (it matches nothing in a
+ * shadow root).
  *
  * `.devframes-accent-scope` re-declares the whole block on a group's chrome
  * container: because custom properties inherit as computed values, a descendant
  * that only overrides `--devframe-primary` would keep the `:host`-computed
  * stops; re-running the derivation here recomputes them from the container's
  * own `--devframe-primary` (a group's `accentColor`), retinting just that group.
+ * Inert on surfaces that never apply the class.
  */
 :root,
 :host,

@@ -4,7 +4,7 @@ import App from './app/App.vue'
 import 'virtual:uno.css'
 import 'floating-vue/dist/style.css'
 import '@antfu/design/styles.css'
-import '../../../packages/hub-ui/src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 // Shared design tokens flip on the `.dark` class; mirror the OS preference
 // onto <html> (the built-in devframe plugins all follow this approach).

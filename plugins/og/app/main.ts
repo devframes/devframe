@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { applyPanelBranding } from '../../../design/panel-theme'
 import App from './app/app.vue'
-import '../../../packages/hub-ui/src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 function applyScheme(dark: boolean): void {

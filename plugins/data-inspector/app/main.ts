@@ -11,7 +11,7 @@ import 'floating-vue/dist/style.css'
 import '@antfu/design/styles/floating-vue.css'
 import '@antfu/design/styles.css'
 import './style.css'
-import '../../../packages/hub-ui/src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 createApp(App).mount('#app')
 

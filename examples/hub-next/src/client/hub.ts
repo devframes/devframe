@@ -65,7 +65,7 @@ async function loadHub(): Promise<HubInstance> {
   // `@devframes/next/hub` runs the socket on a side-car (Next routes can't
   // accept WS upgrades). `createUi`'s `branding` option rebrands the dock via
   // `ConnectionMeta.configs.ui.branding`, read at connect time and fed into
-  // `--devframe-primary` (see `@devframes/hub-ui`'s `primary-ramp.css`).
+  // `--devframe-primary` (see the shared `design/primary-ramp.css`).
   return createNextDevframeHub({
     devframes,
     ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),

@@ -16,7 +16,7 @@ const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
   globs: ['components/**/*.ts', 'renderer.ts', 'dock-renderer.ts', 'renderer-module/**/*.ts'],
   config,
-  primaryRampPath: join(SRC_DIR, 'renderer-module/primary-ramp.css'),
+  primaryRampPath: fileURLToPath(new URL('../../../design/primary-ramp.css', import.meta.url)),
   userStylePath: [
     moduleRequire.resolve('@antfu/design/styles/scrollbar.css'),
     join(SRC_DIR, 'renderer-module/style.css'),
