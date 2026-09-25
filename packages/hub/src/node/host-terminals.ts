@@ -16,7 +16,6 @@ import type {
   DevframeTerminalsHost as DevframeTerminalsHostType,
 } from '../types/terminals'
 import type { DevframeHubContext } from './context'
-import { spawn } from 'node:child_process'
 import process from 'node:process'
 import { createEventEmitter } from 'devframe/utils/events'
 import { HUB_EVENTS } from '../events'
@@ -46,27 +45,21 @@ const PTY_TERM_NAME = 'xterm-256color'
  * the real program running (and holding its ports). `taskkill /T /F` ends the
  * whole tree; `cp.kill()` stays the fallback and the POSIX path.
  */
-function killProcessTree(cp: TinyExecResult): Promise<void> {
+async function killProcessTree(cp: TinyExecResult): Promise<void> {
   const child = cp.process
   const pid = child?.pid
   if (process.platform !== 'win32' || !child || pid === undefined || child.exitCode !== null || child.signalCode !== null) {
     cp.kill()
-    return Promise.resolve()
+    return
   }
-  return new Promise((resolve) => {
-    let finished = false
-    const finish = (ok: boolean) => {
-      if (finished)
-        return
-      finished = true
-      if (!ok)
-        cp.kill()
-      resolve()
-    }
-    const killer = spawn('taskkill', ['/pid', String(pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true })
-    killer.once('error', () => finish(false))
-    killer.once('exit', code => finish(code === 0))
-  })
+  const { exec } = await import('tinyexec')
+  try {
+    const { exitCode } = await exec('taskkill', ['/pid', String(pid), '/T', '/F'])
+    if (exitCode === 0)
+      return
+  }
+  catch {}
+  cp.kill()
 }
 
 export class DevframeTerminalsHost implements DevframeTerminalsHostType {
