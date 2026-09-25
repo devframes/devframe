@@ -1,7 +1,7 @@
 {
   "name": "@devframes/storybook",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Devframe hub that docks every plugin's Storybook and spawns each dev server on demand.",
   "scripts": {

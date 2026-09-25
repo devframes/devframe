@@ -1,7 +1,7 @@
 {
   "name": "@devframes/agentic",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Agent-surface implementation for devframe: installing it next to devframe enables the MCP adapter (devframe/adapters/mcp) and the devframe connect gateway.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

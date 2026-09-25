@@ -1,7 +1,7 @@
 {
   "name": "demo-dock-client",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Reference dock client script for the hub examples: bare npm imports and globalThis-anchored shared state.",
   "homepage": "https://github.com/devframes/devframe/tree/main/examples/demo-dock-client",

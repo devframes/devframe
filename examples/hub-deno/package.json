@@ -1,7 +1,7 @@
 {
   "name": "hub-deno",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Minimal Deno host that serves the devframe hub over a fetch-upgrade WebSocket.",
   "scripts": {
