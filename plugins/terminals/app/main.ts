@@ -1,4 +1,8 @@
+/// <reference types="vite/client" />
+
+import { applyPanelBranding } from '../../../design/panel-theme'
 import { mountTerminals } from './client/index'
+import '../../../design/primary-ramp.css'
 
 const app = document.getElementById('app')
 if (!app)
@@ -7,3 +11,6 @@ if (!app)
 mountTerminals(app).catch((error) => {
   app.textContent = `Failed to connect: ${error instanceof Error ? error.message : String(error)}`
 })
+
+const stopPanelTheme = applyPanelBranding()
+import.meta.hot?.dispose(stopPanelTheme)

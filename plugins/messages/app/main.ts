@@ -1,4 +1,8 @@
+/// <reference types="vite/client" />
+
+import { applyPanelBranding } from '../../../design/panel-theme'
 import { mountMessages } from './client/index'
+import '../../../design/primary-ramp.css'
 
 // The shared design tokens flip on the `.dark` class; mirror the OS preference
 // onto <html> (the other devframe plugins follow the same approach). The
@@ -19,3 +23,6 @@ if (!app)
 mountMessages(app).catch((error) => {
   app.textContent = `Failed to connect: ${error instanceof Error ? error.message : String(error)}`
 })
+
+const stopPanelTheme = applyPanelBranding()
+import.meta.hot?.dispose(stopPanelTheme)

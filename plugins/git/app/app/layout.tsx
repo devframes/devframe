@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import './globals.css'
 import '@antfu/design/styles.css'
+import '../../../../design/primary-ramp.css'
 
 export const metadata: Metadata = {
   title: 'Git Dashboard',

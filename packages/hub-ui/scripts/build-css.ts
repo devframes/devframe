@@ -13,7 +13,7 @@ const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
   globs: ['components/**/*.{ts,vue}', 'state/**/*.ts', 'embedded/**/*.ts', 'standalone/**/*.{ts,html}'],
   config,
-  primaryRampPath: join(SRC_DIR, 'primary-ramp.css'),
+  primaryRampPath: fileURLToPath(new URL('../../../design/primary-ramp.css', import.meta.url)),
   userStylePath: join(SRC_DIR, 'style.css'),
   varPrefix: '--un-hub-',
 })

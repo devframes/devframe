@@ -26,7 +26,7 @@ export interface BuildShadowCssOptions {
   /**
    * Absolute path to the primary-ramp override stylesheet, appended AFTER
    * the UnoCSS output so its `:host`/`:root, :host` block wins over Wind's
-   * own primary declarations (see each package's `primary-ramp.css`).
+   * own primary declarations (the shared `design/primary-ramp.css`).
    */
   primaryRampPath: string
   /**

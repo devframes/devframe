@@ -1,8 +1,12 @@
+/// <reference types="vite/client" />
+
 import { createApp } from 'vue'
+import { applyPanelBranding } from '../../../design/panel-theme'
 import App from './App.vue'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 import './style.css'
+import '../../../design/primary-ramp.css'
 
 // The shared design tokens flip on the `.dark` class; mirror the OS preference
 // onto <html> (the other devframe plugins follow the same approach).
@@ -15,3 +19,6 @@ applyScheme(mq.matches)
 mq.addEventListener('change', e => applyScheme(e.matches))
 
 createApp(App).mount('#app')
+
+const stopPanelTheme = applyPanelBranding()
+import.meta.hot?.dispose(stopPanelTheme)

@@ -49,7 +49,7 @@ onMounted(() => viewer.inspect())
       <div v-else class="grid min-h-full gap4 p4 xl:grid-cols-[minmax(0,1fr)_minmax(28rem,0.85fr)]">
         <div class="min-w-0 flex flex-col gap4">
           <div class="flex flex-wrap items-center gap-2 color-muted text-xs">
-            <span class="i-ph-check-circle-duotone color-active" />
+            <span class="i-ph-check-circle-duotone color-status-positive" />
             <a :href="viewer.snapshot.value.url" target="_blank" rel="noreferrer" class="min-w-0 truncate font-mono hover:color-active" :title="viewer.snapshot.value.url">
               {{ viewer.snapshot.value.url }}
             </a>

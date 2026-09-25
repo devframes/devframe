@@ -40,7 +40,7 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
    * Rebrand the reference UI to Deno's own navy in one field, no CSS:
    * `createUi`'s `branding` option publishes `ConnectionMeta.configs.ui.branding`,
    * which the dock reads at connect time and feeds into `--devframe-primary`
-   * (see `@devframes/hub-ui`'s `primary-ramp.css`).
+   * (see the shared `design/primary-ramp.css`).
    */
   ui: createUi({ branding: { primaryColor: '#70ffaf', productName: 'Devframes on Deno' } }),
   /**

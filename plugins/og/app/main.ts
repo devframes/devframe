@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
+import { applyPanelBranding } from '../../../design/panel-theme'
 import App from './app/app.vue'
+import '../../../design/primary-ramp.css'
 
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 function applyScheme(dark: boolean): void {
@@ -10,3 +12,6 @@ applyScheme(media.matches)
 media.addEventListener('change', event => applyScheme(event.matches))
 
 createApp(App).mount('#app')
+
+const stopPanelTheme = applyPanelBranding()
+import.meta.hot?.dispose(stopPanelTheme)

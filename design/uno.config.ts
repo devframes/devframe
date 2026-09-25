@@ -1,6 +1,6 @@
 import type { Preset } from 'unocss'
 import { fileURLToPath } from 'node:url'
-import { presetAnthonyDesign } from '@antfu/design/unocss'
+import { presetAnthonyDesign, resolvePrimary } from '@antfu/design/unocss'
 import {
   defineConfig,
   presetIcons,
@@ -60,7 +60,16 @@ export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
      * shared border color (matching `border-base`) for unqualified borders.
      */
     preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+    theme: {
+      // Stable palette for status marks and preview content that intentionally
+      // keeps the default accent when the surrounding panel adopts a theme.
+      colors: { devframe: resolvePrimary('#3a6a45') },
+    },
     shortcuts: {
+      /** Fixed semantic colors stay independent of the panel's primary accent. */
+      'color-status-positive': 'color-devframe-600 dark:color-devframe-300',
+      'color-preview-accent': 'color-devframe-600 dark:color-devframe-300',
+      'bg-preview-accent': 'bg-devframe',
       /** Fixed navbar height, shared by every surface's top nav. */
       'h-nav': 'h-10',
       /** Named z-index layers, shared across every surface. */
@@ -131,8 +140,8 @@ export const shadowSurfaceSafelist: string[] = [
 ]
 
 /**
- * The primary-ramp stops a shadow-root surface's `primary-ramp.css` exposes
- * as overridable `--colors-primary-<stop>` custom properties (derived from
+ * The primary-ramp stops the shared `design/primary-ramp.css` exposes as
+ * overridable `--colors-primary-<stop>` custom properties (derived from
  * `--devframe-primary`). Must match that file's declarations exactly.
  */
 const OVERRIDABLE_PRIMARY_STOPS = ['DEFAULT', '600', '500', '400', '300'] as const

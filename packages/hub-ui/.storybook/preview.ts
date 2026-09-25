@@ -6,7 +6,7 @@ import 'virtual:uno.css'
 import '@antfu/design/styles.css'
 import '../src/client/style.css'
 // After uno so the primary-ramp override wins, matching the shadow-root build.
-import '../src/client/primary-ramp.css'
+import '../../../design/primary-ramp.css'
 
 // Drive the shared `@antfu/design` tokens off the toolbar theme toggle: dark mode
 // is the `.dark` class on `<html>`, and the canvas takes the semantic
