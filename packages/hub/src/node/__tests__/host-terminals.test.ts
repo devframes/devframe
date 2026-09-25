@@ -430,7 +430,9 @@ describe.runIf(process.platform === 'win32')('devframeTerminalHost child-process
     }, 10_000)
     // The host holds the `cmd.exe` wrapper, not the node child.
     expect(session.getChildProcess()?.pid).not.toBe(pid)
-    return { session, pid, cleanup: () => rmSync(dir, { recursive: true, force: true }) }
+    // Windows releases the killed process's file handles asynchronously, so an
+    // immediate `rm` can still hit EPERM; retry until the handles are gone.
+    return { session, pid, cleanup: () => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }) }
   }
 
   it('terminate() kills the process started by a .cmd shim', async () => {
