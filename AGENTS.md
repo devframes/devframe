@@ -27,6 +27,12 @@ where the two disagree, the packages' `src/` and test suites win, and the docs g
   `pnpm lint && pnpm knip && pnpm test && pnpm typecheck && pnpm build`.
   Commits follow Conventional Commits.
 
+## Enforced Repository Skills
+
+- Invoke $i-have-adhd
+- Invoke $antfu-design and make sure we follow its design principles and reuse its components where appropriate.
+- For editing, writing, refactoring, re-writing code, submitting issues, Pull Requests, and docs, comments, invoke $simple-english.
+
 ## Boundary invariants
 
 - A feature that only makes sense when multiple tools share a UI belongs in a hub
