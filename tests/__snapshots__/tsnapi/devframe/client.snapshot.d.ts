@@ -127,7 +127,7 @@ export interface RpcStreamingClientHost {
 }
 export interface SetupDevframeConnectionOptions {
   connection?: DevframeConnection | {
-    isolated: boolean;
+    isolated?: boolean;
     connectionMeta?: never;
     metaBaseUrl?: never;
     authToken?: never;

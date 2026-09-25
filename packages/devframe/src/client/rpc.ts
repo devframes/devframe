@@ -427,15 +427,19 @@ export async function getDevframeRpcClient(
 
   /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
   let authChannel: BroadcastChannel | undefined
-  try {
-    authChannel = connection.isolated ? undefined : new BroadcastChannel('devframe-auth')
+  if (!connection.isolated) {
+    try {
+      authChannel = new BroadcastChannel('devframe-auth')
+    }
+    catch {}
   }
-  catch {}
 
   function updateAuthToken(token: string): void {
     connection = { ...connection, authToken: token }
-    if (!connection.isolated)
-      storeAuthToken(token)
+    if (connection.isolated)
+      return
+
+    storeAuthToken(token)
   }
 
   // Gate outbound calls behind the auth bootstrap below. Without it, a

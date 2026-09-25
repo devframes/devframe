@@ -1,5 +1,6 @@
 import type {
   DevframeConnection,
+  SetupDevframeConnectionOptions,
 } from './index'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { setupDevframeConnection } from './index'
@@ -89,7 +90,7 @@ describe('isolated connection setup', () => {
     expect(readGlobal('__DEVFRAME_CONNECTION_META__')).toBe(storedConnection.connectionMeta)
   })
 
-  it.each([{}, { connection: { isolated: false } }])(
+  it.each([{}, { connection: {} }, { connection: { isolated: false } }])(
     'retains default cache discovery with %j',
     async (options) => {
       expect.assertions(5)
@@ -128,5 +129,35 @@ describe('isolated connection setup', () => {
     expect(getItem).not.toHaveBeenCalled()
     expect(setItem).not.toHaveBeenCalled()
     expect(parentWindow.__DEVFRAME_CONNECTION__).toBe(storedConnection)
+  })
+})
+
+describe.each(['provided', 'fetched'] as const)('shared credentials with %s metadata', (metadataSource) => {
+  it.each([
+    { name: 'explicit token overrides metadata and storage', authToken: 'explicit-token', metadataToken: 'metadata-token', storedToken: 'stored-token', expectedToken: 'explicit-token' },
+    { name: 'metadata token overrides storage', authToken: undefined, metadataToken: 'metadata-token', storedToken: 'stored-token', expectedToken: 'metadata-token' },
+    { name: 'local storage supplies a missing token', authToken: undefined, metadataToken: undefined, storedToken: 'stored-token', expectedToken: 'stored-token' },
+    { name: 'window storage supplies a missing token', authToken: undefined, metadataToken: undefined, storedToken: null, expectedToken: 'window-token' },
+  ])('$name', async ({ authToken, metadataToken, storedToken, expectedToken }) => {
+    expect.assertions(4)
+    vi.stubGlobal('__DEVFRAME_CONNECTION__', undefined)
+    vi.stubGlobal('__DEVFRAME_CONNECTION_META__', undefined)
+    vi.stubGlobal('__DEVFRAME_CONNECTION_AUTH_TOKEN__', 'window-token')
+    getItem.mockReturnValue(storedToken)
+    const connectionMeta = { backend: 'static' as const, authToken: metadataToken }
+    const options: SetupDevframeConnectionOptions = {
+      baseURL: 'http://requested.example/',
+      authToken,
+    }
+    if (metadataSource === 'provided')
+      options.connectionMeta = connectionMeta
+    else
+      fetchMetadata.mockResolvedValue(Response.json(connectionMeta))
+
+    const connection = await setupDevframeConnection(options)
+    expect(connection.authToken).toBe(expectedToken)
+    expect(readGlobal('__DEVFRAME_CONNECTION__')).toStrictEqual(connection)
+    expect(setItem).toHaveBeenCalledExactlyOnceWith('__DEVFRAME_CONNECTION_AUTH_TOKEN__', expectedToken)
+    expect(fetchMetadata).toHaveBeenCalledTimes(metadataSource === 'fetched' ? 1 : 0)
   })
 })

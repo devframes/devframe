@@ -30,7 +30,7 @@ export interface DevframeConnection {
 export interface SetupDevframeConnectionOptions {
   /** Reuse a prepared connection, or configure isolation before resolving its metadata. */
   connection?: DevframeConnection | {
-    isolated: boolean
+    isolated?: boolean
     connectionMeta?: never
     metaBaseUrl?: never
     authToken?: never
@@ -119,6 +119,7 @@ export async function setupDevframeConnection(
   options: SetupDevframeConnectionOptions = {},
 ): Promise<DevframeConnection> {
   const connection = await resolveDevframeConnection(options)
+  /** Apply token precedence once, regardless of how the connection metadata was resolved. */
   const authToken = options.authToken ?? connection.authToken ?? connection.connectionMeta.authToken
   const resolvedConnection = withAuthToken(
     connection,
