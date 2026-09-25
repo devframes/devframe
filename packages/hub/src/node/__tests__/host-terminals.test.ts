@@ -421,7 +421,10 @@ describe.runIf(process.platform === 'win32')('devframeTerminalHost child-process
     writeFileSync(join(dir, 'child.cjs'), 'console.log("pid:" + process.pid); setInterval(() => {}, 1000)\n')
     const shim = join(dir, 'child.cmd')
     writeFileSync(shim, `@"${NODE}" "%~dp0\\child.cjs" %*\r\n`)
-    const session = await host.startChildProcess({ command: shim, args: [], cwd: dir }, { id, title: id })
+    // The shim resolves `child.cjs` via `%~dp0`, so it needs no cwd of its own.
+    // Running out of `dir` would make Windows hold it as a working directory and
+    // fail the later `rmdir` with EBUSY, so keep the shim's dir off the cwd.
+    const session = await host.startChildProcess({ command: shim, args: [], cwd: tmpdir() }, { id, title: id })
     let pid = 0
     await waitUntil(() => {
       const match = session.buffer?.join('').match(/pid:(\d+)/)
