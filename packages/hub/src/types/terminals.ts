@@ -79,7 +79,7 @@ export interface DevframeChildProcessExecuteOptions {
  * The settled outcome of a {@link DevframeChildProcessTerminalSession} run:
  * stdout/stderr captured separately (unlike the session's merged display
  * `stream`), plus the process's exit code (`undefined` if it was killed by a
- * signal before exiting).
+ * signal, or by `terminate()`/`restart()`, before exiting).
  */
 export interface DevframeChildProcessOutput {
   stdout: string

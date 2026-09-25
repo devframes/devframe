@@ -35,6 +35,33 @@ const TERMINAL_BUFFER_LIMIT = 1000
 /** TERM handed to spawned PTYs; also used to reject fallback process labels. */
 const PTY_TERM_NAME = 'xterm-256color'
 
+/**
+ * Kill a `startChildProcess()` run together with everything it spawned.
+ *
+ * On Windows, tinyexec runs anything that isn't a `.exe`/`.com` - including
+ * the `node_modules/.bin/*.cmd` shims package managers generate - through
+ * `cmd.exe /d /s /c`, so the pid held here is the wrapper's. Killing a process
+ * on Windows doesn't reach its descendants, so `cp.kill()` alone would leave
+ * the real program running (and holding its ports). `taskkill /T /F` ends the
+ * whole tree; `cp.kill()` stays the fallback and the POSIX path.
+ */
+async function killProcessTree(cp: TinyExecResult): Promise<void> {
+  const child = cp.process
+  const pid = child?.pid
+  if (process.platform !== 'win32' || !child || pid === undefined || child.exitCode !== null || child.signalCode !== null) {
+    cp.kill()
+    return
+  }
+  const { exec } = await import('tinyexec')
+  try {
+    const { exitCode } = await exec('taskkill', ['/pid', String(pid), '/T', '/F'])
+    if (exitCode === 0)
+      return
+  }
+  catch {}
+  cp.kill()
+}
+
 export class DevframeTerminalsHost implements DevframeTerminalsHostType {
   public readonly sessions: DevframeTerminalsHostType['sessions'] = new Map()
   public readonly events: DevframeTerminalsHostType['events'] = createEventEmitter()
@@ -231,15 +258,26 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     let cp: TinyExecResult | undefined
     let currentResult: DevframeChildProcessResult | undefined
     let runId = 0
+    // Runs stopped on purpose (terminate/restart/cancel). On Windows the tree
+    // kill ends them with exit code 1 rather than a signal, so this keeps them
+    // reported as a deliberate stop instead of a crash on every platform.
+    const hostKilled = new WeakSet<TinyExecResult>()
+    const killRun = (target: TinyExecResult | undefined): Promise<void> => {
+      if (!target)
+        return Promise.resolve()
+      hostKilled.add(target)
+      return killProcessTree(target)
+    }
 
     const stream = new ReadableStream<string>({
       start(_controller) {
         state.controller = _controller
       },
       cancel() {
-        cp?.kill()
+        const target = cp
         cp = undefined
         closeStream()
+        return killRun(target)
       },
     })
 
@@ -310,15 +348,16 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         markStatus('error')
       })
       cp.process?.once('close', (code) => {
-        settle(code ?? undefined)
+        const killed = hostKilled.has(cp)
+        settle(killed ? undefined : code ?? undefined)
         if (currentRun !== runId)
           return
         closeStream()
         // A spawn/runtime error already settled the status; a non-zero exit
-        // code is a crash. A clean exit, or a signal kill (no numeric code,
-        // e.g. terminate()/restart()), is a deliberate/normal stop.
+        // code is a crash. A clean exit, or a kill by the host (terminate()/
+        // restart()), is a deliberate/normal stop.
         if (!runErrored)
-          markStatus(typeof code === 'number' && code !== 0 ? 'error' : 'stopped')
+          markStatus(!killed && typeof code === 'number' && code !== 0 ? 'error' : 'stopped')
       })
 
       currentResult = {
@@ -326,10 +365,10 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return cp.process?.pid
         },
         get exitCode() {
-          return cp.process?.exitCode ?? undefined
+          return hostKilled.has(cp) ? undefined : cp.process?.exitCode ?? undefined
         },
         get killed() {
-          return cp.process?.killed === true
+          return hostKilled.has(cp) || cp.process?.killed === true
         },
         kill: signal => cp.kill(signal),
         then: (onfulfilled, onrejected) => outputPromise.then(onfulfilled, onrejected),
@@ -343,13 +382,15 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
     const restart = async () => {
       if (state.streamClosed)
         throw diagnostics.DF8206({ id: terminal.id })
-      cp?.kill()
+      // Wait for the old tree to go away so the new run can reclaim its ports.
+      await killRun(cp)
       cp = createChildProcess()
       markStatus('running')
     }
     const terminate = async () => {
-      cp?.kill()
+      const target = cp
       cp = undefined
+      await killRun(target)
       closeStream()
       markStatus('stopped')
     }
