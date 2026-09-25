@@ -425,12 +425,22 @@ export async function getDevframeRpcClient(
           wsOptions: options.wsOptions,
         })
 
-  // Channel name kept for cross-tab interop with the Vite DevTools auth page.
+  /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
   let authChannel: BroadcastChannel | undefined
-  try {
-    authChannel = new BroadcastChannel('devframe-auth')
+  if (!connection.isolated) {
+    try {
+      authChannel = new BroadcastChannel('devframe-auth')
+    }
+    catch {}
   }
-  catch {}
+
+  function updateAuthToken(token: string): void {
+    connection = { ...connection, authToken: token }
+    if (connection.isolated)
+      return
+
+    storeAuthToken(token)
+  }
 
   // Gate outbound calls behind the auth bootstrap below. Without it, a
   // caller's first RPC calls, fired the moment `connectDevframe()` resolves,
@@ -485,19 +495,14 @@ export async function getDevframeRpcClient(
     ensureTrusted: mode.ensureTrusted,
     requestTrust: mode.requestTrust,
     requestTrustWithToken: async (token: string) => {
-      // Update stored token for future reconnections
-      storeAuthToken(token)
-      connection = { ...connection, authToken: token }
+      updateAuthToken(token)
       return mode.requestTrustWithToken(token)
     },
     requestTrustWithCode: async (code: string) => {
       const token = await mode.requestTrustWithCode(code)
       if (!token)
         return false
-      // Persist the node-issued token and share it with sibling tabs so they
-      // become trusted without re-entering the code.
-      storeAuthToken(token)
-      connection = { ...connection, authToken: token }
+      updateAuthToken(token)
       try {
         authChannel?.postMessage({ type: 'auth-update', authToken: token })
       }

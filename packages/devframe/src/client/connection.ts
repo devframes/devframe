@@ -23,11 +23,18 @@ export interface DevframeConnection {
   metaBaseUrl: string
   /** Previously issued bearer token, when the connection is already trusted. */
   authToken?: string
+  /** Skip shared browser caches and authentication broadcasts. Retained when reconnecting. */
+  isolated?: boolean
 }
 
 export interface SetupDevframeConnectionOptions {
-  /** Reuse a complete connection prepared in another viewer or JavaScript realm. */
-  connection?: DevframeConnection
+  /** Reuse a prepared connection, or configure isolation before resolving its metadata. */
+  connection?: DevframeConnection | {
+    isolated?: boolean
+    connectionMeta?: never
+    metaBaseUrl?: never
+    authToken?: never
+  }
   /** Use a pre-known descriptor while deriving its source URL from `baseURL`. */
   connectionMeta?: ConnectionMeta
   /** Base URL, or fallback list, used to locate `__connection.json`. */
@@ -111,52 +118,46 @@ export function getDevframeConnection(): DevframeConnection | undefined {
 export async function setupDevframeConnection(
   options: SetupDevframeConnectionOptions = {},
 ): Promise<DevframeConnection> {
-  if (options.connection) {
-    const connection = withAuthToken(
-      options.connection,
-      readStoredAuthToken(
-        options.authToken
-        ?? options.connection.authToken
-        ?? options.connection.connectionMeta.authToken,
-      ),
-    )
-    storeConnection(connection)
-    return connection
-  }
+  const connection = await resolveDevframeConnection(options)
+  /** Apply token precedence once, regardless of how the connection metadata was resolved. */
+  const authToken = options.authToken ?? connection.authToken ?? connection.connectionMeta.authToken
+  const resolvedConnection = withAuthToken(
+    connection,
+    connection.isolated ? authToken : readStoredAuthToken(authToken),
+  )
+  if (connection.isolated)
+    return resolvedConnection
+
+  storeConnection(resolvedConnection)
+  return resolvedConnection
+}
+
+async function resolveDevframeConnection(
+  options: SetupDevframeConnectionOptions,
+): Promise<DevframeConnection> {
+  if (options.connection?.connectionMeta)
+    return options.connection
 
   const bases = Array.isArray(options.baseURL)
     ? options.baseURL
     : [options.baseURL ?? './']
 
   if (options.connectionMeta) {
-    const connection: DevframeConnection = {
+    return {
       connectionMeta: options.connectionMeta,
       /**
        * Preserve the established connectionMeta behavior: an explicitly
        * supplied descriptor resolves from the caller's explicit base.
        */
       metaBaseUrl: resolveMetaBaseUrl(bases[0] ?? './'),
-      authToken: readStoredAuthToken(
-        options.authToken ?? options.connectionMeta.authToken,
-      ),
+      authToken: options.connectionMeta.authToken,
+      isolated: options.connection?.isolated,
     }
-    storeConnection(connection)
-    return connection
   }
 
-  const existing = getDevframeConnection()
-  if (existing) {
-    const connection = withAuthToken(
-      existing,
-      readStoredAuthToken(
-        options.authToken
-        ?? existing.authToken
-        ?? existing.connectionMeta.authToken,
-      ),
-    )
-    storeConnection(connection)
-    return connection
-  }
+  const existing = options.connection?.isolated ? undefined : getDevframeConnection()
+  if (existing)
+    return existing
 
   const errors: Error[] = []
   for (const base of bases) {
@@ -169,7 +170,7 @@ export async function setupDevframeConnection(
 
       const connectionMeta = await response.json() as ConnectionMeta
       const loadedFrom = response.url || metaUrl
-      const connection: DevframeConnection = {
+      return {
         connectionMeta,
         /**
          * A served `baseUrl` re-points relative resolution (RPC dump shards,
@@ -179,12 +180,9 @@ export async function setupDevframeConnection(
         metaBaseUrl: connectionMeta.baseUrl
           ? new URL(connectionMeta.baseUrl, loadedFrom).href
           : loadedFrom,
-        authToken: readStoredAuthToken(
-          options.authToken ?? connectionMeta.authToken,
-        ),
+        authToken: connectionMeta.authToken,
+        isolated: options.connection?.isolated,
       }
-      storeConnection(connection)
-      return connection
     }
     catch (error) {
       errors.push(error as Error)
