@@ -39,6 +39,13 @@ export interface DevframeCommandBase {
    */
   when?: string
   /**
+   * Whether keyboard shortcuts can invoke this command. Default: true.
+   * Set to false for commands that require arguments from their caller.
+   * The hub UI hides their shortcut settings and ignores default and saved bindings.
+   * Explicit calls through `commands.execute(id, ...args)` remain available.
+   */
+  allowShortcuts?: boolean
+  /**
    * Default keyboard shortcut(s) for this command
    */
   keybindings?: DevframeCommandKeybinding[]
