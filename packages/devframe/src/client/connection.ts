@@ -23,18 +23,33 @@ export interface DevframeConnection {
   metaBaseUrl: string
   /** Previously issued bearer token, when the connection is already trusted. */
   authToken?: string
-  /** Skip shared browser caches and authentication broadcasts. Retained when reconnecting. */
+  /**
+   * Skip shared browser caches and authentication broadcasts. Retained when reconnecting.
+   * The origin-wide `devframe-auth` channel carries no backend identity, so a token
+   * from another connection could otherwise overwrite this connection's credentials.
+   * Authentication still uses this connection's own RPC transport.
+   */
   isolated?: boolean
+}
+
+/**
+ * Configure discovery before metadata and its source URL have been resolved.
+ * Shared behavior is the default. Set `isolated: true` when connecting to independent
+ * backends from one viewer. Browser credential caches are not scoped per backend, and
+ * `devframe-auth` broadcasts carry no backend identity, so they can mix credentials.
+ * An isolated connection still authenticates through its own RPC transport.
+ */
+export interface DevframeConnectionDiscoveryOptions {
+  /** Use connection-local credentials; see {@link DevframeConnection.isolated}. Defaults to shared behavior. */
+  isolated?: boolean
+  connectionMeta?: never
+  metaBaseUrl?: never
+  authToken?: never
 }
 
 export interface SetupDevframeConnectionOptions {
   /** Reuse a prepared connection, or configure isolation before resolving its metadata. */
-  connection?: DevframeConnection | {
-    isolated?: boolean
-    connectionMeta?: never
-    metaBaseUrl?: never
-    authToken?: never
-  }
+  connection?: DevframeConnection | DevframeConnectionDiscoveryOptions
   /** Use a pre-known descriptor while deriving its source URL from `baseURL`. */
   connectionMeta?: ConnectionMeta
   /** Base URL, or fallback list, used to locate `__connection.json`. */

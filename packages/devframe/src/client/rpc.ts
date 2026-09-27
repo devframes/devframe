@@ -425,7 +425,10 @@ export async function getDevframeRpcClient(
           wsOptions: options.wsOptions,
         })
 
-  /** Channel name kept for cross-tab interop with the Vite DevTools auth page. */
+  /**
+   * Shared with the Vite DevTools auth page; messages carry no backend identity,
+   * so isolated connections must neither publish nor consume credentials here.
+   */
   let authChannel: BroadcastChannel | undefined
   if (!connection.isolated) {
     try {
