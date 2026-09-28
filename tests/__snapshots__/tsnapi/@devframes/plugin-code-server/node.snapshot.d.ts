@@ -141,7 +141,7 @@ export declare const diagnostics: Diagnostics<{
   };
 }, readonly [(d: Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
-}) => void]>;
+}) => void], never>;
 // #endregion
 
 // #region Referenced (internal)
@@ -150,17 +150,18 @@ interface DetectCodeServerResult {
   version?: string;
   bin: string;
 }
-declare class Diagnostic extends Error {
+declare class Diagnostic<Data = undefined> extends Error {
   name: string;
   code: string;
   docs?: string;
   fix?: string;
   sources?: string[];
+  data: Data;
   get why(): string;
-  constructor(_: DiagnosticInit, _?: Function);
-  toJSON(): object;
+  constructor(_: DiagnosticInit<Data>, _?: StackTraceFrame);
+  toJSON(): DiagnosticJSON<Data>;
 }
-type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[]> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>>; };
+type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[], DataOverride = never> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>, [DataOverride] extends [never] ? InferCodeData<Codes[Code]> : DataOverride>; };
 interface ProfileContext {
   host: string;
   port: number;

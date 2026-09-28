@@ -373,7 +373,7 @@ export declare const diagnostics: import("nostics").Diagnostics<{
   };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
-}) => void]>;
+}) => void], never>;
 // #endregion
 
 // #region Other
