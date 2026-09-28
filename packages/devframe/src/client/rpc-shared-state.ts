@@ -1,10 +1,17 @@
-import type { RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
+import type { RpcFunctionsCollector } from 'devframe/rpc'
+import type { ConnectionMeta, DevframeRpcClientFunctions, RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeRpcClient } from './rpc'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { DEVFRAME_EVENTS } from '../events'
 
-export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcSharedStateHost {
+/** Native shared-state synchronization over an authenticated RPC connection. */
+export function createRpcSharedStateClientHost<Context>(
+  rpc: Pick<DevframeRpcClient, 'call' | 'callEvent' | 'events' | 'isTrusted'> & {
+    client: Pick<RpcFunctionsCollector<DevframeRpcClientFunctions, Context>, 'register'>
+    connectionMeta: Pick<ConnectionMeta, 'backend'>
+  },
+): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
   const stateDisposers = new Map<string, () => void>()
   const initialValues = new Map<string, any>()
@@ -121,7 +128,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
         }
       }
 
-      return new Promise<SharedState<T>>((resolve) => {
+      return new Promise<SharedState<T>>((resolve, reject) => {
         if (!rpc.isTrusted) {
           resolve(state)
           let initialized = false
@@ -133,7 +140,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
           })
         }
         else {
-          initSharedState().then(resolve)
+          initSharedState().then(resolve, reject)
         }
       })
     },

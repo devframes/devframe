@@ -54,6 +54,10 @@ const nodeDeps = {
 const clientEntries = {
   'client/index': 'src/client/index.ts',
   'in-page-channel/index': 'src/in-page-channel/index.ts',
+  'rpc/index': 'src/rpc/index.ts',
+  'rpc/client': 'src/rpc/client.ts',
+  'rpc/server': 'src/rpc/server.ts',
+  'rpc/shared-state': 'src/rpc/shared-state.ts',
   'utils/agent-tool-name': 'src/utils/agent-tool-name.ts',
   'utils/colors': 'src/utils/colors.ts',
   'utils/crypto-token': 'src/utils/crypto-token.ts',
@@ -75,10 +79,7 @@ const serverEntries = {
   'index': 'src/index.ts',
   'constants': 'src/constants.ts',
   'types/index': 'src/types/index.ts',
-  'rpc/index': 'src/rpc/index.ts',
-  'rpc/client': 'src/rpc/client.ts',
   'rpc/dump': 'src/rpc/dump/index.ts',
-  'rpc/server': 'src/rpc/server.ts',
   'rpc/transports/sse-client': 'src/rpc/transports/sse-client.ts',
   'rpc/transports/sse-server': 'src/rpc/transports/sse-server.ts',
   'rpc/transports/ws-bun': 'src/rpc/transports/ws-bun.ts',
@@ -140,6 +141,10 @@ export default defineConfig([
         await checkClientDist({
           entries: [
             resolve(distDir, 'client/index.mjs'),
+            resolve(distDir, 'rpc/index.mjs'),
+            resolve(distDir, 'rpc/client.mjs'),
+            resolve(distDir, 'rpc/server.mjs'),
+            resolve(distDir, 'rpc/shared-state.mjs'),
             resolve(distDir, 'in-page-channel/index.mjs'),
             resolve(distDir, 'utils/agent-tool-name.mjs'),
             resolve(distDir, 'utils/colors.mjs'),

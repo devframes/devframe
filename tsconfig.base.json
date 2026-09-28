@@ -31,6 +31,9 @@
       "devframe/rpc/dump": [
         "./packages/devframe/src/rpc/dump/index.ts"
       ],
+      "devframe/rpc/shared-state": [
+        "./packages/devframe/src/rpc/shared-state.ts"
+      ],
       "devframe/rpc/server": [
         "./packages/devframe/src/rpc/server.ts"
       ],
