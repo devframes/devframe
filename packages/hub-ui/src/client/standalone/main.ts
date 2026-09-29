@@ -5,6 +5,7 @@ import { watchEffect } from 'vue'
 import { applyDocumentHead, applyPrimaryColor, setBranding, useBrandingBackground } from '../state/branding'
 import { isDark } from '../state/color-mode'
 import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
+import { connectInspectedPage } from '../state/inspected-page'
 import { applyViewerBackground } from './viewer-background'
 
 // The standalone viewer: a vanilla shell served at the hub base itself
@@ -26,6 +27,12 @@ watchEffect(() => {
 })
 
 async function main(): Promise<void> {
+  const inspectedPage = await connectInspectedPage()
+  let disconnected = false
+  inspectedPage?.onDisconnect(() => {
+    disconnected = true
+    showConnectionError('The inspected page disconnected. Reopen the browser DevTools panel.')
+  })
   // Served at the hub base with relative assets: `./__connection.json`
   // resolves against the page URL first, the module URL second. Read
   // import.meta.url through a variable so Vite's build doesn't rewrite the
@@ -35,6 +42,8 @@ async function main(): Promise<void> {
     baseURL: ['./', new URL('./', moduleUrl).href],
     simpleAuth: false,
   })
+  if (disconnected)
+    return
 
   // Resolve branding before mount; the standalone page owns its own head, so
   // apply title/favicon/description here too. Read from
@@ -52,13 +61,24 @@ async function main(): Promise<void> {
   )
 
   const { createDocksContext } = await import('../state/context')
-  const context = await createDocksContext('standalone', rpc, undefined, session)
+  const context = await createDocksContext('standalone', rpc, undefined, session, undefined, inspectedPage)
+  if (disconnected)
+    return
   setDevframeClientContext(context)
 
   const { DockStandalone } = await import('../components/DockStandalone')
+  if (disconnected)
+    return
   const el = new DockStandalone({ context })
   applyPrimaryColor(el, branding.primaryColor)
   document.getElementById('app')!.appendChild(el)
 }
 
-void main()
+function showConnectionError(message: string): void {
+  const alert = document.createElement('p')
+  alert.setAttribute('role', 'alert')
+  alert.textContent = message
+  document.getElementById('app')!.replaceChildren(alert)
+}
+
+void main().catch(error => showConnectionError(error instanceof Error ? error.message : String(error)))

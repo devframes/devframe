@@ -69,6 +69,7 @@ export const HUB_EVENTS = {
   /** `postMessage` channels for host ↔ iframe protocols, `devframe:` prefix. */
   postMessage: {
     frameNav: 'devframe:frame-nav',
+    inspectedPage: 'devframe:inspected-page:connect',
   },
   /**
    * Same-origin `BroadcastChannel` names, `devframe:` prefix. Used on a

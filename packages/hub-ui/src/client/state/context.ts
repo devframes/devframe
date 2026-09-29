@@ -4,6 +4,7 @@ import type { SharedState } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { Ref } from 'vue'
 import type { DevframeDocksUserSettings } from './dock-settings'
+import type { InspectedPageTarget } from './inspected-page'
 import { attachFrameNavClient, createDockRenderersContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
@@ -14,6 +15,7 @@ import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupPreferredChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
+import { installInspectedPageHost } from './inspected-page'
 import { createClientMessagesClient } from './messages-client'
 import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
@@ -26,6 +28,7 @@ export async function createDocksContext(
   panelStore?: Ref<DockPanelStorage>,
   sessionStore?: Ref<DockSessionStorage>,
   panelVisible: Ref<boolean> = ref(true),
+  inspectedPage?: InspectedPageTarget,
 ): Promise<DocksContext> {
   if (docksContextByRpc.has(rpc)) {
     return docksContextByRpc.get(rpc)!
@@ -240,11 +243,16 @@ export async function createDocksContext(
   async function runPageScript(entry: DevframeDockEntry): Promise<void> {
     if (entry.type !== 'iframe' || !entry.clientScript)
       return
+    if (inspectedPage) {
+      if (!await inspectedPage.prepare(entry.id))
+        throw new Error(`The inspected page could not prepare dock "${entry.id}".`)
+      return
+    }
     await executeSetupScript(entry, scriptContext(entry))
   }
 
   async function runActivationScript(entry: DevframeDockEntry): Promise<void> {
-    if (entry.type === 'action' || entry.type === 'custom-render')
+    if (entry.type === 'custom-render')
       await executeSetupScript(entry, scriptContext(entry))
   }
 
@@ -260,7 +268,10 @@ export async function createDocksContext(
       if (!clientScriptOf(entry)?.eager)
         continue
       /** Setup reports failures and allows the next activation or publication to retry. */
-      void executeSetupScript(entry, scriptContext(entry), true).catch(() => {})
+      const setup = inspectedPage
+        ? inspectedPage.prepare(entry.id)
+        : executeSetupScript(entry, scriptContext(entry), true)
+      void setup.catch(() => {})
     }
   }
 
@@ -277,7 +288,42 @@ export async function createDocksContext(
       sessionStore.value.selectedDockRoute = null
   }
 
+  let selectionGeneration = 0
+  let inspectedActionQueue = Promise.resolve()
+  const prepareAction = async (entry: DevframeDockEntry, generation: number): Promise<boolean> => {
+    if (inspectedPage) {
+      // Complete stale activation cleanup before starting a newer action,
+      // including another activation of the same dock entry.
+      const activation = inspectedActionQueue.then(async () => {
+        if (generation !== selectionGeneration || !await inspectedPage.activate(entry.id))
+          return false
+        if (generation !== selectionGeneration) {
+          await inspectedPage.deactivate(entry.id)
+          return false
+        }
+        return true
+      })
+      inspectedActionQueue = activation.then(() => {}, () => {})
+      return activation
+    }
+    else {
+      const delegated = await triggerMainFrameDockAction(clientType, entry.id)
+      if (delegated != null)
+        return false
+      // Import/setup must finish before activation is emitted. Page scripts
+      // such as Vue Tracer install their activation listener during setup.
+      await executeSetupScript(entry, scriptContext(entry))
+    }
+    return generation === selectionGeneration
+  }
+
   const switchEntry = async (id: string | null = null): Promise<boolean> => {
+    const generation = ++selectionGeneration
+    const previous = selected.value
+    if (inspectedPage && previous?.type === 'action' && previous.id !== id)
+      await inspectedPage.deactivate(previous.id)
+    if (generation !== selectionGeneration)
+      return false
     if (id == null) {
       initialRestorePending.value = false
       selectedDockId.value = null
@@ -301,17 +347,15 @@ export async function createDocksContext(
     if (redirect !== null)
       return switchEntry(redirect)
 
-    // If the action is in a popup, delegate to the main frame
-    if (entry.type === 'action') {
-      const delegated = await triggerMainFrameDockAction(clientType, entry.id)
-      if (delegated != null)
-        return false
-    }
+    if (!rpc.isTrusted)
+      return false
+    if (entry.type === 'action' && !await prepareAction(entry, generation))
+      return false
 
     if (!rpc.isTrusted)
       return false
     await runPageScript(entry)
-    if (!rpc.isTrusted)
+    if (!rpc.isTrusted || generation !== selectionGeneration)
       return false
 
     initialRestorePending.value = false
@@ -441,9 +485,8 @@ export async function createDocksContext(
       icon: 'ph:x-circle-duotone',
       when: 'dockOpen && !paletteOpen',
       keybindings: [{ key: 'Escape' }],
-      action: () => {
-        sessionStore.value.open = false
-        selectedDockId.value = null
+      action: async () => {
+        await switchEntry(null)
       },
     },
     {
@@ -677,6 +720,44 @@ export async function createDocksContext(
       return false
     return switchEntry(entry.id)
   })
+
+  inspectedPage?.onSelection((id) => {
+    if (selected.value?.type === 'action' && id !== selectedDockId.value) {
+      selectedDockId.value = null
+      sessionStore.value.open = false
+    }
+  })
+
+  if (clientType === 'embedded' && typeof window !== 'undefined') {
+    installInspectedPageHost({
+      async prepare(id) {
+        if (!rpc.isTrusted)
+          return false
+        const entry = entries.value.find(entry => entry.id === id)
+        if (!entry || !((entry.type === 'iframe' && entry.clientScript)
+          || (entry.type === 'action' && entry.action.eager))) {
+          return false
+        }
+        await executeSetupScript(entry, scriptContext(entry), true)
+        return rpc.isTrusted
+      },
+      async activate(id) {
+        if (!rpc.isTrusted || entries.value.find(entry => entry.id === id)?.type !== 'action')
+          return false
+        return switchEntry(id)
+      },
+      async deactivate(id) {
+        if (selected.value?.type !== 'action' || selectedDockId.value !== id)
+          return false
+        return switchEntry(null)
+      },
+      onSelection(listener) {
+        return panelEvents.on(HUB_EVENTS.client.docksPanelStateChanged, () => {
+          listener(selected.value?.type === 'action' ? selected.value.id : null)
+        })
+      },
+    })
+  }
 
   const waitUntilTrusted = async (): Promise<void> => {
     if (rpc.isTrusted)

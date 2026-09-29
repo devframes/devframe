@@ -40,11 +40,9 @@ function getStore(): DemoStore {
  */
 export default function setup(ctx: DockClientScriptContext): void {
   const store = getStore()
-  ctx.current.events.on('entry:activated', () => {
-    store.activations += 1
-    store.events.emit('activated', store.activations)
-    void ctx.messages.info(`Demo client script activated (#${store.activations} this page)`, {
-      description: `Loaded from ${new URL(import.meta.url).pathname}`,
-    })
+  store.activations += 1
+  store.events.emit('activated', store.activations)
+  void ctx.messages.info(`Demo client script activated (#${store.activations} this page)`, {
+    description: `Loaded from ${new URL(import.meta.url).pathname}`,
   })
 }

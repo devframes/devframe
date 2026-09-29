@@ -18,12 +18,13 @@ export const IN_PAGE_CHANNEL_VERSION = 2
 /**
  * The handshake envelope. A panel posts a `hello` ("grant me a port for
  * channel `name`"); the page script answers with a `grant`, the dedicated
- * `MessagePort` transferred alongside.
+ * `MessagePort` transferred alongside. A closing panel posts `cancel` so
+ * relays can release pending handshakes before a port has been granted.
  */
 export interface InPageChannelHandshakeMessage {
   channel: typeof IN_PAGE_CHANNEL_TAG
   v: number
-  kind: 'hello' | 'grant'
+  kind: 'hello' | 'grant' | 'cancel'
   /** User channel name (e.g. `devframes:plugin:a11y`). */
   name: string
   /** The asking panel's id (grants echo it, so a panel matches its own hello). */
@@ -52,7 +53,7 @@ export function isHandshakeMessage(data: unknown): data is InPageChannelHandshak
   return message.channel === IN_PAGE_CHANNEL_TAG
     && typeof message.name === 'string'
     && typeof message.panelId === 'string'
-    && (message.kind === 'hello' || message.kind === 'grant')
+    && (message.kind === 'hello' || message.kind === 'grant' || message.kind === 'cancel')
 }
 
 const INSTANCE_STORAGE_KEY = 'devframe:in-page-channel:instance'

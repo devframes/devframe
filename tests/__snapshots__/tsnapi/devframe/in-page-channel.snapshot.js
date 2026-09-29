@@ -11,6 +11,7 @@ export class InPageChannelError extends Error {
 
 // #region Functions
 export function connectPanelChannel(_) {}
+export function createInPageChannelRelay(_) {}
 export function createPageScriptChannel(_) {}
 export function defineChannelFunction(_) {}
 // #endregion
