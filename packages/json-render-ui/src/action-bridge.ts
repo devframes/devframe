@@ -15,7 +15,7 @@ export interface JsonRenderActionBridge {
   handlers: Record<string, (params?: Record<string, unknown>) => Promise<unknown>>
   /** Reactive per-action loading flags. */
   loading: Record<string, boolean>
-  /** The most recent action failure, or `null`. */
+  /** The most recent action failure, cleared when that action is retried. */
   error: { value: JsonRenderActionError | null }
 }
 
@@ -53,6 +53,8 @@ export function createActionBridge(
         error.value = { action, error: err }
         throw err
       }
+      if (error.value?.action === action)
+        error.value = null
       loading[action] = true
       try {
         return await rpc.call(action, params)
