@@ -106,11 +106,14 @@ export async function createCommandsContext(
   }
 
   function getKeybindings(id: string): DevframeCommandKeybinding[] {
+    const cmd = findCommandDeep(commands.value, id)
+    if (cmd?.allowShortcuts === false)
+      return []
+
     const overrides = shortcutOverrides.value[id]
     if (overrides !== undefined)
       return overrides
 
-    const cmd = findCommandDeep(commands.value, id)
     return cmd?.keybindings ?? []
   }
 

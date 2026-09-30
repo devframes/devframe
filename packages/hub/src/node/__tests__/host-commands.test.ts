@@ -7,6 +7,29 @@ import { DevframeCommandsHost } from '../host-commands'
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
 
+describe('command shortcut metadata', () => {
+  it('publishes eligibility for nested commands without preventing explicit execution', async () => {
+    const host = new DevframeCommandsHost({} as DevframeHubContext)
+    host.register({
+      id: 'tool:files',
+      title: 'Files',
+      children: [{
+        id: 'tool:open',
+        title: 'Open',
+        allowShortcuts: false,
+        handler: (path: string) => path,
+      }],
+    })
+
+    expect(host.list()[0]?.children?.[0]).toMatchObject({
+      id: 'tool:open',
+      allowShortcuts: false,
+      source: 'server',
+    })
+    await expect(host.execute('tool:open', 'src/main.ts')).resolves.toBe('src/main.ts')
+  })
+})
+
 describe('devframeCommandsHost command id validation', () => {
   it('rejects duplicate ids inside one command tree', () => {
     const host = new DevframeCommandsHost({} as DevframeHubContext)
