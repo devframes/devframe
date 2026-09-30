@@ -38,6 +38,7 @@
     "./rpc/client": "./dist/rpc/client.mjs",
     "./rpc/dump": "./dist/rpc/dump.mjs",
     "./rpc/server": "./dist/rpc/server.mjs",
+    "./rpc/shared-state": "./dist/rpc/shared-state.mjs",
     "./rpc/transports/sse-client": "./dist/rpc/transports/sse-client.mjs",
     "./rpc/transports/sse-server": "./dist/rpc/transports/sse-server.mjs",
     "./rpc/transports/ws-bun": "./dist/rpc/transports/ws-bun.mjs",

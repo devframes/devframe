@@ -137,7 +137,7 @@
         "src/node/index.ts",
         "src/node/{auth,hub-internals}/index.ts",
         "src/recipes/interactive-auth.ts",
-        "src/rpc/{index,client,server}.ts",
+        "src/rpc/{index,client,server,shared-state}.ts",
         "src/rpc/dump/index.ts",
         "src/rpc/transports/{sse-client,sse-server,ws-bun,ws-deno,ws-client,ws-server}.ts",
         "src/types/index.ts",

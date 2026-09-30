@@ -1,4 +1,5 @@
-import type { RpcFunctionsHost, RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
+import type { RpcFunctionsCollector } from 'devframe/rpc'
+import type { DevframeNodeRpcSessionMeta, DevframeRpcServerFunctions, RpcFunctionsHost, RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { createDebug } from 'obug'
@@ -8,8 +9,13 @@ import { diagnostics } from './diagnostics'
 const debug = createDebug('devframe:rpc:state:changed')
 const debugSubscribe = createDebug('devframe:rpc:state:subscribe')
 
-export function createRpcSharedStateServerHost(
-  rpc: RpcFunctionsHost,
+/**
+ * Publish native shared state over registered RPC functions and broadcasts.
+ * Each channel supplies session metadata with a `subscribedStates` set and
+ * retains birpc's default RPC `this` binding for subscription handlers.
+ */
+export function createRpcSharedStateServerHost<Context>(
+  rpc: Pick<RpcFunctionsCollector<DevframeRpcServerFunctions, Context>, 'register'> & Pick<RpcFunctionsHost, 'broadcast'>,
 ): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
   const stateDisposers = new Map<string, () => void>()
@@ -93,12 +99,13 @@ export function createRpcSharedStateServerHost(
   rpc.register({
     name: 'devframe:rpc:server-state:subscribe',
     type: 'event',
-    handler(key: string) {
-      const session = rpc.getCurrentRpcSession()
-      if (!session)
+    handler(this: { $meta?: DevframeNodeRpcSessionMeta } | undefined, key: string) {
+      /** birpc binds this handler to the calling connection across transports. */
+      const meta = this?.$meta
+      if (!meta)
         return
-      debugSubscribe('subscribe', { key, session: session.meta.id })
-      session.meta.subscribedStates.add(key)
+      debugSubscribe('subscribe', { key, session: meta.id })
+      meta.subscribedStates.add(key)
     },
   })
 
