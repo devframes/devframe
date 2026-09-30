@@ -5,6 +5,7 @@ import type { DockLayout } from './dock-layout'
 import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
+import { t } from '../../i18n'
 import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockId, resolveRecentDockEntry } from '../../state/dock-settings'
 import { sharedStateToRef } from '../../state/docks'
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
@@ -325,7 +326,7 @@ onMounted(() => {
                 :class="context.panel.isVertical ? 'rotate-270' : 'rotate-0'"
               />
               <div class="ws-nowrap text-amber">
-                Unauthorized
+                {{ t('dock.unauthorized') }}
               </div>
             </div>
           </button>

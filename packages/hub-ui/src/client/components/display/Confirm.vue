@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { useTemplateRef, watchPostEffect } from 'vue'
+import { t } from '../../i18n'
 import { ConfirmPromise } from '../../state/confirm'
 
 const confirmButton = useTemplateRef<InstanceType<typeof ActionButton>>('confirmButton')
@@ -44,10 +45,10 @@ function resolveConfirm(resolve: (value: boolean) => void, value: boolean) {
 
         <div class="flex items-center justify-end gap-2 mt-6">
           <ActionButton variant="text" size="sm" @click="resolveConfirm(resolve, false)">
-            {{ options.cancelText ?? 'Cancel' }}
+            {{ options.cancelText ?? t('common.cancel') }}
           </ActionButton>
           <ActionButton ref="confirmButton" variant="primary" size="sm" @click="resolveConfirm(resolve, true)">
-            {{ options.confirmText ?? 'OK' }}
+            {{ options.confirmText ?? t('common.ok') }}
           </ActionButton>
         </div>
       </div>

@@ -1,4 +1,6 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
+import { setLocalePreference } from '../src/client/i18n'
+import { HUB_UI_LOCALES } from '../src/locales'
 // Reset first so uno utilities win over its resets, matching the production
 // `[reset, userStyle, unoCss, ...]` order; otherwise stories lose the reset.
 import '@unocss/reset/tailwind.css'
@@ -18,6 +20,7 @@ function applyTheme(theme: string): void {
 
 const withTheme: Decorator = (story, context) => {
   applyTheme(context.globals.theme ?? 'dark')
+  setLocalePreference(context.globals.locale ?? 'en')
   return { components: { story }, template: '<story />' }
 }
 
@@ -43,6 +46,16 @@ const preview: Preview = {
           { value: 'light', title: 'Light', icon: 'sun' },
           { value: 'dark', title: 'Dark', icon: 'moon' },
         ],
+        dynamicTitle: true,
+      },
+    },
+    locale: {
+      description: 'UI language',
+      defaultValue: 'en',
+      toolbar: {
+        title: 'Language',
+        icon: 'globe',
+        items: Object.entries(HUB_UI_LOCALES).map(([value, title]) => ({ value, title })),
         dynamicTitle: true,
       },
     },

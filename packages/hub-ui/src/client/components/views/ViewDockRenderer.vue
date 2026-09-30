@@ -3,6 +3,7 @@ import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { t } from '../../i18n'
 import { isDark } from '../../state/color-mode'
 
 // Renders any dock type hub-ui has no native view for through the hub's
@@ -92,10 +93,10 @@ onUnmounted(() => {
     >
       <div class="i-ph:puzzle-piece-duotone text-3xl color-faint" />
       <div class="text-sm color-muted">
-        No renderer for “{{ entry.type }}” in the current environment
+        {{ t('renderer.missing', { type: entry.type }) }}
       </div>
       <div class="text-xs color-faint">
-        The host has not registered a renderer for this dock type.
+        {{ t('renderer.missingHint') }}
       </div>
     </div>
 
@@ -105,13 +106,13 @@ onUnmounted(() => {
     >
       <div class="i-ph:warning-duotone text-3xl color-faint" />
       <div class="text-sm color-muted">
-        The renderer for “{{ entry.type }}” failed to load
+        {{ t('renderer.failed', { type: entry.type }) }}
       </div>
       <div v-if="errorMessage" class="max-w-100 text-xs color-faint">
         {{ errorMessage }}
       </div>
       <ActionButton class="mt-2" @click="mount()">
-        Retry
+        {{ t('common.retry') }}
       </ActionButton>
     </div>
   </div>

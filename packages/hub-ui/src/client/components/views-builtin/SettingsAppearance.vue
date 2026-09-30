@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import { computed } from 'vue'
+import { HUB_UI_LOCALES } from '../../../locales'
+import { localePreference, t } from '../../i18n'
 import { useBranding } from '../../state/branding'
 import { colorSchemePreference, setColorSchemePreference } from '../../state/color-mode'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
@@ -19,22 +21,26 @@ const isDockPopupOpen = useIsDockPopupOpen()
 
 const dockModeOptions = computed(() => {
   const options = [
-    { value: 'float', label: 'Float', icon: 'i-ph-cards-three-duotone' },
-    { value: 'edge', label: 'Edge', icon: 'i-ph-square-half-bottom-duotone' },
+    { value: 'float', label: t('appearance.dockFloat'), icon: 'i-ph-cards-three-duotone' },
+    { value: 'edge', label: t('appearance.dockEdge'), icon: 'i-ph-square-half-bottom-duotone' },
   ]
   if (isDockPopupSupported()) {
-    options.push({ value: 'popup', label: 'Popup', icon: 'i-ph-arrow-square-out-duotone' })
+    options.push({ value: 'popup', label: t('appearance.dockPopup'), icon: 'i-ph-arrow-square-out-duotone' })
   }
   return options
 })
 
 const currentDockMode = computed(() => panelStore.mode)
 
-const colorModeOptions = [
-  { value: 'auto', label: 'Auto', icon: 'i-ph-laptop-duotone' },
-  { value: 'light', label: 'Light', icon: 'i-ph-sun-duotone' },
-  { value: 'dark', label: 'Dark', icon: 'i-ph-moon-duotone' },
-] as const
+const colorModeOptions = computed(() => [
+  { value: 'auto', label: t('appearance.colorAuto'), icon: 'i-ph-laptop-duotone' },
+  { value: 'light', label: t('appearance.colorLight'), icon: 'i-ph-sun-duotone' },
+  { value: 'dark', label: t('appearance.colorDark'), icon: 'i-ph-moon-duotone' },
+] as const)
+
+// Language names stay in their own language so a visitor stranded in the
+// wrong locale can still find theirs.
+const localeOptions = Object.entries(HUB_UI_LOCALES)
 
 function setDockMode(mode: string) {
   if (mode === 'popup') {
@@ -48,11 +54,28 @@ function setDockMode(mode: string) {
 
 <template>
   <div class="flex flex-col gap-4">
+    <!-- Language -->
+    <label class="flex flex-col gap-2">
+      <div class="flex flex-col">
+        <span class="text-sm">{{ t('appearance.language') }}</span>
+        <span class="text-xs op50">{{ t('appearance.languageHint', { productName: branding.productName }) }}</span>
+      </div>
+      <select
+        v-model="localePreference"
+        class="w-fit min-w-40 px3 py1.5 text-sm rounded-lg bg-base color-base border border-base outline-none transition-all focus-visible:ring-3 focus-visible:ring-primary-500/30"
+      >
+        <option value="auto">{{ t('appearance.languageAuto') }}</option>
+        <option v-for="[code, name] of localeOptions" :key="code" :value="code" :lang="code">
+          {{ name }}
+        </option>
+      </select>
+    </label>
+
     <!-- Color mode -->
     <div class="flex flex-col gap-2">
       <div class="flex flex-col">
-        <span class="text-sm">Color mode</span>
-        <span class="text-xs op50">Theme for {{ branding.productName }} and its inner panels</span>
+        <span class="text-sm">{{ t('appearance.colorMode') }}</span>
+        <span class="text-xs op50">{{ t('appearance.colorModeHint', { productName: branding.productName }) }}</span>
       </div>
       <div class="flex items-center gap-1 bg-gray/10 rounded-lg p1 w-fit">
         <button
@@ -73,8 +96,8 @@ function setDockMode(mode: string) {
     <!-- Dock mode -->
     <div v-if="isEmbedded && !isDockPopupOpen" class="flex flex-col gap-2">
       <div class="flex flex-col">
-        <span class="text-sm">Dock mode</span>
-        <span class="text-xs op50">How the {{ branding.productName }} panel is displayed</span>
+        <span class="text-sm">{{ t('appearance.dockMode') }}</span>
+        <span class="text-xs op50">{{ t('appearance.dockModeHint', { productName: branding.productName }) }}</span>
       </div>
       <div class="flex items-center gap-1 bg-gray/10 rounded-lg p1 w-fit">
         <button
@@ -105,8 +128,8 @@ function setDockMode(mode: string) {
         />
       </button>
       <div class="flex flex-col">
-        <span class="text-sm">Always show iframe address bars</span>
-        <span class="text-xs op50">Show the address bar for every iframe dock.</span>
+        <span class="text-sm">{{ t('appearance.addressBar') }}</span>
+        <span class="text-xs op50">{{ t('appearance.addressBarHint') }}</span>
       </div>
     </label>
 
@@ -123,8 +146,8 @@ function setDockMode(mode: string) {
         />
       </button>
       <div class="flex flex-col">
-        <span class="text-sm">Close panel on outside click</span>
-        <span class="text-xs op50">Close the {{ branding.productName }} panel when clicking outside of it (embedded mode only)</span>
+        <span class="text-sm">{{ t('appearance.closeOutside') }}</span>
+        <span class="text-xs op50">{{ t('appearance.closeOutsideHint', { productName: branding.productName }) }}</span>
       </div>
     </label>
 
@@ -141,8 +164,8 @@ function setDockMode(mode: string) {
         />
       </button>
       <div class="flex flex-col">
-        <span class="text-sm">Auto-collapse edge toolbar</span>
-        <span class="text-xs op50">Shrink the edge-docked toolbar to a small handle when idle and closed (edge mode only)</span>
+        <span class="text-sm">{{ t('appearance.autoCollapse') }}</span>
+        <span class="text-xs op50">{{ t('appearance.autoCollapseHint') }}</span>
       </div>
     </label>
   </div>

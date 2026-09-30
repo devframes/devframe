@@ -28,6 +28,7 @@ Two shadow-root gotchas the ahead-of-time CSS builder MUST compensate for (both 
 - **A surface keeping its own component CSS** (inspect, a11y) sources every color from `@antfu/design`'s semantic shortcuts via `--at-apply` (expanded by `transformerDirectives`) rather than hardcoding a palette, so it tracks the shared theme and the `.dark` class.
 - **Plain `.ts`/vanilla views** MUST opt `.ts` into UnoCSS extraction (`content.pipeline.include` for Vite, or `content.filesystem` globs for the `@unocss/postcss` setup Next uses), since UnoCSS only scans framework files by default.
 - Before making new components or inline DOM elements, always check whether an `@antfu/design` component can be reused.
+- **hub-ui text goes through `t()`.** Every user-facing string in `packages/hub-ui/src/client` (templates, tooltips, `aria-label`s, command titles, confirm copy) MUST be a key in `client/i18n/locales/en.json` rendered with `t()` / `tAround()` from `client/i18n`, never a literal. A new key lands in every locale file in the same change; the i18n test enforces the lockstep. Brand names and `DF` diagnostics stay untranslated.
 
 ## Storybook
 

@@ -3,6 +3,7 @@ import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { IframePanes } from 'iframe-pane'
 import type { CSSProperties } from 'vue'
+import { t } from '../../i18n'
 import ViewBuiltinClientAuthNotice from '../views-builtin/ViewBuiltinClientAuthNotice.vue'
 import ViewBuiltinSettings from '../views-builtin/ViewBuiltinSettings.vue'
 import ViewCustomRenderer from './ViewCustomRenderer.vue'
@@ -73,7 +74,7 @@ defineProps<{
 
     <template #fallback>
       <div>
-        Loading...
+        {{ t('common.loading') }}
       </div>
     </template>
   </Suspense>

@@ -3,6 +3,7 @@ import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes
 import type { DocksContext } from '@devframes/hub/client'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
+import { t } from '../../i18n'
 import { filterCommandsByWhen, findCommandDeep, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS, walkCommands } from '../../state/keybindings'
 import { useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
@@ -167,19 +168,18 @@ const editorWarnings = computed<string[]>(() => {
   // Too simple: single key without modifiers
   const hasModifier = editorMod.value || editorCtrl.value || editorAlt.value
   if (!hasModifier && editorKey.value) {
-    warnings.push('Single key without modifiers may interfere with typing')
+    warnings.push(t('shortcuts.warnSingleKey'))
   }
 
   // Only Shift + letter is also too simple
   if (!hasModifier && editorShift.value && editorKey.value.length === 1) {
-    warnings.push('Shift + letter may interfere with typing')
+    warnings.push(t('shortcuts.warnShiftLetter'))
   }
 
   // Browser / OS conflict: show the description
   const browserDescription = KNOWN_BROWSER_SHORTCUTS[key]
   if (browserDescription) {
-    const formatted = formatKeybinding(key).join('+')
-    warnings.push(`Conflicts with browser shortcut: ${browserDescription} (${formatted})`)
+    warnings.push(t('shortcuts.warnBrowser', { description: browserDescription, keys: formatKeybinding(key).join('+') }))
   }
 
   // Conflict with other commands
@@ -189,7 +189,7 @@ const editorWarnings = computed<string[]>(() => {
         continue
       const bindings = getEffectiveKeybindings(row.command.id)
       if (bindings.some(b => b.key === key)) {
-        warnings.push(`Conflicts with "${row.command.title}"`)
+        warnings.push(t('shortcuts.warnCommand', { title: row.command.title }))
         break
       }
     }
@@ -263,7 +263,7 @@ watch(editorOpen, async (v) => {
 
 <template>
   <p class="text-sm op50 mb-4">
-    Customize keyboard shortcuts for commands.
+    {{ t('shortcuts.intro') }}
   </p>
 
   <!-- Search -->
@@ -271,7 +271,7 @@ watch(editorOpen, async (v) => {
     <input
       v-model="shortcutSearch"
       class="w-full bg-gray/10 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/30"
-      placeholder="Search commands..."
+      :placeholder="t('shortcuts.search')"
     >
   </div>
 
@@ -296,7 +296,7 @@ watch(editorOpen, async (v) => {
           <span
             v-if="row.command.source === 'server'"
             class="text-[10px] px-1.5 py-0.5 rounded bg-blue/10 text-blue shrink-0"
-          >server</span>
+          >{{ t('palette.server') }}</span>
         </div>
         <div v-if="row.command.description" class="text-xs op40 truncate mt-0.5">
           {{ row.command.description }}
@@ -310,7 +310,7 @@ watch(editorOpen, async (v) => {
             v-for="(kb, ki) of getEffectiveKeybindings(row.command.id)"
             :key="ki"
             class="flex items-center gap-0.5 hover:bg-gray/10 rounded px-1 py-0.5 transition-colors"
-            title="Click to edit"
+            :title="t('shortcuts.edit')"
             @click="openEditor(row.command.id)"
           >
             <DisplayKbd :keys="kb.key" />
@@ -321,14 +321,14 @@ watch(editorOpen, async (v) => {
           class="text-xs op30 hover:op60 px-2 py-1 rounded hover:bg-gray/10 transition-colors"
           @click="openEditor(row.command.id)"
         >
-          Add shortcut
+          {{ t('shortcuts.add') }}
         </button>
 
         <!-- Clear shortcut -->
         <button
           v-if="getEffectiveKeybindings(row.command.id).length > 0"
           class="w-5 h-5 flex items-center justify-center rounded hover:bg-gray/20 transition-colors op30 hover:op70"
-          title="Clear shortcut"
+          :title="t('shortcuts.clear')"
           @click="clearShortcut(row.command.id)"
         >
           <div class="i-ph-x text-xs" />
@@ -338,7 +338,7 @@ watch(editorOpen, async (v) => {
         <button
           v-if="isOverridden(row.command.id)"
           class="w-5 h-5 flex items-center justify-center rounded hover:bg-gray/20 transition-colors op30 hover:op70"
-          title="Reset to default"
+          :title="t('shortcuts.resetDefault')"
           @click="resetShortcut(row.command.id)"
         >
           <div class="i-ph-arrow-counter-clockwise text-xs" />
@@ -350,7 +350,7 @@ watch(editorOpen, async (v) => {
       v-if="filteredShortcutRows.length === 0"
       class="py-6 text-center text-sm op40"
     >
-      No commands found
+      {{ t('shortcuts.empty') }}
     </div>
   </div>
 
@@ -363,16 +363,16 @@ watch(editorOpen, async (v) => {
     <div class="absolute inset-0 bg-black/30" @click="closeEditor" />
     <div class="relative bg-base border border-base rounded-lg shadow-xl w-96 p-5">
       <h3 class="text-sm font-medium mb-4">
-        Edit Shortcut
+        {{ t('shortcuts.editTitle') }}
       </h3>
 
       <!-- Key capture input -->
       <div class="mb-4">
-        <label class="text-xs op50 mb-1.5 block">Press a key combination or toggle modifiers below</label>
+        <label class="text-xs op50 mb-1.5 block">{{ t('shortcuts.editHint') }}</label>
         <input
           class="shortcut-key-input w-full bg-gray/10 border border-base rounded-lg px-3 py-2.5 text-center text-sm font-mono outline-none focus:border-primary/40"
           :value="editorComposedKey ? formatKeybinding(editorComposedKey).join(' + ') : ''"
-          placeholder="Press keys..."
+          :placeholder="t('shortcuts.pressKeys')"
           readonly
           @keydown="onEditorKeyDown"
         >
@@ -429,7 +429,7 @@ watch(editorOpen, async (v) => {
           class="px-3 py-1.5 rounded text-xs op60 hover:op100 hover:bg-gray/10 transition-colors"
           @click="closeEditor"
         >
-          Cancel
+          {{ t('common.cancel') }}
         </button>
         <button
           class="px-3 py-1.5 rounded text-xs transition-colors"
@@ -439,7 +439,7 @@ watch(editorOpen, async (v) => {
           :disabled="!editorCanSave"
           @click="saveEditor"
         >
-          OK
+          {{ t('common.ok') }}
         </button>
       </div>
     </div>

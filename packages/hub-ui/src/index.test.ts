@@ -76,6 +76,15 @@ describe('createUi branding background', () => {
     expect(context.staticConfig.ui).toEqual({ branding: { background } })
   })
 
+  it('publishes the default locale', () => {
+    expect.assertions(1)
+
+    const context = createContext()
+    createUi({ locale: 'zh-CN' }).setup?.(context)
+
+    expect(context.staticConfig.ui).toEqual({ branding: {}, locale: 'zh-CN' })
+  })
+
   it('disables the standalone viewer', () => {
     expect.assertions(1)
 

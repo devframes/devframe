@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
 import { computed, nextTick, ref } from 'vue'
+import { t } from '../../i18n'
 
 const props = withDefaults(defineProps<{
   /** The current code (controlled). */
@@ -19,7 +20,6 @@ const props = withDefaults(defineProps<{
   disabled: false,
   invalid: false,
   autofocus: true,
-  label: 'One-time authorization code',
 })
 
 const emit = defineEmits<{
@@ -160,7 +160,7 @@ defineExpose({
 <template>
   <div
     role="group"
-    :aria-label="label"
+    :aria-label="label ?? t('auth.otpGroupLabel')"
     class="flex items-center justify-center gap-2 sm:gap-2.5"
     :class="invalid ? 'devframes-shake' : ''"
   >
@@ -177,7 +177,7 @@ defineExpose({
       data-bwignore="true"
       data-form-type="other"
       :autofocus="autofocus && i === 0"
-      :aria-label="`Digit ${i + 1} of ${length}`"
+      :aria-label="t('auth.otpDigit', { index: i + 1, length })"
       :aria-invalid="invalid || undefined"
       :disabled="disabled"
       maxlength="1"

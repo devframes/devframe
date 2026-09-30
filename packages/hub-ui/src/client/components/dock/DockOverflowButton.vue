@@ -5,6 +5,7 @@ import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
 import type { FloatingPopoverProps } from '../../state/floating-tooltip'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
+import { t } from '../../i18n'
 import { setDocksOverflowPanel, useDocksOverflowPanel } from '../../state/floating-tooltip'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockEntry from './DockEntry.vue'
@@ -100,7 +101,7 @@ onBeforeUnmount(() => {
       :context="context"
       :dock="{
         id: 'overflow',
-        title: 'Overflow',
+        title: t('dock.overflow'),
         icon: 'ph:dots-three-circle-duotone',
       }"
       class="overflow-button"

@@ -26,6 +26,7 @@ export function resolveSseUrl(_, _, _) {}
 export function resolveWebMcpModelContext() {}
 export function resolveWsUrl(_, _, _) {}
 export async function setupDevframeConnection(_) {}
+export function storeConnection(_) {}
 // #endregion
 
 // #region Variables

@@ -8,6 +8,7 @@ export interface CreateUiOptions {
   branding?: DevframeBranding;
   embeddedVisibility?: EmbeddedVisibility;
   dockPreferences?: DevframeDockPreferences;
+  locale?: HubUiLocale;
 }
 export interface DevframeBranding {
   productName?: string;
@@ -33,6 +34,7 @@ export type ColorSchemeValue = string | {
   dark: string;
 };
 export type EmbeddedVisibility = 'normal' | 'passive' | 'hidden';
+export type HubUiLocale = keyof typeof HUB_UI_LOCALES;
 export type ViewerBackground = ColorSchemeValue | {
   standalone: ColorSchemeValue;
   iframe?: ColorSchemeValue;
@@ -41,6 +43,21 @@ export type ViewerBackground = ColorSchemeValue | {
 
 // #region Functions
 export declare function createUi(_?: CreateUiOptions): DevframeHubUi;
+// #endregion
+
+// #region Variables
+export declare const HUB_UI_LOCALES: {
+  readonly en: "English";
+  readonly 'zh-CN': "简体中文";
+  readonly 'zh-TW': "繁體中文";
+  readonly ja: "日本語";
+  readonly ko: "한국어";
+  readonly es: "Español";
+  readonly fr: "Français";
+  readonly de: "Deutsch";
+  readonly 'pt-BR': "Português (Brasil)";
+  readonly ru: "Русский";
+};
 // #endregion
 
 // #region Referenced (internal)

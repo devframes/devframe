@@ -5,6 +5,7 @@ import { watchEffect } from 'vue'
 import { applyDocumentHead, applyPrimaryColor, setBranding, useBrandingBackground } from '../state/branding'
 import { isDark } from '../state/color-mode'
 import { DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
+import { setupLocale } from '../state/locale'
 import { applyViewerBackground } from './viewer-background'
 
 // The standalone viewer: a vanilla shell served at the hub base itself
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
     baseURL: ['./', new URL('./', moduleUrl).href],
     simpleAuth: false,
   })
+  setupLocale(rpc)
 
   // Resolve branding before mount; the standalone page owns its own head, so
   // apply title/favicon/description here too. Read from

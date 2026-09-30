@@ -10,6 +10,7 @@ import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
 import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
+import { t } from '../i18n'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild, resolveGroupPreferredChild } from './dock-settings'
@@ -78,7 +79,7 @@ export async function createDocksContext(
     // ours only when the merged list has none.
     if (base.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
       return base
-    return [...base, BUILTIN_ENTRY_SETTINGS]
+    return [...base, { ...BUILTIN_ENTRY_SETTINGS, title: t('dock.settings') }]
   })
 
   // Per-tab session UI state (open/selectedId/route). A caller (the embedded and
@@ -460,95 +461,100 @@ export async function createDocksContext(
   const commandsContextResult = await createCommandsContext(clientType, rpc, settingsStore, getWhenContext)
   commandsContext = commandsContextResult
 
-  // Register built-in client commands
-  commandsContext.register([
-    {
-      id: 'devframes:toggle-palette',
-      source: 'client',
-      title: 'Toggle Command Palette',
-      icon: 'ph:magnifying-glass-duotone',
-      showInPalette: false,
-      keybindings: [{ key: 'Mod+K' }],
-      action: () => {
-        commandsContext.paletteOpen = !commandsContext.paletteOpen
+  // Register built-in client commands, re-registered whenever the locale
+  // changes so their titles follow it (titles are plain strings).
+  let cleanupBuiltinCommands: (() => void) | undefined
+  watchEffect(() => {
+    cleanupBuiltinCommands?.()
+    cleanupBuiltinCommands = commandsContext.register([
+      {
+        id: 'devframes:toggle-palette',
+        source: 'client',
+        title: t('command.togglePalette'),
+        icon: 'ph:magnifying-glass-duotone',
+        showInPalette: false,
+        keybindings: [{ key: 'Mod+K' }],
+        action: () => {
+          commandsContext.paletteOpen = !commandsContext.paletteOpen
+        },
       },
-    },
-    {
-      id: 'devframes:close-panel',
-      source: 'client',
-      title: 'Close Panel',
-      icon: 'ph:x-circle-duotone',
-      when: 'dockOpen && !paletteOpen',
-      keybindings: [{ key: 'Escape' }],
-      action: () => {
-        sessionStore.value.open = false
-        selectedDockId.value = null
+      {
+        id: 'devframes:close-panel',
+        source: 'client',
+        title: t('command.closePanel'),
+        icon: 'ph:x-circle-duotone',
+        when: 'dockOpen && !paletteOpen',
+        keybindings: [{ key: 'Escape' }],
+        action: () => {
+          sessionStore.value.open = false
+          selectedDockId.value = null
+        },
       },
-    },
-    {
-      id: 'devframes:open-settings',
-      source: 'client',
-      title: 'Open Settings',
-      icon: 'ph:gear-duotone',
-      action: () => {
-        switchEntry('~settings')
+      {
+        id: 'devframes:open-settings',
+        source: 'client',
+        title: t('command.openSettings'),
+        icon: 'ph:gear-duotone',
+        action: () => {
+          switchEntry('~settings')
+        },
       },
-    },
-    {
-      id: 'devframes:hide',
-      source: 'client',
-      title: `Hide ${useBranding().value.productName}`,
-      icon: 'ph:eye-slash-duotone',
-      /**
-       * Only the embedded overlay can be dismissed; the standalone page is an
-       * explicit visit and stays mounted.
-       */
-      when: 'clientType == embedded',
-      action: () => {
+      {
+        id: 'devframes:hide',
+        source: 'client',
+        title: t('command.hide', { productName: useBranding().value.productName }),
+        icon: 'ph:eye-slash-duotone',
+        /**
+         * Only the embedded overlay can be dismissed; the standalone page is an
+         * explicit visit and stays mounted.
+         */
+        when: 'clientType == embedded',
+        action: () => {
         // Conceal the embedded dock; the Shift+Alt+D reveal shortcut (or a
         // reload) brings it back. In passive mode this is remembered.
-        window.dispatchEvent(new CustomEvent(HUB_UI_HIDE_EVENT))
+          window.dispatchEvent(new CustomEvent(HUB_UI_HIDE_EVENT))
+        },
       },
-    },
-    {
-      id: 'devframes:dock-mode',
-      source: 'client',
-      title: 'Dock Mode',
-      icon: 'ph:layout-duotone',
-      /**
-       * While the popup is open the embedded shell is unmounted and the popup
-       * renders the standalone layout, so neither mode is observable, mirroring
-       * the Appearance settings hiding its own dock-mode control.
-       */
-      when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
-      children: [
-        {
-          id: 'devframes:dock-mode:float',
-          source: 'client',
-          title: 'Float Mode',
-          icon: 'ph:cards-three-duotone',
-          /**
-           * Repeated per child: shortcut dispatch reads the matched command's
-           * own `when` and does not inherit the parent's.
-           */
-          when: '!popupOpen',
-          action: () => {
-            panelStore.value.mode = 'float'
+      {
+        id: 'devframes:dock-mode',
+        source: 'client',
+        title: t('command.dockMode'),
+        icon: 'ph:layout-duotone',
+        /**
+         * While the popup is open the embedded shell is unmounted and the popup
+         * renders the standalone layout, so neither mode is observable, mirroring
+         * the Appearance settings hiding its own dock-mode control.
+         */
+        when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
+        children: [
+          {
+            id: 'devframes:dock-mode:float',
+            source: 'client',
+            title: t('command.floatMode'),
+            icon: 'ph:cards-three-duotone',
+            /**
+             * Repeated per child: shortcut dispatch reads the matched command's
+             * own `when` and does not inherit the parent's.
+             */
+            when: '!popupOpen',
+            action: () => {
+              panelStore.value.mode = 'float'
+            },
           },
-        },
-        {
-          id: 'devframes:dock-mode:edge',
-          source: 'client',
-          title: 'Edge Mode',
-          icon: 'ph:square-half-bottom-duotone',
-          when: '!popupOpen',
-          action: () => {
-            panelStore.value.mode = 'edge'
+          {
+            id: 'devframes:dock-mode:edge',
+            source: 'client',
+            title: t('command.edgeMode'),
+            icon: 'ph:square-half-bottom-duotone',
+            when: '!popupOpen',
+            action: () => {
+              panelStore.value.mode = 'edge'
+            },
           },
-        },
-      ],
-    },
-  ])
+        ],
+      },
+    ])
+  })
 
   // Dynamic dock navigation commands, grouped under the "Docks" parent
   let cleanupDocksCommand: (() => void) | undefined
@@ -628,7 +634,7 @@ export async function createDocksContext(
       cleanupDocksCommand = commandsContext.register({
         id: 'devframes:docks',
         source: 'client',
-        title: 'Docks',
+        title: t('command.docks'),
         icon: 'ph:layout-duotone',
         children: dockChildren,
       })

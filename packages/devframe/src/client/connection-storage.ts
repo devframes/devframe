@@ -44,6 +44,11 @@ export function readStoredAuthToken(userAuthToken?: string): string | undefined 
   return readFromWindows<string>(CONNECTION_AUTH_TOKEN_KEY)
 }
 
+/**
+ * Publish the connection on this window for same-origin frames to inherit.
+ * Call again after mutating `connection.connectionMeta` so the legacy meta
+ * copy below follows.
+ */
 export function storeConnection(connection: DevframeConnection): void {
   ;(globalThis as any)[DEVFRAME_CONNECTION_KEY] = connection
   // Keep the established metadata/auth globals in sync for viewers that still

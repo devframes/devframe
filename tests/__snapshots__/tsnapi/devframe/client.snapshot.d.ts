@@ -216,6 +216,7 @@ export declare function resolveSseUrl(_: ConnectionMeta['sse'], _: string, _: Ws
 export declare function resolveWebMcpModelContext(): WebMcpModelContext | undefined;
 export declare function resolveWsUrl(_: ConnectionMeta['websocket'], _: string, _: WsUrlLocation): string;
 export declare function setupDevframeConnection(_?: SetupDevframeConnectionOptions): Promise<DevframeConnection>;
+export declare function storeConnection(_: DevframeConnection): void;
 // #endregion
 
 // #region Variables

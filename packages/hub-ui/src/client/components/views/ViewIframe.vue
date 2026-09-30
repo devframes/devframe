@@ -7,6 +7,7 @@ import type { CSSProperties } from 'vue'
 import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub/client'
 import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { t } from '../../i18n'
 import { useSettings } from '../../state/settings-defaults'
 import ViewAssetsError from './ViewAssetsError.vue'
 import ViewIframeLoading from './ViewIframeLoading.vue'
@@ -338,7 +339,7 @@ onUnmounted(() => {
       <button
         v-if="showBack"
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
-        title="Back"
+        :title="t('common.back')"
         @click="goBack"
       >
         <div class="i-ph-caret-left op60 w-4.5 h-4.5" />
@@ -348,16 +349,16 @@ onUnmounted(() => {
       <div
         v-if="isCrossOrigin"
         class="flex items-center gap-1 px2 py1 rounded text-xs bg-amber/10 text-amber border border-amber/20 shrink-0"
-        title="Cross-origin iframe"
+        :title="t('iframe.crossOriginHint')"
       >
         <div class="i-ph-globe text-sm" />
-        <span>Cross-Origin</span>
+        <span>{{ t('iframe.crossOrigin') }}</span>
       </div>
 
       <button
         v-if="showReload"
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
-        title="Reload"
+        :title="t('common.reload')"
         @click="refresh"
       >
         <div class="i-ph-arrow-clockwise op60 w-4.5 h-4.5" />
@@ -370,7 +371,7 @@ onUnmounted(() => {
           :value="isEditing ? editingUrl : displayUrl"
           type="text"
           class="flex-1 bg-transparent outline-none text-sm font-mono"
-          placeholder="Enter URL..."
+          :placeholder="t('iframe.enterUrl')"
           :readonly="isCrossOrigin"
           @input="editingUrl = ($event.target as HTMLInputElement).value"
           @focus="handleUrlFocus"
@@ -387,7 +388,7 @@ onUnmounted(() => {
       <button
         v-if="showOpenExternal"
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/15 transition-colors shrink-0"
-        title="Open externally"
+        :title="t('iframe.openExternally')"
         @click="openExternally"
       >
         <div class="i-ph-arrow-square-out-duotone op60 w-4.5 h-4.5" />

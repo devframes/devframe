@@ -6,6 +6,7 @@ import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
 import { HUB_EVENTS } from '@devframes/hub/constants'
 import { computed, ref, watch } from 'vue'
 import { TERMINALS_DOCK_ID } from '../../constants'
+import { t } from '../../i18n'
 import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
@@ -72,13 +73,13 @@ const error = computed(() => props.entry.launcher.error)
 
 const buttonText = computed(() => {
   if (status.value === 'idle')
-    return props.entry.launcher.buttonStart || 'Launch'
+    return props.entry.launcher.buttonStart || t('launcher.launch')
   else if (status.value === 'loading')
-    return props.entry.launcher.buttonLoading || 'Loading...'
+    return props.entry.launcher.buttonLoading || t('common.loading')
   else if (status.value === 'error')
-    return 'Retry'
+    return t('common.retry')
   else if (status.value === 'success')
-    return 'Success'
+    return t('launcher.success')
   else
     return `UNKNOWN STATUS: ${status.value}`
 })
@@ -96,7 +97,7 @@ const canLaunch = computed(() => status.value === 'idle' || status.value === 'er
     <p>{{ entry.launcher.description }}</p>
 
     <label v-if="roots?.length" class="flex flex-col gap-1 max-w-full w-64 items-start">
-      <span class="text-xs op60">Launch root</span>
+      <span class="text-xs op60">{{ t('launcher.root') }}</span>
       <select
         v-model="selectedRoot"
         :disabled="status === 'loading'"
@@ -140,7 +141,7 @@ const canLaunch = computed(() => status.value === 'idle' || status.value === 'er
         icon="i-ph-arrow-square-out-duotone"
         @click="viewInTerminal"
       >
-        View in Terminal
+        {{ t('launcher.viewTerminal') }}
       </ActionButton>
     </div>
   </div>

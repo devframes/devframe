@@ -1,6 +1,7 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { h } from 'vue'
+import { t } from '../../i18n'
 import { setDockContextMenu } from '../../state/floating-tooltip'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
 
@@ -68,19 +69,19 @@ export function openDockContextMenu(options: {
   const isEdgeMode = context.panel.store.mode === 'edge'
   const items: DockMenuItem[] = [
     {
-      label: 'Hide',
+      label: t('common.hide'),
       icon: 'i-ph-eye-slash-duotone',
       action: () => hideDock(context, entry),
       visible: canHide(context, entry),
     },
     {
-      label: 'Refresh',
+      label: t('common.refresh'),
       icon: 'i-ph-arrow-clockwise-duotone',
       action: () => refreshDock(context, entry),
       visible: canRefresh(entry),
     },
     {
-      label: isEdgeMode ? 'Float Mode' : 'Edge Mode',
+      label: isEdgeMode ? t('command.floatMode') : t('command.edgeMode'),
       icon: isEdgeMode ? 'i-ph-arrows-out-duotone' : 'i-ph-square-half-bottom-duotone',
       action: () => {
         if (isEdgeMode) {
@@ -114,7 +115,7 @@ export function openDockContextMenu(options: {
       visible: context.clientType === 'embedded',
     },
     {
-      label: 'Popup',
+      label: t('dock.popup'),
       icon: 'i-ph-arrow-square-out-duotone',
       action: () => {
         setDockContextMenu(null)

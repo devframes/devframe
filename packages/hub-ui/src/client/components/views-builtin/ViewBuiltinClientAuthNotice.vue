@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
-import { onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { t, tAround } from '../../i18n'
 import { useBranding } from '../../state/branding'
 import OtpInput from '../display/OtpInput.vue'
 import BrandMark from '../icons/BrandMark.vue'
@@ -11,6 +12,7 @@ const props = defineProps<{
 }>()
 
 const branding = useBranding()
+const findCode = computed(() => tAround('auth.findCode', 'code'))
 
 const CODE_LENGTH = 6
 
@@ -34,11 +36,11 @@ async function reissue() {
   hint.value = ''
   try {
     await props.context.rpc.requestAuthCode({ reissue: true })
-    hint.value = 'A new code was printed in your terminal.'
+    hint.value = t('auth.newCode')
     otp.value?.focus()
   }
   catch {
-    error.value = 'Could not request a new code. Please try again.'
+    error.value = t('auth.reissueFailed')
   }
 }
 
@@ -67,7 +69,7 @@ async function submit() {
   try {
     const ok = await props.context.rpc.requestTrustWithCode(value)
     if (!ok) {
-      error.value = 'That code didn\u2019t match. Check your terminal and try again.'
+      error.value = t('auth.mismatch')
       skipErrorClear = true
       code.value = ''
       otp.value?.focus()
@@ -75,7 +77,7 @@ async function submit() {
     // On success the dock reacts to the trust event and swaps this view out.
   }
   catch {
-    error.value = 'Something went wrong while authorizing. Please try again.'
+    error.value = t('auth.failed')
   }
   finally {
     verifying.value = false
@@ -93,20 +95,17 @@ async function submit() {
       </div>
 
       <h1 class="text-2xl font-bold tracking-tight">
-        Authorize {{ branding.productName }}
+        {{ t('auth.title', { productName: branding.productName }) }}
       </h1>
       <p class="mt2 text-sm op-fade leading-relaxed max-w-92">
-        {{ branding.productName }} can access your server, read your filesystem, and run commands.
-        Confirm it's you before continuing.
+        {{ t('auth.intro', { productName: branding.productName }) }}
       </p>
 
       <!-- Card -->
       <div class="mt6 w-full rounded-lg border border-base bg-base/60 shadow-sm p6 flex flex-col items-center gap-4">
         <div class="flex flex-col items-center gap-1">
           <p class="text-sm op-fade">
-            Find the
-            <span class="font-mono text-primary-600 dark:text-primary-300">6-digit code</span>
-            printed in your terminal.
+            {{ findCode[0] }}<span class="font-mono text-primary-600 dark:text-primary-300">{{ t('auth.sixDigitCode') }}</span>{{ findCode[1] }}
           </p>
         </div>
 
@@ -117,7 +116,7 @@ async function submit() {
             :length="CODE_LENGTH"
             :invalid="!!error"
             :disabled="verifying"
-            label="Enter your one-time authorization code"
+            :label="t('auth.otpLabel')"
             @complete="submit"
           />
 
@@ -129,7 +128,7 @@ async function submit() {
             :loading="verifying"
             :disabled="code.length < CODE_LENGTH"
           >
-            {{ verifying ? 'Authorizing' : 'Authorize' }}
+            {{ verifying ? t('auth.authorizing') : t('auth.authorize') }}
           </ActionButton>
 
           <p
@@ -143,7 +142,7 @@ async function submit() {
               {{ error }}
             </template>
             <template v-else-if="verifying">
-              Authorizing...
+              {{ t('auth.authorizing') }}
             </template>
             <template v-else>
               {{ hint }}
@@ -158,12 +157,12 @@ async function submit() {
           :disabled="verifying"
           @click="reissue"
         >
-          Re-issue one-time password
+          {{ t('auth.reissue') }}
         </ActionButton>
       </div>
 
       <p class="mt4 text-xs op-mute max-w-92 leading-relaxed">
-        You can also use the magic link to authorize automatically.
+        {{ t('auth.magicLink') }}
       </p>
     </div>
   </div>

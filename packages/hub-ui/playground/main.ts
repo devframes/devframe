@@ -4,6 +4,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { watchEffect } from 'vue'
 import { isDark } from '../src/client/state/color-mode'
 import { DEFAULT_DOCK_PANEL_STORE } from '../src/client/state/docks'
+import { setupLocale } from '../src/client/state/locale'
 
 /**
  * The base `hub-plugin.ts` mounts the playground's hub instance at. Kept as
@@ -34,6 +35,7 @@ watchEffect(() => {
 
 async function main(): Promise<void> {
   const rpc = await getDevframeRpcClient({ baseURL: HUB_BASE, simpleAuth: false })
+  setupLocale(rpc)
   const { createDocksContext } = await import('../src/client/state/context')
 
   if (mode === 'embedded') {
