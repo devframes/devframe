@@ -2,8 +2,8 @@ import type { DevframeHubUi, DockRendererRegistration, HubDevframeEntry, HubInst
 import type { DevframeHubContext } from '@devframes/hub/node'
 import type { ClientScriptEntry } from '@devframes/hub/types'
 import type { DevframeDefinition } from 'devframe'
+import type { Server as NodeHttpServer } from 'node:http'
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
-import { Server as NodeHttpServer } from 'node:http'
 import process from 'node:process'
 import { DEVFRAMES_HUB_BASE, normalizeHubBase } from '@devframes/hub/constants'
 import { initHub } from '@devframes/hub/initiate'
@@ -180,7 +180,10 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // the hub client runtime imports it into the host page.
       const devframes = attachClientScripts(options.devframes, options.clientScripts)
 
-      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
+      // Vite's https dev server is an `Http2SecureServer` (or an
+      // `https.Server` with `server.proxy`). Both emit `upgrade` for HTTP/1.1
+      // requests, as Vite's own HMR socket relies on, so share it too.
+      const httpServer = (server.httpServer ?? undefined) as NodeHttpServer | undefined
 
       const hub = initHub({
         base,
@@ -198,8 +201,8 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         auth: options.auth,
         /**
          * Share Vite's own HTTP server for the WS upgrade at `<base>__ws`, with no
-         * side-car port to discover. A pinned `port` uses a side-car instead;
-         * an https/http2 dev server (non-`node:http`) asks for an auto-port
+         * side-car port to discover. A pinned `port` uses a side-car instead,
+         * and a middleware-mode Vite (no `httpServer`) asks for an auto-port
          * side-car. Clients discover either via `__connection.json`.
          */
         server: httpServer,
@@ -267,8 +270,8 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
 
 /**
  * Share Vite's own HTTP server for the WS upgrade unless a `port` pins a
- * side-car, or the dev server isn't a plain `node:http` server (https/http2),
- * which needs an auto-port side-car.
+ * side-car, or there is no server to share (middleware mode), which needs an
+ * auto-port side-car.
  */
 function resolveWsBinding(port: number | undefined, httpServer: NodeHttpServer | undefined): { ws?: { port: number } | { sidecar: true } } {
   if (port != null)
