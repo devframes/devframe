@@ -1,9 +1,12 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { HUB_UI_LOCALES, matchLocale } from '../../locales'
-import { locale, messages, setHostLocale, setLocalePreference, t, tAround } from './index'
+import { loadLocale, locale, setHostLocale, setLocalePreference, t, tAround } from './index'
+import en from './locales/en.json'
 
-const en = messages.en
+const files = import.meta.glob<Record<string, string>>('./locales/*.json', { import: 'default' })
 const keys = Object.keys(en)
+
+beforeAll(() => Promise.all(Object.keys(HUB_UI_LOCALES).map(code => loadLocale(code as keyof typeof HUB_UI_LOCALES))))
 const slots = (message: string) => [...message.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort()
 
 afterEach(() => {
@@ -12,8 +15,8 @@ afterEach(() => {
 })
 
 describe('locale files', () => {
-  it.each(Object.keys(HUB_UI_LOCALES))('%s translates every key and keeps the slots', (code) => {
-    const file = messages[code as keyof typeof messages]
+  it.each(Object.keys(HUB_UI_LOCALES))('%s translates every key and keeps the slots', async (code) => {
+    const file = await files[`./locales/${code}.json`]!()
     expect(Object.keys(file).sort()).toEqual([...keys].sort())
     for (const key of keys) {
       const source = en[key as keyof typeof en]!

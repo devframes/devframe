@@ -1,32 +1,50 @@
 import type { HubUiLocale } from '../../locales'
 import { usePreferredLanguages, useStorage } from '@vueuse/core'
-import { computed, ref } from 'vue'
+import { computed, ref, shallowReactive, watch } from 'vue'
 import { DEFAULT_LOCALE, matchLocale } from '../../locales'
-import de from './locales/de.json'
 import en from './locales/en.json'
-import es from './locales/es.json'
-import fr from './locales/fr.json'
-import ja from './locales/ja.json'
-import ko from './locales/ko.json'
-import ptBR from './locales/pt-BR.json'
-import ru from './locales/ru.json'
-import zhCN from './locales/zh-CN.json'
-import zhTW from './locales/zh-TW.json'
 
 /** Every UI string has a key in `en.json`; the other files translate them. */
 export type MessageKey = keyof typeof en
 
-export const messages: Record<HubUiLocale, Partial<Record<MessageKey, string>>> = {
-  'en': en,
-  'zh-CN': zhCN,
-  'zh-TW': zhTW,
-  ja,
-  ko,
-  es,
-  fr,
-  de,
-  'pt-BR': ptBR,
-  ru,
+type Messages = Partial<Record<MessageKey, string>>
+
+/** English is bundled: it is the fallback, so `t()` never waits on a network. */
+const loaders: Record<Exclude<HubUiLocale, 'en'>, () => Promise<{ default: Messages }>> = {
+  'zh-CN': () => import('./locales/zh-CN.json'),
+  'zh-TW': () => import('./locales/zh-TW.json'),
+  'ja': () => import('./locales/ja.json'),
+  'ko': () => import('./locales/ko.json'),
+  'es': () => import('./locales/es.json'),
+  'fr': () => import('./locales/fr.json'),
+  'de': () => import('./locales/de.json'),
+  'pt-BR': () => import('./locales/pt-BR.json'),
+  'ru': () => import('./locales/ru.json'),
+}
+
+const loaded = shallowReactive<Partial<Record<HubUiLocale, Messages>>>({ en })
+const pending = new Map<HubUiLocale, Promise<void>>()
+
+/**
+ * Fetch the chunk for `code` once. `t()` reads `loaded` reactively, so the UI
+ * shows English until the chunk lands, then re-renders in the new language.
+ */
+export function loadLocale(code: HubUiLocale): Promise<void> {
+  if (loaded[code])
+    return Promise.resolve()
+  let request = pending.get(code)
+  if (!request) {
+    request = loaders[code as keyof typeof loaders]()
+      .then((module) => {
+        loaded[code] = module.default
+      })
+      .catch(() => {
+        // Stay on English, and allow a retry on the next pick.
+      })
+      .finally(() => pending.delete(code))
+    pending.set(code, request)
+  }
+  return request
 }
 
 export type LocalePreference = 'auto' | HubUiLocale
@@ -57,6 +75,8 @@ export const locale = computed<HubUiLocale>(() => {
   return DEFAULT_LOCALE
 })
 
+watch(locale, code => void loadLocale(code), { immediate: true })
+
 /** Seed the `auto` choice from `ConnectionMeta.configs.ui.locale`. */
 export function setHostLocale(tag: string | undefined): void {
   hostLocale.value = matchLocale(tag)
@@ -68,7 +88,7 @@ export function setLocalePreference(preference: LocalePreference): void {
 
 /** Translate `key` in the current locale, filling `{name}` slots from `params`. */
 export function t(key: MessageKey, params?: Record<string, string | number>): string {
-  const message = messages[locale.value][key] ?? en[key]
+  const message = loaded[locale.value]?.[key] ?? en[key]
   if (!params)
     return message
   return message.replace(/\{(\w+)\}/g, (slot, name: string) => name in params ? String(params[name]) : slot)
