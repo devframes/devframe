@@ -232,6 +232,33 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('shared-server tier: publishes the endpoint once a not-yet-listening TLS server listens', async () => {
+    const host = '127.0.0.1'
+    const server = createSecureServer({ allowHTTP1: true })
+    const devtools = initDevframe(defineTestDef('handler-tls-late'), {
+      base: '/__handler-tls-late/',
+      auth: false,
+      host,
+      server: server as any,
+    })
+
+    try {
+      await devtools.ready
+      const internal = getInternalContext(await devtools.context)
+      expect(internal.wsEndpoint).toBeUndefined()
+
+      await new Promise<void>(resolve => server.listen(0, host, resolve))
+      const { port } = server.address() as { port: number }
+      expect(internal.wsEndpoint).toEqual({
+        url: `wss://localhost:${port}/__handler-tls-late/__ws`,
+      })
+    }
+    finally {
+      await devtools.close()
+      await new Promise<void>(resolve => server.close(() => resolve()))
+    }
+  })
+
   it('ws.url tier: advertises the external endpoint verbatim, owns no transport', async () => {
     const devtools = initDevframe(defineTestDef('handler-remote'), { base: '/__handler-remote/', ws: { url: 'wss://devtools.example.com/relay/__ws' } })
 
