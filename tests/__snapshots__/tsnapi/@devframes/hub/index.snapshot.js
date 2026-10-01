@@ -4,6 +4,8 @@
 // #region Functions
 export function defineCommand(_) {}
 export function defineDockEntry(_) {}
+export function matchLocale(_, _) {}
+export function resolveTitle(_, _) {}
 // #endregion
 
 // #region Variables

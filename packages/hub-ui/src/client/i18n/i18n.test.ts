@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
-import { HUB_UI_LOCALES, matchLocale } from '../../locales'
-import { loadLocale, locale, setHostLocale, setLocalePreference, t, tAround } from './index'
+import { HUB_UI_LOCALES } from '../../locales'
+import { loadLocale, locale, matchLocale, setHostLocale, setLocalePreference, t, tAround } from './index'
 import en from './locales/en.json'
 
 const files = import.meta.glob<Record<string, string>>('./locales/*.json', { import: 'default' })

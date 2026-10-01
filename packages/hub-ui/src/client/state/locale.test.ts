@@ -4,7 +4,7 @@ import { getDevframeConnection } from '@devframes/hub/client'
 import { afterEach, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { setHostLocale, setLocalePreference } from '../i18n'
-import { setupLocale } from './locale'
+import { localizeCommand, setupLocale } from './locale'
 
 function createRpc(connectionMeta: ConnectionMeta): DevframeRpcClient {
   // Only the connection surface `setupLocale` touches.
@@ -34,4 +34,18 @@ it('publishes the fallback when the host sets no locale', () => {
   setupLocale(rpc)
 
   expect(rpc.connectionMeta.configs?.ui?.locale).toBe('en')
+})
+
+it('localizes a command tree in the current UI language', () => {
+  setLocalePreference('ja')
+  const command = localizeCommand({
+    id: 'build',
+    source: 'client',
+    title: 'Build',
+    titleLocales: { ja: 'ビルド' },
+    children: [{ id: 'build:clean', source: 'client', title: 'Clean', titleLocales: { ja: 'クリーン' } }],
+  })
+
+  expect(command.title).toBe('ビルド')
+  expect(command.children?.[0]?.title).toBe('クリーン')
 })

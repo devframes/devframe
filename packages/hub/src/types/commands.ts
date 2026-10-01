@@ -1,6 +1,7 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { EventEmitter } from 'devframe/types'
 import type { DevframeDockEntryIcon } from './docks'
+import type { DevframeTitleLocales } from './locale'
 
 export interface DevframeCommandKeybinding {
   /**
@@ -17,6 +18,8 @@ export interface DevframeCommandBase {
    */
   id: string
   title: string
+  /** Translations of `title` by BCP 47 tag; see `resolveTitle()` from `@devframes/hub`. */
+  titleLocales?: DevframeTitleLocales
   description?: string
   /**
    * Icon for the command. Either an Iconify icon string (e.g. "ph:pencil-duotone")

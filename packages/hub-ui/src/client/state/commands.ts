@@ -7,6 +7,7 @@ import { evaluateWhen } from 'devframe/utils/when'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
 import { sharedStateToRef } from './docks'
 import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, normalizeKeyEvent } from './keybindings'
+import { localizeCommand } from './locale'
 import { useDockPopupWindow, useIsDockPopupOpen } from './popup'
 
 const commandsContextByRpc = new WeakMap<DevframeRpcClient, CommandsContext>()
@@ -54,7 +55,7 @@ export async function createCommandsContext(
   const commands = computed<DevframeCommandEntry[]>(() => [
     ...serverCommands.value,
     ...Array.from(clientCommands.values()),
-  ])
+  ].map(command => localizeCommand(command)))
 
   const paletteCommands = computed<DevframeCommandEntry[]>(() => {
     const ctx = getWhenContext()

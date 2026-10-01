@@ -1,5 +1,6 @@
+import type { DevframeCommandEntry, DevframeTitled } from '@devframes/hub'
 import type { DevframeRpcClient } from '@devframes/hub/client'
-import { storeConnection } from '@devframes/hub/client'
+import { resolveTitle, storeConnection } from '@devframes/hub/client'
 import { watch } from 'vue'
 import { locale, setHostLocale } from '../i18n'
 
@@ -16,4 +17,15 @@ export function setupLocale(rpc: DevframeRpcClient): void {
     ;(configs.ui ??= {}).locale = value
     storeConnection(rpc.connection)
   }, { immediate: true })
+}
+
+/** A copy of a dock entry, command or launcher with `title` in the current UI language. */
+export function localizeTitle<T extends DevframeTitled>(titled: T): T {
+  return { ...titled, title: resolveTitle(titled, locale.value) }
+}
+
+/** `localizeTitle` for a command and its children, so palette and shortcut rows follow the language. */
+export function localizeCommand<T extends DevframeCommandEntry>(command: T): T {
+  const children = command.children?.map(child => localizeCommand(child))
+  return { ...localizeTitle(command), ...(children ? { children } : {}) }
 }

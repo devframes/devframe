@@ -1,7 +1,8 @@
 import type { HubUiLocale } from '../../locales'
+import { matchLocale as matchHubLocale } from '@devframes/hub/client'
 import { usePreferredLanguages, useStorage } from '@vueuse/core'
 import { computed, ref, shallowReactive, watch } from 'vue'
-import { DEFAULT_LOCALE, matchLocale } from '../../locales'
+import { DEFAULT_LOCALE, HUB_UI_LOCALES } from '../../locales'
 import en from './locales/en.json'
 
 /** Every UI string has a key in `en.json`; the other files translate them. */
@@ -48,6 +49,12 @@ export function loadLocale(code: HubUiLocale): Promise<void> {
 }
 
 export type LocalePreference = 'auto' | HubUiLocale
+
+/** Narrow a BCP 47 tag to a shipped locale (`zh-HK` → `zh-TW`, `pt-PT` → `pt-BR`, `en-GB` → `en`). */
+export function matchLocale(tag: string | undefined): HubUiLocale | undefined {
+  // `matchHubLocale` only returns members of the list it was given.
+  return matchHubLocale(tag, Object.keys(HUB_UI_LOCALES)) as HubUiLocale | undefined
+}
 
 /**
  * The visitor's pick, per browser like the color scheme. `auto` follows the

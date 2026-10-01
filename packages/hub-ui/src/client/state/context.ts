@@ -15,6 +15,7 @@ import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
 import { docksGroupByCategories, getGroupMembers, getRegisteredGroupIds, resolveCommandIcon, resolveGroupDefaultChild, resolveGroupPreferredChild } from './dock-settings'
 import { createDockEntryState, DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE, sharedStateToRef, useDocksEntries, waitForInitialSharedStateSync } from './docks'
+import { localizeTitle } from './locale'
 import { createClientMessagesClient } from './messages-client'
 import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
@@ -77,9 +78,10 @@ export async function createDocksContext(
     // hub-ui owns the built-in Settings tab so it's always reachable without a
     // host registering `~settings`; a host that registered its own wins, so add
     // ours only when the merged list has none.
-    if (base.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
-      return base
-    return [...base, { ...BUILTIN_ENTRY_SETTINGS, title: t('dock.settings') }]
+    const localized = base.map(localizeTitle)
+    if (localized.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
+      return localized
+    return [...localized, { ...BUILTIN_ENTRY_SETTINGS, title: t('dock.settings') }]
   })
 
   // Per-tab session UI state (open/selectedId/route). A caller (the embedded and

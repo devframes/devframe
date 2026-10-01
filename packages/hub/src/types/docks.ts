@@ -1,4 +1,5 @@
 import type { ConnectionMeta, EventEmitter } from 'devframe/types'
+import type { DevframeTitleLocales } from './locale'
 
 export interface DevframeDocksHost {
   readonly views: Map<string, DevframeDockUserEntry>
@@ -83,6 +84,8 @@ export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning
 export interface DevframeDockEntryBase {
   id: string
   title: string
+  /** Translations of `title` by BCP 47 tag; see `resolveTitle()` from `@devframes/hub`. */
+  titleLocales?: DevframeTitleLocales
   icon: DevframeDockEntryIcon
   /**
    * The default order of the entry in the dock.
@@ -351,6 +354,7 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
   launcher: {
     icon?: DevframeDockEntryIcon
     title: string
+    titleLocales?: DevframeTitleLocales
     status?: DevframeViewLauncherStatus
     error?: string
     description?: string

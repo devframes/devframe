@@ -174,6 +174,7 @@ export interface DevframeDiagnosticsHost {
 }
 export interface DevframeDockDefaults {
   title?: string;
+  titleLocales?: Record<string, string>;
   icon?: string | {
     light: string;
     dark: string;

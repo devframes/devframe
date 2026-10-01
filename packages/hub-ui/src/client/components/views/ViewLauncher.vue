@@ -7,6 +7,7 @@ import { HUB_EVENTS } from '@devframes/hub/constants'
 import { computed, ref, watch } from 'vue'
 import { TERMINALS_DOCK_ID } from '../../constants'
 import { t } from '../../i18n'
+import { localizeTitle } from '../../state/locale'
 import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
@@ -92,7 +93,7 @@ const canLaunch = computed(() => status.value === 'idle' || status.value === 'er
   <div class="flex flex-col gap-4 items-center justify-center h-full relative">
     <DockIcon :icon="entry.launcher.icon || entry.icon" class="w-10 h-10" />
     <h1 class="text-2xl font-bold">
-      {{ entry.launcher.title }}
+      {{ localizeTitle(entry.launcher).title }}
     </h1>
     <p>{{ entry.launcher.description }}</p>
 

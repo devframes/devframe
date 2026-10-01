@@ -274,5 +274,7 @@ export * from "devframe/client";
 
 // #region Other
 export { DevframeClientRpcHost }
+export { matchLocale }
+export { resolveTitle }
 export { RpcClientEvents }
 // #endregion
