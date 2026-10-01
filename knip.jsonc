@@ -157,6 +157,9 @@
       // the same shape as a devframe's `clientScript`/`clientScripts` entry.
       "entry": ["playground/client-scripts/*.ts"]
     },
+    "packages/vite": {
+      "ignoreBinaries": ["openssl"]
+    },
     "packages/json-render": {
       // `src/node/index.ts` is already picked up via `tsdown.config.ts`
       // (its literal `entry` object parses cleanly); only `core.ts`/`hub.ts`
