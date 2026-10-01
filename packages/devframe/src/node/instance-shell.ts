@@ -14,6 +14,7 @@ import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './ins
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
+import { Server as TlsServer } from 'node:tls'
 import { validateOriginCandidate } from 'devframe/utils/origin'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'devframe/utils/url'
 import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
@@ -143,9 +144,12 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
 
   const address = httpServer.address()
   const resolvedPort = typeof address === 'object' && address ? address.port : port
-  const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
+  const secure = httpServer instanceof TlsServer
+  const origin = secure
+    ? `https://${formatHostForUrl(bindHost)}:${resolvedPort}`
+    : normalizeHttpServerUrl(bindHost, resolvedPort)
   const internal = getInternalContext(context)
-  const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
+  const wsUrl = `${secure ? 'wss' : 'ws'}://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
   if (websocket)
     internal.setWsEndpoint({ url: wsUrl })
 
