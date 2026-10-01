@@ -1,3 +1,4 @@
+import type { DevframeHubContext } from '@devframes/hub/node'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Http2SecureServer } from 'node:http2'
 import type { Socket } from 'node:net'
@@ -8,7 +9,8 @@ import { createSecureServer } from 'node:http2'
 import { request } from 'node:https'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { getInternalContext } from 'devframe/node/hub-internals'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { viteDevframeHub } from '../src/hub'
 
@@ -120,14 +122,16 @@ describe.skipIf(!opensslAvailable)('viteDevframeHub', () => {
   it('shares an https (http2) dev server for the WebSocket upgrade', async () => {
     const host = '127.0.0.1'
     const { server, httpServer, close } = fakeHttpsViteServer(tls)
-    await new Promise<void>(resolve => httpServer.listen(0, host, resolve))
-    const { port } = httpServer.address() as { port: number }
+    let context: DevframeHubContext | undefined
 
     const plugin = viteDevframeHub({
       ui: false,
       auth: false,
       quiet: true,
       cwd: mkdtempSync(join(tmpdir(), 'devframe-vite-hub-')),
+      configure: (ctx) => {
+        context = ctx
+      },
     })
     let ws: WebSocket | undefined
     cleanup = async () => {
@@ -136,6 +140,9 @@ describe.skipIf(!opensslAvailable)('viteDevframeHub', () => {
       await close()
     }
     await (plugin.configureServer as (s: ViteDevServer) => Promise<void>)(server as any)
+    await vi.waitFor(() => expect(httpServer.listenerCount('upgrade')).toBeGreaterThan(0))
+    await new Promise<void>(resolve => httpServer.listen(0, host, resolve))
+    const { port } = httpServer.address() as { port: number }
 
     const res = await getInsecure(`https://${host}:${port}/__devframes/__connection.json`)
     expect(res.status).toBe(200)
@@ -143,5 +150,8 @@ describe.skipIf(!opensslAvailable)('viteDevframeHub', () => {
 
     ws = await openWs(`wss://${host}:${port}/__devframes/__ws`)
     expect(ws.readyState).toBe(WebSocket.OPEN)
+
+    expect(context).toBeDefined()
+    expect(getInternalContext(context!).wsEndpoint).toEqual({ url: `wss://localhost:${port}/__devframes/__ws` })
   })
 })
