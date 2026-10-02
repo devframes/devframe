@@ -11,6 +11,7 @@ function createMockClient() {
 
   // eslint-disable-next-line slop/no-chained-type-assertions -- partial test mock exercises only the members client.scope() touches
   const rpc = {
+    ensureTrusted: async () => true,
     call: vi.fn((..._args: any[]) => Promise.resolve('ok')),
     callEvent: vi.fn((..._args: any[]) => {}),
     callOptional: vi.fn((..._args: any[]) => Promise.resolve('ok')),
@@ -126,7 +127,7 @@ describe('client.scope()', () => {
     const { settings } = createScopedClientContext(rpc, 'my-plugin')
 
     await settings.global.set('token', 'abc')
-    expect(rpc.sharedState.get).toHaveBeenCalledWith('devframe:settings:global:my-plugin', { initialValue: {} })
+    expect(rpc.sharedState.get).toHaveBeenCalledWith('devframe:settings:global:my-plugin')
     expect(await settings.global.get('token')).toBe('abc')
 
     await settings.project.set('theme', 'dark')

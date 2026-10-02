@@ -121,7 +121,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
         }
       }
 
-      return new Promise<SharedState<T>>((resolve) => {
+      return new Promise<SharedState<T>>((resolve, reject) => {
         if (!rpc.isTrusted) {
           resolve(state)
           let initialized = false
@@ -133,7 +133,7 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
           })
         }
         else {
-          initSharedState().then(resolve)
+          initSharedState().then(resolve, reject)
         }
       })
     },
