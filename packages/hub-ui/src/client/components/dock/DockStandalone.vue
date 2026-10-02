@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import { computed, useTemplateRef, watch } from 'vue'
+import { t } from '../../i18n'
 import { getEntryGroup } from '../../state/dock-settings'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
@@ -59,7 +60,7 @@ function switchEntry(id: string | undefined) {
       <ViewBuiltinClientAuthNotice :context="context" />
     </main>
     <div v-else class="h-screen w-screen of-clip grid cols-[max-content_1fr]">
-      <nav aria-label="Docks" class="border-r border-base flex flex-col min-h-0">
+      <nav :aria-label="t('settings.docks')" class="border-r border-base flex flex-col min-h-0">
         <div class="p2 border-b border-base flex">
           <BrandMark class="w-7 h-7 ma" />
         </div>
