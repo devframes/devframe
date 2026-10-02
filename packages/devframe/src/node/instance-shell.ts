@@ -5,7 +5,6 @@ import type { DevframeRpcConnection, WsOriginRegistry, WsRpcTransport } from 'de
 import type { H3, H3Event } from 'h3'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
-import type { AddressInfo } from 'node:net'
 import type { Duplex } from 'node:stream'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../types'
 import type { DevframeSseOptions, DevframeWsOptions } from '../types/devframe'
@@ -145,16 +144,23 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
 
   const address = httpServer.address()
   const resolvedPort = typeof address === 'object' && address ? address.port : port
-  const origin = httpServer instanceof TlsServer
-    ? `https://${formatHostForUrl(bindHost)}:${resolvedPort}`
-    : normalizeHttpServerUrl(bindHost, resolvedPort)
+  const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
+  // A shared server may not be listening yet (Vite listens after plugins configure).
   let wsUrl: string | undefined
-  const cancelPublish = websocket
-    ? whenListening(httpServer, (boundPort) => {
-        wsUrl = `${wsScheme(httpServer)}://${formatHostForUrl(bindHost)}:${boundPort}${options.path ?? ''}`
-        getInternalContext(context).setWsEndpoint({ url: wsUrl })
-      })
-    : () => {}
+  const publishWsEndpoint = (): void => {
+    const bound = httpServer.address()
+    if (!bound || typeof bound === 'string')
+      return
+    const scheme = httpServer instanceof TlsServer ? 'wss' : 'ws'
+    wsUrl = `${scheme}://${formatHostForUrl(bindHost)}:${bound.port}${options.path ?? ''}`
+    getInternalContext(context).setWsEndpoint({ url: wsUrl })
+  }
+  if (websocket) {
+    if (httpServer.listening)
+      publishWsEndpoint()
+    else
+      httpServer.once('listening', publishWsEndpoint)
+  }
 
   return {
     origin,
@@ -164,7 +170,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     rpcGroup: core.rpcGroup,
     connectionMeta: () => websocketConnectionMeta(rpcHost, options.path),
     async close() {
-      cancelPublish()
+      httpServer.off('listening', publishWsEndpoint)
       await closeWs()
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
@@ -172,24 +178,6 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
         getInternalContext(context).setWsEndpoint(undefined)
     },
   }
-}
-
-function wsScheme(server: NodeHttpServer): 'ws' | 'wss' {
-  return server instanceof TlsServer ? 'wss' : 'ws'
-}
-
-function whenListening(server: NodeHttpServer, fn: (port: number, address: AddressInfo) => void): () => void {
-  const run = (): void => {
-    const address = server.address()
-    if (typeof address === 'object' && address)
-      fn(address.port, address)
-  }
-  if (server.listening) {
-    run()
-    return () => {}
-  }
-  server.once('listening', run)
-  return () => server.off('listening', run)
 }
 
 /**
@@ -965,12 +953,19 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
    * {@link bindHttpAndWs} does the same for the tiers it owns.
    */
   function publishWsEndpoint(server: NodeHttpServer): void {
-    whenListening(server, (boundPort, address) => {
+    const record = (): void => {
+      const address = server.address()
+      if (typeof address !== 'object' || !address)
+        return
       const host = options.host ?? (address.address === '::' || address.address === '0.0.0.0' ? 'localhost' : address.address)
       getInternalContext(ctx).setWsEndpoint({
-        url: `${wsScheme(server)}://${formatHostForUrl(host)}:${boundPort}${routePath}`,
+        url: `ws://${formatHostForUrl(host)}:${address.port}${routePath}`,
       })
-    })
+    }
+    if (server.listening)
+      record()
+    else
+      server.once('listening', record)
   }
 
   function handleUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): void {

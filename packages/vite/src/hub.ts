@@ -180,9 +180,8 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       // the hub client runtime imports it into the host page.
       const devframes = attachClientScripts(options.devframes, options.clientScripts)
 
-      // Vite's https dev server is an `Http2SecureServer` (or an
-      // `https.Server` with `server.proxy`). Both emit `upgrade` for HTTP/1.1
-      // requests, as Vite's own HMR socket relies on, so share it too.
+      // `server.https` makes Vite use an `Http2SecureServer`, not a `node:http`
+      // `Server`. It still emits `upgrade` for HTTP/1.1, so the cast is safe.
       const httpServer = (server.httpServer ?? undefined) as NodeHttpServer | undefined
 
       const hub = initHub({
