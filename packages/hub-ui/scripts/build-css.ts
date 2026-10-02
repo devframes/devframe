@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { colors as c } from 'devframe/utils/colors'
@@ -8,13 +9,20 @@ import config from '../uno.config'
 // (`src/client/.generated/css.ts`) that `defineCustomElement` adopts into each
 // shadow root, so the dock stays styled in any host page with no leakage.
 const SRC_DIR = fileURLToPath(new URL('../src/client', import.meta.url))
+const require = createRequire(import.meta.url)
 
 const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
   globs: ['components/**/*.{ts,vue}', 'state/**/*.ts', 'embedded/**/*.ts', 'standalone/**/*.{ts,html}'],
   config,
   primaryRampPath: fileURLToPath(new URL('../../../design/primary-ramp.css', import.meta.url)),
-  userStylePath: join(SRC_DIR, 'style.css'),
+  userStylePath: [
+    join(SRC_DIR, 'style.css'),
+    // `@antfu/design`'s tooltips (ActionIconButton) float through vue-afloat,
+    // whose base styles must live inside the shadow root to reach them.
+    require.resolve('vue-afloat/style.css'),
+    require.resolve('@antfu/design/styles/vue-afloat.css'),
+  ],
   varPrefix: '--un-hub-',
 })
 console.log(`${c.green('✓')} CSS built (${sourceCount} sources, ${(css.length / 1024).toFixed(1)} kB)`)

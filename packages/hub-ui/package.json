@@ -71,6 +71,7 @@
     "tsx": "catalog:build",
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
-    "vue": "catalog:frontend"
+    "vue": "catalog:frontend",
+    "vue-afloat": "catalog:frontend"
   }
 }

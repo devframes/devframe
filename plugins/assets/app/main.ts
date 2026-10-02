@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { applyPanelBranding } from '../../../design/panel-theme'
 import App from './app/App.vue'
 import 'virtual:uno.css'
-import 'floating-vue/dist/style.css'
+import 'vue-afloat/style.css'
 import '@antfu/design/styles.css'
 import '../../../design/primary-ramp.css'
 

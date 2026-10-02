@@ -82,7 +82,6 @@
     "@vueuse/core": "catalog:frontend",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "floating-vue": "catalog:frontend",
     "h3": "catalog:deps",
     "storybook": "catalog:storybook",
     "tsdown": "catalog:build",
@@ -91,6 +90,7 @@
     "vite-plugin-css-injected-by-js": "catalog:frontend",
     "vitest": "catalog:testing",
     "vue": "catalog:frontend",
+    "vue-afloat": "catalog:frontend",
     "ws": "catalog:deps"
   }
 }

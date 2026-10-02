@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 
 import 'virtual:uno.css'
-import 'floating-vue/dist/style.css'
+import 'vue-afloat/style.css'
 import '@antfu/design/styles.css'
 import './style.css'
 

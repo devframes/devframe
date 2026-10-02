@@ -79,7 +79,6 @@
     "@vueuse/core": "catalog:frontend",
     "devframe": "workspace:*",
     "dompurify": "catalog:frontend",
-    "floating-vue": "catalog:frontend",
     "h3": "catalog:deps",
     "jora": "catalog:inlined",
     "reka-ui": "catalog:frontend",
@@ -89,6 +88,7 @@
     "unocss": "catalog:frontend",
     "vite": "catalog:build",
     "vitest": "catalog:testing",
-    "vue": "catalog:frontend"
+    "vue": "catalog:frontend",
+    "vue-afloat": "catalog:frontend"
   }
 }

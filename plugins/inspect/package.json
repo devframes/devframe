@@ -76,7 +76,6 @@
     "@vitejs/plugin-vue": "catalog:build",
     "colorjs.io": "catalog:frontend",
     "devframe": "workspace:*",
-    "floating-vue": "catalog:frontend",
     "h3": "catalog:deps",
     "reka-ui": "catalog:frontend",
     "storybook": "catalog:storybook",
@@ -85,6 +84,7 @@
     "vite": "catalog:build",
     "vitest": "catalog:testing",
     "vue": "catalog:frontend",
+    "vue-afloat": "catalog:frontend",
     "ws": "catalog:deps"
   }
 }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
+import FormSelect from '@antfu/design/components/Form/FormSelect.vue'
 import { computed } from 'vue'
-import { HUB_UI_LOCALES } from '../../../locales'
-import { localePreference, t } from '../../i18n'
+import { HUB_UI_LOCALES, matchLocale } from '../../../locales'
+import { localePreference, setLocalePreference, t } from '../../i18n'
 import { useBranding } from '../../state/branding'
 import { colorSchemePreference, setColorSchemePreference } from '../../state/color-mode'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
@@ -40,7 +41,14 @@ const colorModeOptions = computed(() => [
 
 // Language names stay in their own language so a visitor stranded in the
 // wrong locale can still find theirs.
-const localeOptions = Object.entries(HUB_UI_LOCALES)
+const localeOptions = computed(() => [
+  { value: 'auto', label: t('appearance.languageAuto') },
+  ...Object.entries(HUB_UI_LOCALES).map(([value, label]) => ({ value, label })),
+])
+
+function onLocaleChange(value: string | undefined): void {
+  setLocalePreference(matchLocale(value) ?? 'auto')
+}
 
 function setDockMode(mode: string) {
   if (mode === 'popup') {
@@ -55,21 +63,19 @@ function setDockMode(mode: string) {
 <template>
   <div class="flex flex-col gap-4">
     <!-- Language -->
-    <label class="flex flex-col gap-2">
+    <div class="flex flex-col gap-2">
       <div class="flex flex-col">
         <span class="text-sm">{{ t('appearance.language') }}</span>
         <span class="text-xs op50">{{ t('appearance.languageHint', { productName: branding.productName }) }}</span>
       </div>
-      <select
-        v-model="localePreference"
-        class="w-fit min-w-40 px3 py1.5 text-sm rounded-lg bg-base color-base border border-base outline-none transition-all focus-visible:ring-3 focus-visible:ring-primary-500/30"
-      >
-        <option value="auto">{{ t('appearance.languageAuto') }}</option>
-        <option v-for="[code, name] of localeOptions" :key="code" :value="code" :lang="code">
-          {{ name }}
-        </option>
-      </select>
-    </label>
+      <FormSelect
+        :model-value="localePreference"
+        :options="localeOptions"
+        :aria-label="t('appearance.language')"
+        class="w-fit"
+        @update:model-value="onLocaleChange"
+      />
+    </div>
 
     <!-- Color mode -->
     <div class="flex flex-col gap-2">

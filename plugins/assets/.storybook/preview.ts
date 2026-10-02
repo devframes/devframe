@@ -1,7 +1,7 @@
 import type { Decorator, Preview } from '@storybook/vue3-vite'
 import { h } from 'vue'
 import 'virtual:uno.css'
-import 'floating-vue/dist/style.css'
+import 'vue-afloat/style.css'
 import '@antfu/design/styles.css'
 
 const withTheme: Decorator = (story, context) => {
