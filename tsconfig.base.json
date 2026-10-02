@@ -214,6 +214,9 @@
       "@devframes/json-render/hub": [
         "./packages/json-render/src/hub.ts"
       ],
+      "@devframes/json-render/view": [
+        "./packages/json-render/src/node/create-view.ts"
+      ],
       "@devframes/json-render/node": [
         "./packages/json-render/src/node/index.ts"
       ],

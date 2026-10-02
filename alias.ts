@@ -77,6 +77,7 @@ export const alias = {
   '@devframes/vite': r('vite/src/index.ts'),
   '@devframes/json-render/core': r('json-render/src/core.ts'),
   '@devframes/json-render/hub': r('json-render/src/hub.ts'),
+  '@devframes/json-render/view': r('json-render/src/node/create-view.ts'),
   '@devframes/json-render/node': r('json-render/src/node/index.ts'),
   '@devframes/json-render': r('json-render/src/index.ts'),
   '@devframes/json-render-ui/hub': r('json-render-ui/src/hub.ts'),
