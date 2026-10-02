@@ -55,11 +55,11 @@ function switchEntry(id: string | undefined) {
 
 <template>
   <ColorSchemeRoot>
-    <div v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
+    <main v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
       <ViewBuiltinClientAuthNotice :context="context" />
-    </div>
+    </main>
     <div v-else class="h-screen w-screen of-clip grid cols-[max-content_1fr]">
-      <div class="border-r border-base flex flex-col min-h-0">
+      <nav aria-label="Docks" class="border-r border-base flex flex-col min-h-0">
         <div class="p2 border-b border-base flex">
           <BrandMark class="w-7 h-7 ma" />
         </div>
@@ -77,8 +77,8 @@ function switchEntry(id: string | undefined) {
             </template>
           </DockEntriesWithCategories>
         </div>
-      </div>
-      <div class="min-h-0 flex">
+      </nav>
+      <main class="min-h-0 flex">
         <DockGroupSidebar
           v-if="activeGroup"
           :context
@@ -95,7 +95,7 @@ function switchEntry(id: string | undefined) {
           />
           <div id="devframes-views-container" ref="viewsContainer" class="pointer-events-auto" />
         </div>
-      </div>
+      </main>
     </div>
     <FloatingElements />
     <CommandPalette :context />
