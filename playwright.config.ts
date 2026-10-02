@@ -92,7 +92,12 @@ export default defineConfig({
       stderr: 'pipe',
     },
     {
-      command: 'pnpm exec next dev src/client -p 9878',
+      /**
+       * Not `pnpm exec`: pnpm 12.6 starts the child in its own process group,
+       * so Playwright's teardown kills only the shell, the orphaned Next server
+       * keeps the stdout pipe open, and the run never exits.
+       */
+      command: 'node node_modules/next/dist/bin/next dev src/client -p 9878',
       cwd: 'examples/custom-hub-next',
       env: { PORT: '9878', DEVFRAME_INSTANCES_DIR: nextHubRegistry },
       url: 'http://localhost:9878/',
