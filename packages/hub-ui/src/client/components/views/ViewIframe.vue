@@ -8,6 +8,7 @@ import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub
 import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { t } from '../../i18n'
+import { localizeTitle } from '../../state/locale'
 import { useSettings } from '../../state/settings-defaults'
 import ViewAssetsError from './ViewAssetsError.vue'
 import ViewIframeLoading from './ViewIframeLoading.vue'
@@ -233,6 +234,9 @@ onMounted(() => {
     style: { boxShadow: 'none', outline: 'none' },
   })
   const iframe = pane.iframe
+  watchEffect(() => {
+    iframe.title = localizeTitle(props.entry).title
+  })
 
   // Follow the frame wherever it goes: a document load, but also an SPA
   // router's `pushState`/`replaceState` and back/forward, none of which fire
