@@ -74,6 +74,8 @@ export interface DevframeTracingChannelInfo {
   description?: string
   source: DevframeTracingChannelSource
   recording: boolean
+  /** Live stream id on `devframe:tracing` while recording. */
+  streamId?: string
   count: number
 }
 
@@ -118,9 +120,9 @@ export interface DevframeTracingHost {
 - On construction it resolves `node:diagnostics_channel` and feature-detects `typeof tracingChannel === 'function'`. The result is `supported: boolean`.
 - `register()` is idempotent. A second call with the same name returns the same channel and only fills in a missing `description`. Source precedence when the same name arrives twice: `registered` > `config` > `builtin` > `adhoc`.
 - Built-in names seeded at construction: `module.require` and `net.server.listen`, source `builtin`.
-- `record(name)`: if `!supported`, report `DF0081` once per process and return. If the name is unknown, add it with source `adhoc`. If already recording, return. Otherwise `channel.subscribe(handlers)`, start the stream for that name, set `recording: true`.
+- `record(name)`: if `!supported`, report `DF0081` once per process and return. If the name is unknown, add it with source `adhoc`. If already recording, return. Otherwise `channel.subscribe(handlers)`, start a fresh stream, publish its id as `streamId`, set `recording: true`.
 - `stop(name)`: `channel.unsubscribe(handlers)`, close the stream, set `recording: false`. Records stay in the buffer.
-- `clear(name)`: empty the buffer, reset `count`. If recording, close and restart the stream so the replay buffer is empty too.
+- `clear(name)`: empty the buffer, reset `count`. If recording, close the stream and start a fresh one with a new `streamId` so the replay buffer is empty too.
 - `records(name)`: oldest to newest, at most 500.
 - Grouping: a `WeakMap<object, DevframeTraceRecord>` maps the shared context object to its record. `start` creates the record with `status: 'pending'`. Every phase appends to `events`, sets `duration = at - startedAt`, and re-serializes `context`. `end` and `asyncEnd` set `status: 'ok'` unless `status` is already `'error'`. `error` sets `status: 'error'` and `error`. `context.result` becomes `record.result` when present. If the message is not an object, each event becomes its own record.
 - Each phase update emits the whole record once through `onRecord` listeners and writes it as one chunk to the stream. The browser upserts by `id`.
@@ -143,7 +145,7 @@ export interface DevframeTracingHost {
 | Piece | Name | Shape |
 |---|---|---|
 | Shared state | `devframe:tracing:channels` (`DEVFRAME_EVENTS.sharedState.tracingChannels`) | `Record<string, DevframeTracingChannelInfo>`. Mutated on register, record, stop, clear. `count` updates are debounced to at most once per 100 ms per channel. |
-| Streaming channel | `devframe:tracing` (`DEVFRAME_EVENTS.stream.tracing`) | One stream per Tracing Channel, `id` = channel name, chunk = `DevframeTraceRecord`, `replayWindow: 500`. Open while recording. |
+| Streaming channel | `devframe:tracing` (`DEVFRAME_EVENTS.stream.tracing`) | One stream per recording Tracing Channel, chunk = `DevframeTraceRecord`, `replayWindow: 500`, `closedStreamRetention: 0`. The stream id is a fresh `nanoid()` published as `streamId` in the channel info, issued on every `record()` and `clear()`. The channel name is not reused as the id because `start({ id })` with a retained id silently replaces the old record (`rpc-streaming.ts:251`). |
 | Server RPC | `devframe:tracing:record`, `devframe:tracing:stop`, `devframe:tracing:clear` | `type: 'action'`, `args: [s.string()]`, return `void`. Typed in `DevframeRpcServerFunctions`. |
 
 Add the two new groups to `DEVFRAME_EVENTS`:
@@ -274,7 +276,7 @@ Add `DF0081` and its page. Add `Tracing Channel` and `trace record` to `1.terms.
 
 #### Step 5: Smart component
 
-`TracingSmart.vue` reads `rpc.sharedState.get('devframe:tracing:channels')` and listens to `updated`, as `StateSmart.vue:72-74` does. On Record it calls `rpc.call('devframe:tracing:record', name)`, then `rpc.streaming.subscribe<DevframeTraceRecord>('devframe:tracing', name)` and upserts each chunk by `id` into a `Map`. Selecting a channel that is already recording subscribes without calling record and receives the replay. Stop calls the RPC and cancels the reader. Clear calls the RPC and empties the local map. Tear down the reader and the shared-state listener in `onScopeDispose`. The ad-hoc input calls `record` with the typed name.
+`TracingSmart.vue` reads `rpc.sharedState.get('devframe:tracing:channels')` and listens to `updated`, as `StateSmart.vue:72-74` does. On Record it calls `rpc.call('devframe:tracing:record', name)`, then watches the selected channel's `streamId` and calls `rpc.streaming.subscribe<DevframeTraceRecord>('devframe:tracing', streamId)`, upserting each chunk by `id` into a `Map`. When `streamId` changes (a `clear()` or a new recording), cancel the old reader and subscribe to the new id. Selecting a channel that is already recording subscribes without calling record and receives the replay. Stop calls the RPC and cancels the reader. Clear calls the RPC and empties the local map. Tear down the reader and the shared-state listener in `onScopeDispose`. The ad-hoc input calls `record` with the typed name.
 
 **Verify**: run `pnpm --filter @devframes/plugin-inspect dev`, open the Tracing tab, select `module.require` and press Record. Trigger a `require()` inside the dev server process, for example by opening a route that lazy-loads a module. A record must appear. A `require()` in a different process does not count.
 
@@ -330,7 +332,7 @@ Wrap the state in `rpc-shared-state.ts:50-67` as specified. Test: `state.mutate(
 
 - `node:diagnostics_channel` cannot be imported lazily without adding it to a runtime-agnostic entry.
 - Grouping by context identity fails for a built-in Node channel because Node passes a fresh object per phase. Report the channel and stop. Do not fall back to heuristics.
-- The streaming host cannot close and restart a stream with the same id without leaking listeners (`rpc-streaming.ts:251`). Fix the leak in a separate PR first.
+- A stream id must be reused. The host avoids this by issuing a fresh id per recording; if a later step needs stable ids, fix the silent replace in `rpc-streaming.ts:251` in a separate PR first.
 - The inspect tab needs a component shape that `@antfu/design` does not provide.
 - API snapshot changes include unrelated exports.
 
