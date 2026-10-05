@@ -9,6 +9,7 @@ Completed plans are removed from this directory once they land; git history keep
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
 | 001 | Pin privileged GitHub Actions dependencies | P1 | S | - | TODO |
+| 009 | First-class Node.js Tracing Channel support (`ctx.tracing` + inspect Tracing tab) | P2 | L | - | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with reason) | REJECTED (with rationale)
 
