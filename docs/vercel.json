@@ -9,6 +9,7 @@
     { "source": "/guide/terms", "destination": "/references/terms", "permanent": true },
     { "source": "/guide/when-clauses", "destination": "/references/when-clauses", "permanent": true },
     { "source": "/guide/events", "destination": "/references/events", "permanent": true },
+    { "source": "/guide/built-with", "destination": "/ecosystem", "permanent": true },
     { "source": "/plugins", "destination": "/add-ons", "permanent": true },
     { "source": "/plugins/data-inspector", "destination": "/add-ons/devframes/data-inspector", "permanent": true },
     { "source": "/plugins/inspect", "destination": "/add-ons/devframes/inspect", "permanent": true },

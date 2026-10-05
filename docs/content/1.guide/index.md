@@ -106,7 +106,7 @@ The mounted devframes share one RPC registry, state store, connection, auth gate
 
 ## Inheriting the ecosystem
 
-[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) ([`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next)) add conventions over the same handler. See [Built with Devframe](/guide/built-with).
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) ([`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next)) add conventions over the same handler. See the [Ecosystem](/ecosystem) page.
 
 ## Install
 

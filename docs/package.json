@@ -17,6 +17,7 @@
     "@iconify-json/twemoji": "catalog:frontend",
     "@iconify-json/unjs": "catalog:frontend",
     "@shikijs/magic-move": "catalog:frontend",
+    "@vueuse/core": "catalog:frontend",
     "comark-docs": "catalog:docs",
     "d3-shape": "catalog:frontend",
     "nuxt": "catalog:build",

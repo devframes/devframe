@@ -718,6 +718,9 @@ importers:
       '@shikijs/magic-move':
         specifier: catalog:frontend
         version: 4.5.0(react@19.2.8)(shiki@4.5.0)(solid-js@1.9.15)(svelte@5.57.0(@typescript-eslint/types@8.69.0))(vue@3.5.43(typescript@6.0.3))
+      '@vueuse/core':
+        specifier: catalog:frontend
+        version: 14.4.0(vue@3.5.43(typescript@6.0.3))
       comark-docs:
         specifier: catalog:docs
         version: https://codeload.github.com/comarkdown/comark-docs/tar.gz/f97dc864b0aa702d54c600f868589b7a2c185b3a(patch_hash=5f1078be206123f957de74141ae02eaae510555cc7444404bffbfaae8d407e33)(82db2e45faa43624590d83dfe0c71ad0)
