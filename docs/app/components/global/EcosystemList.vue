@@ -15,6 +15,8 @@ interface EcosystemPackage {
   url?: string
   official?: boolean
   icon?: string
+  /** Upstream logo under `public/`; wins over `icon`. */
+  image?: string
   /** Tints the icon and its hover glow. Omitted entries get a neutral tile. */
   color?: string
 }
@@ -179,8 +181,16 @@ function monogram(name: string) {
           class="eco-tile flex size-9 shrink-0 items-center justify-center rounded-lg border border-default bg-muted"
           :style="pkg.color ? { color: pkg.color } : undefined"
         >
+          <img
+            v-if="pkg.image"
+            :src="pkg.image"
+            alt=""
+            width="20"
+            height="20"
+            class="size-5"
+          >
           <UIcon
-            v-if="pkg.icon"
+            v-else-if="pkg.icon"
             :name="pkg.icon"
             class="size-5"
             :class="!pkg.color && 'text-toned'"
