@@ -162,6 +162,7 @@ export interface DevframeDefinition {
     build?: boolean;
   };
   services?: DevframeServiceInput[];
+  tracing?: DevframeTracingOptions;
   clientAssets?: StaticAssetsSource;
   rpc?: DevframeRpcOptions;
   setup: (_: DevframeNodeContext, _?: DevframeSetupInfo) => void | Promise<void>;
@@ -207,6 +208,7 @@ export interface DevframeNodeContext {
   diagnostics: DevframeDiagnosticsHost;
   agent: DevframeAgentHost;
   services: DevframeServicesHost;
+  tracing: DevframeTracingHost;
   staticConfig: Partial<DevframeConnectionConfigsRegistry>;
   scope: {
     <NS extends string>(_: NS): DevframeScopedNodeContext<NS, SettingsForNamespace<NS>>;
@@ -291,9 +293,13 @@ export interface DevframeRpcServerFunctions {
     name: string;
     message: string;
   }) => Promise<void>;
+  'devframe:tracing:record': (_: string) => Promise<void>;
+  'devframe:tracing:stop': (_: string) => Promise<void>;
+  'devframe:tracing:clear': (_: string) => Promise<void>;
 }
 export interface DevframeRpcSharedStates {
   'devframe:services': DevframeServicesState;
+  'devframe:tracing:channels': Record<string, DevframeTracingChannelInfo>;
 }
 export interface DevframeScopedNodeContext<NS extends string = string, Settings extends Record<string, any> = Record<string, any>> {
   readonly namespace: NS;
@@ -307,6 +313,7 @@ export interface DevframeScopedNodeContext<NS extends string = string, Settings 
   views: DevframeViewHost;
   diagnostics: DevframeDiagnosticsHost;
   agent: DevframeAgentHost;
+  tracing: DevframeTracingHost;
   scope: DevframeNodeContext['scope'];
 }
 export interface DevframeScopedNodeRpc<NS extends string = string> {
@@ -385,6 +392,52 @@ export interface DevframeSetupInfo {
 }
 export interface DevframeSseOptions {
   route?: string;
+}
+export interface DevframeTraceEvent {
+  phase: DevframeTracePhase;
+  at: number;
+}
+export interface DevframeTraceRecord {
+  id: string;
+  channel: string;
+  startedAt: number;
+  duration?: number;
+  status: 'pending' | 'ok' | 'error';
+  context: SerializedValue;
+  result?: SerializedValue;
+  error?: {
+    name: string;
+    message: string;
+    stack?: string;
+  };
+  events: DevframeTraceEvent[];
+}
+export interface DevframeTracingChannelInfo {
+  name: string;
+  description?: string;
+  source: DevframeTracingChannelSource;
+  recording: boolean;
+  streamId?: string;
+  count: number;
+}
+export interface DevframeTracingChannelInput {
+  name: string;
+  description?: string;
+}
+export interface DevframeTracingHost {
+  register: (_: string | TracingChannel, _?: {
+    description?: string;
+  }) => TracingChannel;
+  list: () => DevframeTracingChannelInfo[];
+  record: (_: string) => void;
+  stop: (_: string) => void;
+  records: (_: string) => DevframeTraceRecord[];
+  clear: (_: string) => void;
+  onRecord: (_: string, _: (_: DevframeTraceRecord) => void) => () => void;
+  _applyOptions: (_: DevframeTracingOptions | undefined) => void;
+}
+export interface DevframeTracingOptions {
+  channels?: Array<string | DevframeTracingChannelInput>;
 }
 export interface DevframeViewHost {
   buildStaticDirs: {
@@ -549,6 +602,8 @@ export type DevframeSnapshotRpcEntry = string | {
 };
 export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
+export type DevframeTracePhase = 'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error';
+export type DevframeTracingChannelSource = 'builtin' | 'registered' | 'config' | 'adhoc';
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
 export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
@@ -563,6 +618,9 @@ export type ScopedClientFunctions<NS extends string> = { [K in keyof DevframeRpc
 export type ScopedRpcFn<Registry, NS extends string, T extends string> = `${NS}:${T}` extends keyof Registry ? Extract<Registry[`${NS}:${T}`], AnyRpcFn> : AnyRpcFn;
 export type ScopedServerFunctions<NS extends string> = { [K in keyof DevframeRpcServerFunctions as K extends `${NS}:${infer R}` ? R : never]: DevframeRpcServerFunctions[K]; };
 export type ScopedSharedStates<NS extends string> = { [K in keyof DevframeRpcSharedStates as K extends `${NS}:${infer R}` ? R : never]: DevframeRpcSharedStates[K]; };
+export type SerializedValue = string | number | boolean | null | SerializedValue[] | {
+  [key: string]: SerializedValue;
+};
 export type SettingsForNamespace<NS extends string> = NS extends keyof DevframeSettingsRegistry ? DevframeSettingsRegistry[NS] extends Record<string, any> ? DevframeSettingsRegistry[NS] : Record<string, any> : Record<string, any>;
 export type StaticAssetsSource = string | RemoteAssets;
 // #endregion

@@ -220,5 +220,10 @@ export const diagnostics = defineDiagnostics({
         `The \`mcp\` option is enabled, but the optional peer "@devframes/agentic" could not be loaded: ${p.reason}`,
       fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
+    DF0081: {
+      why: (p: { runtime: string }) =>
+        `Tracing Channels are unavailable: this runtime (${p.runtime}) does not provide \`node:diagnostics_channel\`'s \`tracingChannel\`, so \`ctx.tracing\` records nothing.`,
+      fix: 'Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` method is a no-op here.',
+    },
   },
 })

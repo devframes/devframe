@@ -61,6 +61,14 @@ export { DevframeSnapshotRpcEntry }
 export { DevframeSnapshotRpcInputs }
 export { DevframeSseOptions }
 export { DevframeStorageScope }
+export { DevframeTraceEvent }
+export { DevframeTracePhase }
+export { DevframeTraceRecord }
+export { DevframeTracingChannelInfo }
+export { DevframeTracingChannelInput }
+export { DevframeTracingChannelSource }
+export { DevframeTracingHost }
+export { DevframeTracingOptions }
 export { DevframeViewHost }
 export { DevframeWsOptions }
 export { DevframeWsPeer }
@@ -91,6 +99,7 @@ export { ScopedClientFunctions }
 export { ScopedRpcFn }
 export { ScopedServerFunctions }
 export { ScopedSharedStates }
+export { SerializedValue }
 export { SettingsForNamespace }
 export { StaticAssetsSource }
 // #endregion

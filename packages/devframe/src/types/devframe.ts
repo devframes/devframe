@@ -4,6 +4,7 @@ import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
 import type { StaticAssetsSource } from './remote-assets'
 import type { DevframeServiceInput } from './services'
+import type { DevframeTracingOptions } from './tracing'
 
 /**
  * Classification of how a devframe is being deployed. Hosted adapters
@@ -419,6 +420,12 @@ export interface DevframeDefinition {
    * `client.services.has(pkg)` and degrade.
    */
   services?: DevframeServiceInput[]
+  /**
+   * Node.js Tracing Channels the app publishes, listed for inspection
+   * tooling. Each entry is registered through `ctx.tracing.register()`
+   * before `setup(ctx)` runs. Recording stays off until a client asks.
+   */
+  tracing?: DevframeTracingOptions
   /**
    * Author's SPA dist, served as the devframe's UI. A local directory, or
    * a {@link StaticAssetsSource} remote declaration (`{ package, version }`)

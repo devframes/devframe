@@ -11,6 +11,7 @@ import type {
   RpcStreamingChannelOptions,
 } from './rpc'
 import type { DevframeRpcClientFunctions, DevframeRpcServerFunctions, DevframeRpcSharedStates } from './rpc-augments'
+import type { DevframeTracingHost } from './tracing'
 import type { DevframeViewHost } from './views'
 
 // Callable guard so `Parameters` / `ReturnType` always have a function to
@@ -218,6 +219,7 @@ export interface DevframeScopedNodeContext<NS extends string = string, Settings 
   views: DevframeViewHost
   diagnostics: DevframeDiagnosticsHost
   agent: DevframeAgentHost
+  tracing: DevframeTracingHost
   /**
    * Return a new scoped context, replacing the current scope. Pass `null`
    * or `''` to un-scope and get the base context.

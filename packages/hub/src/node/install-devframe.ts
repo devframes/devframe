@@ -153,6 +153,7 @@ export async function prepareDevframe(
   // the `ctx.services.ready()` barrier the hub fires before running setups.
   for (const input of d.services ?? [])
     void ctx.services.install(input, { resolveFrom: d.importMetaUrl })
+  ctx.tracing._applyOptions(d.tracing)
 
   return () => Promise.resolve(d.setup(ctx))
 }

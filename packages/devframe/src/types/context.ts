@@ -3,6 +3,7 @@ import type { DevframeDiagnosticsHost } from './diagnostics'
 import type { DevframeHost } from './host'
 import type { DevframeScopedNodeContext, SettingsForNamespace } from './scope'
 import type { DevframeServicesHost } from './services'
+import type { DevframeTracingHost } from './tracing'
 import type { DevframeViewHost } from './views'
 
 export interface DevframeCapabilities {
@@ -62,6 +63,11 @@ export interface DevframeNodeContext {
    * absorb setup-order differences between provider and consumer.
    */
   services: DevframeServicesHost
+  /**
+   * Node.js Tracing Channel host: lists known `TracingChannel`s, subscribes
+   * on demand, and folds their lifecycle events into trace records.
+   */
+  tracing: DevframeTracingHost
   /**
    * This context's own {@link ConnectionMeta.configs}: static, boot-time
    * config a host publishes once through the connection handshake and every
