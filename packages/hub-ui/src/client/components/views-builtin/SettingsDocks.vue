@@ -4,6 +4,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
 import { useDraggable } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
+import { t } from '../../i18n'
 import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable } from '../../state/dock-settings'
 import { useSettings } from '../../state/settings-defaults'
 import HashBadge from '../display/HashBadge.vue'
@@ -282,7 +283,7 @@ function resetCustomOrderForContainer(container: string) {
 
 <template>
   <p class="text-sm op50 mb-4">
-    Manage visibility and order of dock entries. Hidden entries will not appear in the dock bar.
+    {{ t('docks.intro') }}
   </p>
 
   <div ref="sortContainer" class="flex flex-col gap-4">
@@ -314,7 +315,7 @@ function resetCustomOrderForContainer(container: string) {
           <button
             v-if="doesContainerHaveCustomOrder(CATEGORY_CONTAINER(category))"
             class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-            title="Reset custom order"
+            :title="t('docks.resetOrder')"
             @click="resetCustomOrderForContainer(CATEGORY_CONTAINER(category))"
           >
             <div class="i-ph-arrows-counter-clockwise-duotone text-sm op60" />
@@ -348,7 +349,7 @@ function resetCustomOrderForContainer(container: string) {
                 class="w-6 h-6 flex items-center justify-center rounded border border-transparent hover:border-base transition-colors shrink-0"
                 :class="dock.id === '~settings' ? 'cursor-not-allowed op50' : settings.docksHidden.includes(dock.id) ? 'op50' : ''"
                 :disabled="dock.id === '~settings'"
-                :title="dock.id === '~settings' ? 'Always visible' : settings.docksHidden.includes(dock.id) ? 'Show' : 'Hide'"
+                :title="dock.id === '~settings' ? t('docks.alwaysVisible') : settings.docksHidden.includes(dock.id) ? t('common.show') : t('common.hide')"
                 @click="toggleDock(dock.id)"
               >
                 <div
@@ -377,12 +378,12 @@ function resetCustomOrderForContainer(container: string) {
               </span>
               <HashBadge
                 v-if="dock.type === 'action'"
-                label="Action"
+                :label="t('docks.action')"
                 class="flex-none text-xs"
               />
               <HashBadge
                 v-else-if="dock.type === 'group'"
-                label="Group"
+                :label="t('docks.group')"
                 class="flex-none text-xs"
               />
 
@@ -393,7 +394,7 @@ function resetCustomOrderForContainer(container: string) {
                 <button
                   v-if="index > 0"
                   class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-                  title="Move up (higher priority)"
+                  :title="t('docks.moveUp')"
                   @click="moveOrder(CATEGORY_CONTAINER(category), dock.id, -1)"
                 >
                   <div class="i-ph-caret-up text-sm op60" />
@@ -401,7 +402,7 @@ function resetCustomOrderForContainer(container: string) {
                 <button
                   v-if="index < entries.length - 1"
                   class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-                  title="Move down (lower priority)"
+                  :title="t('docks.moveDown')"
                   @click="moveOrder(CATEGORY_CONTAINER(category), dock.id, 1)"
                 >
                   <div class="i-ph-caret-down text-sm op60" />
@@ -412,7 +413,7 @@ function resetCustomOrderForContainer(container: string) {
               <button
                 class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/20 transition-colors shrink-0"
                 :class="settings.docksPinned.includes(dock.id) ? 'text-amber' : 'op40 hover:op70'"
-                :title="settings.docksPinned.includes(dock.id) ? 'Unpin' : 'Pin'"
+                :title="settings.docksPinned.includes(dock.id) ? t('docks.unpin') : t('docks.pin')"
                 @click="togglePin(dock.id)"
               >
                 <div
@@ -434,7 +435,7 @@ function resetCustomOrderForContainer(container: string) {
                   v-if="membersOf(dock.id).length === 0"
                   class="px-2 py-2 text-xs op40 italic border-b border-base border-t-0"
                 >
-                  No tools in this group yet
+                  {{ t('docks.emptyGroup') }}
                 </div>
                 <template v-for="[subcategory, members] of subcategoriesOf(dock.id)" :key="subcategory">
                   <!-- In-group sub-category header (shown only when the group spans multiple sub-categories) -->
@@ -447,7 +448,7 @@ function resetCustomOrderForContainer(container: string) {
                     <button
                       v-if="doesContainerHaveCustomOrder(GROUP_SUBCAT_CONTAINER(dock.id, subcategory))"
                       class="w-5 h-5 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-                      title="Reset custom order"
+                      :title="t('docks.resetOrder')"
                       @click="resetCustomOrderForContainer(GROUP_SUBCAT_CONTAINER(dock.id, subcategory))"
                     >
                       <div class="i-ph-arrows-counter-clockwise-duotone text-xs op60" />
@@ -477,7 +478,7 @@ function resetCustomOrderForContainer(container: string) {
                     <button
                       class="w-6 h-6 flex items-center justify-center rounded border border-transparent hover:border-base transition-colors shrink-0"
                       :class="settings.docksHidden.includes(member.id) ? 'op50' : ''"
-                      :title="settings.docksHidden.includes(member.id) ? 'Show' : 'Hide'"
+                      :title="settings.docksHidden.includes(member.id) ? t('common.show') : t('common.hide')"
                       @click="toggleDock(member.id)"
                     >
                       <div
@@ -506,7 +507,7 @@ function resetCustomOrderForContainer(container: string) {
                     </span>
                     <HashBadge
                       v-if="member.type === 'action'"
-                      label="Action"
+                      :label="t('docks.action')"
                       class="flex-none text-xs"
                     />
 
@@ -517,7 +518,7 @@ function resetCustomOrderForContainer(container: string) {
                       <button
                         v-if="memberIndex > 0"
                         class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-                        title="Move up (higher priority)"
+                        :title="t('docks.moveUp')"
                         @click="moveOrder(GROUP_SUBCAT_CONTAINER(dock.id, subcategory), member.id, -1)"
                       >
                         <div class="i-ph-caret-up text-sm op60" />
@@ -525,7 +526,7 @@ function resetCustomOrderForContainer(container: string) {
                       <button
                         v-if="memberIndex < members.length - 1"
                         class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray/20 transition-colors"
-                        title="Move down (lower priority)"
+                        :title="t('docks.moveDown')"
                         @click="moveOrder(GROUP_SUBCAT_CONTAINER(dock.id, subcategory), member.id, 1)"
                       >
                         <div class="i-ph-caret-down text-sm op60" />
@@ -536,7 +537,7 @@ function resetCustomOrderForContainer(container: string) {
                     <button
                       class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray/20 transition-colors shrink-0"
                       :class="settings.docksPinned.includes(member.id) ? 'text-amber' : 'op40 hover:op70'"
-                      :title="settings.docksPinned.includes(member.id) ? 'Unpin' : 'Pin'"
+                      :title="settings.docksPinned.includes(member.id) ? t('docks.unpin') : t('docks.pin')"
                       @click="togglePin(member.id)"
                     >
                       <div

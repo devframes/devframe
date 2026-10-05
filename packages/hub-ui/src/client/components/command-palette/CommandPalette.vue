@@ -4,6 +4,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { PaletteCrumb, PaletteFlatItem } from '../../state/palette'
 import Fuse from 'fuse.js'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { t, tAround } from '../../i18n'
 import { flattenPaletteCommands, paletteActionKeepsOpen, paletteScopeTrail, paletteTrailScopeId, reconcilePaletteTrail, resolvePaletteSelection } from '../../state/palette'
 import BrandWordmark from '../icons/BrandWordmark.vue'
 import CommandPaletteItem from './CommandPaletteItem.vue'
@@ -13,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const commandsCtx = computed(() => props.context.commands)
+const noResults = computed(() => tAround('palette.noResults', 'query'))
 const show = computed({
   get: () => commandsCtx.value.paletteOpen,
   set: (v) => { commandsCtx.value.paletteOpen = v },
@@ -311,7 +313,7 @@ function getKeybindings(id: string) {
               ref="searchInput"
               v-model="search"
               class="flex-1 bg-transparent py-3 outline-none text-sm color-base"
-              placeholder="Type a command..."
+              :placeholder="t('palette.placeholder')"
               @keydown="onKeyDown"
             >
           </header>
@@ -334,10 +336,10 @@ function getKeybindings(id: string) {
             <div v-if="!filtered.length" class="py-8 flex flex-col items-center justify-center gap-2 op50 text-sm">
               <div class="i-ph-magnifying-glass-duotone w-6 h-6" />
               <div v-if="search">
-                No results for "<strong class="text-primary op100">{{ search }}</strong>"
+                {{ noResults[0] }}<strong class="text-primary op100">{{ search }}</strong>{{ noResults[1] }}
               </div>
               <div v-else>
-                No commands available
+                {{ t('palette.empty') }}
               </div>
             </div>
           </div>
@@ -346,15 +348,15 @@ function getKeybindings(id: string) {
           <footer class="border-t border-base flex items-center justify-between gap-4 px-3 py-1.5 text-[10px] op50">
             <div class="flex items-center gap-1.5">
               <kbd class="px-1 py-0.5 rounded border border-base bg-base font-mono">&darr;&uarr;</kbd>
-              <span>navigate</span>
+              <span>{{ t('palette.navigate') }}</span>
             </div>
             <div class="flex items-center gap-1.5">
               <kbd class="px-1 py-0.5 rounded border border-base bg-base font-mono">esc</kbd>
-              <span>{{ breadcrumb.length > 0 || dynamicItems ? 'back' : 'close' }}</span>
+              <span>{{ breadcrumb.length > 0 || dynamicItems ? t('palette.back') : t('palette.close') }}</span>
             </div>
             <div class="flex items-center gap-1.5">
               <kbd class="px-1 py-0.5 rounded border border-base bg-base font-mono">&crarr;</kbd>
-              <span>select</span>
+              <span>{{ t('palette.select') }}</span>
             </div>
           </footer>
         </div>

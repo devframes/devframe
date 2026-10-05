@@ -4,6 +4,7 @@ export type { CreateHubContextOptions, DevframeHubContext } from '../node/contex
 
 export * from './commands'
 export * from './docks'
+export * from './locale'
 export * from './messages'
 export * from './settings'
 export * from './terminals'

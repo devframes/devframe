@@ -2,6 +2,7 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { computed } from 'vue'
+import { t } from '../../i18n'
 import { accentVarStyle } from '../../utils/accent-color'
 import DockIcon from './DockIcon.vue'
 
@@ -55,7 +56,7 @@ const isEmpty = computed(() => props.members.every(([, items]) => items.length =
       </button>
     </template>
     <div v-if="isEmpty" class="px2 py1.5 op50 text-sm italic">
-      No tools yet
+      {{ t('dock.noTools') }}
     </div>
   </div>
 </template>

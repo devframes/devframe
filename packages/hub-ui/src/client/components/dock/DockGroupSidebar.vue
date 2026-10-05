@@ -3,6 +3,7 @@ import type { DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, ref, useTemplateRef, watch } from 'vue'
+import { t } from '../../i18n'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
 import { setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
@@ -199,10 +200,10 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
     <button
       v-if="hasOverflow"
       ref="moreButton"
-      aria-label="Show more"
+      :aria-label="t('dock.showMore')"
       class="relative flex items-center justify-center w-8 h-8 rounded-lg transition mt-auto flex-none"
       :class="moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
-      @pointerenter="showTooltip($event, 'Show more')"
+      @pointerenter="showTooltip($event, t('dock.showMore'))"
       @pointerleave="hideTooltip"
       @pointerdown="hideTooltip"
       @click="toggleOverflowPanel"

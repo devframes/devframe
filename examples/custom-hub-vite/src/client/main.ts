@@ -7,7 +7,7 @@ import type {
 } from '@devframes/hub/types'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
-import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL, resolveTitle } from '@devframes/hub/client'
 import { dockIconSvg } from './icons'
 import 'virtual:uno.css'
 import '@antfu/design/styles.css'
@@ -85,15 +85,17 @@ function iconName(icon: DevframeDockEntry['icon']): string | undefined {
 // real SVG once `paintDockIcons` resolves it), the title, and an optional badge.
 function dockButton(entry: DevframeDockEntry, selectedId: string | null): string {
   const active = entry.id === selectedId
-  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  // `titleLocales` carries a registrant's translations; the browser language picks one.
+  const title = resolveTitle(entry, navigator.language)
+  const initial = (title[0] ?? '?').toUpperCase()
   const badge = entry.badge
     ? `<span class="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">${entry.badge}</span>`
     : ''
   return `<li>
-    <button type="button" data-dock-id="${entry.id}" title="${entry.title}"
+    <button type="button" data-dock-id="${entry.id}" title="${title}"
       class="relative flex w-full items-center gap-2.5 px-2 py-1 rounded-md border border-transparent text-sm select-none cursor-pointer transition hover:op100 hover:bg-active${active ? ' op100 bg-active border-base! color-base' : ' op-fade'}">
       <span class="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold" data-dock-icon="${entry.id}">${initial}</span>
-      <span class="truncate">${entry.title}</span>${badge}
+      <span class="truncate">${title}</span>${badge}
     </button>
   </li>`
 }
@@ -379,7 +381,7 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientRuntim
     let frame = iframes.get(key)
     if (!frame) {
       frame = document.createElement('iframe')
-      frame.title = entry.title
+      frame.title = resolveTitle(entry, navigator.language)
       frame.className = 'absolute inset-0 block h-full w-full border-0 bg-base'
       frame.hidden = true
       frame.src = entry.url
@@ -508,7 +510,7 @@ async function wireDrawer(rpc: Awaited<ReturnType<typeof connectDevframe>>): Pro
   // Commands - read straight from `devframe:commands` shared state.
   const commands = await rpc.sharedState.get<DevframeCommandEntry[]>('devframe:commands', { initialValue: [] })
   const renderCommands = (): void => renderList(el.commands, commands.value() ?? [], c =>
-    `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${c.title} <code class="op-fade">${c.id}</code></li>`)
+    `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${resolveTitle(c, navigator.language)} <code class="op-fade">${c.id}</code></li>`)
   commands.on('updated', renderCommands)
   renderCommands()
 

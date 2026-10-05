@@ -1,6 +1,7 @@
 import type { DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../../types'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { createSecureServer } from 'node:http2'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
@@ -10,6 +11,7 @@ import { getPort } from 'get-port-please'
 import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { getTempAuthCode } from '../../node/auth/state'
+import { getInternalContext } from '../../node/hub-internals/context'
 import { initDevframe } from '../initiate'
 
 const HANDSHAKE = { authToken: '', ua: 'test', origin: 'http://localhost' }
@@ -203,6 +205,57 @@ describe('adapters/handler', () => {
       // settles. The handler already detached; the port frees on close.
       server.close()
       server.closeAllConnections()
+    }
+  })
+
+  it('shared-server tier: a TLS host server advertises wss://', async () => {
+    const host = '127.0.0.1'
+    const server = createSecureServer({ allowHTTP1: true })
+    await new Promise<void>(resolve => server.listen(0, host, resolve))
+    const { port } = server.address() as { port: number }
+    const devtools = initDevframe(defineTestDef('handler-tls'), {
+      base: '/__handler-tls/',
+      auth: false,
+      host,
+      server: server as any,
+    })
+
+    try {
+      await devtools.ready
+      expect(getInternalContext(await devtools.context).wsEndpoint).toEqual({
+        url: `wss://localhost:${port}/__handler-tls/__ws`,
+      })
+    }
+    finally {
+      await devtools.close()
+      await new Promise<void>(resolve => server.close(() => resolve()))
+    }
+  })
+
+  it('shared-server tier: publishes the endpoint once a not-yet-listening TLS server listens', async () => {
+    const host = '127.0.0.1'
+    const server = createSecureServer({ allowHTTP1: true })
+    const devtools = initDevframe(defineTestDef('handler-tls-late'), {
+      base: '/__handler-tls-late/',
+      auth: false,
+      host,
+      server: server as any,
+    })
+
+    try {
+      await devtools.ready
+      const internal = getInternalContext(await devtools.context)
+      expect(internal.wsEndpoint).toBeUndefined()
+
+      await new Promise<void>(resolve => server.listen(0, host, resolve))
+      const { port } = server.address() as { port: number }
+      expect(internal.wsEndpoint).toEqual({
+        url: `wss://localhost:${port}/__handler-tls-late/__ws`,
+      })
+    }
+    finally {
+      await devtools.close()
+      await new Promise<void>(resolve => server.close(() => resolve()))
     }
   })
 

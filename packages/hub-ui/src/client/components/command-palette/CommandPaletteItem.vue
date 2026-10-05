@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
+import { t } from '../../i18n'
 import DockIcon from '../dock/DockIcon.vue'
 
 defineProps<{
@@ -44,7 +45,7 @@ defineEmits<{
             <span
               v-if="entry.source === 'server'"
               class="text-[10px] px-1 py-0 rounded bg-blue/10 text-blue shrink-0 leading-4"
-            >server</span>
+            >{{ t('palette.server') }}</span>
           </div>
           <div v-if="selected && entry.description" class="truncate text-xs op40 mt-0.5">
             {{ entry.description }}

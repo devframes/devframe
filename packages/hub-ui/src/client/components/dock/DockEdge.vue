@@ -6,6 +6,7 @@ import type { DockEdge as DockEdgePosition, DockLayout } from './dock-layout'
 import { useEventListener } from '@vueuse/core'
 import { computed, h, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_SETTINGS } from '../../constants'
+import { t } from '../../i18n'
 import { docksSplitGroupsBySize, getEntryGroup } from '../../state/dock-settings'
 import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useDocksOverflowPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
@@ -512,9 +513,9 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
         >
           <button
             ref="positionButton"
-            aria-label="Edge position"
+            :aria-label="t('dock.edgePosition')"
             class="p1.5 rounded hover:bg-active transition op75 hover:op100"
-            @pointerenter="showTooltip(positionButton, 'Edge position')"
+            @pointerenter="showTooltip(positionButton, t('dock.edgePosition'))"
             @pointerleave="hideTooltip"
             @pointerdown="onPositionPointerDown"
             @click="togglePositionDropdown"
@@ -523,9 +524,9 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
           </button>
           <button
             ref="floatButton"
-            aria-label="Float mode"
+            :aria-label="t('dock.floatMode')"
             class="p1.5 rounded hover:bg-active transition op50 hover:op100"
-            @pointerenter="showTooltip(floatButton, 'Float mode')"
+            @pointerenter="showTooltip(floatButton, t('dock.floatMode'))"
             @pointerleave="hideTooltip"
             @pointerdown="hideTooltip"
             @click="switchToFloat"

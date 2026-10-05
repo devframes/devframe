@@ -1,6 +1,7 @@
 import { getDevframeRpcClient } from './rpc'
 
 export * from './connection'
+export { storeConnection } from './connection-storage'
 export * from './otp'
 export * from './rpc'
 export type { DevframeServiceClientHandle, DevframeServicesClient } from './rpc-services'

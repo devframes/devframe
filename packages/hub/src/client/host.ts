@@ -140,6 +140,8 @@ export async function createDevframeClientRuntime(
   ])
 
   let selectedId: string | null = null
+  /** Bumped by every `switchEntry` call, so a stale one can tell it was superseded. */
+  let switchRequest = 0
   const entryToStateMap = new Map<string, DockEntryState>()
   // Docks registered live in this page via `docks.register()`. They never flow
   // into the `devframe:docks` shared state (client-only), and are merged with
@@ -450,7 +452,12 @@ export async function createDevframeClientRuntime(
     const entry = entryToStateMap.get(next ?? '')?.entryMeta
     if (entry && loadScriptsEnabled && !rpc.isTrusted)
       return false
+    // A switch that waits on a page script must not override a newer one
+    // that committed meanwhile (a click while the previous dock still loads).
+    const request = ++switchRequest
     if (entry?.type === 'iframe' && entry.clientScript && loadScriptsEnabled && !await preparePageScript(entry))
+      return false
+    if (request !== switchRequest)
       return false
 
     const previous = selectedId

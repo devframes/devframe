@@ -28,6 +28,8 @@ export * from "devframe/client";
 
 // #region Other
 export { clientScriptFailureHint }
+export { matchLocale }
 export { resolveClientModuleSpecifier }
+export { resolveTitle }
 export { stripRemoteConnectionFromUrl }
 // #endregion

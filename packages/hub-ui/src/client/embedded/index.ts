@@ -4,6 +4,7 @@ import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 import { ref } from 'vue'
 import { applyPrimaryColor, setBranding } from '../state/branding'
 import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
+import { setupLocale } from '../state/locale'
 import { isEmbeddedDockInitiallyVisible, setupEmbeddedVisibility } from './visibility'
 
 /**
@@ -38,6 +39,7 @@ async function mountDock(): Promise<void> {
      */
     simpleAuth: false,
   })
+  setupLocale(rpc)
 
   // The reference UI's dock-bar preferences (`createUi({ dockPreferences })`),
   // delivered once via the connection handshake we just performed, fixed for

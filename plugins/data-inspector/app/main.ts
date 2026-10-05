@@ -4,11 +4,10 @@ import { createApp } from 'vue'
 import { applyPanelBranding } from '../../../design/panel-theme'
 import App from './App.vue'
 import 'virtual:uno.css'
-// floating-vue's base popper/transition structure, then @antfu/design's themed
-// override (recolors the tooltip surface + arrow to the semantic tokens via
-// `--at-apply`, so tooltips match the design system in light and dark).
-import 'floating-vue/dist/style.css'
-import '@antfu/design/styles/floating-vue.css'
+// vue-afloat's base popper structure; `@antfu/design/styles.css` below themes
+// it through the `--vue-afloat-*` variables so tooltips match the design
+// system in light and dark.
+import 'vue-afloat/style.css'
 import '@antfu/design/styles.css'
 import './style.css'
 import '../../../design/primary-ramp.css'

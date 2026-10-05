@@ -48,6 +48,7 @@ export interface DevframeCommandAgentOptions {
 export interface DevframeCommandBase {
   id: string;
   title: string;
+  titleLocales?: DevframeTitleLocales;
   description?: string;
   icon?: DevframeDockEntryIcon;
   category?: string;
@@ -86,6 +87,7 @@ export interface DevframeDockActivation {
 export interface DevframeDockEntryBase {
   id: string;
   title: string;
+  titleLocales?: DevframeTitleLocales;
   icon: DevframeDockEntryIcon;
   defaultOrder?: number;
   category?: DevframeDockEntryCategory;
@@ -290,6 +292,10 @@ export interface DevframeTerminalsHost {
   startChildProcess: (_: DevframeChildProcessExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>) => Promise<DevframeChildProcessTerminalSession>;
   startPtySession: (_: DevframePtyExecuteOptions, _: Omit<DevframeTerminalSessionBase, 'status'>) => Promise<DevframePtyTerminalSession>;
 }
+export interface DevframeTitled {
+  title: string;
+  titleLocales?: DevframeTitleLocales;
+}
 export interface DevframeViewAction extends DevframeDockEntryBase {
   type: 'action';
   action: ClientScriptEntry;
@@ -327,6 +333,7 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
   launcher: {
     icon?: DevframeDockEntryIcon;
     title: string;
+    titleLocales?: DevframeTitleLocales;
     status?: DevframeViewLauncherStatus;
     error?: string;
     description?: string;
@@ -379,6 +386,7 @@ export type DevframeMessageEntryInput = Omit<DevframeMessageEntry, 'id' | 'times
 export type DevframeMessageLevel = 'info' | 'warn' | 'error' | 'success' | 'debug';
 export type DevframeMessageShortcutInput = Omit<DevframeMessageEntryInput, 'message' | 'level'>;
 export type DevframeTerminalStatus = 'running' | 'stopped' | 'error';
+export type DevframeTitleLocales = Record<string, string>;
 export type DevframeViewLauncherStatus = 'idle' | 'loading' | 'success' | 'error';
 // #endregion
 
@@ -390,6 +398,8 @@ export declare function defineDockEntry<const T extends DevframeDockUserEntry, c
   when?: WhenExpression<WhenContext, W>;
   visibility?: WhenExpression<WhenContext, V>;
 }): T;
+export declare function matchLocale(_: string | undefined, _: Iterable<string>): string | undefined;
+export declare function resolveTitle(_: DevframeTitled, _: string | undefined): string;
 // #endregion
 
 // #region Variables

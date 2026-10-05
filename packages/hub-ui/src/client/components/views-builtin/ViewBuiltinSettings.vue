@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DevframeViewBuiltin } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { t } from '../../i18n'
 import SettingsAdvanced from './SettingsAdvanced.vue'
 import SettingsAppearance from './SettingsAppearance.vue'
 import SettingsDocks from './SettingsDocks.vue'
@@ -12,14 +13,14 @@ defineProps<{
   entry: DevframeViewBuiltin
 }>()
 
-const tabs = [
-  { id: 'appearance', label: 'Appearance', icon: 'i-ph-paint-brush-duotone' },
-  { id: 'docks', label: 'Docks', icon: 'i-ph-layout-duotone' },
-  { id: 'shortcuts', label: 'Shortcuts', icon: 'i-ph-keyboard-duotone' },
-  { id: 'advanced', label: 'Advanced', icon: 'i-ph-wrench-duotone' },
-] as const
+const tabs = computed(() => [
+  { id: 'appearance', label: t('settings.appearance'), icon: 'i-ph-paint-brush-duotone' },
+  { id: 'docks', label: t('settings.docks'), icon: 'i-ph-layout-duotone' },
+  { id: 'shortcuts', label: t('settings.shortcuts'), icon: 'i-ph-keyboard-duotone' },
+  { id: 'advanced', label: t('settings.advanced'), icon: 'i-ph-wrench-duotone' },
+] as const)
 
-type TabId = (typeof tabs)[number]['id']
+type TabId = (typeof tabs)['value'][number]['id']
 const activeTab = ref<TabId>('appearance')
 </script>
 

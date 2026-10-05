@@ -4,3 +4,7 @@
 // #region Functions
 export function createUi(_) {}
 // #endregion
+
+// #region Variables
+export var HUB_UI_LOCALES /* const */
+// #endregion

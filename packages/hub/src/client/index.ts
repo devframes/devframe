@@ -1,4 +1,5 @@
 export { clientScriptFailureHint, resolveClientModuleSpecifier } from '../client-modules'
+export * from '../locale'
 export * from './client-script'
 export * from './context'
 export * from './dock-resources'

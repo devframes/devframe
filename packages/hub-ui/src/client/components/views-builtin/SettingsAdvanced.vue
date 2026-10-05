@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
+import { t } from '../../i18n'
 import { useBranding } from '../../state/branding'
 import { useConfirm } from '../../state/confirm'
 import { useSettings } from '../../state/settings-defaults'
@@ -16,8 +17,8 @@ const confirm = useConfirm()
 
 async function resetAllSettings() {
   if (await confirm({
-    title: 'Reset All Settings',
-    message: 'Reset all settings to defaults? This includes appearance, docks, and shortcuts.',
+    title: t('advanced.resetAll'),
+    message: t('advanced.resetAllConfirm'),
   })) {
     settingsStore.mutate(() => {
       return DEFAULT_STATE_USER_SETTINGS()
@@ -27,8 +28,8 @@ async function resetAllSettings() {
 
 async function resetShortcuts() {
   if (await confirm({
-    title: 'Reset Keyboard Shortcuts',
-    message: 'Reset all keyboard shortcuts to defaults?',
+    title: t('advanced.resetShortcuts'),
+    message: t('advanced.resetShortcutsConfirm'),
   })) {
     settingsStore.mutate((state) => {
       state.commandShortcuts = {}
@@ -38,8 +39,8 @@ async function resetShortcuts() {
 
 async function resetDocks() {
   if (await confirm({
-    title: 'Reset Dock Settings',
-    message: 'Reset dock visibility, order, and pinning to defaults?',
+    title: t('advanced.resetDocks'),
+    message: t('advanced.resetDocksConfirm'),
   })) {
     settingsStore.mutate((state) => {
       const defaults = DEFAULT_STATE_USER_SETTINGS()
@@ -53,8 +54,8 @@ async function resetDocks() {
 
 async function deauthorize() {
   if (await confirm({
-    title: 'Revoke Authorization',
-    message: `Revoke this browser's access to ${branding.value.productName}? You'll need to authorize again with a new code to reconnect.`,
+    title: t('advanced.revoke'),
+    message: t('advanced.revokeConfirm', { productName: branding.value.productName }),
   })) {
     // Revokes this session's bearer token server-side; the server then
     // broadcasts `devframe:auth:revoked`, dropping this (and any sibling)
@@ -79,8 +80,8 @@ async function deauthorize() {
         />
       </button>
       <div class="flex flex-col">
-        <span class="text-sm">Show Devframe Inspector</span>
-        <span class="text-xs op50">Reveal the experimental Devframe Inspector dock, the devtools for the devtools</span>
+        <span class="text-sm">{{ t('advanced.inspector') }}</span>
+        <span class="text-xs op50">{{ t('advanced.inspectorHint') }}</span>
       </div>
     </label>
 
@@ -90,10 +91,10 @@ async function deauthorize() {
     <div class="flex items-start gap-4">
       <div class="flex-1">
         <div class="text-sm">
-          Reset Keyboard Shortcuts
+          {{ t('advanced.resetShortcuts') }}
         </div>
         <div class="text-xs op50 mt-0.5">
-          Remove all custom shortcut overrides and restore default keybindings
+          {{ t('advanced.resetShortcutsHint') }}
         </div>
       </div>
       <button
@@ -101,7 +102,7 @@ async function deauthorize() {
         @click="resetShortcuts"
       >
         <div class="i-ph-keyboard-duotone w-4 h-4" />
-        Reset Shortcuts
+        {{ t('advanced.resetShortcutsAction') }}
       </button>
     </div>
 
@@ -109,10 +110,10 @@ async function deauthorize() {
     <div class="flex items-start gap-4">
       <div class="flex-1">
         <div class="text-sm">
-          Reset Dock Settings
+          {{ t('advanced.resetDocks') }}
         </div>
         <div class="text-xs op50 mt-0.5">
-          Restore default dock visibility, order, and pinning
+          {{ t('advanced.resetDocksHint') }}
         </div>
       </div>
       <button
@@ -120,7 +121,7 @@ async function deauthorize() {
         @click="resetDocks"
       >
         <div class="i-ph-layout-duotone w-4 h-4" />
-        Reset Docks
+        {{ t('advanced.resetDocksAction') }}
       </button>
     </div>
 
@@ -129,10 +130,10 @@ async function deauthorize() {
       <div class="flex items-start gap-4">
         <div class="flex-1">
           <div class="text-sm">
-            Reset All Settings
+            {{ t('advanced.resetAll') }}
           </div>
           <div class="text-xs op50 mt-0.5">
-            Reset everything to defaults including appearance, docks, and shortcuts
+            {{ t('advanced.resetAllHint') }}
           </div>
         </div>
         <button
@@ -140,7 +141,7 @@ async function deauthorize() {
           @click="resetAllSettings"
         >
           <div class="i-ph-arrow-counter-clockwise w-4 h-4" />
-          Reset All
+          {{ t('advanced.resetAllAction') }}
         </button>
       </div>
     </div>
@@ -150,10 +151,10 @@ async function deauthorize() {
       <div class="flex items-start gap-4">
         <div class="flex-1">
           <div class="text-sm">
-            Revoke Authorization
+            {{ t('advanced.revoke') }}
           </div>
           <div class="text-xs op50 mt-0.5">
-            De-authorize this browser and revoke its access token; you'll re-authorize with a new code
+            {{ t('advanced.revokeHint') }}
           </div>
         </div>
         <button
@@ -161,7 +162,7 @@ async function deauthorize() {
           @click="deauthorize"
         >
           <div class="i-ph-sign-out-duotone w-4 h-4" />
-          Revoke Access
+          {{ t('advanced.revokeAction') }}
         </button>
       </div>
     </div>

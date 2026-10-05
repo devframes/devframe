@@ -37,6 +37,8 @@ const playgroundGroup: DevframeViewGroup = {
   type: 'group',
   id: PLAYGROUND_GROUP_ID,
   title: 'Playground Tools',
+  // Exercises `titleLocales`: switch the language in Settings → Appearance.
+  titleLocales: { 'zh-CN': '演练场工具', 'ja': 'プレイグラウンドツール' },
   icon: 'ph:flask-duotone',
   category: 'app',
   // No `defaultChildId`, so clicking reveals the member popover instead of
@@ -72,6 +74,7 @@ export async function seedPlayground(ctx: DevframeHubContext): Promise<void> {
   ctx.commands.register({
     id: 'playground:say-hello',
     title: 'Playground · Say Hello',
+    titleLocales: { 'zh-CN': '演练场 · 打个招呼', 'ja': 'プレイグラウンド · あいさつ' },
     icon: 'ph:hand-waving-duotone',
     category: 'playground',
     handler: () => 'Hello from the hub-ui playground!',

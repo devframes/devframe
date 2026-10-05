@@ -1,8 +1,10 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDocksUserSettings, DevframeViewGroup } from '@devframes/hub'
 import type { Immutable } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
+import type { MessageKey } from '../i18n'
 import { evaluateWhen } from 'devframe/utils/when'
 import { DEFAULT_CATEGORIES_ORDER, INSPECTOR_DOCK_ID } from '../constants'
+import { t } from '../i18n'
 import { hubUiSetting } from './settings-defaults'
 // Registers hub-ui's reference-viewer settings onto DevframeDocksUserSettings.
 import '../types'
@@ -70,14 +72,14 @@ export function resolveCommandIcon(icon: DevframeDockEntry['icon']): string | un
   return icon?.light ?? icon?.dark
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'default': 'Default',
-  'app': 'App',
-  'framework': 'Framework',
-  'web': 'Web',
-  'advanced': 'Advanced',
-  '~builtin': 'Built-in',
-  [PINNED_CATEGORY]: 'Pinned',
+const CATEGORY_LABELS: Record<string, MessageKey> = {
+  'default': 'category.default',
+  'app': 'category.app',
+  'framework': 'category.framework',
+  'web': 'category.web',
+  'advanced': 'category.advanced',
+  '~builtin': 'category.builtin',
+  [PINNED_CATEGORY]: 'category.pinned',
 }
 
 /**
@@ -96,7 +98,8 @@ export function isCategoryHideable(category: string): boolean {
  * custom categories a kit may register.
  */
 export function getCategoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] ?? category
+  const key = CATEGORY_LABELS[category]
+  return key ? t(key) : category
 }
 
 /**

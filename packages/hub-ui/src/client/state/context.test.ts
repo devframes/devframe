@@ -6,7 +6,7 @@ import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { describe, expect, it, vi } from 'vitest'
-import { nextTick, ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { createDocksContext } from './context'
 import { executeSetupScript } from './setup-script'
 
@@ -232,6 +232,39 @@ describe('createDocksContext', () => {
     expect(context.docks.selected).toBeNull()
     await context.docks.switchEntry('nuxt')
     expect(context.docks.selected?.id).toBe('nuxt:modules')
+  })
+
+  it('loads a group\'s defaultChildId before navigating to the last-opened member', async () => {
+    expect.hasAssertions()
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const session = ref<DockSessionStorage>({
+      open: true,
+      selectedDockId: 'nuxt:modules',
+      selectedDockRoute: null,
+      groupLastChildIds: { nuxt: 'nuxt:modules' },
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session)
+    const opened: string[] = []
+    watch(() => session.value.selectedDockId, (id) => {
+      if (id)
+        opened.push(id)
+    }, { flush: 'sync' })
+
+    trust()
+    sharedStates.get('devframe:docks')!.push([
+      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
+      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+    ] satisfies DevframeDockEntry[])
+    sharedStates.get('devframe:dock-renderers')!.push({})
+    await flushRestore()
+    // The default member loads first, which takes a few more ticks.
+    await vi.waitFor(() => expect(opened).toEqual(['nuxt:overview', 'nuxt:modules']))
+
+    expect(opened).toEqual(['nuxt:overview', 'nuxt:modules'])
+    expect(context.docks.selected?.id).toBe('nuxt:modules')
+    expect(session.value.groupLastChildIds).toEqual({ nuxt: 'nuxt:modules' })
   })
 
   it('does not remember a grouped action as the group\'s last-opened member', async () => {

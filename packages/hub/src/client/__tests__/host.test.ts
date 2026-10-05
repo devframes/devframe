@@ -242,6 +242,33 @@ describe('createDevframeClientRuntime', () => {
     host.dispose()
   })
 
+  it('keeps the latest selection when an earlier switch is still loading its page script', async () => {
+    const { rpc, states } = createStubRpc()
+    const host = await createDevframeClientRuntime({ rpc })
+    const fixture = globalThis as typeof globalThis & { __DF_SLOW_SCRIPT__?: Promise<void> }
+    let finishScript!: () => void
+    fixture.__DF_SLOW_SCRIPT__ = new Promise<void>((resolve) => {
+      finishScript = resolve
+    })
+    try {
+      states.get('devframe:docks')!.push([
+        iframeEntry('slow', { clientScript: { importFrom: 'data:text/javascript,export default () => globalThis.__DF_SLOW_SCRIPT__' } }),
+        iframeEntry('fast'),
+      ])
+
+      const slow = host.context.docks.switchEntry('slow')
+      expect(await host.context.docks.switchEntry('fast')).toBe(true)
+      finishScript()
+
+      expect(await slow).toBe(false)
+      expect(host.context.docks.selected?.id).toBe('fast')
+    }
+    finally {
+      host.dispose()
+      delete fixture.__DF_SLOW_SCRIPT__
+    }
+  })
+
   it('switches the active dock when the hub broadcasts devframe:docks:activate', async () => {
     const { rpc, states, definitions } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })

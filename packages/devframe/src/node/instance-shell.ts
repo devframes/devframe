@@ -14,6 +14,7 @@ import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './ins
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
+import { Server as TlsServer } from 'node:tls'
 import { validateOriginCandidate } from 'devframe/utils/origin'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'devframe/utils/url'
 import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
@@ -144,10 +145,22 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
   const address = httpServer.address()
   const resolvedPort = typeof address === 'object' && address ? address.port : port
   const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
-  const internal = getInternalContext(context)
-  const wsUrl = `ws://${formatHostForUrl(bindHost)}:${resolvedPort}${options.path ?? ''}`
-  if (websocket)
-    internal.setWsEndpoint({ url: wsUrl })
+  // A shared server may not be listening yet (Vite listens after plugins configure).
+  let wsUrl: string | undefined
+  const publishWsEndpoint = (): void => {
+    const bound = httpServer.address()
+    if (!bound || typeof bound === 'string')
+      return
+    const scheme = httpServer instanceof TlsServer ? 'wss' : 'ws'
+    wsUrl = `${scheme}://${formatHostForUrl(bindHost)}:${bound.port}${options.path ?? ''}`
+    getInternalContext(context).setWsEndpoint({ url: wsUrl })
+  }
+  if (websocket) {
+    if (httpServer.listening)
+      publishWsEndpoint()
+    else
+      httpServer.once('listening', publishWsEndpoint)
+  }
 
   return {
     origin,
@@ -157,10 +170,11 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     rpcGroup: core.rpcGroup,
     connectionMeta: () => websocketConnectionMeta(rpcHost, options.path),
     async close() {
+      httpServer.off('listening', publishWsEndpoint)
       await closeWs()
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
-      if (websocket && getInternalContext(context).wsEndpoint?.url === wsUrl)
+      if (wsUrl && getInternalContext(context).wsEndpoint?.url === wsUrl)
         getInternalContext(context).setWsEndpoint(undefined)
     },
   }

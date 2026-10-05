@@ -11,7 +11,7 @@ import type {
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import type { FormEvent } from 'react'
-import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL } from '@devframes/hub/client'
+import { connectDevframe, createDevframeClientRuntime, FRAME_NAV_CHANNEL, resolveTitle } from '@devframes/hub/client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createReactJsonRenderDockRenderer } from '../json-render/react-renderer'
 import { dockIconSvg } from './icons'
@@ -246,7 +246,7 @@ function DockIcon({ entry }: { entry: DevframeDockEntry }) {
   const svg = useDockIconSvg(entry.icon)
   if (svg)
     return <span className="h-5 w-5 shrink-0 text-lg" dangerouslySetInnerHTML={{ __html: svg }} />
-  const initial = (entry.title?.[0] ?? '?').toUpperCase()
+  const initial = (resolveTitle(entry, navigator.language)[0] ?? '?').toUpperCase()
   return <span className="grid h-5 w-5 shrink-0 place-items-center rounded bg-active text-[0.7rem] font-bold">{initial}</span>
 }
 
@@ -537,7 +537,7 @@ export default function Page() {
       let el = pool.get(key)
       if (!el) {
         el = document.createElement('iframe')
-        el.title = selectedDock.title
+        el.title = resolveTitle(selectedDock, navigator.language)
         el.className = 'absolute inset-0 block h-full w-full border-0 bg-base'
         el.src = selectedDock.url
         stage.appendChild(el)
@@ -652,10 +652,10 @@ export default function Page() {
                           void ctx?.docks.switchEntry(dock.id)
                       }}
                       className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
-                      title={dock.title}
+                      title={resolveTitle(dock, navigator.language)}
                     >
                       <DockIcon entry={dock} />
-                      <span className="truncate">{dock.title}</span>
+                      <span className="truncate">{resolveTitle(dock, navigator.language)}</span>
                       {dock.badge && <span className="ml-auto shrink-0 rounded bg-active px1 py0.5 text-[0.6rem] font-mono color-base">{dock.badge}</span>}
                     </button>
                   </li>
@@ -709,7 +709,7 @@ export default function Page() {
               ? <li className="rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">Waiting for snapshot…</li>
               : commands.map(command => (
                   <li key={command.id} className={rowClass}>
-                    {command.title}
+                    {resolveTitle(command, navigator.language)}
                     {' '}
                     <code className="op-fade">{command.id}</code>
                   </li>

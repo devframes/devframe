@@ -267,6 +267,8 @@ export interface DevframeCliOptions {
 export interface DevframeDockDefaults {
   /** Dock entry title. Defaults to the definition's `name`. */
   title?: string
+  /** Translations of `title` by BCP 47 tag; see `@devframes/hub`'s `resolveTitle()`. */
+  titleLocales?: Record<string, string>
   /** Dock entry icon. Defaults to the definition's `icon`. */
   icon?: string | { light: string, dark: string }
   /**

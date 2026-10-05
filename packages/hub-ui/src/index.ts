@@ -1,10 +1,12 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
+import type { HubUiLocale } from './locales'
 import type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createAuthBanner } from 'devframe/recipes/interactive-auth'
 
+export { HUB_UI_LOCALES, type HubUiLocale } from './locales'
 export type { ColorSchemeValue, DevframeBranding, DevframeDockPreferences, EmbeddedVisibility, ViewerBackground } from './types'
 
 declare module 'devframe/types' {
@@ -13,6 +15,13 @@ declare module 'devframe/types' {
       branding?: DevframeBranding
       embeddedVisibility?: EmbeddedVisibility
       dockPreferences?: DevframeDockPreferences
+      /**
+       * The hub UI language. `createUi({ locale })` publishes the host's
+       * default; the running hub UI then overwrites it with the language it
+       * resolved (the visitor's own pick, else this default, else the
+       * browser's), so a mounted frame reads the effective one.
+       */
+      locale?: HubUiLocale
     }
   }
 }
@@ -67,6 +76,13 @@ export interface CreateUiOptions {
    * user-overridable preference the visitor's own choice then wins.
    */
   dockPreferences?: DevframeDockPreferences
+  /**
+   * Default UI language, one of {@link HUB_UI_LOCALES}. Published as
+   * `ConnectionMeta.configs.ui.locale` and, like the dock mode, only a
+   * seed: a visitor's own pick in Settings → Appearance wins. Without it
+   * the UI follows the browser language, falling back to English.
+   */
+  locale?: HubUiLocale
 }
 
 /**
@@ -105,6 +121,7 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
         branding: options.branding || {},
         ...(options.embeddedVisibility ? { embeddedVisibility: options.embeddedVisibility } : {}),
         ...(options.dockPreferences ? { dockPreferences: options.dockPreferences } : {}),
+        ...(options.locale ? { locale: options.locale } : {}),
       }
     },
     /**

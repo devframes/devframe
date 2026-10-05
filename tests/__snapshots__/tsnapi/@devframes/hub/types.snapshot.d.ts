@@ -65,6 +65,8 @@ export { DevframeTerminalSession }
 export { DevframeTerminalSessionBase }
 export { DevframeTerminalsHost }
 export { DevframeTerminalStatus }
+export { DevframeTitled }
+export { DevframeTitleLocales }
 export { DevframeViewAction }
 export { DevframeViewBuiltin }
 export { DevframeViewCustomRender }
