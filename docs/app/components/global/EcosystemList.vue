@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { refDebounced } from '@vueuse/core'
 
-type Category = 'All' | 'Devframes' | 'Hosts' | 'Services' | 'Kits'
+type Category = 'All' | 'Devframes' | 'Hosts' | 'Services'
 
 interface EcosystemPackage {
   name: string
@@ -23,7 +23,7 @@ interface EcosystemPackage {
 
 const props = defineProps<{ packages: EcosystemPackage[] }>()
 
-const categories: Category[] = ['All', 'Devframes', 'Hosts', 'Services', 'Kits']
+const categories: Category[] = ['All', 'Devframes', 'Hosts', 'Services']
 
 const route = useRoute()
 const router = useRouter()
