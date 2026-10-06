@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src", "scripts", "test", "*.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

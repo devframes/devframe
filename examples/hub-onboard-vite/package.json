@@ -1,0 +1,17 @@
+{
+  "name": "hub-onboard-vite",
+  "type": "module",
+  "version": "1.2.1",
+  "private": true,
+  "description": "Vite host that ships only the hub UI onboarding button and installs the hub on demand.",
+  "homepage": "https://github.com/devframes/devframe/tree/main/examples/hub-onboard-vite",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@devframes/hub-ui-onboard": "workspace:*",
+    "@types/node": "catalog:types",
+    "vite": "catalog:build"
+  }
+}

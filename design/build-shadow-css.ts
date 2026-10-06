@@ -42,6 +42,12 @@ export interface BuildShadowCssOptions {
    * shadow trees on the same host page never collide.
    */
   varPrefix: string
+  /**
+   * Also scan `@antfu/design`'s Vue components so the classes they use ship
+   * in the stylesheet. Default `true`; a surface that renders none of those
+   * components turns it off to keep the stylesheet small.
+   */
+  scanDesignComponents?: boolean
 }
 
 export interface BuildShadowCssResult {
@@ -63,7 +69,7 @@ export interface BuildShadowCssResult {
  * exempt from the `no-console` lint rule) prints its own summary line.
  */
 export async function buildShadowCss(options: BuildShadowCssOptions): Promise<BuildShadowCssResult> {
-  const { srcDir, globs, config, primaryRampPath, userStylePath, varPrefix } = options
+  const { srcDir, globs, config, primaryRampPath, userStylePath, varPrefix, scanDesignComponents = true } = options
   const generatedCss = join(srcDir, '.generated/css.ts')
 
   const require = createRequire(import.meta.url)
@@ -81,11 +87,13 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
   // package's component sources too so those classes ship in the injected
   // CSS.
   const designComponentsDir = join(require.resolve('@antfu/design/package.json'), '..', 'components')
-  const designFiles = await glob('**/*.vue', {
-    cwd: designComponentsDir,
-    absolute: true,
-    ignore: IGNORE,
-  })
+  const designFiles = scanDesignComponents
+    ? await glob('**/*.vue', {
+        cwd: designComponentsDir,
+        absolute: true,
+        ignore: IGNORE,
+      })
+    : []
 
   const generator = await createGenerator(config)
 

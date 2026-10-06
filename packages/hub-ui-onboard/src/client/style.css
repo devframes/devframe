@@ -1,0 +1,57 @@
+/*
+ * Adopted into the button's shadow root, so nothing here reaches the host
+ * page. Class names are prefixed anyway so the generated stylesheet reads
+ * clearly next to the utilities.
+ */
+.devframes-onboard-pill {
+  --uno: fixed bottom-4 left-4 z-floating-anchor w-10 h-10 rounded-full border border-base bg-dock-glass shadow;
+  --uno: flex items-center justify-center cursor-pointer select-none p-0 outline-none;
+  --uno: transition-transform duration-200 hover:scale-105 focus-visible:ring-2 ring-primary-400;
+}
+
+.devframes-onboard-glow {
+  --uno: absolute left-1/2 top-1/2 w-40 h-40 rounded-full opacity-0 pointer-events-none -z-1;
+  --uno: transition-opacity duration-1000 ease-out;
+  transform: translate(-50%, -50%);
+  filter: blur(60px);
+  /* Same brand-derived gradient as the hub-ui dock glow. */
+  background-image: linear-gradient(
+    45deg,
+    var(--colors-primary-300, #adc77f),
+    var(--colors-primary-500, #517158),
+    var(--colors-primary-DEFAULT, #486954)
+  );
+}
+
+.devframes-onboard-pill:hover .devframes-onboard-glow {
+  --uno: opacity-60;
+}
+
+.devframes-onboard-panel {
+  --uno: fixed bottom-16 left-4 z-floating-anchor w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-base bg-base color-base shadow-lg;
+  --uno: p-4 flex flex-col gap-3 font-sans text-sm leading-normal;
+  --uno: transition-all duration-200 origin-bottom-left;
+}
+
+.devframes-onboard-panel[hidden] {
+  --uno: block op0 scale-95 pointer-events-none;
+}
+
+.devframes-onboard-command {
+  --uno: block font-mono text-xs px-2 py-1.5 rounded bg-secondary color-muted break-all select-all;
+}
+
+@media print {
+  .devframes-onboard-pill,
+  .devframes-onboard-panel {
+    --uno: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .devframes-onboard-pill,
+  .devframes-onboard-panel,
+  .devframes-onboard-glow {
+    transition: none;
+  }
+}

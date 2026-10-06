@@ -57,6 +57,7 @@ overrides:
   '@devframes/agentic': 'workspace:*'
   '@devframes/hub': 'workspace:*'
   '@devframes/hub-ui': 'workspace:*'
+  '@devframes/hub-ui-onboard': 'workspace:*'
   '@devframes/json-render': 'workspace:*'
   '@devframes/json-render-ui': 'workspace:*'
   '@devframes/next': 'workspace:*'
@@ -141,6 +142,7 @@ catalogs:
     obug: ^3.0.0
     ohash: ^2.0.12
     p-limit: ^7.3.3
+    package-manager-detector: ^1.8.0
     parse5: ^8.0.1
     pathe: ^2.0.3
     perfect-debounce: ^2.1.0
