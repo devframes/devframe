@@ -70,6 +70,8 @@ function namedPackages(plan: InstallPlan): string[] {
  * for a path, URL or alias spec whose installed name is not in the spec.
  */
 function packageName(spec: string): string | undefined {
-  const match = /^(@[^/@]+\/[^/@]+|[^/@]+)(?:@[^/]*)?$/.exec(spec)
+  // npm name characters only, so `file:`, `link:`, `npm:` aliases, URLs and
+  // Windows paths (`file:D:\pkg`) never pass as a name.
+  const match = /^((?:@[\w.~-]+\/)?[\w.~-]+)(?:@[^/]*)?$/.exec(spec)
   return match?.[1]
 }
