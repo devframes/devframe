@@ -36,7 +36,7 @@ function clientFile(): string {
 function defaultMessages(productName: string): OnboardingMessages {
   return {
     title: productName,
-    description: `${productName} is not installed in this project yet. Install it to open the panel.`,
+    description: `${productName} enables development features in your project. Install it with:`,
     install: `Install ${productName}`,
     hide: 'Hide for now',
     disable: 'Disable entirely',

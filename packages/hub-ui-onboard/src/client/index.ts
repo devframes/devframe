@@ -2,6 +2,8 @@ import type { OnboardingBranding, OnboardingStatus } from '../types'
 import css from './.generated/css'
 import { DEVFRAME_LOGO } from './logo'
 
+// @unocss-include
+
 /**
  * The stand-in floating button, served at `<base>embedded.js`. It asks
  * `__onboard/status` what to show, offers Install / Disable, and once the
@@ -74,7 +76,10 @@ function mount(initial: OnboardingStatus): void {
   const style = document.createElement('style')
   style.textContent = css
   const scheme = document.createElement('div')
-  scheme.className = isDark() ? 'dark' : 'light'
+  scheme.className = [
+    isDark() ? 'dark' : 'light',
+    'devframes-onboard-root',
+  ].join(' ')
   scheme.style.display = 'contents'
   root.append(style, scheme)
   if (initial.branding.primaryColor)
@@ -90,7 +95,7 @@ function mount(initial: OnboardingStatus): void {
   pill.setAttribute('aria-expanded', 'false')
   const glow = document.createElement('span')
   glow.className = 'devframes-onboard-glow'
-  pill.append(glow, mark(branding, 'w-4 h-4'))
+  pill.append(mark(branding, 'w-3 h-3'))
 
   const panel = document.createElement('div')
   panel.className = 'devframes-onboard-panel'
@@ -116,20 +121,20 @@ function mount(initial: OnboardingStatus): void {
   note.hidden = true
 
   const install = button('btn-primary text-sm justify-center', messages.install, () => void startInstall())
-  const hide = button('btn-text text-sm color-muted', messages.hide, () => {
+  const hide = button('btn-action justify-center text-sm color-muted', messages.hide, () => {
     sessionStorage.setItem(HIDDEN_KEY, '1')
     host.remove()
   })
-  const disable = button('btn-text text-sm color-muted', messages.disable, () => void disableDevtools())
+  const disable = button('btn-action justify-center text-sm color-muted', messages.disable, () => void disableDevtools())
   const secondary = document.createElement('div')
-  secondary.className = 'flex items-center gap-1 -ml-2'
+  secondary.className = 'grid grid-cols-2 gap-1'
   secondary.append(hide, disable)
   const actions = document.createElement('div')
-  actions.className = 'flex flex-col gap-1'
-  actions.append(install, secondary)
+  actions.className = 'flex flex-col gap-2'
+  actions.append(secondary, install)
 
   panel.append(heading, description, command, note, actions)
-  scheme.append(pill, panel)
+  scheme.append(glow, pill, panel)
 
   let open = false
   const setOpen = (value: boolean) => {

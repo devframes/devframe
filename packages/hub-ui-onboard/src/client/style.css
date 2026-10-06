@@ -3,8 +3,12 @@
  * page. Class names are prefixed anyway so the generated stylesheet reads
  * clearly next to the utilities.
  */
+.devframes-onboard-root:hover .devframes-onboard-glow {
+  --uno: opacity-60;
+}
+
 .devframes-onboard-pill {
-  --uno: fixed bottom-4 left-4 z-floating-anchor w-8 h-8 rounded-full border border-base bg-dock-glass shadow;
+  --uno: fixed bottom-4 left-4 z-floating-anchor w-6 h-6 rounded-full border border-base bg-dock-glass shadow;
   --uno: flex items-center justify-center cursor-pointer select-none p-0 outline-none;
   --uno: op25 hover:op100 focus-visible:op100 focus-visible:ring-2 ring-primary-400;
   --uno: transition-all duration-200 hover:scale-105;
@@ -16,7 +20,7 @@
 }
 
 .devframes-onboard-glow {
-  --uno: absolute left-1/2 top-1/2 w-40 h-40 rounded-full opacity-0 pointer-events-none -z-1;
+  --uno: absolute left--4 bottom--26 w-40 h-40 rounded-full opacity-0 pointer-events-none -z-1;
   --uno: transition-opacity duration-1000 ease-out;
   transform: translate(-50%, -50%);
   filter: blur(60px);
@@ -29,12 +33,8 @@
   );
 }
 
-.devframes-onboard-pill:hover .devframes-onboard-glow {
-  --uno: opacity-60;
-}
-
 .devframes-onboard-panel {
-  --uno: fixed bottom-16 left-4 z-floating-anchor w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-base bg-base color-base shadow-lg;
+  --uno: fixed bottom-12 left-4 z-floating-anchor w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-base bg-base color-base shadow-lg;
   --uno: p-4 flex flex-col gap-3 font-sans text-sm leading-normal;
   --uno: transition-all duration-200 origin-bottom-left;
 }
