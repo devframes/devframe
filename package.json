@@ -20,7 +20,7 @@
     "watch": "turbo watch build --concurrency=3",
     "play": "tsx scripts/play.ts",
     "dev": "tsx scripts/play.ts",
-    "docs": "turbo run build --filter=devframe-docs^... && pnpm -C docs run docs",
+    "docs": "turbo run build --filter=./packages/* --filter=./plugins/* && pnpm -C docs run docs",
     "docs:build": "pnpm -C docs run docs:build",
     "docs:serve": "pnpm -C docs run docs:serve",
     "storybook": "pnpm -C storybook dev",

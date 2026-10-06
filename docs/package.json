@@ -24,11 +24,9 @@
     "shiki": "catalog:deps"
   },
   "devDependencies": {
-    "@devframes/hub": "workspace:*",
-    "@devframes/hub-ui": "workspace:*",
-    "@devframes/nuxt": "workspace:*",
     "@devframes/plugin-a11y": "workspace:*",
     "@devframes/plugin-og": "workspace:*",
+    "@nuxt/devtools-kit": "catalog:docs",
     "@types/d3-shape": "catalog:types",
     "devframe": "workspace:*"
   }

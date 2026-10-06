@@ -31,16 +31,25 @@ export default defineNuxtConfig({
     },
   },
 
-  // Dev only: production builds never resolve the hub or its devframes.
-  // Factories defer the plugin imports, so `docs:build` needs no built workspace packages.
+  // Dev only: mount the devframes into Nuxt DevTools. The imports are lazy,
+  // so `docs:build` needs no built workspace packages.
   $development: {
-    modules: [['@devframes/nuxt/hub', {
-      quiet: true,
-      devframes: [
-        () => import('@devframes/plugin-a11y').then(m => m.createA11yDevframe()),
-        () => import('@devframes/plugin-og').then(m => m.createOgDevframe({ defaultUrl: 'http://localhost:5175' })),
-      ],
-    }]],
+    // DevTools v4 sets `noExternals` to an array when it is unset. Nitro 2 reads
+    // any truthy value as "inline everything" and fails on `playwright-core`.
+    nitro: { noExternals: false },
+    modules: [
+      async () => {
+        const [{ onDevtoolsReady }, { createA11yDevframe }, { createOgDevframe }] = await Promise.all([
+          import('@nuxt/devtools-kit'),
+          import('@devframes/plugin-a11y'),
+          import('@devframes/plugin-og'),
+        ])
+        onDevtoolsReady(async (kit) => {
+          await kit.install(createA11yDevframe())
+          await kit.install(createOgDevframe({ defaultUrl: 'http://localhost:5175' }))
+        })
+      },
+    ],
   },
 
   app: {

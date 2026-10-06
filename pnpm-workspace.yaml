@@ -74,6 +74,8 @@ overrides:
   '@devframes/service-open': 'workspace:*'
   '@devframes/service-shiki': 'workspace:*'
   '@devframes/vite': 'workspace:*'
+  # Nuxt bundles DevTools v3. The docs dogfood v4, which runs on the local devframe hub.
+  '@nuxt/devtools': &nuxtDevtools ^4.0.0-beta.3
   '@unhead/vue': ^3.4.2
   chokidar: ^5.0.0
   crossws: ^0.4.12
@@ -154,6 +156,7 @@ catalogs:
     zigpty: ^0.2.1
     zod: ^4.6.5
   docs:
+    '@nuxt/devtools-kit': *nuxtDevtools
     comark-docs: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
   frontend:
     '@antfu/design': ^0.6.0

@@ -51,11 +51,7 @@
       // referenced as the `@shikijs/magic-move/style.css` subpath in the
       // `nuxt.config.ts` `css` array; knip can't map that CSS-only subpath back
       // to the package, so it mis-reports the (genuinely-listed) dep as unlisted.
-      //
-      // `@devframes/nuxt` is named as a string in the `$development.modules`
-      // array, and `@devframes/hub` / `@devframes/hub-ui` are its optional
-      // peers (the dev hub and its default dock UI), so nothing imports them.
-      "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*", "@shikijs/magic-move", "@devframes/nuxt", "@devframes/hub", "@devframes/hub-ui"]
+      "ignoreDependencies": ["ai", "@ai-sdk/vue", "@comark/nuxt.*", "@nuxt/ui.*", "@shikijs/magic-move"]
     },
     "examples/custom-hub-next": {
       // The React client build's root sits at `src/client` (`next dev
