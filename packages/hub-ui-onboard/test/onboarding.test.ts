@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import type { Onboarding, OnboardingStatus } from '../src/types'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -78,6 +78,7 @@ describe('createOnboarding', () => {
     expect(current.state).toBe('idle')
     expect(current.command).toBe('npm i -D @nuxt/devtools')
     expect(current.messages.install).toBe('Install Nuxt DevTools')
+    expect(current.messages.disable).toBe('Disable entirely')
     expect(current.branding.productName).toBe('Nuxt DevTools')
 
     expect((await fetch(`${origin}/__devframes/nope`)).status).toBe(404)
@@ -132,6 +133,28 @@ describe('createOnboarding', () => {
     expect(await waitFor(script, body => body === 'hub here')).toBe('hub here')
     expect(existsSync(join(cwd, 'node_modules/onboard-fixture/package.json'))).toBe(true)
     expect(await (await fetch(`${origin}/__devframes/__onboard/status`)).text()).toBe('hub here')
+  })
+
+  it('hands the base over at once when the packages are already installed', async () => {
+    const cwd = tempProject()
+    mkdirSync(join(cwd, 'node_modules/onboard-fixture'), { recursive: true })
+    const onboarding = createOnboarding({
+      cwd,
+      packages: ['onboard-fixture', 'file:/never/installed'],
+      onInstalled: () => () => new Response('hub here'),
+    })
+    expect(onboarding.installed).toBe(true)
+    const origin = await serve(onboarding)
+    expect(await (await fetch(`${origin}/__devframes/embedded.js`)).text()).toBe('hub here')
+  })
+
+  it('reports installed, and serves no button, when the packages exist but the host offers no hub', async () => {
+    const cwd = tempProject()
+    mkdirSync(join(cwd, 'node_modules/onboard-fixture'), { recursive: true })
+    const onboarding = createOnboarding({ cwd, packages: ['onboard-fixture'] })
+    const origin = await serve(onboarding)
+    expect(onboarding.installed).toBe(true)
+    expect((await status(origin)).state).toBe('installed')
   })
 
   it('reports a failed install as an error the client can retry', async () => {

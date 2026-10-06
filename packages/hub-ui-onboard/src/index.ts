@@ -11,7 +11,7 @@ import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 import { Diagnostic } from 'nostics'
 import { diagnostics } from './diagnostics'
-import { formatCommand, resolveInstallCommand, runInstall } from './install'
+import { formatCommand, packagesInstalled, resolveInstallCommand, runInstall } from './install'
 
 export type * from './types'
 
@@ -38,7 +38,8 @@ function defaultMessages(productName: string): OnboardingMessages {
     title: productName,
     description: `${productName} is not installed in this project yet. Install it to open the panel.`,
     install: `Install ${productName}`,
-    disable: 'Disable',
+    hide: 'Hide for now',
+    disable: 'Disable entirely',
     installing: 'Installing...',
     restart: `Installed. Restart your dev server to open ${productName}.`,
     retry: 'Retry',
@@ -120,7 +121,8 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   const messages = { ...defaultMessages(branding.productName?.trim() || 'Devframes'), ...options.messages }
 
   const disabled = readDisabled(stateFile)
-  let state: OnboardingState = disabled ? 'disabled' : 'idle'
+  const installed = !disabled && packagesInstalled(plan)
+  let state: OnboardingState = disabled ? 'disabled' : installed ? 'installed' : 'idle'
   let error: OnboardingStatus['error']
   let delegate: OnboardingHandler | undefined
   let command: Promise<ResolvedCommand> | undefined
@@ -130,6 +132,18 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
     const diagnostic = cause instanceof Diagnostic ? cause : fallback()
     error = { code: diagnostic.code, message: diagnostic.message }
     state = 'error'
+  }
+
+  /** Hand the base to the host's hub, if it offers one. */
+  async function activate(): Promise<void> {
+    try {
+      const next = await options.onInstalled?.()
+      delegate = typeof next === 'function' ? next : undefined
+      state = delegate ? 'ready' : 'installed'
+    }
+    catch (cause) {
+      fail(cause, () => diagnostics.DF9003({ reason: cause instanceof Error ? cause.message : String(cause), cause }))
+    }
   }
 
   async function install(): Promise<void> {
@@ -145,15 +159,12 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
       fail(cause, () => diagnostics.DF9001({ command, exitCode: undefined, stderr: String(cause) }))
       return
     }
-    try {
-      const next = await options.onInstalled?.()
-      delegate = typeof next === 'function' ? next : undefined
-      state = delegate ? 'ready' : 'installed'
-    }
-    catch (cause) {
-      fail(cause, () => diagnostics.DF9003({ cause }))
-    }
+    await activate()
   }
+
+  // Already installed: the hub takes over on the first request. Not earlier,
+  // because the host's `onInstalled` may need a server that exists only later.
+  let activated: Promise<void> | undefined
 
   function disable(): Response {
     try {
@@ -173,6 +184,8 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   }
 
   const handler: OnboardingHandler = async (request) => {
+    if (installed)
+      await (activated ??= activate())
     if (delegate)
       return delegate(request)
     const { pathname } = new URL(request.url)
@@ -212,6 +225,7 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
         .catch(cause => next ? next(cause) : res.destroy(cause))
     },
     disabled,
+    installed,
     scriptSrc: `${base}embedded.js`,
   }
 }

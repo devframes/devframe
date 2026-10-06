@@ -22,7 +22,7 @@ export const diagnostics = defineDiagnostics({
       fix: 'Make sure that `cwd` points at the project that should receive the dependency (in a workspace, the package that runs the dev server).',
     },
     DF9003: {
-      why: '`onInstalled` threw after the packages were installed.',
+      why: (p: { reason: string }) => `\`onInstalled\` threw after the packages were installed: ${p.reason}`,
       fix: 'The packages are installed. Fix the error in your `onInstalled` callback, or restart the dev server to load them.',
     },
     DF9004: {

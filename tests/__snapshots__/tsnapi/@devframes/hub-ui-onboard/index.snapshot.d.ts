@@ -16,6 +16,7 @@ export interface Onboarding {
   handler: OnboardingHandler;
   nodeMiddleware: (_: import('node:http').IncomingMessage, _: import('node:http').ServerResponse, _?: (_?: unknown) => void) => void;
   disabled: boolean;
+  installed: boolean;
   scriptSrc: string;
 }
 export interface OnboardingBranding {
@@ -27,6 +28,7 @@ export interface OnboardingMessages {
   title: string;
   description: string;
   install: string;
+  hide: string;
   disable: string;
   installing: string;
   restart: string;

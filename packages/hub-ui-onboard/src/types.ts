@@ -17,6 +17,9 @@ export interface OnboardingMessages {
   /** Short sentence under the heading. */
   description: string
   install: string
+  /** Hides the button for this browser tab (`sessionStorage`). */
+  hide: string
+  /** Writes the state file; the host stops injecting the button. */
   disable: string
   installing: string
   /** Shown when the install finished and no hot swap happened. */
@@ -68,6 +71,12 @@ export interface Onboarding {
   nodeMiddleware: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, next?: (err?: unknown) => void) => void
   /** `true` when the user disabled DevTools in an earlier session; skip injecting `scriptSrc`. */
   disabled: boolean
+  /**
+   * `true` when every named package was already in `node_modules` at
+   * creation. `onInstalled` then runs on the first request, which already
+   * reaches its handler; the button never shows.
+   */
+  installed: boolean
   /** `<base>embedded.js`: the `<script type="module">` URL to inject. */
   scriptSrc: string
 }

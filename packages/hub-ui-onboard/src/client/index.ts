@@ -13,6 +13,7 @@ import { DEVFRAME_LOGO } from './logo'
 const moduleUrl = import.meta.url
 const base = new URL('./', moduleUrl)
 const POLL_MS = 1000
+const HIDDEN_KEY = 'devframes-onboard-hidden'
 
 const api = (path: string, init?: RequestInit) => fetch(new URL(`__onboard/${path}`, base), init)
 
@@ -86,9 +87,10 @@ function mount(initial: OnboardingStatus): void {
   pill.className = 'devframes-onboard-pill'
   pill.title = messages.title
   pill.setAttribute('aria-haspopup', 'dialog')
+  pill.setAttribute('aria-expanded', 'false')
   const glow = document.createElement('span')
   glow.className = 'devframes-onboard-glow'
-  pill.append(glow, mark(branding, 'w-5 h-5'))
+  pill.append(glow, mark(branding, 'w-4 h-4'))
 
   const panel = document.createElement('div')
   panel.className = 'devframes-onboard-panel'
@@ -113,11 +115,18 @@ function mount(initial: OnboardingStatus): void {
   note.className = 'm-0 text-xs'
   note.hidden = true
 
-  const install = button('btn-primary', messages.install, () => void startInstall())
-  const disable = button('btn-action', messages.disable, () => void disableDevtools())
+  const install = button('btn-primary text-sm justify-center', messages.install, () => void startInstall())
+  const hide = button('btn-text text-sm color-muted', messages.hide, () => {
+    sessionStorage.setItem(HIDDEN_KEY, '1')
+    host.remove()
+  })
+  const disable = button('btn-text text-sm color-muted', messages.disable, () => void disableDevtools())
+  const secondary = document.createElement('div')
+  secondary.className = 'flex items-center gap-1 -ml-2'
+  secondary.append(hide, disable)
   const actions = document.createElement('div')
-  actions.className = 'flex items-center justify-end gap-2'
-  actions.append(disable, install)
+  actions.className = 'flex flex-col gap-1'
+  actions.append(install, secondary)
 
   panel.append(heading, description, command, note, actions)
   scheme.append(pill, panel)
@@ -188,8 +197,11 @@ async function main(): Promise<void> {
   // Never stack a second button inside an iframe of the same origin.
   if (window.parent !== window)
     return
+  if (sessionStorage.getItem(HIDDEN_KEY))
+    return
   const status = await fetchStatus()
-  if (status.state === 'disabled')
+  // Nothing to offer: disabled by the user, or already installed with no hub to hand off to.
+  if (status.state === 'disabled' || status.state === 'installed')
     return
   if (status.state === 'ready') {
     await handOff()

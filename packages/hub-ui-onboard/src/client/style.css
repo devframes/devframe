@@ -4,9 +4,15 @@
  * clearly next to the utilities.
  */
 .devframes-onboard-pill {
-  --uno: fixed bottom-4 left-4 z-floating-anchor w-10 h-10 rounded-full border border-base bg-dock-glass shadow;
+  --uno: fixed bottom-4 left-4 z-floating-anchor w-8 h-8 rounded-full border border-base bg-dock-glass shadow;
   --uno: flex items-center justify-center cursor-pointer select-none p-0 outline-none;
-  --uno: transition-transform duration-200 hover:scale-105 focus-visible:ring-2 ring-primary-400;
+  --uno: op25 hover:op100 focus-visible:op100 focus-visible:ring-2 ring-primary-400;
+  --uno: transition-all duration-200 hover:scale-105;
+}
+
+/* Full opacity while the panel is open, so the pill reads as its anchor. */
+.devframes-onboard-pill[aria-expanded='true'] {
+  --uno: op100;
 }
 
 .devframes-onboard-glow {

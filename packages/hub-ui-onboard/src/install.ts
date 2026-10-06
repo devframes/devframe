@@ -1,5 +1,5 @@
 import type { ResolvedCommand } from 'package-manager-detector'
-import { access } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { detect, resolveCommand } from 'package-manager-detector'
@@ -41,14 +41,28 @@ export async function runInstall(plan: InstallPlan, command: ResolvedCommand): P
       stderr: result.stderr.trim().slice(-2048),
     })
   }
-  for (const spec of plan.packages) {
-    const name = packageName(spec)
-    if (!name)
-      continue
-    const installed = await access(join(plan.cwd, 'node_modules', name)).then(() => true, () => false)
-    if (!installed)
+  for (const name of namedPackages(plan)) {
+    if (!isInstalled(plan.cwd, name))
       throw diagnostics.DF9002({ name, cwd: plan.cwd })
   }
+}
+
+/**
+ * `true` when every named package is already in `<cwd>/node_modules`, so the
+ * onboarding has nothing to install. Path, URL and alias specs cannot be
+ * checked by name, so a plan made only of those is never "already installed".
+ */
+export function packagesInstalled(plan: InstallPlan): boolean {
+  const names = namedPackages(plan)
+  return names.length > 0 && names.every(name => isInstalled(plan.cwd, name))
+}
+
+function isInstalled(cwd: string, name: string): boolean {
+  return existsSync(join(cwd, 'node_modules', name))
+}
+
+function namedPackages(plan: InstallPlan): string[] {
+  return plan.packages.map(packageName).filter((name): name is string => name !== undefined)
 }
 
 /**
