@@ -178,4 +178,5 @@ The CLI adapter serves the SPA at `/`; embedded in a host framework (`vite`, `em
 - [The Standard Handler](/adapters/initiate): mount into any host framework
 - [Adapters](/adapters): convenience entry points
 - [Hub](/guide/hub): compose many devframes
+- [Opt-in DevTools with Onboarding](/guide/hub-ui-onboard): ship a 20 kB button and install the hub on demand
 - [Pluggable, Extensible, and Playful DevTools](/posts/pluggable-extensible-playful-devtools): the vision and story behind Devframe
