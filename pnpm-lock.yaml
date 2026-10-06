@@ -740,9 +740,27 @@ importers:
         specifier: catalog:deps
         version: 4.5.0
     devDependencies:
+      '@devframes/hub':
+        specifier: workspace:*
+        version: link:../packages/hub
+      '@devframes/hub-ui':
+        specifier: workspace:*
+        version: link:../packages/hub-ui
+      '@devframes/nuxt':
+        specifier: workspace:*
+        version: link:../packages/nuxt
+      '@devframes/plugin-a11y':
+        specifier: workspace:*
+        version: link:../plugins/a11y
+      '@devframes/plugin-og':
+        specifier: workspace:*
+        version: link:../plugins/og
       '@types/d3-shape':
         specifier: catalog:types
         version: 3.2.0
+      devframe:
+        specifier: workspace:*
+        version: link:../packages/devframe
 
   examples/a11y-messages-playground:
     dependencies:

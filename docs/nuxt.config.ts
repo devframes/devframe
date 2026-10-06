@@ -31,6 +31,18 @@ export default defineNuxtConfig({
     },
   },
 
+  // Dev only: production builds never resolve the hub or its devframes.
+  // Factories defer the plugin imports, so `docs:build` needs no built workspace packages.
+  $development: {
+    modules: [['@devframes/nuxt/hub', {
+      quiet: true,
+      devframes: [
+        () => import('@devframes/plugin-a11y').then(m => m.createA11yDevframe()),
+        () => import('@devframes/plugin-og').then(m => m.createOgDevframe({ defaultUrl: 'http://localhost:5175' })),
+      ],
+    }]],
+  },
+
   app: {
     head: {
       link: [

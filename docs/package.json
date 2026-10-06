@@ -24,6 +24,12 @@
     "shiki": "catalog:deps"
   },
   "devDependencies": {
-    "@types/d3-shape": "catalog:types"
+    "@devframes/hub": "workspace:*",
+    "@devframes/hub-ui": "workspace:*",
+    "@devframes/nuxt": "workspace:*",
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@types/d3-shape": "catalog:types",
+    "devframe": "workspace:*"
   }
 }
