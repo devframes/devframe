@@ -22,5 +22,6 @@ export async function createEmbedded(d: DevframeDefinition, options: CreateEmbed
   for (const input of d.services ?? [])
     void options.ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await options.ctx.services.ready()
+  options.ctx.tracing._applyOptions(d.tracing)
   await d.setup(options.ctx)
 }

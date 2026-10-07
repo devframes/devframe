@@ -33,6 +33,12 @@ export declare const DEVFRAME_EVENTS: {
     readonly streamingEnd: "devframe:streaming:end";
     readonly streamingUploadCancel: "devframe:streaming:upload-cancel";
   };
+  readonly sharedState: {
+    readonly tracingChannels: "devframe:tracing:channels";
+  };
+  readonly stream: {
+    readonly tracing: "devframe:tracing";
+  };
   readonly inPageChannel: {
     readonly panelStateUpdated: "devframe:in-page:panel-state:updated";
     readonly panelStatePatch: "devframe:in-page:panel-state:patch";

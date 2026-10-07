@@ -164,6 +164,29 @@ export interface DevframeRpcServerFunctions {
    * @internal
    */
   'devframe:streaming:upload-end': (channel: string, id: string, error?: { name: string, message: string }) => Promise<void>
+  /**
+   * Subscribe to a Tracing Channel and start folding its events into
+   * records on a `devframe:tracing` stream (id published as `streamId` in
+   * `devframe:tracing:channels`). Wired by `DevframeTracingHost`; do not
+   * register manually.
+   *
+   * @internal
+   */
+  'devframe:tracing:record': (name: string) => Promise<void>
+  /**
+   * Unsubscribe from a Tracing Channel. Buffered records stay. Wired by
+   * `DevframeTracingHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:tracing:stop': (name: string) => Promise<void>
+  /**
+   * Drop a Tracing Channel's buffered records. Wired by
+   * `DevframeTracingHost`; do not register manually.
+   *
+   * @internal
+   */
+  'devframe:tracing:clear': (name: string) => Promise<void>
 }
 
 /**
@@ -178,4 +201,10 @@ export interface DevframeRpcSharedStates {
    * reactivity). Read-only from the browser.
    */
   'devframe:services': import('./services').DevframeServicesState
+  /**
+   * Known Tracing Channels keyed by base name, with their source and
+   * recording status. Written by the node tracing host. Read-only from the
+   * browser.
+   */
+  'devframe:tracing:channels': Record<string, import('./tracing').DevframeTracingChannelInfo>
 }

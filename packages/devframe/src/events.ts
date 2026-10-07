@@ -58,6 +58,21 @@ export const DEVFRAME_EVENTS = {
     streamingUploadCancel: 'devframe:streaming:upload-cancel',
   },
   /**
+   * Shared-state keys the core node side publishes. The paired request
+   * methods are the generic `devframe:rpc:server-state:*` endpoints.
+   */
+  sharedState: {
+    tracingChannels: 'devframe:tracing:channels',
+  },
+  /**
+   * Streaming channels the core node side owns. Each recording Tracing
+   * Channel gets its own stream on `devframe:tracing`; the id is published
+   * as `streamId` in the `devframe:tracing:channels` shared state.
+   */
+  stream: {
+    tracing: 'devframe:tracing',
+  },
+  /**
    * In-page channel notifications the page script pushes to its panels
    * (page script → panel), `devframe:` prefix. The paired request methods
    * (`devframe:in-page:page-state:subscribe`/`set`/`patch`) are call
