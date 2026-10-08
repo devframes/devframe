@@ -1,5 +1,5 @@
 import type { JsonRenderViewRef, Spec } from '@devframes/json-render'
-import type { JsonRenderDockRenderer } from '@devframes/json-render/hub'
+import type { JsonRenderDockRenderer, JsonRenderRpcContext } from '@devframes/json-render/hub'
 import type { ComponentRegistry } from '@json-render/vue'
 import type { ActionBridgeRpc } from './action-bridge'
 import { createApp, h, shallowRef } from 'vue'
@@ -33,7 +33,7 @@ export interface JsonRenderDockRendererOptions {
  */
 export function createJsonRenderDockRenderer(
   options: JsonRenderDockRendererOptions = {},
-): JsonRenderDockRenderer {
+): JsonRenderDockRenderer<JsonRenderRpcContext> {
   const registry = options.registry ?? baseRegistry
   return async ({ entry, container, context }) => {
     const view: JsonRenderViewRef = entry.view

@@ -1,5 +1,7 @@
-import type { DockRenderer, DockRendererMountOptions } from '@devframes/hub/client'
+import type { DevframeClientContext, DockRendererInstance, DockRendererMountOptions } from '@devframes/hub/client'
 import type { DevframeDockEntryBase } from '@devframes/hub/types'
+import type { DevframeRpcClient } from 'devframe/client'
+import type { ConnectionMeta } from 'devframe/types'
 import type { JsonRenderView } from './types'
 import type { JsonRenderViewRef } from './view-ref'
 
@@ -26,12 +28,22 @@ declare module '@devframes/hub/types' {
 
 /**
  * The mount options a hub viewer hands a json-render dock renderer: the
- * hub's `DockRendererMountOptions` narrowed to the `'json-render'` entry.
+ * hub's `DockRendererMountOptions` narrowed to the `'json-render'` entry
+ * and an optional context type. Existing renderers keep the full client context.
  * This protocol package owns the renderer contract so every frontend
  * (`@devframes/json-render-ui`, a community renderer, a host page's own)
  * implements one shared shape instead of re-declaring it.
  */
-export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRenderDockEntry>
+export type JsonRenderDockMountOptions<Context = DevframeClientContext> = Omit<DockRendererMountOptions<DevframeJsonRenderDockEntry>, 'context'> & {
+  context: Context
+}
+
+/** Native RPC calls and shared state consumed by the reference JSON renderer. */
+export interface JsonRenderRpcContext {
+  rpc: Pick<DevframeRpcClient, 'call' | 'sharedState'> & {
+    connectionMeta?: Pick<ConnectionMeta, 'backend'>
+  }
+}
 
 /**
  * The renderer contract for `'json-render'` docks: a hub `DockRenderer`
@@ -41,7 +53,9 @@ export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRe
  * module registered through the hub's renderer manifest
  * (`initHub({ renderers })`).
  */
-export type JsonRenderDockRenderer = DockRenderer<DevframeJsonRenderDockEntry>
+export type JsonRenderDockRenderer<Context = DevframeClientContext> = (
+  options: JsonRenderDockMountOptions<Context>,
+) => DockRendererInstance | Promise<DockRendererInstance>
 
 /**
  * Build a `json-render` dock entry from a {@link JsonRenderView} and the dock
