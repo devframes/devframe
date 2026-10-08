@@ -133,6 +133,19 @@ export function getShortcutRows(commands: DevframeCommandEntry[]): ShortcutRow[]
   return rows
 }
 
+/** Check all bindable commands, including those hidden in the current mode. */
+export function findKeybindingConflict(
+  commands: DevframeCommandEntry[],
+  commandId: string,
+  key: string,
+  getKeybindings: (id: string) => DevframeCommandKeybinding[],
+): DevframeCommandEntry | undefined {
+  return getShortcutRows(commands).find(({ command }) =>
+    command.id !== commandId
+    && getKeybindings(command.id).some(binding => binding.key === key),
+  )?.command
+}
+
 /**
  * Drop the commands whose `when` clause does not hold in the current context,
  * descendants included at every depth; `when` controls palette visibility at

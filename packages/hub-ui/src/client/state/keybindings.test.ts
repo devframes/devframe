@@ -1,7 +1,54 @@
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, getShortcutRows, walkCommands } from './keybindings'
+import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, findKeybindingConflict, getShortcutRows, walkCommands } from './keybindings'
+
+describe('findKeybindingConflict', () => {
+  const commands: DevframeCommandEntry[] = [
+    { id: 'settings', title: 'Open Settings', source: 'client' },
+    {
+      id: 'dock-mode',
+      title: 'Dock Mode',
+      source: 'client',
+      when: '!popupOpen',
+      children: [
+        { id: 'float', title: 'Float Mode', source: 'client', when: '!popupOpen' },
+      ],
+    },
+    { id: 'hidden', title: 'Hide', source: 'client', when: 'clientType == embedded' },
+    { id: 'disabled', title: 'Disabled', source: 'client', allowShortcuts: false },
+  ]
+
+  it.each<[string, Pick<WhenContext, 'popupOpen' | 'clientType'>]>([
+    ['float', { popupOpen: true, clientType: 'embedded' }],
+    ['hidden', { popupOpen: false, clientType: 'standalone' }],
+  ])('warns about %s even when the current mode hides it', (id, context) => {
+    const visibleRows = getShortcutRows(filterCommandsByWhen(commands, {
+      ...context,
+      dockOpen: true,
+      paletteOpen: false,
+      dockSelectedId: '',
+    }))
+    expect(visibleRows.some(row => row.command.id === id)).toBe(false)
+    const getKeybindings = (commandId: string) => commandId === id ? [{ key: 'Mod+Shift+J' }] : []
+    expect(findKeybindingConflict(commands, 'settings', 'Mod+Shift+J', getKeybindings)?.id).toBe(id)
+  })
+
+  it('ignores the edited command and commands that disallow shortcuts', () => {
+    const getKeybindings = (id: string) => ['settings', 'disabled'].includes(id) ? [{ key: 'Mod+J' }] : []
+    expect(findKeybindingConflict(commands, 'settings', 'Mod+J', getKeybindings)).toBeUndefined()
+  })
+
+  it('uses effective bindings, including cleared defaults and multiple bindings', () => {
+    const commands: DevframeCommandEntry[] = [
+      { id: 'cleared', title: 'Cleared', source: 'client', keybindings: [{ key: 'Mod+J' }] },
+      { id: 'overridden', title: 'Overridden', source: 'client', keybindings: [{ key: 'Mod+K' }] },
+    ]
+    const getKeybindings = (id: string) => id === 'overridden' ? [{ key: 'Mod+L' }, { key: 'Mod+J' }] : []
+    expect(findKeybindingConflict(commands, 'settings', 'Mod+J', getKeybindings)?.id).toBe('overridden')
+    expect(findKeybindingConflict(commands, 'settings', 'Mod+K', getKeybindings)).toBeUndefined()
+  })
+})
 
 describe('getShortcutRows', () => {
   it('omits opted-out commands while retaining their bindable descendants and palette-hidden commands', () => {

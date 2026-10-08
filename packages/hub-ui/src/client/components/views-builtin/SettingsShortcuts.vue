@@ -5,7 +5,7 @@ import type { ShortcutRow } from '../../state/keybindings'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { t } from '../../i18n'
-import { filterCommandsByWhen, findCommandDeep, formatKeybinding, getShortcutRows, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
+import { filterCommandsByWhen, findCommandDeep, findKeybindingConflict, formatKeybinding, getShortcutRows, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
 import { useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
 
@@ -157,17 +157,11 @@ const editorWarnings = computed<string[]>(() => {
     warnings.push(t('shortcuts.warnBrowser', { description: browserDescription, keys: formatKeybinding(key).join('+') }))
   }
 
-  // Conflict with other commands
+  // Hidden commands can share the same mode again after the user switches modes.
   if (editorCommandId.value) {
-    for (const row of shortcutRows.value) {
-      if (row.command.id === editorCommandId.value)
-        continue
-      const bindings = getEffectiveKeybindings(row.command.id)
-      if (bindings.some(b => b.key === key)) {
-        warnings.push(t('shortcuts.warnCommand', { title: row.command.title }))
-        break
-      }
-    }
+    const conflict = findKeybindingConflict(commandsCtx.commands, editorCommandId.value, key, getEffectiveKeybindings)
+    if (conflict)
+      warnings.push(t('shortcuts.warnCommand', { title: conflict.title }))
   }
 
   return warnings
