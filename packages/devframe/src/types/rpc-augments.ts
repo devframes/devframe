@@ -2,6 +2,8 @@
  * To be extended
  */
 export interface DevframeRpcClientFunctions {
+  /** Clear cached RPC results and refresh cache eligibility. */
+  'devframe:rpc:cache:invalidate': () => Promise<void>
   /** Invoke a tool registered in this browser document. @internal */
   'devframe:agent:invoke-client-tool': (id: string, args: Record<string, unknown>) => Promise<unknown>
   /**
@@ -53,6 +55,8 @@ export interface DevframeRpcClientFunctions {
  * To be extended
  */
 export interface DevframeRpcServerFunctions {
+  /** Methods eligible for automatic client caching. @internal */
+  'devframe:rpc:cacheable-functions': () => Promise<string[]>
   /** Replace this connection's browser-agent tool manifest, tagged with the calling tab's stable client id. @internal */
   'devframe:agent:sync-client-tools': (clientId: string, tools: import('../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
   /**

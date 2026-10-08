@@ -1,6 +1,8 @@
 import type { BirpcGroup } from 'birpc'
 import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, RpcBroadcastOptions, RpcFunctionsHost as RpcFunctionsHostType, RpcSharedStateHost, RpcStreamingHost } from 'devframe/types'
 import type { AsyncLocalStorage } from 'node:async_hooks'
+import { defineRpcFunction } from 'devframe'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createDebug } from 'obug'
 import { removeClientAgentSession } from './client-agent'
@@ -40,6 +42,17 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
 
     this.sharedState = createRpcSharedStateServerHost(this)
     this.streaming = createRpcStreamingServerHost(this)
+
+    this.register(defineRpcFunction({
+      name: 'devframe:rpc:cacheable-functions',
+      type: 'query',
+      handler: () => [...this.definitions.values()]
+        .filter(fn => fn.type === 'static' || (fn.type === 'query' && fn.cacheable === true))
+        .map(fn => fn.name),
+    }))
+    this.onChanged(() => {
+      void this.broadcast({ method: DEVFRAME_EVENTS.broadcast.cacheInvalidate, args: [] })
+    })
   }
 
   sharedState: RpcSharedStateHost

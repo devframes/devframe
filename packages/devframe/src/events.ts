@@ -51,6 +51,7 @@ export const DEVFRAME_EVENTS = {
    */
   broadcast: {
     authRevoked: 'devframe:auth:revoked',
+    cacheInvalidate: 'devframe:rpc:cache:invalidate',
     clientStateUpdated: 'devframe:rpc:client-state:updated',
     clientStatePatch: 'devframe:rpc:client-state:patch',
     streamingChunk: 'devframe:streaming:chunk',
