@@ -7,6 +7,14 @@ export interface BrowserAgentToolManifest {
   inputSchema?: unknown
 }
 
+/** What a connected document reports about itself alongside its tool manifest. */
+export interface BrowserAgentClientInfo {
+  url: string
+  title: string
+  visible: boolean
+  focused: boolean
+}
+
 export interface BrowserAgentTool extends BrowserAgentToolManifest {
   invoke: (args: Record<string, unknown>) => unknown | Promise<unknown>
 }
