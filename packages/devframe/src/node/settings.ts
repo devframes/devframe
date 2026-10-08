@@ -1,6 +1,6 @@
 import type { DevframeNodeContext, DevframeRpcSharedStates, DevframeSettings, DevframeSettingsStore } from 'devframe/types'
 import type { SharedState } from 'devframe/utils/shared-state'
-import { join } from 'pathe'
+import { isAbsolute, join, relative } from 'pathe'
 import { createSettingsStore } from '../settings-store'
 import { createStorage } from './storage'
 
@@ -8,6 +8,22 @@ import { createStorage } from './storage'
 // Project settings are per-checkout private state, so they live in the
 // host's ignored `project` dir (not the committable `workspace` one).
 const STORAGE_SCOPE = { global: 'global', project: 'project' } as const
+
+/** Resolve reserved settings keys before the sync protocol creates an in-memory state. */
+export function resolveSettingsState(context: DevframeNodeContext, key: string): SharedState<Record<string, any>> | undefined {
+  const match = /^devframe:settings:(global|project):(.+)$/.exec(key)
+  if (!match)
+    return
+  const scope = match[1] as keyof typeof STORAGE_SCOPE
+  const namespace = match[2]!
+  const dir = join(context.host.getStorageDir(STORAGE_SCOPE[scope]), 'settings')
+  const filepath = join(dir, `${namespace}.json`)
+  const path = relative(dir, filepath)
+  // Keys arrive from clients, so they must stay within the settings directory.
+  if (namespace.includes('\0') || path === '..' || path.startsWith('../') || isAbsolute(path))
+    return
+  return createStorage({ filepath, initialValue: {} })
+}
 
 function createNodeSettingsStore<T extends Record<string, any>>(
   context: DevframeNodeContext,
@@ -23,11 +39,8 @@ function createNodeSettingsStore<T extends Record<string, any>>(
   // backing `createStorage` debounces writes to disk.
   function store(): Promise<SharedState<T>> {
     if (!statePromise) {
-      const dir = context.host.getStorageDir(STORAGE_SCOPE[scope])
-      const filepath = join(dir, 'settings', `${namespace}.json`)
       statePromise = context.rpc.sharedState.get(
         stateKey as keyof DevframeRpcSharedStates,
-        { sharedState: createStorage<T>({ filepath, initialValue: {} as T }) as any },
       ) as Promise<SharedState<T>>
     }
     return statePromise
@@ -38,7 +51,7 @@ function createNodeSettingsStore<T extends Record<string, any>>(
 
 /**
  * Build the node-side `settings` surface for a scope namespace. `project`
- * persists under the host's `workspace` storage dir, `global` under its
+ * persists under the host's `project` storage dir, `global` under its
  * `global` dir. Each is a file-backed, client-synced key-value store.
  */
 export function createNodeSettings<T extends Record<string, any> = Record<string, any>>(

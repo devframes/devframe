@@ -180,6 +180,42 @@ describe('ctx.scope()', () => {
       expect(JSON.parse(readFileSync(globalFile, 'utf-8'))).toEqual({ token: 'abc' })
     })
 
+    it.each(['project', 'global'] as const)('persists client-first %s settings and loads them on first RPC read', async (scope) => {
+      const { ctx, dir } = await createCtx()
+      const key = `devframe:settings:${scope}:client-only`
+      // Exercise the handlers used by clients without touching node settings first.
+      await ctx.rpc.invokeLocal('devframe:rpc:server-state:set', key, { theme: 'dark' }, 'client')
+      await sleep(250)
+      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      expect(await restarted.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toEqual({ theme: 'dark' })
+      expect(await restarted.scope('client-only').settings[scope].all()).toEqual({ theme: 'dark' })
+    })
+
+    it('loads existing settings for a client-first patch and shares the same state with node settings', async () => {
+      const { ctx, dir } = await createCtx()
+      await ctx.scope('my-plugin').settings.project.set('theme', 'dark')
+      await sleep(250)
+      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      const key = 'devframe:settings:project:my-plugin'
+      await restarted.rpc.invokeLocal('devframe:rpc:server-state:patch', key, [{ op: 'add', path: ['zoom'], value: 2 }], 'client')
+      expect(await restarted.scope('my-plugin').settings.project.all()).toEqual({ theme: 'dark', zoom: 2 })
+      expect(await restarted.scope('other-plugin').settings.project.all()).toEqual({})
+      expect(await restarted.scope('my-plugin').settings.global.all()).toEqual({})
+      await sleep(250)
+      expect(JSON.parse(readFileSync(join(dir, 'project/settings/my-plugin.json'), 'utf-8'))).toEqual({ theme: 'dark', zoom: 2 })
+    })
+
+    it.each(['ordinary:state', 'devframe:settings:workspace:plugin', 'devframe:settings:project:../escaped'])('keeps %s in memory', async (key) => {
+      const { ctx, dir } = await createCtx()
+      expect(await ctx.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toBeUndefined()
+      await ctx.rpc.invokeLocal('devframe:rpc:server-state:set', key, { value: 1 }, 'client')
+      expect(await ctx.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toEqual({ value: 1 })
+      await sleep(250)
+      expect(existsSync(join(dir, 'project'))).toBe(false)
+      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      expect(await restarted.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toBeUndefined()
+    })
+
     it('notifies onChange subscribers', async () => {
       const { ctx } = await createCtx()
       const { settings } = ctx.scope('my-plugin')
