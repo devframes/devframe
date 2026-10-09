@@ -379,7 +379,7 @@ async function mountMcpRoute(
   const mounted = module.mountMcpHttp(app, context, joinURL(base, route), {
     serverName: `${def.id} (devframe)`,
     serverVersion: def.version ?? '0.0.0',
-    exposeSharedState: true,
+    exposeSharedState: config.exposeSharedState ?? true,
     authorization: config.authorization,
     allowedOrigins: config.allowedOrigins,
   })

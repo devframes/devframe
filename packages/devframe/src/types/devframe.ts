@@ -164,6 +164,16 @@ export interface McpRouteOptions {
    * prove identity too.
    */
   allowedOrigins?: readonly string[] | false
+  /**
+   * Which shared-state keys the route exposes to agents, through the built-in
+   * `devframe_state_read` tool and the `devframe://state/<key>` resources.
+   * - `true` (default): every key the host publishes
+   * - `false`: none
+   * - `(key) => boolean`: only the keys the filter accepts
+   *
+   * The states themselves stay available to the UI over RPC.
+   */
+  exposeSharedState?: boolean | ((key: string) => boolean)
 }
 
 export interface DevframeCliOptions {

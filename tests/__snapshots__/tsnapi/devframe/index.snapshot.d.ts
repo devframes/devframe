@@ -444,6 +444,7 @@ export interface McpRouteOptions {
   path?: string;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
+  exposeSharedState?: boolean | ((_: string) => boolean);
 }
 export interface McpServerHandle {
   stop: () => Promise<void>;

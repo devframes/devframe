@@ -319,6 +319,47 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('mcp: exposeSharedState filters the shared states the route serves', async () => {
+    const wsPort = await getPort({ port: 18143, host: '127.0.0.1' })
+    const def = defineDevframe({
+      id: 'handler-mcp-state',
+      name: 'State Handler Test',
+      version: '0.0.0',
+      packageName: 'devframe-handler-test',
+      homepage: 'https://example.test',
+      description: 'Test devframe with shared state.',
+      setup: async (ctx: DevframeNodeContext) => {
+        await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+        await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+      },
+    })
+    const devtools = initDevframe(def, {
+      base: '/__handler-mcp-state/',
+      auth: false,
+      mcp: { exposeSharedState: key => key.startsWith('visible:') },
+      ws: { port: wsPort },
+    })
+
+    try {
+      await devtools.ready
+      const res = await devtools.handler(new Request('http://localhost:3000/__handler-mcp-state/__mcp', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          'origin': 'http://localhost:3000',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'devframe_state_read', arguments: {} } }),
+      }))
+      const raw = await res.text()
+      expect(raw).toContain('visible:key')
+      expect(raw).not.toContain('hidden:key')
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
   // The `'auto'` default: an omitted `mcp` mounts the route exactly when
   // `setup()` left a non-empty agent surface.
   function defineAgentTestDef(id: string) {
