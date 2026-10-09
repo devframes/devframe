@@ -324,6 +324,105 @@ describe('initHub', () => {
     }
   })
 
+  describe('aggregate MCP shared-state exposure', () => {
+    const origin = 'http://localhost:3000'
+
+    function makeStateFrame(): DevframeDefinition {
+      const frame = makeFrame('state')
+      return {
+        ...frame,
+        async setup(ctx: DevframeNodeContext) {
+          await frame.setup(ctx)
+          await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
+          await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+        },
+      }
+    }
+
+    async function callMcp(hub: ReturnType<typeof initHub>, method: string, params?: Record<string, unknown>): Promise<string> {
+      const res = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          origin,
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+      }))
+      expect(res.status).toBe(200)
+      return await res.text()
+    }
+
+    it('exposes every shared state by default', async () => {
+      const wsPort = await getPort({ port: 18235, host: '127.0.0.1' })
+      const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeStateFrame()] })
+
+      try {
+        await hub.ready
+        const keys = await callMcp(hub, 'tools/call', { name: 'devframe_state_read', arguments: {} })
+        expect(keys).toContain('visible:key')
+        expect(keys).toContain('hidden:key')
+        const resources = await callMcp(hub, 'resources/list')
+        expect(resources).toContain('devframe://state/visible%3Akey')
+        expect(resources).toContain('devframe://state/hidden%3Akey')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+
+    it('hides the shared states the mcp.exposeSharedState filter rejects', async () => {
+      const wsPort = await getPort({ port: 18236, host: '127.0.0.1' })
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: { exposeSharedState: key => key.startsWith('visible:') },
+        devframes: [makeStateFrame()],
+      })
+
+      try {
+        await hub.ready
+        const keys = await callMcp(hub, 'tools/call', { name: 'devframe_state_read', arguments: {} })
+        expect(keys).toContain('visible:key')
+        expect(keys).not.toContain('hidden:key')
+        const hidden = await callMcp(hub, 'tools/call', { name: 'devframe_state_read', arguments: { key: 'hidden:key' } })
+        expect(hidden).toContain('Unknown shared-state key')
+        const resources = await callMcp(hub, 'resources/list')
+        expect(resources).toContain('devframe://state/visible%3Akey')
+        expect(resources).not.toContain('hidden%3Akey')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+
+    it('hides devframe_state_read when mcp.exposeSharedState is false', async () => {
+      const wsPort = await getPort({ port: 18237, host: '127.0.0.1' })
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: { exposeSharedState: false },
+        devframes: [makeStateFrame()],
+      })
+
+      try {
+        await hub.ready
+        const tools = await callMcp(hub, 'tools/list')
+        expect(tools).toContain('state-tool')
+        expect(tools).not.toContain('devframe_state_read')
+        const resources = await callMcp(hub, 'resources/list')
+        expect(resources).not.toContain('devframe://state/')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+  })
+
   it('aggregate MCP omitted: mounts once a mounted frame exposes agent tools', async () => {
     const wsPort = await getPort({ port: 18233, host: '127.0.0.1' })
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha')] })
