@@ -11,16 +11,13 @@ function createClientSettingsStore<T extends Record<string, any>>(
   const stateKey = `devframe:settings:${scope}:${namespace}`
   let statePromise: Promise<SharedState<T>> | undefined
 
-  // Resolve the server snapshot before reading or changing settings so that
+  // Resolve the node-side snapshot before reading or changing settings so that
   // initialization cannot overwrite the first local operation.
   function store(): Promise<SharedState<T>> {
     if (!statePromise) {
       statePromise = (async () => {
         await rpc.ensureTrusted()
-        const state = await rpc.sharedState.get<T>(stateKey)
-        if (state.value() === undefined)
-          state.mutate(() => ({} as T))
-        return state
+        return rpc.sharedState.get<T>(stateKey)
       })().catch((error) => {
         statePromise = undefined
         throw error

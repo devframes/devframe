@@ -1,8 +1,12 @@
 import type { DevframeRpcClient } from './rpc'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { setImmediate } from 'node:timers/promises'
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it, vi } from 'vitest'
 import { DEVFRAME_EVENTS } from '../events'
+import { createHostContext } from '../node/context'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 import { createClientSettings } from './settings'
 
@@ -63,6 +67,68 @@ describe('client settings initialization', () => {
     await expect(read).resolves.toEqual({})
     await settings.project.set('theme', 'dark')
     await expect(settings.project.get('theme')).resolves.toBe('dark')
+  })
+
+  it.each(['project', 'global'] as const)('keeps an absent %s store local until a setting is written', async (scope) => {
+    const { rpc, settings, snapshot } = setup()
+    const onChange = vi.fn()
+    const operations = Promise.all([
+      settings[scope].get('theme'),
+      settings[scope].all(),
+      settings[scope].onChange(onChange),
+      settings[scope].delete('theme'),
+    ])
+    snapshot.resolve(undefined)
+    const [value, all, unsubscribe] = await operations
+    expect(value).toBeUndefined()
+    expect(all).toEqual({})
+    expect(vi.mocked(rpc.callEvent).mock.calls).toEqual([
+      ['devframe:rpc:server-state:subscribe', `devframe:settings:${scope}:test`],
+    ])
+    expect(onChange).not.toHaveBeenCalled()
+
+    await settings[scope].set('theme', 'dark')
+    expect(rpc.callEvent).toHaveBeenLastCalledWith(
+      'devframe:rpc:server-state:set',
+      `devframe:settings:${scope}:test`,
+      { theme: 'dark' },
+      expect.any(String),
+    )
+    expect(onChange).toHaveBeenCalledExactlyOnceWith({ theme: 'dark' })
+    unsubscribe()
+  })
+
+  it.each(['project', 'global'] as const)('preserves file storage after a browser-side %s read', async (scope) => {
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-settings-'))
+    const host = {
+      mountStatic: () => {},
+      resolveOrigin: () => 'http://localhost',
+      getStorageDir: (storageScope: string) => join(dir, storageScope),
+    }
+    const filepath = join(dir, scope, 'settings/test.json')
+    mkdirSync(join(dir, scope, 'settings'), { recursive: true })
+    writeFileSync(filepath, JSON.stringify({ theme: 'saved' }))
+    try {
+      const ctx = await createHostContext({ cwd: dir, mode: 'dev', host })
+      // Dispatch RPC handlers directly without a transport session.
+      vi.spyOn(ctx.rpc, 'getCurrentRpcSession').mockReturnValue(undefined)
+      const { rpc, settings } = setup()
+      vi.mocked(rpc.call).mockImplementation(ctx.rpc.invokeLocal.bind(ctx.rpc))
+      vi.mocked(rpc.callEvent).mockImplementation(ctx.rpc.invokeLocal.bind(ctx.rpc))
+
+      await settings[scope].all()
+      const nodeSettings = ctx.scope('test').settings[scope]
+      await expect(nodeSettings.get('theme')).resolves.toBe('saved')
+      await nodeSettings.set('theme', 'changed')
+      await vi.waitFor(() => {
+        expect(JSON.parse(readFileSync(filepath, 'utf8'))).toEqual({ theme: 'changed' })
+      })
+      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host })
+      await expect(restarted.scope('test').settings[scope].get('theme')).resolves.toBe('changed')
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('waits for trust before requesting the initial snapshot', async () => {
