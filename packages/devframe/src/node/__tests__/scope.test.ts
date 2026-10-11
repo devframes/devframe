@@ -183,7 +183,7 @@ describe('ctx.scope()', () => {
     it.each(['project', 'global'] as const)('persists client-first %s settings and loads them on first RPC read', async (scope) => {
       const { ctx, dir } = await createCtx()
       const key = `devframe:settings:${scope}:client-only`
-      // Exercise the handlers used by clients without touching node settings first.
+      // Exercise the handlers used by RPC clients without touching node settings first.
       await ctx.rpc.invokeLocal('devframe:rpc:server-state:set', key, { theme: 'dark' }, 'client')
       await sleep(250)
       const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })

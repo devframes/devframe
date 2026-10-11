@@ -19,7 +19,7 @@ export function resolveSettingsState(context: DevframeNodeContext, key: string):
   const dir = join(context.host.getStorageDir(STORAGE_SCOPE[scope]), 'settings')
   const filepath = join(dir, `${namespace}.json`)
   const path = relative(dir, filepath)
-  // Keys arrive from clients, so they must stay within the settings directory.
+  // Keys arrive from RPC clients, so they must stay within the settings directory.
   if (namespace.includes('\0') || path === '..' || path.startsWith('../') || isAbsolute(path))
     return
   return createStorage({ filepath, initialValue: {} })
