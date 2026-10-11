@@ -17,10 +17,7 @@ function createClientSettingsStore<T extends Record<string, any>>(
     if (!statePromise) {
       statePromise = (async () => {
         await rpc.ensureTrusted()
-        const state = await rpc.sharedState.get<T>(stateKey)
-        if (state.value() === undefined)
-          state.mutate(() => ({} as T))
-        return state
+        return rpc.sharedState.get<T>(stateKey)
       })().catch((error) => {
         statePromise = undefined
         throw error
