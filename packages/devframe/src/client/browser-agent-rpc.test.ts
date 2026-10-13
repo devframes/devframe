@@ -1,4 +1,4 @@
-import type { BrowserAgentToolManifest } from './browser-agent'
+import type { BrowserAgentClientInfo, BrowserAgentToolManifest } from './browser-agent'
 import type { BrowserAgentInvocationDefinition } from './browser-agent-rpc'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { registerBrowserAgentTool } from './browser-agent'
@@ -21,8 +21,9 @@ describe('browser agent RPC bridge', () => {
         method: 'devframe:agent:sync-client-tools',
         clientId: string,
         tools: BrowserAgentToolManifest[],
+        info: BrowserAgentClientInfo,
       ) {
-        return callOptional(method, clientId, tools)
+        return callOptional(method, clientId, tools, info)
       },
       events: { on: () => () => {} },
     }
@@ -44,6 +45,7 @@ describe('browser agent RPC bridge', () => {
         safety: 'action',
         inputSchema: { type: 'object' },
       }],
+      { url: expect.any(String), title: expect.any(String), visible: expect.any(Boolean), focused: expect.any(Boolean) },
     ))
 
     await expect(handlers.get('devframe:agent:invoke-client-tool')!(

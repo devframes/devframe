@@ -86,6 +86,8 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0077](/errors/DF0077) | error | In-Page Channel Function Not Registered |
 | [DF0078](/errors/DF0078) | warn | Agent Surface Without @devframes/agentic |
 | [DF0079](/errors/DF0079) | error | MCP Enabled Without @devframes/agentic |
+| [DF0080](/errors/DF0080) | error | In-Page Channel Agent Function Not JSON-Serializable |
+| [DF0081](/errors/DF0081) | error | Addressed Client Not Connected |
 
 ## Hub: context & lifecycle (DF80xx)
 
