@@ -28,6 +28,7 @@
     "@devframes/plugin-og": "workspace:*",
     "@nuxt/devtools-kit": "catalog:docs",
     "@types/d3-shape": "catalog:types",
-    "devframe": "workspace:*"
+    "devframe": "workspace:*",
+    "satori": "catalog:docs"
   }
 }

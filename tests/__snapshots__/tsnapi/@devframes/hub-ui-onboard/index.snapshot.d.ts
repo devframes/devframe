@@ -57,4 +57,5 @@ export type OnboardingState = 'idle' | 'installing' | 'installed' | 'ready' | 'e
 
 // #region Functions
 export declare function createOnboarding(_: CreateOnboardingOptions): Onboarding;
+export declare function defaultMessages(_: string): OnboardingMessages;
 // #endregion

@@ -11,13 +11,17 @@ function createClientSettingsStore<T extends Record<string, any>>(
   const stateKey = `devframe:settings:${scope}:${namespace}`
   let statePromise: Promise<SharedState<T>> | undefined
 
-  // The client mirrors the server's file-backed settings store over the
-  // shared-state sync protocol: providing an empty initial value lets the
-  // client subscribe and merge the authoritative server snapshot, and any
-  // local `set` is pushed back to (and persisted by) the server.
+  // Wait for the initial snapshot before reading or changing settings.
+  // This keeps initialization from overwriting the first local operation.
   function store(): Promise<SharedState<T>> {
     if (!statePromise) {
-      statePromise = (rpc.sharedState.get as any)(stateKey, { initialValue: {} }) as Promise<SharedState<T>>
+      statePromise = (async () => {
+        await rpc.ensureTrusted()
+        return rpc.sharedState.get<T>(stateKey)
+      })().catch((error) => {
+        statePromise = undefined
+        throw error
+      })
     }
     return statePromise
   }

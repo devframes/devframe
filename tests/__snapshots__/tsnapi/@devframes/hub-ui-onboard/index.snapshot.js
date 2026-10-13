@@ -3,4 +3,5 @@
  */
 // #region Functions
 export function createOnboarding(_) {}
+export function defaultMessages(_) {}
 // #endregion
