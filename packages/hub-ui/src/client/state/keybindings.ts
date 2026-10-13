@@ -111,6 +111,28 @@ export function findCommandDeep(
   return found
 }
 
+export interface ShortcutRow {
+  command: DevframeCommandEntry
+  parentTitle?: string
+  depth: number
+}
+
+/** List bindable commands at every depth, retaining each command's ancestry. */
+export function getShortcutRows(commands: DevframeCommandEntry[]): ShortcutRow[] {
+  const rows: ShortcutRow[] = []
+  walkCommands(commands, (cmd, ancestors) => {
+    if (cmd.allowShortcuts === false)
+      return
+    const parentTitle = ancestors.at(-1)?.title
+    rows.push({
+      command: cmd,
+      ...(parentTitle ? { parentTitle } : {}),
+      depth: ancestors.length,
+    })
+  })
+  return rows
+}
+
 /**
  * Drop the commands whose `when` clause does not hold in the current context,
  * descendants included at every depth; `when` controls palette visibility at

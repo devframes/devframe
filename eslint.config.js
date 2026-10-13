@@ -20,6 +20,8 @@ export default antfu(
       '**/out',
       '**/next-env.d.ts',
       '**/.nuxt',
+      'AGENTS.md',
+      'CLAUDE.md',
     ],
   },
   {

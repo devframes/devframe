@@ -166,6 +166,9 @@
       "@devframes/hub-ui": [
         "./packages/hub-ui/src/index.ts"
       ],
+      "@devframes/hub-ui-onboard": [
+        "./packages/hub-ui-onboard/src/index.ts"
+      ],
       "@devframes/nuxt/runtime/plugin.client": [
         "./packages/nuxt/src/runtime/plugin.client.ts"
       ],

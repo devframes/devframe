@@ -12,23 +12,27 @@ export function createSettingsStore<T extends Record<string, any>>(
 ): DevframeSettingsStore<T> {
   return {
     async get(key) {
-      return ((await store()).value() as T)[key]
+      return ((await store()).value() as T | undefined)?.[key]
     },
     async set(key, value) {
       ;(await store()).mutate((draft) => {
+        if (draft === undefined) {
+          return { [key]: value } as T
+        }
         ;(draft as T)[key] = value
       })
     },
     async delete(key) {
       ;(await store()).mutate((draft) => {
-        delete (draft as T)[key]
+        if (draft !== undefined)
+          delete (draft as T)[key]
       })
     },
     async all() {
-      return (await store()).value() as Readonly<T>
+      return ((await store()).value() ?? {}) as Readonly<T>
     },
     async onChange(fn) {
-      return (await store()).on('updated', full => fn(full as Readonly<T>))
+      return (await store()).on('updated', full => fn((full ?? {}) as Readonly<T>))
     },
   }
 }

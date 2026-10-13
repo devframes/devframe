@@ -28,6 +28,4 @@ playwright/.cache
 blob-report
 .ecosystem
 storybook-static
-
-# Agent skills from npm packages (managed by skills-npm)
-**/skills/npm-*
+.agents/skills

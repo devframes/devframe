@@ -118,7 +118,7 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
     importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
-    icon: options.icon ?? 'ph:image-square-duotone',
+    icon: options.icon ?? 'ph:folder-notch-open-duotone',
     basePath: options.basePath,
     capabilities: { build: options.build ?? false },
     clientAssets: distDir,

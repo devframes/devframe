@@ -522,7 +522,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       const mounted = mcpModule.mountMcpHttp(app, ctx, joinURL(base, mcpRoute), {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',
-        exposeSharedState: true,
+        exposeSharedState: mcpConfig.exposeSharedState ?? true,
         authorization: mcpConfig.authorization,
         allowedOrigins: mcpConfig.allowedOrigins,
       })

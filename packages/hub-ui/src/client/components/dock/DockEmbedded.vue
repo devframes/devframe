@@ -40,6 +40,8 @@ useEventListener(window, 'mousedown', (e: MouseEvent) => {
     const el = _el as HTMLElement
     return [...(el.classList || [])].some(c => c.startsWith('devframes-'))
       || el.id?.startsWith('devframes-')
+      // Portaled menus share the dock's shadow root, outside the panel element.
+      || el.tagName?.toLowerCase() === 'devframes-dock-embedded'
       || el.tagName?.toLowerCase() === 'iframe'
   })
 

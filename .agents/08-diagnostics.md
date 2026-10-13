@@ -2,7 +2,7 @@
 
 All node-side warnings and errors use structured diagnostics via [`nostics`](https://www.npmjs.com/package/nostics). Node-side code MUST NOT use raw `console.warn`, `console.error`, or `throw new Error` with ad-hoc messages - always define a coded diagnostic. Browser-only code is out of scope and keeps using `console.*` / `throw`.
 
-Import `defineDiagnostics` (and `Diagnostic` for `instanceof` checks) from `devframe/utils/nostics`, never from `nostics` directly - it pre-wires devframe's ANSI console reporter, so a plugin's `diagnostics.ts` never builds its own reporter (`colors`, `ansiFormatter`) or depends on `nostics` itself.
+Import `defineDiagnostics` (and `Diagnostic` for `instanceof` checks) from `devframe/utils/nostics`, never from `nostics` directly - it pre-wires devframe's ANSI console reporter, so a plugin's `diagnostics.ts` never builds its own reporter (`colors`, `ansiFormatter`) or depends on `nostics` itself. One exception: `@devframes/hub-ui-onboard` MUST stay free of `devframe` (a host ships it while devframe is not installed), so it imports `defineDiagnostics` and `createConsoleReporter` from `nostics` directly.
 
 ## Code ranges
 
@@ -16,6 +16,7 @@ Prefix: **`DF`**. Codes are sequential 4-digit numbers (e.g. `DF0033`) - check t
   - `DF83xx` - messages
   - `DF84xx` - commands
   - `DF85xx` - built-in RPC commands
+- `DF90xx` - `@devframes/hub-ui-onboard` (install, state file, hand-off)
 
 ## Adding a new error
 

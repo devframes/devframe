@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hub onboarding (Vite)</title>
+  </head>
+  <body style="font-family: system-ui; padding: 2rem">
+    <h1>Hub onboarding (Vite)</h1>
+    <p>This host ships only <code>@devframes/hub-ui-onboard</code>. The button at the bottom left:</p>
+    <ul>
+      <li>is <code>/__devframes/embedded.js</code>, a 20 kB stand-in for the hub UI</li>
+      <li>installs <code>@devframes/hub</code>, <code>@devframes/hub-ui</code> and <code>@devframes/plugin-git</code> when you click Install</li>
+      <li>then hands <code>/__devframes/</code> to the real hub in this same process, no restart</li>
+      <li>hides for this tab when you click Hide for now</li>
+      <li>writes <code>node_modules/.devframe/hub-ui-onboard.json</code> when you click Disable entirely</li>
+    </ul>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>hub-ui-onboard playground</title>
+    <style>
+      body { font: 14px/1.5 system-ui, sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; }
+      fieldset { margin: 0 0 1rem; border: 1px solid #8884; border-radius: 6px; }
+      button { font: inherit; margin: 0 0.25rem 0.25rem 0; }
+      code { font-family: ui-monospace, monospace; }
+    </style>
+  </head>
+  <body>
+    <h1>hub-ui-onboard</h1>
+    <p>The floating button loads from <code>src/client</code> and talks to a mock <code>__onboard</code> API.</p>
+    <fieldset>
+      <legend>State</legend>
+      <button data-state="idle">idle</button>
+      <button data-state="installing">installing</button>
+      <button data-state="installed">installed</button>
+      <button data-state="error">error</button>
+      <button data-state="idle" data-outcome="error">idle (install fails)</button>
+    </fieldset>
+    <fieldset>
+      <legend>Theme</legend>
+      <button data-theme="light">light</button>
+      <button data-theme="dark">dark</button>
+      <button data-theme="">system</button>
+    </fieldset>
+    <p>Each choice reloads the page. Hide state lives in <code>sessionStorage</code> and resets on reload here.</p>
+    <script type="module">
+      document.addEventListener('click', async (event) => {
+        const el = event.target.closest('button')
+        if (!el)
+          return
+        sessionStorage.clear()
+        if ('theme' in el.dataset) {
+          if (el.dataset.theme)
+            localStorage.setItem('devframes-color-scheme', el.dataset.theme)
+          else
+            localStorage.removeItem('devframes-color-scheme')
+        }
+        else {
+          await fetch(`/__mock/state?state=${el.dataset.state}&outcome=${el.dataset.outcome ?? ''}`)
+        }
+        location.reload()
+      })
+    </script>
+    <script type="module" src="/src/client/index.ts"></script>
+  </body>
+</html>

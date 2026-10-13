@@ -10,7 +10,7 @@
   // (scanning `i-ph:*` classes against the installed collection), never
   // imported in source - the same false-positive class knip's own docs
   // describe for icon-collection dependencies.
-  "ignoreDependencies": ["@iconify-json/.+", "@unocss/preset-icons"],
+  "ignoreDependencies": ["@iconify-json/.+", "@unocss/preset-icons", "@antfu/skills", "satori"],
   // Every built-in plugin's `src/index.ts` aliases its `create<X>Devframe`
   // factory as both the named and default export (AGENTS.md § "A plugin's
   // default export is its `create<X>Devframe` factory") - `export default
@@ -37,11 +37,16 @@
       // one a standalone, runnable example, not imported by anything else.
       "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"]
     },
+    "packages/hub-ui-onboard": {
+      // The playground is a dev-only Vite app (`pnpm play`); its config is
+      // loaded by the Vite CLI, not imported.
+      "entry": ["playground/vite.config.ts"]
+    },
     "docs": {
       // Nuxt auto-registers `app/components` and `app/composables`; the files
       // here shadow same-named pieces of the comark-docs layer (AppHeaderBrand,
       // useFilteredNavigation, ...), so nothing imports them explicitly.
-      "entry": ["app/components/*.vue", "app/composables/*.ts"],
+      "entry": ["app/components/*.vue", "app/components/OgImage/*.vue", "app/composables/*.ts"],
       // `app/components/AssistantChat.vue` shadows the comark-docs layer's own
       // component and mirrors its imports verbatim (see the file header). These
       // packages are provided transitively by the `comark-docs` layer, not

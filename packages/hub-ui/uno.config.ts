@@ -39,6 +39,8 @@ export default mergeConfigs([
       'z-viewframe-resizer': 'z-[30]',
       'z-floating-dock': 'z-[50]',
       'z-floating-anchor': 'z-[2147483644]',
+      /** Portaled menus sit above the dock shell and below the command palette. */
+      'z-dropdown': 'z-[2147483645]',
       'z-floating-tooltip': 'z-[2147483645]',
       'z-command-palette': 'z-[2147483646]',
       /**

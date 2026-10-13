@@ -1,0 +1,44 @@
+{
+  "version": 3,
+  "skills": {
+    "antfu-design": {
+      "package": "@antfu/design",
+      "version": "0.6.0",
+      "skillPath": "skills/antfu-design/SKILL.md"
+    }
+  },
+  "remote": {
+    "agent-browser": {
+      "package": "@antfu/skills",
+      "source": "vercel-labs/agent-browser"
+    },
+    "dry-refactoring": {
+      "package": "@antfu/skills",
+      "source": "kucherenko/jscpd/skills/dry-refactoring"
+    },
+    "frontend-design": {
+      "package": "@antfu/skills",
+      "source": "anthropics/skills/skills/frontend-design"
+    },
+    "i-have-adhd": {
+      "package": "@antfu/skills",
+      "source": "ayghri/i-have-adhd"
+    },
+    "improve": {
+      "package": "@antfu/skills",
+      "source": "shadcn/improve"
+    },
+    "nuxt-modules": {
+      "package": "@antfu/skills",
+      "source": "onmax/nuxt-skills"
+    },
+    "simple-english": {
+      "package": "@antfu/skills",
+      "source": "AminBlg/SimpleEnglish"
+    },
+    "unslop": {
+      "package": "@antfu/skills",
+      "source": "cursor/plugins/pstack/skills/unslop"
+    }
+  }
+}

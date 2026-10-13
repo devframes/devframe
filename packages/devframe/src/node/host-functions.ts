@@ -9,6 +9,7 @@ import { removeClientAgentSession } from './client-agent'
 import { diagnostics } from './diagnostics'
 import { createRpcSharedStateServerHost } from './rpc-shared-state'
 import { createRpcStreamingServerHost } from './rpc-streaming'
+import { resolveSettingsState } from './settings'
 
 const debugBroadcast = createDebug('devframe:rpc:broadcast')
 
@@ -40,7 +41,7 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
   constructor(context: DevframeNodeContext) {
     super(context)
 
-    this.sharedState = createRpcSharedStateServerHost(this)
+    this.sharedState = createRpcSharedStateServerHost(this, key => resolveSettingsState(context, key))
     this.streaming = createRpcStreamingServerHost(this)
 
     this.register(defineRpcFunction({
