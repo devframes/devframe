@@ -93,6 +93,7 @@ overrides:
   crossws: ^0.4.12
   devframe: 'workspace:*'
   nuxt: &nuxt ^4.5.2
+  satori: catalog:docs
   semver: ^7.8.5
   shell-quote: ^1.12.0
   storybook: &storybook ^10.6.1

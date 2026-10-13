@@ -31,9 +31,14 @@ export default defineNuxtConfig({
     },
   },
 
+  // Nuxt DevTools v4 imports the workspace `devframe`, which is unbuilt in
+  // `docs:build` (Vercel), so keep it dev-only.
+  devtools: { enabled: false },
+
   // Dev only: mount the devframes into Nuxt DevTools. The imports are lazy,
   // so `docs:build` needs no built workspace packages.
   $development: {
+    devtools: { enabled: true },
     // DevTools v4 sets `noExternals` to an array when it is unset. Nitro 2 reads
     // any truthy value as "inline everything" and fails on `playwright-core`.
     nitro: { noExternals: false },
