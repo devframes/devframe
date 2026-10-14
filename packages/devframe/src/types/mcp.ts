@@ -25,6 +25,11 @@ export interface CreateMcpServerOptions {
    * - `(key) => boolean`: filter
    */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /**
+   * Usage guidance sent as `instructions` in the MCP `initialize` (and
+   * `server/discover`) result. Omitted or empty sends no instructions.
+   */
+  instructions?: string
   /** Override the name reported in the MCP handshake. */
   serverName?: string
   /** Override the version reported in the MCP handshake. Defaults to `definition.version ?? '0.0.0'`. */
@@ -44,6 +49,8 @@ export interface CreateMcpFetchHandlerOptions {
   serverVersion: string
   /** Expose shared-state keys as MCP resources; see {@link CreateMcpServerOptions.exposeSharedState}. */
   exposeSharedState: boolean | ((key: string) => boolean)
+  /** Usage guidance for the handshake; see {@link CreateMcpServerOptions.instructions}. */
+  instructions?: string
   /**
    * Optional identity check, layered on top of the origin gate and checked
    * **after** it: a bearer token string (matched in constant time against

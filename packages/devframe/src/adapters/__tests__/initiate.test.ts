@@ -360,6 +360,39 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('mcp: instructions reach the client in the initialize result', async () => {
+    const wsPort = await getPort({ port: 18145, host: '127.0.0.1' })
+    const devtools = initDevframe(defineTestDef('handler-mcp-instructions'), {
+      base: '/__handler-mcp-instructions/',
+      auth: false,
+      mcp: { instructions: 'Call list-pages first.' },
+      ws: { port: wsPort },
+    })
+
+    try {
+      await devtools.ready
+      const res = await devtools.handler(new Request('http://localhost:3000/__handler-mcp-instructions/__mcp', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          'origin': 'http://localhost:3000',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0.0.0' } },
+        }),
+      }))
+      expect(res.status).toBe(200)
+      expect(await res.text()).toContain('"instructions":"Call list-pages first."')
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
   // The `'auto'` default: an omitted `mcp` mounts the route exactly when
   // `setup()` left a non-empty agent surface.
   function defineAgentTestDef(id: string) {

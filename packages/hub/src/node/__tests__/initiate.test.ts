@@ -423,6 +423,64 @@ describe('initHub', () => {
     })
   })
 
+  describe('aggregate MCP instructions', () => {
+    const origin = 'http://localhost:3000'
+
+    async function initialize(hub: ReturnType<typeof initHub>): Promise<string> {
+      const res = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'accept': 'application/json, text/event-stream',
+          origin,
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'initialize',
+          params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0.0.0' } },
+        }),
+      }))
+      expect(res.status).toBe(200)
+      return await res.text()
+    }
+
+    it('sends no instructions by default', async () => {
+      const wsPort = await getPort({ port: 18238, host: '127.0.0.1' })
+      const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha')] })
+
+      try {
+        await hub.ready
+        const raw = await initialize(hub)
+        expect(raw).toContain('"serverInfo"')
+        expect(raw).not.toContain('"instructions"')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+
+    it('sends mcp.instructions in the initialize result', async () => {
+      const wsPort = await getPort({ port: 18239, host: '127.0.0.1' })
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: { instructions: 'Call alpha-tool first.' },
+        devframes: [makeFrame('alpha')],
+      })
+
+      try {
+        await hub.ready
+        expect(await initialize(hub)).toContain('"instructions":"Call alpha-tool first."')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+  })
+
   it('aggregate MCP omitted: mounts once a mounted frame exposes agent tools', async () => {
     const wsPort = await getPort({ port: 18233, host: '127.0.0.1' })
     const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, devframes: [makeFrame('alpha')] })

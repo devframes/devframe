@@ -380,6 +380,7 @@ async function mountMcpRoute(
     serverName: `${def.id} (devframe)`,
     serverVersion: def.version ?? '0.0.0',
     exposeSharedState: config.exposeSharedState ?? true,
+    instructions: config.instructions,
     authorization: config.authorization,
     allowedOrigins: config.allowedOrigins,
   })

@@ -41,6 +41,8 @@ export interface DevframeNextHostMcpOptions {
   serverVersion?: string
   /** Expose shared-state keys as MCP resources / `devframe:state:read`. Default: `true`. */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /** Usage guidance sent as `instructions` in the MCP handshake. Default: none. */
+  instructions?: string
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
    * origin gate entirely. Note the MCP route rejects `Origin`-less requests
@@ -180,6 +182,7 @@ export function createDevframeNextHost(
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',
         exposeSharedState: mcpOptions.exposeSharedState ?? true,
+        instructions: mcpOptions.instructions,
         authorization: mcpOptions.authorization,
         allowedOrigins: mcpOptions.allowedOrigins,
       })

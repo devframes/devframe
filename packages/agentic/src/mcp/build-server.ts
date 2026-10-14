@@ -15,6 +15,8 @@ export interface BuildMcpServerOptions {
   serverName: string
   serverVersion: string
   exposeSharedState: boolean | ((k: string) => boolean)
+  /** Sent as `instructions` in the `initialize` / `server/discover` result. */
+  instructions?: string
 }
 
 /**
@@ -43,6 +45,7 @@ export function buildMcpServerFromContext(
         tools: { listChanged: true },
         resources: { listChanged: true },
       },
+      ...(options.instructions ? { instructions: options.instructions } : {}),
     },
   )
 
@@ -121,6 +124,7 @@ export async function createMcpServer(
     serverName: options.serverName ?? `${definition.id} (devframe)`,
     serverVersion: options.serverVersion ?? definition.version ?? '0.0.0',
     exposeSharedState: options.exposeSharedState ?? true,
+    instructions: options.instructions,
   }
 
   // `serveStdio` pins ONE instance for the connection's lifetime. Each pinned

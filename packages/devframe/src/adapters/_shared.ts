@@ -70,6 +70,8 @@ export interface ResolvedMcpConfig {
   allowedOrigins?: readonly string[] | false
   /** Shared-state exposure from the route options; omitted means every key. */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /** Handshake `instructions` from the route options; omitted means none. */
+  instructions?: string
   /** The resolved identity policy: a bearer token, callback, or `false`. */
   authorization: McpAuthorization
 }
@@ -99,6 +101,7 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
     ...(mcp.path !== undefined ? { path: mcp.path } : {}),
     ...(mcp.allowedOrigins !== undefined ? { allowedOrigins: mcp.allowedOrigins } : {}),
     ...(mcp.exposeSharedState !== undefined ? { exposeSharedState: mcp.exposeSharedState } : {}),
+    ...(mcp.instructions !== undefined ? { instructions: mcp.instructions } : {}),
     authorization,
   }
 }
