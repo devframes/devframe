@@ -4,6 +4,21 @@ import { resolveTitle, storeConnection } from '@devframes/hub/client'
 import { watch } from 'vue'
 import { locale, setHostLocale } from '../i18n'
 
+const defaultTitle = Symbol('defaultTitle')
+
+interface LocalizedTitle {
+  original: string
+  display: string
+}
+
+/** The registered title, preserved across localized copies for stable dock ordering. */
+export function getDefaultTitle(titled: DevframeTitled & { [defaultTitle]?: LocalizedTitle }): string {
+  const previous = titled[defaultTitle]
+  // A caller can spread a displayed entry into an update. Keep its original
+  // title only while the caller has left the displayed title unchanged.
+  return previous && titled.title === previous.display ? previous.original : titled.title
+}
+
 /**
  * Seed the language from `ConnectionMeta.configs.ui.locale` (the host's
  * `createUi({ locale })`), then keep the effective language published back
@@ -20,8 +35,10 @@ export function setupLocale(rpc: DevframeRpcClient): void {
 }
 
 /** A copy of a dock entry, command or launcher with `title` in the current UI language. */
-export function localizeTitle<T extends DevframeTitled>(titled: T): T {
-  return { ...titled, title: resolveTitle(titled, locale.value) }
+export function localizeTitle<T extends DevframeTitled>(titled: T, title?: string): T {
+  const original = getDefaultTitle(titled)
+  const display = title ?? resolveTitle({ ...titled, title: original }, locale.value)
+  return { ...titled, [defaultTitle]: { original, display }, title: display }
 }
 
 /** `localizeTitle` for a command and its children, so palette and shortcut rows follow the language. */

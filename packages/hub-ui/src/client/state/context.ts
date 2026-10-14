@@ -78,10 +78,10 @@ export async function createDocksContext(
     // hub-ui owns the built-in Settings tab so it's always reachable without a
     // host registering `~settings`; a host that registered its own wins, so add
     // ours only when the merged list has none.
-    const localized = base.map(localizeTitle)
+    const localized = base.map(entry => localizeTitle(entry))
     if (localized.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
       return localized
-    return [...localized, { ...BUILTIN_ENTRY_SETTINGS, title: t('dock.settings') }]
+    return [...localized, localizeTitle(BUILTIN_ENTRY_SETTINGS, t('dock.settings'))]
   })
 
   // Per-tab session UI state (open/selectedId/route). A caller (the embedded and

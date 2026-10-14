@@ -5,6 +5,7 @@ import type { MessageKey } from '../i18n'
 import { evaluateWhen } from 'devframe/utils/when'
 import { DEFAULT_CATEGORIES_ORDER, INSPECTOR_DOCK_ID } from '../constants'
 import { t } from '../i18n'
+import { getDefaultTitle } from './locale'
 import { hubUiSetting } from './settings-defaults'
 // Registers hub-ui's reference-viewer settings onto DevframeDocksUserSettings.
 import '../types'
@@ -291,7 +292,7 @@ function compareEntryOrder(a: DevframeDockEntry, b: DevframeDockEntry, docksCust
     return customA - customB
   const ia = a.defaultOrder ?? 0
   const ib = b.defaultOrder ?? 0
-  return ib === ia ? b.title.localeCompare(a.title) : ia - ib
+  return ib === ia ? getDefaultTitle(b).localeCompare(getDefaultTitle(a)) : ia - ib
 }
 
 // A pinned top-level entry or group button re-buckets into `~pinned`; a grouped
