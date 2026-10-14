@@ -4,15 +4,18 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { defaultMessages } from '../src/index'
+import { CODE_HEADER } from '../src/protocol'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const productName = 'Devframes'
+const MOCK_CODE = '123456'
 
 /**
  * A fake of the `__onboard/*` routes `createOnboarding` serves. The client
  * resolves them next to its own module (`/src/client/`). The playground page
  * picks the state through `/__mock/state`; Install runs a timer instead of a
- * package manager and ends in `installed` or `error`.
+ * package manager and ends in `installed` or `error`. Install and Disable
+ * accept only the code `123456`.
  */
 function mockOnboarding(): Plugin {
   let state: OnboardingState = 'idle'
@@ -46,6 +49,10 @@ function mockOnboarding(): Plugin {
         if (!url.pathname.startsWith('/src/client/__onboard/'))
           return next()
         const route = url.pathname.split('/').pop()
+        if (route !== 'status' && req.headers[CODE_HEADER] !== MOCK_CODE) {
+          res.statusCode = 401
+          return res.end()
+        }
         if (route === 'install') {
           state = 'installing'
           timer = setTimeout(() => (state = outcome), 2500)

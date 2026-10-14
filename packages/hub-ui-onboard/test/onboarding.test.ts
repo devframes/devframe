@@ -6,8 +6,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createOnboarding } from '../src'
+import { CODE_HEADER } from '../src/protocol'
 
 const FIXTURE = fileURLToPath(new URL('./fixtures/pkg', import.meta.url))
 
@@ -57,6 +58,31 @@ async function waitFor<T>(read: () => Promise<T>, done: (value: T) => boolean): 
 
 const settled = (s: OnboardingStatus) => s.state !== 'installing' && s.state !== 'idle'
 
+function post(origin: string, action: 'install' | 'disable', code?: string): Promise<Response> {
+  return fetch(`${origin}/__devframes/__onboard/${action}`, {
+    method: 'POST',
+    headers: { origin, ...(code ? { [CODE_HEADER]: code } : {}) },
+  })
+}
+
+/** Ask without a code, as the panel does first, and read the code the terminal shows. */
+async function codeFromTerminal(origin: string, action: 'install' | 'disable'): Promise<string> {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    expect((await post(origin, action)).status).toBe(401)
+    const printed = String(warn.mock.lastCall?.[0])
+    expect(printed).toContain('DF9005')
+    return printed.match(/panel: (\d{6})/)![1]!
+  }
+  finally {
+    warn.mockRestore()
+  }
+}
+
+async function confirm(origin: string, action: 'install' | 'disable'): Promise<Response> {
+  return post(origin, action, await codeFromTerminal(origin, action))
+}
+
 describe('createOnboarding', () => {
   it('refuses an empty package list', () => {
     expect(() => createOnboarding({ packages: [] })).toThrow(expect.objectContaining({ code: 'DF9000' }))
@@ -105,10 +131,40 @@ describe('createOnboarding', () => {
     expect((await status(origin)).state).toBe('idle')
   })
 
+  it('refuses an install or disable without the code from the terminal', async () => {
+    const origin = await serve(createOnboarding({ cwd: tempProject(), packages: ['x'] }))
+    for (const action of ['install', 'disable'] as const) {
+      // A non-browser client sends neither `Origin` nor `Sec-Fetch-Site`.
+      expect((await fetch(`${origin}/__devframes/__onboard/${action}`, { method: 'POST' })).status).toBe(401)
+      const code = await codeFromTerminal(origin, action)
+      const wrong = code === '000000' ? '000001' : '000000'
+      expect((await post(origin, action, wrong)).status).toBe(401)
+    }
+    expect((await status(origin)).state).toBe('idle')
+  })
+
+  it('blocks install and disable after five wrong codes', async () => {
+    const origin = await serve(createOnboarding({ cwd: tempProject(), packages: ['x'] }))
+    const code = await codeFromTerminal(origin, 'disable')
+    const wrong = code === '000000' ? '000001' : '000000'
+    for (let i = 0; i < 4; i++)
+      expect((await post(origin, 'disable', wrong)).status).toBe(401)
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const blocked = await post(origin, 'disable', wrong)
+    warn.mockRestore()
+    expect(blocked.status).toBe(429)
+    expect(await blocked.json()).toMatchObject({ code: 'DF9006' })
+
+    expect((await post(origin, 'disable', code)).status).toBe(429)
+    expect((await post(origin, 'install', code)).status).toBe(429)
+    expect((await status(origin)).state).toBe('idle')
+  })
+
   it('persists disable on disk for the next process', async () => {
     const cwd = tempProject()
     const origin = await serve(createOnboarding({ cwd, packages: ['x'] }))
-    const response = await fetch(`${origin}/__devframes/__onboard/disable`, { method: 'POST', headers: { origin } })
+    const response = await confirm(origin, 'disable')
     expect(response.status).toBe(204)
     expect((await status(origin)).state).toBe('disabled')
 
@@ -126,7 +182,7 @@ describe('createOnboarding', () => {
     })
     const origin = await serve(onboarding)
 
-    const accepted = await fetch(`${origin}/__devframes/__onboard/install`, { method: 'POST', headers: { origin } })
+    const accepted = await confirm(origin, 'install')
     expect(accepted.status).toBe(202)
 
     const script = () => fetch(`${origin}/__devframes/embedded.js`).then(r => r.text())
@@ -160,7 +216,7 @@ describe('createOnboarding', () => {
   it('reports a failed install as an error the client can retry', async () => {
     const cwd = tempProject()
     const origin = await serve(createOnboarding({ cwd, packages: ['file:/nonexistent/onboard-missing'] }))
-    await fetch(`${origin}/__devframes/__onboard/install`, { method: 'POST', headers: { origin } })
+    await confirm(origin, 'install')
     const final = await waitFor(() => status(origin), s => s.state === 'error')
     expect(final.error?.code).toBe('DF9001')
     expect(final.error?.message).toContain('npm i -D file:/nonexistent/onboard-missing')
@@ -169,7 +225,7 @@ describe('createOnboarding', () => {
   it('asks for a restart when onInstalled returns nothing', async () => {
     const cwd = tempProject()
     const origin = await serve(createOnboarding({ cwd, packages: [`file:${FIXTURE}`], dev: false }))
-    await fetch(`${origin}/__devframes/__onboard/install`, { method: 'POST', headers: { origin } })
+    await confirm(origin, 'install')
     const final = await waitFor(() => status(origin), settled)
     expect(final.state).toBe('installed')
     expect(JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')).dependencies).toHaveProperty('onboard-fixture')

@@ -17,6 +17,10 @@ export interface OnboardingMessages {
   /** Short sentence under the heading. */
   description: string
   install: string
+  /** Label of the field for the code that Install and Disable need. */
+  code: string
+  /** Shown when the server refused the code. */
+  wrongCode: string
   /** Hides the button for this browser tab (`sessionStorage`). */
   hide: string
   /** Writes the state file; the host stops injecting the button. */

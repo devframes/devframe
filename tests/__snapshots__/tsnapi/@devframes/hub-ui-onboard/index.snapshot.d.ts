@@ -28,6 +28,8 @@ export interface OnboardingMessages {
   title: string;
   description: string;
   install: string;
+  code: string;
+  wrongCode: string;
   hide: string;
   disable: string;
   installing: string;
