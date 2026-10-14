@@ -30,12 +30,20 @@ export const diagnostics = defineDiagnostics({
       fix: 'Make sure that `stateDir` is writable, or point it at another directory.',
     },
     DF9005: {
-      why: (p: { command: string }) => `A browser asked to run \`${p.command}\`. Type y and press Enter to allow it.`,
+      why: (p: { command: string, minutes: number }) => `A browser asked to run \`${p.command}\`. Type y and press Enter within ${p.minutes} minutes to allow it.`,
       fix: 'If you did not click Install, press Enter to refuse. Another device can reach this dev server, so bind it to localhost.',
     },
     DF9006: {
       why: (p: { command: string }) => `A browser asked to run \`${p.command}\`, but no interactive terminal can confirm it. The install was refused.`,
       fix: 'Run the command yourself, or pass an `onConfirm` function to `createOnboarding()`.',
+    },
+    DF9007: {
+      why: (p: { command: string }) => `A browser asked to run \`${p.command}\`, but another program reads this terminal key by key, so it cannot show the question. The install was refused.`,
+      fix: 'Run the command yourself. If a CLI owns the terminal, pass an `onConfirm` function to `createOnboarding()` that asks through that CLI.',
+    },
+    DF9008: {
+      why: (p: { command: string, minutes: number }) => `Nobody allowed \`${p.command}\` within ${p.minutes} minutes. The install was refused.`,
+      fix: 'Click Install again and answer in the terminal that runs the dev server. If the answer does not arrive, another program reads that terminal: pass an `onConfirm` function to `createOnboarding()`.',
     },
   },
 })

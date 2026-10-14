@@ -1,5 +1,5 @@
 import { PassThrough } from 'node:stream'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, expect, it, onTestFinished, vi } from 'vitest'
 import { confirmInTerminal } from '../src/terminal-confirm'
 
 const COMMAND = ['pnpm', 'add', '-D', '@nuxt/devtools']
@@ -41,4 +41,25 @@ it('keeps the terminal flowing for a reader that was there first', async () => {
 it('refuses at once without a TTY', async () => {
   expect(await confirmInTerminal(COMMAND, new PassThrough())).toBe(false)
   expect(printed()).toContain('DF9006')
+})
+
+it('refuses at once when another reader holds the terminal in raw mode', async () => {
+  const input = Object.assign(terminal(), { isRaw: true })
+  expect(await confirmInTerminal(COMMAND, input)).toBe(false)
+  expect(printed()).toContain('DF9007')
+  expect(input.readableFlowing).toBe(null)
+})
+
+it('refuses and releases the terminal when nobody answers within 5 minutes', async () => {
+  vi.useFakeTimers()
+  onTestFinished(() => {
+    vi.useRealTimers()
+  })
+  const input = terminal()
+  const answer = confirmInTerminal(COMMAND, input)
+
+  vi.advanceTimersByTime(5 * 60_000)
+  expect(await answer).toBe(false)
+  expect(printed()).toContain('DF9008')
+  expect(input.readableFlowing).toBe(false)
 })
