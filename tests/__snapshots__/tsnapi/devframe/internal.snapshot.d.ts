@@ -371,6 +371,13 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.";
   };
+  readonly DF0081: {
+    readonly why: (p: {
+      name: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Pass `withMcpContent` a non-empty array of `{ type: 'text', text }`, `{ type: 'image', data, mimeType }` or `{ type: 'audio', data, mimeType }` blocks, with string fields and base64 `data`.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void], never>;
@@ -385,6 +392,7 @@ export { createInstanceShell }
 export { CreateInstanceShellOptions }
 export { DevframeInstanceRecord }
 export { DevframeInstanceRegistration }
+export { getMcpContent }
 export { importAgenticMcp }
 export { InstanceRegisterConfig }
 export { InstanceShell }

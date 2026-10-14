@@ -1,9 +1,26 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { DevframeHost } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
+import { withMcpContent } from 'devframe'
 import { createHostContext } from 'devframe/node'
 import * as v from 'valibot'
 import { describe, expect, it } from 'vitest'
 import { buildMcpServerFromContext } from '../build-server'
+
+/** A 1x1 PNG. */
+const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
+
+/** A Standard Schema that accepts any value and converts to `jsonSchema`. */
+function objectSchema(jsonSchema: Record<string, unknown>): StandardSchemaV1 {
+  return {
+    '~standard': {
+      version: 1,
+      vendor: 'test',
+      validate: (value: unknown) => ({ value }),
+      jsonSchema: { input: () => jsonSchema, output: () => jsonSchema },
+    } as StandardSchemaV1['~standard'],
+  }
+}
 
 function nullHost(): DevframeHost {
   return {
@@ -160,6 +177,81 @@ describe('mcp adapter (in-memory)', () => {
       expect(content[0]!.type).toBe('text')
       expect(JSON.parse(content[0]!.text)).toEqual({ echoed: { foo: 'bar' } })
       expect(result.structuredContent).toEqual({ echoed: { foo: 'bar' } })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('sends the content blocks attached with withMcpContent in place of the JSON text', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'snapshot',
+        description: 'Take a snapshot.',
+        handler: () => withMcpContent({ markdown: 'A red pixel.' }, [
+          { type: 'text', text: 'A red pixel.' },
+          { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+          { type: 'audio', data: 'AAAA', mimeType: 'audio/wav' },
+        ]),
+      })
+
+      const result = await client.callTool({ name: 'snapshot', arguments: {} })
+      expect(result.isError).toBeFalsy()
+      expect(result.content).toEqual([
+        { type: 'text', text: 'A red pixel.' },
+        { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+        { type: 'audio', data: 'AAAA', mimeType: 'audio/wav' },
+      ])
+      expect(result.structuredContent).toBeUndefined()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('keeps the plain result as structured content for an rpc-backed tool with an output schema', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.rpc.register({
+        name: 'snapshot',
+        type: 'query',
+        jsonSerializable: true,
+        args: [],
+        returns: objectSchema({ type: 'object', properties: { markdown: { type: 'string' } }, required: ['markdown'] }),
+        agent: { description: 'Take a snapshot.' },
+        handler: () => withMcpContent({ markdown: 'A red pixel.' }, [
+          { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+        ]),
+      } as never)
+
+      const listed = await client.listTools()
+      const tool = listed.tools.find(t => t.name.endsWith('snapshot'))!
+      expect(tool.outputSchema).toBeDefined()
+
+      const result = await client.callTool({ name: tool.name, arguments: {} })
+      expect(result.isError).toBeFalsy()
+      expect(result.content).toEqual([{ type: 'image', data: PNG_BASE64, mimeType: 'image/png' }])
+      expect(result.structuredContent).toEqual({ markdown: 'A red pixel.' })
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('returns DF0081 when the attached content blocks are invalid', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      ctx.agent.registerTool({
+        id: 'broken',
+        description: 'Returns a bad block.',
+        handler: () => withMcpContent({}, [{ type: 'image', data: PNG_BASE64 } as never]),
+      })
+
+      const result = await client.callTool({ name: 'broken', arguments: {} })
+      expect(result.isError).toBe(true)
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(content[0]!.text).toContain('DF0081')
     }
     finally {
       await cleanup()

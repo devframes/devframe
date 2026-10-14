@@ -553,6 +553,18 @@ export type DevframeSnapshotRpcEntry = string | {
 export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
+export type McpContentBlock = {
+  type: 'text';
+  text: string;
+} | {
+  type: 'image';
+  data: string;
+  mimeType: string;
+} | {
+  type: 'audio';
+  data: string;
+  mimeType: string;
+};
 export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
@@ -572,6 +584,7 @@ export type StaticAssetsSource = string | RemoteAssets;
 
 // #region Functions
 export declare function defineDevframe(_: DevframeDefinition): DevframeDefinition;
+export declare function withMcpContent<T extends object>(_: T, _: readonly McpContentBlock[]): T;
 // #endregion
 
 // #region Variables

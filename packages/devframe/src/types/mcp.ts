@@ -33,6 +33,16 @@ export interface CreateMcpServerOptions {
   onReady?: (info: { transport: 'stdio' }) => void
 }
 
+/**
+ * One MCP content block in a tool result. Attach blocks to a tool's return
+ * value with `withMcpContent` (from `devframe`) to send them in place of the
+ * default JSON text block. `data` is base64.
+ */
+export type McpContentBlock
+  = | { type: 'text', text: string }
+    | { type: 'image', data: string, mimeType: string }
+    | { type: 'audio', data: string, mimeType: string }
+
 export interface McpServerHandle {
   stop: () => Promise<void>
 }

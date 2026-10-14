@@ -15,6 +15,7 @@ export { createInstanceShell }
 export { createRpcWireCodec }
 export { DevframeAgentHost }
 export { diagnostics }
+export { getMcpContent }
 export { importAgenticMcp }
 export { importRuntimeModule }
 export { listLiveDevframeInstances }

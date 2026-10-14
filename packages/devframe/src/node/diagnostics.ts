@@ -220,5 +220,10 @@ export const diagnostics = defineDiagnostics({
         `The \`mcp\` option is enabled, but the optional peer "@devframes/agentic" could not be loaded: ${p.reason}`,
       fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
+    DF0081: {
+      why: (p: { name: string, reason: string }) =>
+        `Tool "${p.name}" returned invalid MCP content blocks: ${p.reason}`,
+      fix: 'Pass `withMcpContent` a non-empty array of `{ type: \'text\', text }`, `{ type: \'image\', data, mimeType }` or `{ type: \'audio\', data, mimeType }` blocks, with string fields and base64 `data`.',
+    },
   },
 })
