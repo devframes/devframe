@@ -2,6 +2,13 @@
   --un-text-opacity: 100%;
 }
 
+/* Keep portaled select options scrollable within the available window height.
+ * Reserve the two border pixels on FormSelect's enclosing content. */
+[data-reka-select-viewport] {
+  max-height: calc(var(--reka-select-content-available-height) - 2px);
+  overscroll-behavior-y: contain;
+}
+
 /*
  * Thin/transparent scrollbar, matching packages/ui/src/styles/global.css -
  * that stylesheet only reaches the Nuxt plugin apps, not this injected
