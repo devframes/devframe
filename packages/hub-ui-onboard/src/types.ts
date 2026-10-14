@@ -17,9 +17,9 @@ export interface OnboardingMessages {
   /** Short sentence under the heading. */
   description: string
   install: string
-  /** Install button label while `confirm` waits for the developer. */
+  /** Install button label while `onConfirm` waits for the developer. */
   confirming: string
-  /** Shown when `confirm` refused the install. */
+  /** Shown when `onConfirm` refused the install. */
   refused: string
   /** Hides the button for this browser tab (`sessionStorage`). */
   hide: string
@@ -34,7 +34,7 @@ export interface OnboardingMessages {
 /** A web-standard request handler the hub exposes once installed. */
 export type OnboardingHandler = (request: Request) => Response | Promise<Response>
 
-/** What `confirm` receives when the panel asks to install. */
+/** What `onConfirm` receives when the panel asks to install. */
 export interface OnboardingConfirmation {
   /** The packages Install adds, as given in `packages`. */
   packages: string[]
@@ -71,7 +71,7 @@ export interface CreateOnboardingOptions {
    * Default: a `y/N` question in the terminal, or a refusal when stdin is
    * not a TTY.
    */
-  confirm?: (confirmation: OnboardingConfirmation) => boolean | Promise<boolean>
+  onConfirm?: (confirmation: OnboardingConfirmation) => boolean | Promise<boolean>
 }
 
 export type OnboardingState = 'idle' | 'installing' | 'installed' | 'ready' | 'error' | 'disabled'

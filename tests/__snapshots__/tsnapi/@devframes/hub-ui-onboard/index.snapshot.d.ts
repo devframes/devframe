@@ -11,7 +11,7 @@ export interface CreateOnboardingOptions {
   branding?: OnboardingBranding;
   messages?: Partial<OnboardingMessages>;
   onInstalled?: () => void | OnboardingHandler | Promise<void | OnboardingHandler>;
-  confirm?: (_: OnboardingConfirmation) => boolean | Promise<boolean>;
+  onConfirm?: (_: OnboardingConfirmation) => boolean | Promise<boolean>;
 }
 export interface Onboarding {
   handler: OnboardingHandler;

@@ -108,13 +108,13 @@ describe('createOnboarding', () => {
     expect((await status(origin)).state).toBe('idle')
   })
 
-  it('installs only after `confirm` allows it', async () => {
+  it('installs only after `onConfirm` allows it', async () => {
     const asked: OnboardingConfirmation[] = []
     let allowed = false
     const origin = await serve(createOnboarding({
       cwd: tempProject(),
       packages: ['file:/nonexistent/onboard-missing'],
-      confirm: (confirmation) => {
+      onConfirm: (confirmation) => {
         asked.push(confirmation)
         return allowed
       },
@@ -140,7 +140,7 @@ describe('createOnboarding', () => {
     const onboarding = createOnboarding({
       cwd: tempProject(),
       packages: ['x'],
-      confirm: () => {
+      onConfirm: () => {
         calls++
         return new Promise(resolve => answer = resolve)
       },
@@ -155,7 +155,7 @@ describe('createOnboarding', () => {
   })
 
   it('refuses an install when no terminal can confirm it', async () => {
-    // Vitest gives its workers a piped stdin, so the default `confirm` sees no TTY.
+    // Vitest gives its workers a piped stdin, so the default `onConfirm` sees no TTY.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     cleanups.push(() => warn.mockRestore())
     const origin = await serve(createOnboarding({ cwd: tempProject(), packages: ['x'] }))
@@ -183,7 +183,7 @@ describe('createOnboarding', () => {
       cwd,
       packages: [`file:${FIXTURE}`],
       onInstalled: () => () => new Response('hub here'),
-      confirm: allow,
+      onConfirm: allow,
     })
     const origin = await serve(onboarding)
 
@@ -220,7 +220,7 @@ describe('createOnboarding', () => {
 
   it('reports a failed install as an error the client can retry', async () => {
     const cwd = tempProject()
-    const origin = await serve(createOnboarding({ cwd, packages: ['file:/nonexistent/onboard-missing'], confirm: allow }))
+    const origin = await serve(createOnboarding({ cwd, packages: ['file:/nonexistent/onboard-missing'], onConfirm: allow }))
     await fetch(`${origin}/__devframes/__onboard/install`, { method: 'POST', headers: { origin } })
     const final = await waitFor(() => status(origin), s => s.state === 'error')
     expect(final.error?.code).toBe('DF9001')
@@ -229,7 +229,7 @@ describe('createOnboarding', () => {
 
   it('asks for a restart when onInstalled returns nothing', async () => {
     const cwd = tempProject()
-    const origin = await serve(createOnboarding({ cwd, packages: [`file:${FIXTURE}`], dev: false, confirm: allow }))
+    const origin = await serve(createOnboarding({ cwd, packages: [`file:${FIXTURE}`], dev: false, onConfirm: allow }))
     await fetch(`${origin}/__devframes/__onboard/install`, { method: 'POST', headers: { origin } })
     const final = await waitFor(() => status(origin), settled)
     expect(final.state).toBe('installed')

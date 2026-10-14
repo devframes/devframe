@@ -195,14 +195,14 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
 
   // The dev server can be reachable from other devices, and a non-browser
   // request can send any `Origin`. So the developer allows each install.
-  const confirm = options.confirm ?? (({ command }) => confirmInTerminal(command))
+  const onConfirm = options.onConfirm ?? (({ command }) => confirmInTerminal(command))
   let asking: Promise<boolean> | undefined
 
   async function startInstall(request: Request): Promise<Response> {
     if (state !== 'idle' && state !== 'error')
       return new Response(null, { status: 202 })
     asking ??= commandLine()
-      .then(command => confirm({ packages: plan.packages, command, request }))
+      .then(command => onConfirm({ packages: plan.packages, command, request }))
       .finally(() => {
         asking = undefined
       })

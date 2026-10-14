@@ -35,7 +35,7 @@ export const diagnostics = defineDiagnostics({
     },
     DF9006: {
       why: (p: { command: string }) => `A browser asked to run \`${p.command}\`, but no interactive terminal can confirm it. The install was refused.`,
-      fix: 'Run the command yourself, or pass a `confirm` function to `createOnboarding()`.',
+      fix: 'Run the command yourself, or pass an `onConfirm` function to `createOnboarding()`.',
     },
   },
 })

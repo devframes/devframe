@@ -4,7 +4,7 @@ import process from 'node:process'
 import { diagnostics } from './diagnostics'
 
 /**
- * The default `confirm`: a `y/N` question in the terminal that runs the dev
+ * The default `onConfirm`: a `y/N` question in the terminal that runs the dev
  * server. Without an interactive terminal nobody can answer, so it refuses.
  */
 export function confirmInTerminal(command: string[], input: Readable & { isTTY?: boolean } = process.stdin): Promise<boolean> {
