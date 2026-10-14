@@ -68,8 +68,9 @@ export interface CreateOnboardingOptions {
    * Ask the developer to allow an install that the panel requested; the
    * dev server can be reachable from other devices. Return `true` to run
    * it. Only one call is open at a time: clicks meanwhile share its answer.
-   * Default: a `y/N` question in the terminal, or a refusal when stdin is
-   * not a TTY.
+   * Default: a `y/N` question in the terminal. It refuses at once when stdin
+   * is not a TTY or another reader holds it in raw mode, and after 5 minutes
+   * without an answer.
    */
   onConfirm?: (confirmation: OnboardingConfirmation) => boolean | Promise<boolean>
 }
