@@ -4,22 +4,20 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { defaultMessages } from '../src/index'
-import { CODE_HEADER } from '../src/protocol'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const productName = 'Devframes'
-const MOCK_CODE = '123456'
 
 /**
  * A fake of the `__onboard/*` routes `createOnboarding` serves. The client
  * resolves them next to its own module (`/src/client/`). The playground page
- * picks the state through `/__mock/state`; Install runs a timer instead of a
- * package manager and ends in `installed` or `error`. Install and Disable
- * accept only the code `123456`.
+ * picks the state through `/__mock/state`; Install waits as if the developer
+ * answered in the terminal, then is refused, or runs a timer instead of a
+ * package manager and ends in `installed` or `error`.
  */
 function mockOnboarding(): Plugin {
   let state: OnboardingState = 'idle'
-  let outcome: 'installed' | 'error' = 'installed'
+  let outcome: 'installed' | 'error' | 'refused' = 'installed'
   let timer: ReturnType<typeof setTimeout> | undefined
 
   const status = (): OnboardingStatus => ({
@@ -43,23 +41,28 @@ function mockOnboarding(): Plugin {
         if (url.pathname === '/__mock/state') {
           clearTimeout(timer)
           state = (url.searchParams.get('state') ?? 'idle') as OnboardingState
-          outcome = url.searchParams.get('outcome') === 'error' ? 'error' : 'installed'
+          const requested = url.searchParams.get('outcome')
+          outcome = requested === 'error' || requested === 'refused' ? requested : 'installed'
           return send({ state, outcome })
         }
         if (!url.pathname.startsWith('/src/client/__onboard/'))
           return next()
         const route = url.pathname.split('/').pop()
-        if (route !== 'status' && req.headers[CODE_HEADER] !== MOCK_CODE) {
-          res.statusCode = 401
-          return res.end()
-        }
         if (route === 'install') {
-          state = 'installing'
-          timer = setTimeout(() => (state = outcome), 2500)
+          setTimeout(() => {
+            if (outcome === 'refused') {
+              res.statusCode = 403
+              return res.end()
+            }
+            const end = outcome
+            state = 'installing'
+            timer = setTimeout(() => (state = end), 2500)
+            send({ ok: true })
+          }, 1500)
+          return
         }
-        else if (route === 'disable') {
+        if (route === 'disable')
           state = 'disabled'
-        }
         send(route === 'status' ? status() : { ok: true })
       })
     },

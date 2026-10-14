@@ -57,11 +57,6 @@
   --uno: transition-opacity duration-200;
 }
 
-.devframes-onboard-code {
-  --uno: w-full min-w-0 rounded border border-base bg-base color-base px-2.5 py-1 font-mono text-sm tabular-nums tracking-widest;
-  --uno: outline-none transition focus-visible:border-active focus-visible:ring-2 ring-primary-400;
-}
-
 .devframes-onboard-spinner[hidden] {
   --uno: hidden;
 }

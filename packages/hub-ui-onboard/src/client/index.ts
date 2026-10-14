@@ -1,5 +1,4 @@
 import type { OnboardingBranding, OnboardingStatus } from '../types'
-import { CODE_HEADER } from '../protocol'
 import css from './.generated/css'
 import { DEVFRAME_LOGO } from './logo'
 
@@ -190,32 +189,9 @@ function mount(initial: OnboardingStatus): void {
   commandRow.className = 'devframes-onboard-command-row'
   commandRow.append(command, copy)
 
-  // Shown when the server asks for the code it printed in the terminal.
-  // A form, so Enter repeats the action that asked for it.
-  let pending: 'install' | 'disable' = 'install'
-  const codeForm = document.createElement('form')
-  codeForm.hidden = true
-  const codeField = document.createElement('label')
-  codeField.className = 'flex flex-col gap-1 text-xs color-muted'
-  const codeInput = document.createElement('input')
-  codeInput.className = 'devframes-onboard-code'
-  codeInput.inputMode = 'numeric'
-  codeInput.autocomplete = 'one-time-code'
-  codeInput.maxLength = 6
-  codeField.append(messages.code, codeInput)
-  codeForm.append(codeField)
-  codeForm.addEventListener('submit', (event) => {
-    event.preventDefault()
-    void (pending === 'install' ? startInstall() : disableDevtools())
-  })
-
   const note = document.createElement('p')
-  note.className = 'm-0 text-xs text-red-600 dark:text-red-400'
+  note.className = 'm-0 text-xs'
   note.hidden = true
-  const showNote = (text: string) => {
-    note.hidden = !text
-    note.textContent = text
-  }
 
   const install = button('btn-primary text-sm justify-center gap-1', messages.install, () => void startInstall())
   // The spinner takes its space from the line height, so the button keeps its size.
@@ -237,7 +213,7 @@ function mount(initial: OnboardingStatus): void {
   actions.className = 'flex flex-col gap-2'
   actions.append(secondary, install)
 
-  panel.append(heading, description, commandRow, codeForm, note, actions)
+  panel.append(heading, description, commandRow, note, actions)
   scheme.append(glow, pill, panel)
 
   let open = false
@@ -270,7 +246,11 @@ function mount(initial: OnboardingStatus): void {
       : state === 'installed'
         ? messages.restart
         : state === 'error' ? messages.retry : messages.install
-    showNote(state === 'error' ? `${status.error?.code}: ${status.error?.message}` : '')
+    note.hidden = state !== 'error'
+    note.className = 'm-0 text-xs text-red-600 dark:text-red-400'
+    note.textContent = state === 'error'
+      ? `${status.error?.code}: ${status.error?.message}`
+      : ''
   }
 
   async function poll(): Promise<void> {
@@ -285,38 +265,24 @@ function mount(initial: OnboardingStatus): void {
       setTimeout(() => void poll(), POLL_MS)
   }
 
-  /** POST `action` with the entered code; `true` when the server accepted it. */
-  async function send(action: typeof pending): Promise<boolean> {
-    pending = action
-    // Kept after success, so Retry does not ask again.
-    const code = codeInput.value.trim()
-    const response = await api(action, { method: 'POST', headers: code ? { [CODE_HEADER]: code } : {} })
-    if (response.status === 401) {
-      showNote(code ? messages.wrongCode : '')
-      codeInput.value = ''
-      codeForm.hidden = false
-      codeInput.focus()
-      return false
-    }
-    if (!response.ok) {
-      // A `DF90xx` body: too many wrong codes, or the state file failed.
-      const error: OnboardingStatus['error'] = await response.json().catch(() => undefined)
-      showNote(error ? `${error.code}: ${error.message}` : '')
-      return false
-    }
-    codeForm.hidden = true
-    return true
-  }
-
   async function startInstall(): Promise<void> {
-    if (!await send('install'))
+    // The request stays open until the developer answers in the terminal.
+    install.disabled = true
+    installLabel.textContent = messages.confirming
+    const response = await api('install', { method: 'POST' })
+    if (!response.ok) {
+      await poll()
+      note.hidden = false
+      note.textContent = messages.refused
       return
+    }
     render({ ...initial, state: 'installing' })
     await poll()
   }
 
   async function disableDevtools(): Promise<void> {
-    if (await send('disable'))
+    const response = await api('disable', { method: 'POST' })
+    if (response.ok)
       host.remove()
   }
 

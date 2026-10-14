@@ -2,7 +2,6 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { ResolvedCommand } from 'package-manager-detector'
 import type { CreateOnboardingOptions, Onboarding, OnboardingHandler, OnboardingMessages, OnboardingState, OnboardingStatus } from './types'
 import { Buffer } from 'node:buffer'
-import { randomInt, timingSafeEqual } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -13,12 +12,11 @@ import { fileURLToPath } from 'node:url'
 import { Diagnostic } from 'nostics'
 import { diagnostics } from './diagnostics'
 import { packagesInstalled, resolveInstallCommand, runInstall } from './install'
-import { CODE_HEADER } from './protocol'
+import { confirmInTerminal } from './terminal-confirm'
 
 export type * from './types'
 
 const STATE_FILE = 'hub-ui-onboard.json'
-const MAX_WRONG_CODES = 5
 
 /** `devframes` → `/devframes/`, same rule as `normalizeHubBase` in `@devframes/hub`. */
 function normalizeBase(base: string): string {
@@ -41,8 +39,8 @@ export function defaultMessages(productName: string): OnboardingMessages {
     title: productName,
     description: `${productName} enables development features in your project. Install it with:`,
     install: `Install ${productName}`,
-    code: 'Enter the code that the dev server printed in your terminal.',
-    wrongCode: 'Wrong code. Try again.',
+    confirming: 'Confirm in your terminal...',
+    refused: 'The dev server did not allow the install. Check its terminal, or run the command above yourself.',
     hide: 'Hide in this session',
     disable: 'Disable entirely',
     installing: 'Installing...',
@@ -190,41 +188,34 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
     return new Response(null, { status: 204 })
   }
 
-  function startInstall(): Response {
+  const commandLine = async () => {
+    const resolved = await getCommand()
+    return [resolved.command, ...resolved.args]
+  }
+
+  // The dev server can be reachable from other devices, and a non-browser
+  // request can send any `Origin`. So the developer allows each install.
+  const confirm = options.confirm ?? (({ command }) => confirmInTerminal(command))
+  let asking: Promise<boolean> | undefined
+
+  async function startInstall(request: Request): Promise<Response> {
+    if (state !== 'idle' && state !== 'error')
+      return new Response(null, { status: 202 })
+    asking ??= commandLine()
+      .then(command => confirm({ packages: plan.packages, command, request }))
+      .finally(() => {
+        asking = undefined
+      })
+    if (!await asking)
+      return new Response(null, { status: 403 })
+    // Clicks that shared the answer start one install.
     if (state === 'idle' || state === 'error')
       void install()
     return new Response(null, { status: 202 })
   }
 
-  // The dev server can listen on the network, and a non-browser request can
-  // send any `Origin`. So Install and Disable also need a code that only the terminal shows.
-  const code = Buffer.from(String(randomInt(1_000_000)).padStart(6, '0'))
-  let wrongCodes = 0
-  let locked: Diagnostic | undefined
-
-  /** The refusal to send, or `undefined` when the request may run `action`. */
-  function authorize(request: Request, action: string): Response | undefined {
-    if (!isSameOrigin(request))
-      return new Response(null, { status: 403 })
-    if (!locked) {
-      const given = request.headers.get(CODE_HEADER)
-      if (given === null) {
-        diagnostics.DF9005({ action, code: code.toString() })
-        return new Response(null, { status: 401 })
-      }
-      const candidate = Buffer.from(given)
-      if (candidate.length === code.length && timingSafeEqual(candidate, code))
-        return undefined
-      if (++wrongCodes < MAX_WRONG_CODES)
-        return new Response(null, { status: 401 })
-      locked = diagnostics.DF9006()
-    }
-    return json({ code: locked.code, message: locked.message }, 429)
-  }
-
   async function status(): Promise<OnboardingStatus> {
-    const command = await getCommand()
-    return { state, command: [command.command, ...command.args], branding, messages, error }
+    return { state, command: await commandLine(), branding, messages, error }
   }
 
   const handler: OnboardingHandler = async (request) => {
@@ -244,10 +235,11 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
     }
     if (route === 'GET __onboard/status')
       return json(await status())
-    if (route === 'POST __onboard/install')
-      return authorize(request, `install ${plan.packages.join(' ')}`) ?? startInstall()
-    if (route === 'POST __onboard/disable')
-      return authorize(request, 'disable the onboarding button') ?? disable()
+    if (route === 'POST __onboard/install' || route === 'POST __onboard/disable') {
+      if (!isSameOrigin(request))
+        return new Response(null, { status: 403 })
+      return route.endsWith('disable') ? disable() : startInstall(request)
+    }
     return new Response(null, { status: 404 })
   }
 

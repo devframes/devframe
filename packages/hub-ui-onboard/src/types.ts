@@ -17,10 +17,10 @@ export interface OnboardingMessages {
   /** Short sentence under the heading. */
   description: string
   install: string
-  /** Label of the field for the code that Install and Disable need. */
-  code: string
-  /** Shown when the server refused the code. */
-  wrongCode: string
+  /** Install button label while `confirm` waits for the developer. */
+  confirming: string
+  /** Shown when `confirm` refused the install. */
+  refused: string
   /** Hides the button for this browser tab (`sessionStorage`). */
   hide: string
   /** Writes the state file; the host stops injecting the button. */
@@ -33,6 +33,16 @@ export interface OnboardingMessages {
 
 /** A web-standard request handler the hub exposes once installed. */
 export type OnboardingHandler = (request: Request) => Response | Promise<Response>
+
+/** What `confirm` receives when the panel asks to install. */
+export interface OnboardingConfirmation {
+  /** The packages Install adds, as given in `packages`. */
+  packages: string[]
+  /** The exact command Install runs. */
+  command: string[]
+  /** The panel's request, for example to read its `Origin` or `User-Agent`. */
+  request: Request
+}
 
 export interface CreateOnboardingOptions {
   /** Packages to install when the user clicks Install. Package specs as the package manager accepts them. */
@@ -54,6 +64,14 @@ export interface CreateOnboardingOptions {
    * user to restart the dev server.
    */
   onInstalled?: () => void | OnboardingHandler | Promise<void | OnboardingHandler>
+  /**
+   * Ask the developer to allow an install that the panel requested; the
+   * dev server can be reachable from other devices. Return `true` to run
+   * it. Only one call is open at a time: clicks meanwhile share its answer.
+   * Default: a `y/N` question in the terminal, or a refusal when stdin is
+   * not a TTY.
+   */
+  confirm?: (confirmation: OnboardingConfirmation) => boolean | Promise<boolean>
 }
 
 export type OnboardingState = 'idle' | 'installing' | 'installed' | 'ready' | 'error' | 'disabled'

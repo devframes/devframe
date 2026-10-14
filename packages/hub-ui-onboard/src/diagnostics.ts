@@ -30,12 +30,12 @@ export const diagnostics = defineDiagnostics({
       fix: 'Make sure that `stateDir` is writable, or point it at another directory.',
     },
     DF9005: {
-      why: (p: { action: string, code: string }) => `A browser asked to ${p.action}. To allow it, enter this code in the panel: ${p.code}`,
-      fix: 'If you did not click the button, another device can reach this dev server. Do not enter the code, and bind the dev server to localhost.',
+      why: (p: { command: string }) => `A browser asked to run \`${p.command}\`. Type y and press Enter to allow it.`,
+      fix: 'If you did not click Install, press Enter to refuse. Another device can reach this dev server, so bind it to localhost.',
     },
     DF9006: {
-      why: 'Five wrong onboarding codes were entered. Install and Disable are blocked until the dev server restarts.',
-      fix: 'Restart the dev server to get a new code. If you did not enter these codes, another device can reach this dev server: bind it to localhost.',
+      why: (p: { command: string }) => `A browser asked to run \`${p.command}\`, but no interactive terminal can confirm it. The install was refused.`,
+      fix: 'Run the command yourself, or pass a `confirm` function to `createOnboarding()`.',
     },
   },
 })
