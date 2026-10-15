@@ -2,7 +2,7 @@ import type { AgenticMcpModule, DevframeInstanceRecord, InstanceShellApi, Resolv
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { AuthBannerFunction } from 'devframe/recipes/interactive-auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
-import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeWsOptions, McpRouteOptions, McpSetting } from 'devframe/types'
+import type { ConnectionMeta, DevframeDefinition, DevframeServiceInput, DevframeSseOptions, DevframeStorageScope, DevframeTracingOptions, DevframeWsOptions, McpRouteOptions, McpSetting } from 'devframe/types'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
@@ -176,6 +176,11 @@ export interface InitHubOptions {
    * `services: [createShikiService({ themes })]`.
    */
   services?: DevframeServiceInput[]
+  /**
+   * Host-level Node.js Tracing Channels to list, on top of whatever the
+   * mounted devframes declare in their own `tracing` field.
+   */
+  tracing?: DevframeTracingOptions
   /**
    * Extra RPC declarations registered at context creation, alongside the
    * hub built-ins, forwarded to `createHubContext`'s
@@ -463,6 +468,7 @@ export function initHub(options: InitHubOptions): HubInstance {
       // collection alongside every devframe's own declared services.
       for (const input of options.services ?? [])
         void ctx.services.install(input)
+      ctx.tracing._applyOptions(options.tracing)
       const setups = await mountDevframes(ctx, devframes, base)
 
       // Construct every collected service once, then run the setups, so a

@@ -322,9 +322,9 @@ describe('mcp adapter (in-memory)', () => {
       expect(tool).toBeDefined()
       expect(tool!.annotations?.readOnlyHint).toBe(true)
 
-      // No key → key list.
+      // No key → key list, alongside the core's own keys.
       const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
-      expect(keys.structuredContent).toEqual({ keys: ['my-plugin:counter'] })
+      expect(keys.structuredContent).toEqual({ keys: ['devframe:tracing:channels', 'my-plugin:counter'] })
 
       // With key → the value.
       const value = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'my-plugin:counter' } })

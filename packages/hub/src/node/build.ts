@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { ConnectionMeta, DevframeServiceInput, DevframeStorageScope } from 'devframe/types'
+import type { ConnectionMeta, DevframeServiceInput, DevframeStorageScope, DevframeTracingOptions } from 'devframe/types'
 import type { ClientScriptEntry } from '../types/docks'
 import type { CreateHubContextOptions, DevframeHubContext } from './context'
 import type { DevframeHubUi, DevframesInput, DockRendererRegistration } from './initiate'
@@ -50,6 +50,8 @@ export interface BuildHubOptions {
   context?: DevframeHubContext
   /** Host-level wire services, same contract as `initHub({ services })`. */
   services?: DevframeServiceInput[]
+  /** Host-level Tracing Channels, same contract as `initHub({ tracing })`. */
+  tracing?: DevframeTracingOptions
   /** Extra RPC declarations registered at context creation. */
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations']
   /**
@@ -183,6 +185,7 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
   const devframes = await resolveDevframesInput(options.devframes ?? [])
   for (const input of options.services ?? [])
     void ctx.services.install(input)
+  ctx.tracing._applyOptions(options.tracing)
   const setups = await mountDevframes(ctx, devframes, base)
 
   await ctx.services.ready()

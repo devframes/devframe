@@ -112,6 +112,7 @@ export default defineAppConfig({
             '/guide/json-render',
             '/guide/diagnostics',
             '/guide/streaming',
+            '/guide/tracing-channels',
           ],
         },
         {
