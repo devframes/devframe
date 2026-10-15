@@ -379,7 +379,8 @@ function mcpContentOf(name: string, result: unknown): McpContentBlock[] | undefi
     return undefined
   if (!Array.isArray(blocks) || blocks.length === 0)
     throw diagnostics.DF0081({ name, reason: 'expected a non-empty array' })
-  return blocks.map((block: unknown, index): McpContentBlock => {
+  // `Array.from` visits the holes of a sparse array as `undefined`, so they fail the check below.
+  return Array.from(blocks, (block: unknown, index): McpContentBlock => {
     const b = (block ?? {}) as Record<string, unknown>
     if (b.type === 'text' && typeof b.text === 'string')
       return { type: 'text', text: b.text }

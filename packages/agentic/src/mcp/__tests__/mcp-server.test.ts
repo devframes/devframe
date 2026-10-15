@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { DevframeHost } from 'devframe/types'
+import type { DevframeHost, McpContentBlock } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { withMcpContent } from 'devframe'
 import { createHostContext } from 'devframe/node'
@@ -249,6 +249,28 @@ describe('mcp adapter (in-memory)', () => {
       })
 
       const result = await client.callTool({ name: 'broken', arguments: {} })
+      expect(result.isError).toBe(true)
+      const content = result.content as Array<{ type: string, text: string }>
+      expect(content[0]!.text).toContain('DF0081')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('returns DF0081 when the attached content blocks have holes', async () => {
+    const { ctx, client, cleanup } = await bootPair()
+    try {
+      // eslint-disable-next-line unicorn/no-new-array
+      const sparse = new Array(2) as McpContentBlock[]
+      sparse[1] = { type: 'text', text: 'second' }
+      ctx.agent.registerTool({
+        id: 'sparse',
+        description: 'Returns a sparse block array.',
+        handler: () => withMcpContent({}, sparse),
+      })
+
+      const result = await client.callTool({ name: 'sparse', arguments: {} })
       expect(result.isError).toBe(true)
       const content = result.content as Array<{ type: string, text: string }>
       expect(content[0]!.text).toContain('DF0081')
