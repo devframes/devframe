@@ -1,10 +1,13 @@
 import type { StartedServer } from 'devframe/internal'
 import type { DevframeDefinition, McpRouteOptions } from 'devframe/types'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import { withMcpContent } from 'devframe'
 import { createDevServer } from 'devframe/adapters/dev'
 import { afterEach, describe, expect, it } from 'vitest'
 
 const TOKEN = 'a-high-entropy-test-bearer-token'
+/** A 1x1 PNG. */
+const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
 
 function defineTestDef(overrides?: Partial<DevframeDefinition>): DevframeDefinition {
   return {
@@ -89,6 +92,38 @@ describe('mcp adapter (streamable http route)', () => {
       const result = await client.callTool({ name: 'greet', arguments: { name: 'devframe' } })
       const content = result.content as Array<{ type: string, text: string }>
       expect(JSON.parse(content[0]!.text)).toEqual({ greeting: 'hi devframe' })
+    }
+    finally {
+      await client.close()
+    }
+  })
+
+  it('sends the content blocks attached with withMcpContent', async () => {
+    const started = await boot(true, defineTestDef({
+      setup(ctx) {
+        ctx.agent.registerTool({
+          id: 'snapshot',
+          description: 'Take a snapshot.',
+          safety: 'read',
+          handler: () => withMcpContent({ markdown: 'A red pixel.' }, [
+            { type: 'text', text: 'A red pixel.' },
+            { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+          ]),
+        })
+      },
+    }))
+    const client = new Client(
+      { name: 'test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    try {
+      await client.connect(originTransport(started))
+      const result = await client.callTool({ name: 'snapshot', arguments: {} })
+      expect(result.isError).toBeFalsy()
+      expect(result.content).toEqual([
+        { type: 'text', text: 'A red pixel.' },
+        { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+      ])
     }
     finally {
       await client.close()

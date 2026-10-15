@@ -1,12 +1,12 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpServerHandle } from 'devframe/types'
+import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpServerHandle } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/server'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
-import { argsToJsonSchema, diagnostics, formatMcpError, returnToJsonSchema, stringifyForMcp } from 'devframe/internal'
+import { argsToJsonSchema, diagnostics, formatMcpError, getMcpContent, returnToJsonSchema, stringifyForMcp } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { join } from 'pathe'
@@ -273,13 +273,12 @@ function registerToolHandlers(
         ? usableOutputSchema(tool.outputSchema ?? computeOutputSchema(tool, ctx))
         : undefined
       const result = await ctx.agent.invoke(tool?.id ?? name, args ?? {})
+      // Blocks attached with `withMcpContent` replace the default JSON text
+      // block. `structuredContent` stays the plain result either way, so a
+      // tool with an output schema still matches it.
+      const content = mcpContentOf(name, result) ?? [{ type: 'text', text: stringifyForMcp(result) }]
       return {
-        content: [
-          {
-            type: 'text',
-            text: stringifyForMcp(result),
-          },
-        ],
+        content,
         ...(outputSchema ? { structuredContent: result as Record<string, unknown> } : {}),
       }
     }
@@ -365,6 +364,29 @@ function registerResourceHandlers(
     }
 
     throw new Error(`[devframe/mcp] unknown resource URI "${uri}"`)
+  })
+}
+
+/**
+ * The content blocks a tool result carries through `withMcpContent`, checked
+ * and copied field by field, or `undefined` when it carries none. Invalid
+ * blocks throw DF0081, which the `tools/call` handler turns into an
+ * `isError` result.
+ */
+function mcpContentOf(name: string, result: unknown): McpContentBlock[] | undefined {
+  const blocks = getMcpContent(result)
+  if (blocks === undefined)
+    return undefined
+  if (!Array.isArray(blocks) || blocks.length === 0)
+    throw diagnostics.DF0081({ name, reason: 'expected a non-empty array' })
+  // `Array.from` visits the holes of a sparse array as `undefined`, so they fail the check below.
+  return Array.from(blocks, (block: unknown, index): McpContentBlock => {
+    const b = (block ?? {}) as Record<string, unknown>
+    if (b.type === 'text' && typeof b.text === 'string')
+      return { type: 'text', text: b.text }
+    if ((b.type === 'image' || b.type === 'audio') && typeof b.data === 'string' && typeof b.mimeType === 'string')
+      return { type: b.type, data: b.data, mimeType: b.mimeType }
+    throw diagnostics.DF0081({ name, reason: `block ${index} is not a valid text, image or audio block` })
   })
 }
 

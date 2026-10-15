@@ -3,6 +3,7 @@
  */
 // #region Functions
 export function defineDevframe(_) {}
+export function withMcpContent(_, _) {}
 // #endregion
 
 // #region Variables

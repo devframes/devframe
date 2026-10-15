@@ -39,10 +39,13 @@
 //   `formatMcpError`: the pure agent-surface projections shared between the
 //   browser WebMCP registration and `@devframes/agentic/mcp`, so the two
 //   surfaces cannot drift.
+// - `getMcpContent`: reads the content blocks that `withMcpContent` (from
+//   `devframe`) attaches to a tool result, for `@devframes/agentic/mcp`.
 // - `probeDevframeOrigin`: the registry's origin-candidate probe,
 //   `@devframes/agentic/connect` reuses it for explicit `--port` probes.
 export { loadAutoMcpAdapter, normalizeBasePath, resolveBasePath, resolveMcpConfig } from '../adapters/_shared'
 export type { ResolvedMcpConfig } from '../adapters/_shared'
+export { getMcpContent } from '../agent/mcp-content'
 export { formatMcpError, stringifyForMcp } from '../agent/stringify'
 export { argsToJsonSchema, returnToJsonSchema } from '../agent/to-json-schema'
 export { importAgenticMcp } from '../node/agentic'

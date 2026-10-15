@@ -69,6 +69,7 @@ export { EventsMap }
 export { EventUnsubscribe }
 export { McpAuthorization }
 export { McpConnectionInfo }
+export { McpContentBlock }
 export { McpFetchHandler }
 export { McpRouteOptions }
 export { McpServerHandle }
