@@ -13,13 +13,14 @@ function nullHost(): DevframeHost {
   }
 }
 
-async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) = true) {
+async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) = true, instructions?: string) {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
 
   const server = buildMcpServerFromContext(ctx, {
     serverName: 'test',
     serverVersion: '0.0.0-test',
     exposeSharedState,
+    instructions,
   })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
@@ -39,6 +40,26 @@ async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) 
 }
 
 describe('mcp adapter (in-memory)', () => {
+  it('sends the server instructions in the handshake', async () => {
+    const { client, cleanup } = await bootPair(true, 'Call greet first.')
+    try {
+      expect(client.getInstructions()).toBe('Call greet first.')
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
+  it('sends no instructions when none are set', async () => {
+    const { client, cleanup } = await bootPair()
+    try {
+      expect(client.getInstructions()).toBeUndefined()
+    }
+    finally {
+      await cleanup()
+    }
+  })
+
   it('lists tools registered via ctx.agent.registerTool', async () => {
     const { ctx, client, cleanup } = await bootPair()
     try {

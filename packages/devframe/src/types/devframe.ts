@@ -174,6 +174,13 @@ export interface McpRouteOptions {
    * The states themselves stay available to the UI over RPC.
    */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /**
+   * Usage guidance for the route, sent as `instructions` in the MCP
+   * `initialize` (and `server/discover`) result. An MCP client can add it to
+   * the coding agent's context, for example to say which tool to call first.
+   * Omitted or empty sends no instructions.
+   */
+  instructions?: string
 }
 
 export interface DevframeCliOptions {

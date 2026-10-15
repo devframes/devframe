@@ -77,6 +77,7 @@ export function createMcpFetchHandler(
     serverName: options.serverName,
     serverVersion: options.serverVersion,
     exposeSharedState: options.exposeSharedState,
+    instructions: options.instructions,
   }))
 
   // A single, long-lived bridge from devframe's change events onto the

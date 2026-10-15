@@ -91,12 +91,14 @@ export interface CreateMcpFetchHandlerOptions {
   serverName: string;
   serverVersion: string;
   exposeSharedState: boolean | ((_: string) => boolean);
+  instructions?: string;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface CreateMcpServerOptions {
   transport?: 'stdio';
   exposeSharedState?: boolean | ((_: string) => boolean);
+  instructions?: string;
   serverName?: string;
   serverVersion?: string;
   onReady?: (_: {
@@ -447,6 +449,7 @@ export interface McpRouteOptions {
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
   exposeSharedState?: boolean | ((_: string) => boolean);
+  instructions?: string;
 }
 export interface McpServerHandle {
   stop: () => Promise<void>;
