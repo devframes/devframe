@@ -91,12 +91,16 @@ export interface CreateMcpFetchHandlerOptions {
   serverName: string;
   serverVersion: string;
   exposeSharedState: boolean | ((_: string) => boolean);
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface CreateMcpServerOptions {
   transport?: 'stdio';
   exposeSharedState?: boolean | ((_: string) => boolean);
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
   serverName?: string;
   serverVersion?: string;
   onReady?: (_: {
@@ -442,11 +446,34 @@ export interface McpFetchHandler {
   fetch: (_: Request, _?: McpConnectionInfo) => Promise<Response>;
   dispose: () => Promise<void>;
 }
+export interface McpResourceTemplate {
+  uriTemplate: string;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+  list?: (_: DevframeNodeContext) => McpResourceTemplateEntry[] | Promise<McpResourceTemplateEntry[]>;
+  read: (_: Record<string, string>, _: string, _: DevframeNodeContext) => McpResourceTemplateContent | Promise<McpResourceTemplateContent>;
+}
+export interface McpResourceTemplateContent {
+  text?: string;
+  json?: unknown;
+  mimeType?: string;
+}
+export interface McpResourceTemplateEntry {
+  uri: string;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+}
 export interface McpRouteOptions {
   path?: string;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
   exposeSharedState?: boolean | ((_: string) => boolean);
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
 }
 export interface McpServerHandle {
   stop: () => Promise<void>;
@@ -553,6 +580,7 @@ export type DevframeSnapshotRpcEntry = string | {
 export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: DevframeNodeContext) => readonly (readonly unknown[])[] | Promise<readonly (readonly unknown[])[]>);
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
+export type McpResourcesChangedHook = (_: () => void, _: DevframeNodeContext) => () => void;
 export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {

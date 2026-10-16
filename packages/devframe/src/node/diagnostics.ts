@@ -220,5 +220,10 @@ export const diagnostics = defineDiagnostics({
         `The \`mcp\` option is enabled, but the optional peer "@devframes/agentic" could not be loaded: ${p.reason}`,
       fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
+    DF0084: {
+      why: (p: { name: string, uriTemplate: string, reason: string }) =>
+        `MCP resource template "${p.name}" has an invalid \`uriTemplate\` "${p.uriTemplate}": ${p.reason}`,
+      fix: 'Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.',
+    },
   },
 })

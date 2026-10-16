@@ -371,6 +371,14 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.";
   };
+  readonly DF0084: {
+    readonly why: (p: {
+      name: string;
+      uriTemplate: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void], never>;

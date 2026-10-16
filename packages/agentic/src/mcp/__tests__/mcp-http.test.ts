@@ -2,7 +2,7 @@ import type { StartedServer } from 'devframe/internal'
 import type { DevframeDefinition, McpRouteOptions } from 'devframe/types'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { createDevServer } from 'devframe/adapters/dev'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const TOKEN = 'a-high-entropy-test-bearer-token'
 
@@ -93,6 +93,68 @@ describe('mcp adapter (streamable http route)', () => {
     finally {
       await client.close()
     }
+  })
+
+  it('serves mcp.resourceTemplates through resources/templates/list and resources/read', async () => {
+    const started = await boot({
+      resourceTemplates: [{
+        uriTemplate: 'test://note/{id}',
+        name: 'note',
+        mimeType: 'text/plain',
+        list: () => [{ uri: 'test://note/1', name: 'Note 1' }],
+        read: params => ({ text: `note ${params.id}` }),
+      }],
+    })
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    try {
+      await client.connect(originTransport(started))
+      const { resourceTemplates } = await client.listResourceTemplates()
+      expect(resourceTemplates).toEqual([{ uriTemplate: 'test://note/{id}', name: 'note', mimeType: 'text/plain' }])
+
+      const { resources } = await client.listResources()
+      expect(resources).toContainEqual({ uri: 'test://note/1', name: 'Note 1', mimeType: 'text/plain' })
+
+      const read = await client.readResource({ uri: 'test://note/7' })
+      expect(read.contents).toEqual([{ uri: 'test://note/7', mimeType: 'text/plain', text: 'note 7' }])
+    }
+    finally {
+      await client.close()
+    }
+  })
+
+  it('sends resources list_changed on each mcp.onResourcesChanged notify, and unsubscribes on close', async () => {
+    let notify: (() => void) | undefined
+    const unsubscribe = vi.fn()
+    const started = await boot({
+      onResourcesChanged: (n) => {
+        notify = n
+        return unsubscribe
+      },
+    })
+    // The 2026-07-28 era delivers list_changed on a `subscriptions/listen` stream.
+    const client = new Client(
+      { name: 'test-client', version: '0.0.0' },
+      { versionNegotiation: { mode: 'auto' } },
+    )
+    const changed = vi.fn()
+    client.setNotificationHandler('notifications/resources/list_changed', changed)
+    try {
+      await client.connect(originTransport(started))
+      expect(client.getProtocolEra()).toBe('modern')
+      const subscription = await client.listen({ resourcesListChanged: true })
+      expect(subscription.honoredFilter.resourcesListChanged).toBe(true)
+
+      notify!()
+      await vi.waitFor(() => expect(changed).toHaveBeenCalledTimes(1))
+      await subscription.close()
+    }
+    finally {
+      await client.close()
+    }
+    expect(unsubscribe).not.toHaveBeenCalled()
+    await server?.close()
+    server = undefined
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
   })
 
   it('answers a bare GET with 405 (no session lifecycle)', async () => {
