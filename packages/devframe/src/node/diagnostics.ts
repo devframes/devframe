@@ -225,5 +225,10 @@ export const diagnostics = defineDiagnostics({
         `Tool "${p.name}" returned invalid MCP content blocks: ${p.reason}`,
       fix: 'Pass `withMcpContent` a non-empty array of `{ type: \'text\', text }`, `{ type: \'image\', data, mimeType }` or `{ type: \'audio\', data, mimeType }` blocks, with string fields and base64 `data`.',
     },
+    DF0084: {
+      why: (p: { name: string, uriTemplate: string, reason: string }) =>
+        `MCP resource template "${p.name}" has an invalid \`uriTemplate\` "${p.uriTemplate}": ${p.reason}`,
+      fix: 'Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.',
+    },
   },
 })

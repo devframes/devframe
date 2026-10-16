@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
@@ -42,6 +42,22 @@ function connectWsClient(url: string) {
     {} as DevframeRpcClientFunctions,
     { channel: createWsRpcChannel({ url }) },
   )
+}
+
+/** POST one JSON-RPC request to the hub's aggregate MCP route and return the raw body. */
+async function callMcp(hub: ReturnType<typeof initHub>, method: string, params?: Record<string, unknown>): Promise<string> {
+  const origin = 'http://localhost:3000'
+  const res = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'accept': 'application/json, text/event-stream',
+      origin,
+    },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  }))
+  expect(res.status).toBe(200)
+  return await res.text()
 }
 
 describe('initHub', () => {
@@ -325,8 +341,6 @@ describe('initHub', () => {
   })
 
   describe('aggregate MCP shared-state exposure', () => {
-    const origin = 'http://localhost:3000'
-
     function makeStateFrame(): DevframeDefinition {
       const frame = makeFrame('state')
       return {
@@ -337,20 +351,6 @@ describe('initHub', () => {
           await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
         },
       }
-    }
-
-    async function callMcp(hub: ReturnType<typeof initHub>, method: string, params?: Record<string, unknown>): Promise<string> {
-      const res = await hub.handler(new Request(`${origin}/__devframes/__mcp`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'accept': 'application/json, text/event-stream',
-          origin,
-        },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-      }))
-      expect(res.status).toBe(200)
-      return await res.text()
     }
 
     it('exposes every shared state by default', async () => {
@@ -478,6 +478,55 @@ describe('initHub', () => {
       finally {
         await hub.close()
       }
+    })
+  })
+
+  describe('aggregate MCP resource templates', () => {
+    it('answers resources/templates/list with method not found by default', async () => {
+      const wsPort = await getPort({ port: 18241, host: '127.0.0.1' })
+      const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha')] })
+
+      try {
+        await hub.ready
+        expect(await callMcp(hub, 'resources/templates/list')).toContain('-32601')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+
+    it('serves mcp.resourceTemplates and wires mcp.onResourcesChanged to the hub context', async () => {
+      const wsPort = await getPort({ port: 18242, host: '127.0.0.1' })
+      const unsubscribe = vi.fn()
+      const onResourcesChanged = vi.fn(() => unsubscribe)
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: {
+          resourceTemplates: [{
+            uriTemplate: 'hub://frame/{id}',
+            name: 'frame',
+            list: () => [{ uri: 'hub://frame/alpha', name: 'alpha' }],
+            read: params => ({ json: { id: params.id } }),
+          }],
+          onResourcesChanged,
+        },
+        devframes: [makeFrame('alpha')],
+      })
+
+      try {
+        await hub.ready
+        expect(await callMcp(hub, 'resources/templates/list')).toContain('"uriTemplate":"hub://frame/{id}"')
+        expect(onResourcesChanged).toHaveBeenCalledWith(expect.any(Function), await hub.context)
+        expect(await callMcp(hub, 'resources/list')).toContain('"uri":"hub://frame/alpha"')
+        expect(await callMcp(hub, 'resources/read', { uri: 'hub://frame/beta' })).toContain('\\"id\\": \\"beta\\"')
+      }
+      finally {
+        await hub.close()
+      }
+      expect(unsubscribe).toHaveBeenCalledTimes(1)
     })
   })
 

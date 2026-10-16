@@ -71,6 +71,10 @@ export { McpAuthorization }
 export { McpConnectionInfo }
 export { McpContentBlock }
 export { McpFetchHandler }
+export { McpResourcesChangedHook }
+export { McpResourceTemplate }
+export { McpResourceTemplateContent }
+export { McpResourceTemplateEntry }
 export { McpRouteOptions }
 export { McpServerHandle }
 export { McpSetting }
