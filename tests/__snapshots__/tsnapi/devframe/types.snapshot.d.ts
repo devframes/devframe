@@ -70,6 +70,10 @@ export { EventUnsubscribe }
 export { McpAuthorization }
 export { McpConnectionInfo }
 export { McpFetchHandler }
+export { McpResourcesChangedHook }
+export { McpResourceTemplate }
+export { McpResourceTemplateContent }
+export { McpResourceTemplateEntry }
 export { McpRouteOptions }
 export { McpServerHandle }
 export { McpSetting }

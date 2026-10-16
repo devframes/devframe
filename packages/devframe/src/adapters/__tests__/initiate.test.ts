@@ -360,6 +360,46 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('mcp: resource templates reach the route through resources/templates/list and resources/read', async () => {
+    const wsPort = await getPort({ port: 18148, host: '127.0.0.1' })
+    const unsubscribe = vi.fn()
+    const devtools = initDevframe(defineTestDef('handler-mcp-templates'), {
+      base: '/__handler-mcp-templates/',
+      auth: false,
+      mcp: {
+        resourceTemplates: [{
+          uriTemplate: 'handler://page/{slug}',
+          name: 'page',
+          mimeType: 'text/plain',
+          read: params => ({ text: `Page ${params.slug}.` }),
+        }],
+        onResourcesChanged: () => unsubscribe,
+      },
+      ws: { port: wsPort },
+    })
+
+    const call = (method: string, params?: Record<string, unknown>) => devtools.handler(new Request('http://localhost:3000/__handler-mcp-templates/__mcp', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'accept': 'application/json, text/event-stream',
+        'origin': 'http://localhost:3000',
+      },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+    })).then(res => res.text())
+
+    try {
+      await devtools.ready
+      expect(await call('resources/templates/list')).toContain('"uriTemplate":"handler://page/{slug}"')
+      expect(await call('resources/read', { uri: 'handler://page/home' })).toContain('Page home.')
+      expect(await call('resources/read', { uri: 'handler://page/a/b' })).toContain('unknown resource URI')
+    }
+    finally {
+      await devtools.close()
+    }
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
+  })
+
   // The `'auto'` default: an omitted `mcp` mounts the route exactly when
   // `setup()` left a non-empty agent surface.
   function defineAgentTestDef(id: string) {

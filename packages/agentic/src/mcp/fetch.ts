@@ -2,7 +2,7 @@ import type { CreateMcpFetchHandlerOptions, DevframeNodeContext, McpAuthorizatio
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
 import { isAllowedOrigin, isLoopbackAddress } from 'devframe/utils/origin'
-import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
+import { bridgeListChanged, buildMcpServerFromContext, compileResourceTemplates } from './build-server'
 
 /**
  * Parse exactly one `Authorization: Bearer <token>` credential, returning the
@@ -73,10 +73,15 @@ export function createMcpFetchHandler(
   // identity check is configured.
   const authorization = options.authorization ?? false
 
+  // Compiled once for the endpoint, not per request; an invalid template
+  // fails here, at mount time (DF0084).
+  const resourceTemplates = compileResourceTemplates(options.resourceTemplates)
+
   const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
     serverName: options.serverName,
     serverVersion: options.serverVersion,
     exposeSharedState: options.exposeSharedState,
+    resourceTemplates,
   }))
 
   // A single, long-lived bridge from devframe's change events onto the
@@ -85,7 +90,7 @@ export function createMcpFetchHandler(
   const unbridge = bridgeListChanged(ctx, {
     tools: () => { handler.notify.toolsChanged() },
     resources: () => { handler.notify.resourcesChanged() },
-  })
+  }, options.onResourcesChanged)
 
   // The zero-config trust boundary: no widened origin allow-list and no
   // identity check, so the endpoint trusts same-machine callers alone. A

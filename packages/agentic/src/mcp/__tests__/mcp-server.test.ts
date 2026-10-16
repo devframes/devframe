@@ -1,9 +1,9 @@
-import type { DevframeHost } from 'devframe/types'
+import type { DevframeHost, McpResourceTemplate } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { createHostContext } from 'devframe/node'
 import * as v from 'valibot'
-import { describe, expect, it } from 'vitest'
-import { buildMcpServerFromContext } from '../build-server'
+import { describe, expect, it, vi } from 'vitest'
+import { bridgeListChanged, buildMcpServerFromContext, compileResourceTemplates } from '../build-server'
 
 function nullHost(): DevframeHost {
   return {
@@ -13,13 +13,14 @@ function nullHost(): DevframeHost {
   }
 }
 
-async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) = true) {
+async function bootPair(exposeSharedState: boolean | ((key: string) => boolean) = true, resourceTemplates?: McpResourceTemplate[]) {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
 
   const server = buildMcpServerFromContext(ctx, {
     serverName: 'test',
     serverVersion: '0.0.0-test',
     exposeSharedState,
+    resourceTemplates: compileResourceTemplates(resourceTemplates),
   })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
@@ -435,5 +436,232 @@ describe('mcp adapter (in-memory)', () => {
     finally {
       await cleanup()
     }
+  })
+
+  describe('resource templates', () => {
+    const file: McpResourceTemplate = {
+      uriTemplate: 'test://file/{path}',
+      name: 'file',
+      title: 'Project file',
+      description: 'One file of the project.',
+      mimeType: 'text/plain',
+      list: () => [
+        { uri: 'test://file/a.ts', name: 'a.ts' },
+        { uri: 'test://file/b.json', name: 'b.json', title: 'B', description: 'The b file.', mimeType: 'application/json' },
+      ],
+      read: (params, uri) => ({ text: `${params.path} from ${uri}` }),
+    }
+    const issue: McpResourceTemplate = {
+      uriTemplate: 'test://repo/{owner}/{repo}/issue/{id}',
+      name: 'issue',
+      read: params => ({ json: { ...params } }),
+    }
+
+    it('keeps the resources unchanged when templates are omitted or empty', async () => {
+      const lists: unknown[] = []
+      for (const templates of [undefined, []]) {
+        const { ctx, client, cleanup } = await bootPair(true, templates)
+        try {
+          ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ json: { ok: true } }) })
+          await ctx.rpc.sharedState.get('my-plugin:counter', { initialValue: { count: 1 } })
+          // The client answers listResourceTemplates() itself when the
+          // capability is absent, so send the raw request to check that no
+          // handler exists.
+          await expect(client.request({ method: 'resources/templates/list', params: {} })).rejects.toMatchObject({ code: -32601 })
+          lists.push(await client.listResources())
+          await expect(client.readResource({ uri: 'test://file/a.ts' })).rejects.toThrow('unknown resource URI "test://file/a.ts"')
+        }
+        finally {
+          await cleanup()
+        }
+      }
+      expect(lists[1]).toEqual(lists[0])
+      expect(lists[0]).toEqual({
+        resources: [
+          { uri: 'devframe://resource/status', name: 'Status', mimeType: 'application/json' },
+          { uri: 'devframe://state/my-plugin%3Acounter', name: 'my-plugin:counter', description: 'Shared state: my-plugin:counter', mimeType: 'application/json' },
+        ],
+      })
+    })
+
+    it('lists the templates through resources/templates/list', async () => {
+      const { client, cleanup } = await bootPair(true, [file, issue])
+      try {
+        const { resourceTemplates } = await client.listResourceTemplates()
+        expect(resourceTemplates).toEqual([
+          { uriTemplate: 'test://file/{path}', name: 'file', title: 'Project file', description: 'One file of the project.', mimeType: 'text/plain' },
+          { uriTemplate: 'test://repo/{owner}/{repo}/issue/{id}', name: 'issue' },
+        ])
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('reads a URI through the template it matches', async () => {
+      const { client, cleanup } = await bootPair(true, [file, issue])
+      try {
+        const a = await client.readResource({ uri: 'test://file/a.ts' })
+        expect(a.contents).toEqual([{ uri: 'test://file/a.ts', mimeType: 'text/plain', text: 'a.ts from test://file/a.ts' }])
+        const b = await client.readResource({ uri: 'test://file/b.json' })
+        expect(b.contents).toEqual([{ uri: 'test://file/b.json', mimeType: 'text/plain', text: 'b.json from test://file/b.json' }])
+
+        const read = await client.readResource({ uri: 'test://repo/devframes/devframe/issue/42' })
+        const c = read.contents[0] as { text: string, mimeType?: string }
+        expect(c.mimeType).toBe('application/json')
+        expect(JSON.parse(c.text)).toEqual({ owner: 'devframes', repo: 'devframe', id: '42' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('percent-decodes the values', async () => {
+      const { client, cleanup } = await bootPair(true, [file])
+      try {
+        const read = await client.readResource({ uri: 'test://file/src%2Fmy%20file.ts' })
+        expect(read.contents[0]).toMatchObject({ text: 'src/my file.ts from test://file/src%2Fmy%20file.ts' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('matches one segment per value, so an extra `/` matches no template', async () => {
+      const { client, cleanup } = await bootPair(true, [file])
+      try {
+        for (const uri of ['test://file/src/a.ts', 'test://file/', 'test://file/%E0%A4%A'])
+          await expect(client.readResource({ uri })).rejects.toThrow(`unknown resource URI "${uri}"`)
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('reads with the first template that matches', async () => {
+      const first: McpResourceTemplate = { uriTemplate: 'test://item/{id}', name: 'first', read: () => ({ text: 'first' }) }
+      const second: McpResourceTemplate = { uriTemplate: 'test://item/{key}', name: 'second', read: () => ({ text: 'second' }) }
+      const { client, cleanup } = await bootPair(true, [first, second])
+      try {
+        const read = await client.readResource({ uri: 'test://item/1' })
+        expect(read.contents[0]).toMatchObject({ text: 'first' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('reads registered resources before the templates', async () => {
+      const catchAll: McpResourceTemplate = { uriTemplate: 'devframe://resource/{id}', name: 'catch-all', read: () => ({ text: 'template' }) }
+      const { ctx, client, cleanup } = await bootPair(true, [catchAll])
+      try {
+        ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ text: 'registered' }) })
+        const read = await client.readResource({ uri: 'devframe://resource/status' })
+        expect(read.contents[0]).toMatchObject({ text: 'registered' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('adds the entries of each template list to resources/list', async () => {
+      const { ctx, client, cleanup } = await bootPair(false, [file, issue])
+      try {
+        ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ json: {} }) })
+        const { resources } = await client.listResources()
+        expect(resources).toEqual([
+          { uri: 'devframe://resource/status', name: 'Status', mimeType: 'application/json' },
+          { uri: 'test://file/a.ts', name: 'a.ts', mimeType: 'text/plain' },
+          { uri: 'test://file/b.json', name: 'b.json', title: 'B', description: 'The b file.', mimeType: 'application/json' },
+        ])
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('passes the node context to list and read', async () => {
+      const counter: McpResourceTemplate = {
+        uriTemplate: 'test://state/{key}',
+        name: 'state',
+        list: ctx => ctx.rpc.sharedState.keys().map(key => ({ uri: `test://state/${encodeURIComponent(key)}`, name: key })),
+        read: async (params, _uri, ctx) => ({ json: (await ctx.rpc.sharedState.get(params.key!)).value() }),
+      }
+      const { ctx, client, cleanup } = await bootPair(false, [counter])
+      try {
+        await ctx.rpc.sharedState.get('my-plugin:counter', { initialValue: { count: 3 } })
+        const { resources } = await client.listResources()
+        expect(resources.map(r => r.uri)).toEqual(['test://state/my-plugin%3Acounter'])
+        const read = await client.readResource({ uri: resources[0]!.uri })
+        expect(JSON.parse((read.contents[0] as { text: string }).text)).toEqual({ count: 3 })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('reports a throwing read to the MCP client', async () => {
+      const broken: McpResourceTemplate = {
+        uriTemplate: 'test://broken/{id}',
+        name: 'broken',
+        read: () => {
+          throw new Error('disk on fire')
+        },
+      }
+      const { client, cleanup } = await bootPair(true, [broken])
+      try {
+        await expect(client.readResource({ uri: 'test://broken/1' })).rejects.toThrow('disk on fire')
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('throws DF0084 for a template beyond RFC 6570 level 1', () => {
+      for (const uriTemplate of ['test://file/{+path}', 'test://search{?q}', 'test://pair/{a,b}', 'test://file/{path*}', 'test://file/{path', 'test://file/path}', 'test://pair/{a}/{a}', 'test://file/{}']) {
+        expect(() => compileResourceTemplates([{ uriTemplate, name: 'bad', read: () => ({}) }])).toThrow(expect.objectContaining({ code: 'DF0084' }))
+      }
+      expect(compileResourceTemplates([{ uriTemplate: 'test://fixed', name: 'fixed', read: () => ({}) }])[0]!.match('test://fixed')).toEqual({})
+    })
+  })
+
+  describe('onResourcesChanged', () => {
+    it('sends resources list_changed on each notify, and unsubscribes on teardown', async () => {
+      const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+      const server = buildMcpServerFromContext(ctx, { serverName: 'test', serverVersion: '0.0.0-test', exposeSharedState: true })
+      let notify: (() => void) | undefined
+      const unsubscribe = vi.fn()
+      const hook = vi.fn((n: () => void) => {
+        notify = n
+        return unsubscribe
+      })
+      // The same wiring as `createMcpServer` uses for stdio.
+      const unbridge = bridgeListChanged(ctx, {
+        tools: () => { void server.sendToolListChanged().catch(() => {}) },
+        resources: () => { void server.sendResourceListChanged().catch(() => {}) },
+      }, hook)
+      expect(hook).toHaveBeenCalledWith(expect.any(Function), ctx)
+
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+      await server.connect(serverTransport)
+      const client = new Client({ name: 'test-client', version: '0.0.0' })
+      const changed = vi.fn()
+      client.setNotificationHandler('notifications/resources/list_changed', changed)
+      await client.connect(clientTransport)
+      try {
+        notify!()
+        await vi.waitFor(() => expect(changed).toHaveBeenCalledTimes(1))
+
+        unbridge()
+        expect(unsubscribe).toHaveBeenCalledTimes(1)
+        notify!()
+        await new Promise(resolve => setTimeout(resolve, 20))
+        expect(changed).toHaveBeenCalledTimes(1)
+      }
+      finally {
+        await client.close()
+        await server.close()
+      }
+    })
   })
 })

@@ -523,6 +523,8 @@ export function initHub(options: InitHubOptions): HubInstance {
         serverName: options.name ?? 'devframes-hub',
         serverVersion: options.version ?? '0.0.0',
         exposeSharedState: mcpConfig.exposeSharedState ?? true,
+        resourceTemplates: mcpConfig.resourceTemplates,
+        onResourcesChanged: mcpConfig.onResourcesChanged,
         authorization: mcpConfig.authorization,
         allowedOrigins: mcpConfig.allowedOrigins,
       })

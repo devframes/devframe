@@ -1,4 +1,4 @@
-import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization } from 'devframe'
+import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization, McpResourcesChangedHook, McpResourceTemplate } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { importAgenticMcp } from 'devframe/internal'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
@@ -41,6 +41,10 @@ export interface DevframeNextHostMcpOptions {
   serverVersion?: string
   /** Expose shared-state keys as MCP resources / `devframe:state:read`. Default: `true`. */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /** Resource templates served through `resources/templates/list` and `resources/read`. Default: none. */
+  resourceTemplates?: McpResourceTemplate[]
+  /** Host subscription; each `notify()` sends `notifications/resources/list_changed`. Default: none. */
+  onResourcesChanged?: McpResourcesChangedHook
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
    * origin gate entirely. Note the MCP route rejects `Origin`-less requests
@@ -180,6 +184,8 @@ export function createDevframeNextHost(
         serverName: mcpOptions.serverName ?? 'devframe (next)',
         serverVersion: mcpOptions.serverVersion ?? '0.0.0',
         exposeSharedState: mcpOptions.exposeSharedState ?? true,
+        resourceTemplates: mcpOptions.resourceTemplates,
+        onResourcesChanged: mcpOptions.onResourcesChanged,
         authorization: mcpOptions.authorization,
         allowedOrigins: mcpOptions.allowedOrigins,
       })

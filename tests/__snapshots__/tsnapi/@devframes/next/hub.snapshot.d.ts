@@ -20,6 +20,8 @@ export interface DevframeNextHostMcpOptions {
   serverName?: string;
   serverVersion?: string;
   exposeSharedState?: boolean | ((_: string) => boolean);
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
   allowedOrigins?: readonly string[] | false;
 }
 export interface NextDevframeHubHandle {

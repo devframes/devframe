@@ -2,6 +2,7 @@ import type { CAC } from 'cac'
 import type { CliFlagsSchema } from '../adapters/flags'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
+import type { McpResourcesChangedHook, McpResourceTemplate } from './mcp'
 import type { StaticAssetsSource } from './remote-assets'
 import type { DevframeServiceInput } from './services'
 
@@ -174,6 +175,23 @@ export interface McpRouteOptions {
    * The states themselves stay available to the UI over RPC.
    */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /**
+   * Resource templates the route serves through MCP
+   * `resources/templates/list`. `resources/read` tries them after the
+   * registered resources and the shared-state resources (a
+   * `devframe://resource/` or `devframe://state/` URI never reaches them);
+   * the first template whose `uriTemplate` matches the URI reads it. `resources/list` adds the
+   * entries each template's `list` returns. Omitted or empty keeps the
+   * resources unchanged.
+   */
+  resourceTemplates?: McpResourceTemplate[]
+  /**
+   * Host subscription for resource-list changes. Call `notify()` each time
+   * the resources change (for example, the entries of a resource template);
+   * the route then sends `notifications/resources/list_changed`. Return a
+   * function that removes the subscription; the route calls it on teardown.
+   */
+  onResourcesChanged?: McpResourcesChangedHook
 }
 
 export interface DevframeCliOptions {
