@@ -38,6 +38,9 @@ function createContext(): DevframeHubContext {
       install: () => Promise.resolve(undefined),
       ready: () => Promise.resolve(),
     },
+    tracing: {
+      _applyOptions: () => {},
+    },
   }
   const context = partial as DevframeHubContext
   context.docks = new DevframeDocksHost(context)

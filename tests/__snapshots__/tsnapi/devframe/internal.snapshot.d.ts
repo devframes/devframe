@@ -371,6 +371,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.";
   };
+  readonly DF0081: {
+    readonly why: (p: {
+      runtime: string;
+    }) => string;
+    readonly fix: "Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` method is a no-op here.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void], never>;

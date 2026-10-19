@@ -304,6 +304,7 @@ export function initDevframe(
       for (const input of def.services ?? [])
         void context.services.install(input, { resolveFrom: def.importMetaUrl })
       await context.services.ready()
+      context.tracing._applyOptions(def.tracing)
       await def.setup(context, setupInfo)
 
       const mcp = await mountMcpRoute(app, context, def, base, options.mcp ?? 'auto')
