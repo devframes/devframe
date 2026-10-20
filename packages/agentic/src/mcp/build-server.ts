@@ -1,7 +1,7 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpServerHandle } from 'devframe/types'
+import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpResourcesChangedHook, McpResourceTemplate, McpServerHandle } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/server'
@@ -17,6 +17,22 @@ export interface BuildMcpServerOptions {
   exposeSharedState: boolean | ((k: string) => boolean)
   /** Sent as `instructions` in the `initialize` / `server/discover` result. */
   instructions?: string
+  /**
+   * Compiled resource templates (see {@link compileResourceTemplates});
+   * omitted or empty keeps the resource handlers unchanged.
+   */
+  resourceTemplates?: CompiledResourceTemplate[]
+}
+
+/**
+ * A {@link McpResourceTemplate} with its `uriTemplate` compiled to a matcher.
+ *
+ * @internal
+ */
+export interface CompiledResourceTemplate {
+  template: McpResourceTemplate
+  /** The decoded value of each `{name}` when `uri` matches, else `undefined`. */
+  match: (uri: string) => Record<string, string> | undefined
 }
 
 /**
@@ -50,7 +66,10 @@ export function buildMcpServerFromContext(
   )
 
   registerToolHandlers(server, ctx, options.exposeSharedState)
-  registerResourceHandlers(server, ctx, options.exposeSharedState)
+  const templates = options.resourceTemplates ?? []
+  registerResourceHandlers(server, ctx, options.exposeSharedState, templates)
+  if (templates.length)
+    registerResourceTemplateHandlers(server, templates)
 
   return server
 }
@@ -58,8 +77,10 @@ export function buildMcpServerFromContext(
 /**
  * Publish devframe's `list_changed` events through a set of typed sinks:
  * `tools()` for tool-list changes and `resources()` for resource-list
- * changes (shared-state keys are surfaced as resources). Returns an
- * unsubscribe function.
+ * changes (shared-state keys are surfaced as resources). An optional host
+ * subscription (`onResourcesChanged`) also publishes through `resources()`
+ * each time it calls `notify()`. Returns an unsubscribe function, which also
+ * removes the host subscription; a `notify()` after that does nothing.
  *
  * The HTTP path passes the handler's `notify` bus sugar; the stdio path
  * passes the pinned server's `send*ListChanged` methods, which `serveStdio`
@@ -70,6 +91,7 @@ export function buildMcpServerFromContext(
 export function bridgeListChanged(
   ctx: DevframeNodeContext,
   sinks: { tools: () => void, resources: () => void },
+  onResourcesChanged?: McpResourcesChangedHook,
 ): () => void {
   const offManifest = ctx.agent.events.on(DEVFRAME_EVENTS.bus.agentManifestChanged, () => {
     sinks.tools()
@@ -78,9 +100,16 @@ export function bridgeListChanged(
   const offKeyAdded = ctx.rpc.sharedState.onKeyAdded(() => {
     sinks.resources()
   })
+  let active = true
+  const offHost = onResourcesChanged?.(() => {
+    if (active)
+      sinks.resources()
+  }, ctx)
   return () => {
+    active = false
     offManifest()
     offKeyAdded()
+    offHost?.()
   }
 }
 
@@ -95,6 +124,8 @@ export async function createMcpServer(
   const transport = options.transport ?? 'stdio'
   if (transport !== 'stdio')
     throw diagnostics.DF0017({ transport, reason: 'Only stdio transport is supported in this release.' })
+  // Compile before setup, so an invalid template fails fast (DF0084).
+  const resourceTemplates = compileResourceTemplates(options.resourceTemplates)
 
   const host: DevframeHost = {
     mountStatic: () => { /* MCP has no static surface */ },
@@ -125,6 +156,7 @@ export async function createMcpServer(
     serverVersion: options.serverVersion ?? definition.version ?? '0.0.0',
     exposeSharedState: options.exposeSharedState ?? true,
     instructions: options.instructions,
+    resourceTemplates,
   }
 
   // `serveStdio` pins ONE instance for the connection's lifetime. Each pinned
@@ -140,7 +172,7 @@ export async function createMcpServer(
       const unbridge = bridgeListChanged(ctx, {
         tools: () => { void server.sendToolListChanged().catch(() => {}) },
         resources: () => { void server.sendResourceListChanged().catch(() => {}) },
-      })
+      }, options.onResourcesChanged)
       const priorOnClose = server.onclose
       server.onclose = () => {
         unbridge()
@@ -304,11 +336,12 @@ function registerResourceHandlers(
   server: Server,
   ctx: DevframeNodeContext,
   exposeSharedState: boolean | ((key: string) => boolean),
+  templates: CompiledResourceTemplate[],
 ): void {
   const stateFilter = sharedStateFilter(exposeSharedState)
 
   server.setRequestHandler('resources/list', async () => {
-    const resources = ctx.agent.list().resources.map(resource => ({
+    const resources: ResourceListing[] = ctx.agent.list().resources.map(resource => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -326,6 +359,11 @@ function registerResourceHandlers(
           mimeType: 'application/json',
         })
       }
+    }
+
+    for (const { template } of templates) {
+      for (const entry of await template.list?.(ctx) ?? [])
+        resources.push({ ...entry, mimeType: entry.mimeType ?? template.mimeType })
     }
 
     return { resources }
@@ -367,8 +405,147 @@ function registerResourceHandlers(
       }
     }
 
+    // Templates come after the registered and shared-state resources (whose
+    // `devframe://` URIs return or throw above); the first one that matches
+    // reads the URI. A throwing `read` is reported
+    // like a throwing registered resource: the error goes to the MCP client.
+    for (const { template, match } of templates) {
+      const params = match(uri)
+      if (!params)
+        continue
+      const content = await template.read(params, uri, ctx)
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: content.mimeType ?? template.mimeType ?? 'application/json',
+            text: content.text ?? stringifyForMcp(content.json),
+          },
+        ],
+      }
+    }
+
     throw new Error(`[devframe/mcp] unknown resource URI "${uri}"`)
   })
+}
+
+/** One entry of the `resources/list` result. */
+interface ResourceListing {
+  uri: string
+  name: string
+  title?: string
+  description?: string
+  mimeType?: string
+}
+
+/** Serve `resources/templates/list`: one entry per template, in the given order. */
+function registerResourceTemplateHandlers(server: Server, templates: CompiledResourceTemplate[]): void {
+  server.setRequestHandler('resources/templates/list', async () => ({
+    resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
+  }))
+}
+
+/** One `{name}` expression of a URI template. */
+const TEMPLATE_EXPRESSION_RE = /\{([^{}]*)\}/g
+/** RFC 6570 `varname`: letters, digits and `_`, with single dots between them. */
+const TEMPLATE_VARNAME_RE = /^\w+(?:\.\w+)*$/
+
+/**
+ * Compile resource templates to URI matchers, once per endpoint. Only RFC
+ * 6570 level 1 is supported: plain `{name}` expressions. Each expression
+ * matches a non-empty value with no `/`, and its value is percent-decoded,
+ * so an encoded `%2F` reads back as `/`. A URI with malformed
+ * percent-encoding matches no template. Any other template syntax, and two
+ * expressions with nothing between them, throw `DF0084`.
+ *
+ * @internal
+ */
+export function compileResourceTemplates(templates: McpResourceTemplate[] = []): CompiledResourceTemplate[] {
+  return templates.map(compileResourceTemplate)
+}
+
+function compileResourceTemplate(template: McpResourceTemplate): CompiledResourceTemplate {
+  const { name, uriTemplate } = template
+  const invalid = (reason: string) => diagnostics.DF0084({ name, uriTemplate, reason })
+  const names: string[] = []
+  // The text around the expressions: one more than `names`.
+  const literals: string[] = []
+  let last = 0
+  for (const expression of uriTemplate.matchAll(TEMPLATE_EXPRESSION_RE)) {
+    const literal = uriTemplate.slice(last, expression.index)
+    if (/[{}]/.test(literal))
+      throw invalid('a `{` or `}` is outside an expression.')
+    const varname = expression[1]!
+    if (!TEMPLATE_VARNAME_RE.test(varname))
+      throw invalid(`the expression "{${varname}}" is not a plain \`{name}\`.`)
+    if (names.includes(varname))
+      throw invalid(`the name "${varname}" is used more than once.`)
+    if (names.length > 0 && literal === '')
+      throw invalid(`"{${names.at(-1)}}" and "{${varname}}" have nothing between them, so a URI cannot show where one ends.`)
+    literals.push(literal)
+    names.push(varname)
+    last = expression.index + expression[0].length
+  }
+  const tail = uriTemplate.slice(last)
+  if (/[{}]/.test(tail))
+    throw invalid('a `{` or `}` is outside an expression.')
+  literals.push(tail)
+
+  return {
+    template,
+    match: uri => matchTemplate(uri, literals, names),
+  }
+}
+
+/**
+ * Match `uri` in one pass from left to right, with no regular expression, so
+ * the time grows with the URI length only and a crafted URI cannot block the
+ * process. Each value runs to the first place the next literal appears
+ * outside a `%XX` escape (the last value runs to the tail). A value must not
+ * be empty or contain `/`.
+ * The params object has no prototype, so a variable such as `__proto__`
+ * keeps its value.
+ */
+function matchTemplate(uri: string, literals: string[], names: string[]): Record<string, string> | undefined {
+  const head = literals[0]!
+  const tail = literals.at(-1)!
+  const params: Record<string, string> = Object.create(null)
+  if (names.length === 0)
+    return uri === head ? params : undefined
+  if (!uri.startsWith(head) || !uri.endsWith(tail))
+    return undefined
+  const end = uri.length - tail.length
+  let position = head.length
+  for (let index = 0; index < names.length; index++) {
+    const isLast = index === names.length - 1
+    const next = literals[index + 1]!
+    const stop = isLast ? end : findLiteral(uri, next, position)
+    if (stop <= position || stop > end)
+      return undefined
+    const raw = uri.slice(position, stop)
+    if (raw.includes('/'))
+      return undefined
+    try {
+      params[names[index]!] = decodeURIComponent(raw)
+    }
+    catch {
+      return undefined
+    }
+    position = stop + (isLast ? 0 : next.length)
+  }
+  return params
+}
+
+/**
+ * The first place `literal` appears after the value that starts at `start`
+ * (which must not be empty), or -1. A place inside a `%XX` escape of the
+ * value is skipped, so `{a}D{b}` reads `a%2DbDc` as `a-b` and `c`.
+ */
+function findLiteral(uri: string, literal: string, start: number): number {
+  let at = uri.indexOf(literal, start + 1)
+  while (at !== -1 && (uri[at - 1] === '%' || (at - 2 >= start && uri[at - 2] === '%')))
+    at = uri.indexOf(literal, at + 1)
+  return at
 }
 
 /**

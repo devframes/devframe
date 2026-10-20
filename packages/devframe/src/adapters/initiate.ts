@@ -381,6 +381,8 @@ async function mountMcpRoute(
     serverVersion: def.version ?? '0.0.0',
     exposeSharedState: config.exposeSharedState ?? true,
     instructions: config.instructions,
+    resourceTemplates: config.resourceTemplates,
+    onResourcesChanged: config.onResourcesChanged,
     authorization: config.authorization,
     allowedOrigins: config.allowedOrigins,
   })

@@ -2,6 +2,7 @@ import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAgentHost } from '../types/agent'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpSetting } from '../types/devframe'
+import type { McpResourcesChangedHook, McpResourceTemplate } from '../types/mcp'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
 import { getPort } from 'get-port-please'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
@@ -72,6 +73,10 @@ export interface ResolvedMcpConfig {
   exposeSharedState?: boolean | ((key: string) => boolean)
   /** Handshake `instructions` from the route options; omitted means none. */
   instructions?: string
+  /** Resource templates from the route options; omitted means none. */
+  resourceTemplates?: McpResourceTemplate[]
+  /** Resource-list change subscription from the route options; omitted means none. */
+  onResourcesChanged?: McpResourcesChangedHook
   /** The resolved identity policy: a bearer token, callback, or `false`. */
   authorization: McpAuthorization
 }
@@ -102,6 +107,8 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
     ...(mcp.allowedOrigins !== undefined ? { allowedOrigins: mcp.allowedOrigins } : {}),
     ...(mcp.exposeSharedState !== undefined ? { exposeSharedState: mcp.exposeSharedState } : {}),
     ...(mcp.instructions !== undefined ? { instructions: mcp.instructions } : {}),
+    ...(mcp.resourceTemplates !== undefined ? { resourceTemplates: mcp.resourceTemplates } : {}),
+    ...(mcp.onResourcesChanged !== undefined ? { onResourcesChanged: mcp.onResourcesChanged } : {}),
     authorization,
   }
 }

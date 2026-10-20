@@ -87,6 +87,7 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0078](/errors/DF0078) | warn | Agent Surface Without @devframes/agentic |
 | [DF0079](/errors/DF0079) | error | MCP Enabled Without @devframes/agentic |
 | [DF0081](/errors/DF0081) | error | Invalid MCP Content Blocks |
+| [DF0084](/errors/DF0084) | error | Invalid MCP Resource Template |
 
 ## Hub: context & lifecycle (DF80xx)
 

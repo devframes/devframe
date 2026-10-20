@@ -378,6 +378,14 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Pass `withMcpContent` a non-empty array of `{ type: 'text', text }`, `{ type: 'image', data, mimeType }` or `{ type: 'audio', data, mimeType }` blocks, with string fields and base64 `data`.";
   };
+  readonly DF0084: {
+    readonly why: (p: {
+      name: string;
+      uriTemplate: string;
+      reason: string;
+    }) => string;
+    readonly fix: "Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void], never>;

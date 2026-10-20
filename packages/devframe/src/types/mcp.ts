@@ -1,3 +1,4 @@
+import type { DevframeNodeContext } from './context'
 import type { McpAuthorization } from './devframe'
 
 /**
@@ -30,6 +31,16 @@ export interface CreateMcpServerOptions {
    * `server/discover`) result. Omitted or empty sends no instructions.
    */
   instructions?: string
+  /**
+   * Resource templates served through `resources/templates/list`, and read
+   * through `resources/read`. Omitted or empty keeps the resources unchanged.
+   */
+  resourceTemplates?: McpResourceTemplate[]
+  /**
+   * Host subscription for resource-list changes; each `notify()` sends
+   * `notifications/resources/list_changed`. See {@link McpResourcesChangedHook}.
+   */
+  onResourcesChanged?: McpResourcesChangedHook
   /** Override the name reported in the MCP handshake. */
   serverName?: string
   /** Override the version reported in the MCP handshake. Defaults to `definition.version ?? '0.0.0'`. */
@@ -61,6 +72,10 @@ export interface CreateMcpFetchHandlerOptions {
   exposeSharedState: boolean | ((key: string) => boolean)
   /** Usage guidance for the handshake; see {@link CreateMcpServerOptions.instructions}. */
   instructions?: string
+  /** Resource templates; see {@link CreateMcpServerOptions.resourceTemplates}. */
+  resourceTemplates?: McpResourceTemplate[]
+  /** Host subscription for resource-list changes; see {@link CreateMcpServerOptions.onResourcesChanged}. */
+  onResourcesChanged?: McpResourcesChangedHook
   /**
    * Optional identity check, layered on top of the origin gate and checked
    * **after** it: a bearer token string (matched in constant time against
@@ -106,3 +121,61 @@ export interface McpFetchHandler {
   /** Tear down the handler (aborts in-flight exchanges, drops the change bridge). */
   dispose: () => Promise<void>
 }
+
+/** One concrete resource that an {@link McpResourceTemplate} lists in `resources/list`. */
+export interface McpResourceTemplateEntry {
+  /** The resource URI. It SHOULD match the `uriTemplate` of its template, so `resources/read` finds it. */
+  uri: string
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  /** Defaults to the `mimeType` of the template. */
+  mimeType?: string
+}
+
+/**
+ * What an {@link McpResourceTemplate} returns from `read`, sent as the
+ * `resources/read` result: `text` as is, or else `json` as JSON text.
+ */
+export interface McpResourceTemplateContent {
+  text?: string
+  json?: unknown
+  /** Defaults to the `mimeType` of the template, then `application/json`. */
+  mimeType?: string
+}
+
+/**
+ * A resource template the MCP server lists in `resources/templates/list` and
+ * reads in `resources/read`. The `uriTemplate` uses RFC 6570 level 1 only:
+ * plain `{name}` expressions, with text between any two of them. Each
+ * expression matches a non-empty value with no `/`, and its value is
+ * percent-decoded.
+ *
+ * `list` and `read` get the node context of the devframe (or of the hub), so
+ * they can read live state such as `ctx.rpc.sharedState` or `ctx.agent`. The
+ * route options are resolved before `setup()` runs, so a template cannot
+ * capture that context in a closure.
+ */
+export interface McpResourceTemplate {
+  /** RFC 6570 level 1 URI template, e.g. `my-tool://file/{path}`. Anything else throws `DF0084`. */
+  uriTemplate: string
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  /** MIME type of every resource the template stands for. */
+  mimeType?: string
+  /** The concrete resources the template stands for right now. They are added to `resources/list`. */
+  list?: (ctx: DevframeNodeContext) => McpResourceTemplateEntry[] | Promise<McpResourceTemplateEntry[]>
+  /** Read one resource: `params` holds the decoded value of each `{name}`, `uri` the requested URI. */
+  read: (params: Record<string, string>, uri: string, ctx: DevframeNodeContext) => McpResourceTemplateContent | Promise<McpResourceTemplateContent>
+}
+
+/**
+ * A host subscription for resource-list changes. Call `notify()` each time
+ * the resources change; the MCP server then sends
+ * `notifications/resources/list_changed`. Return a function that removes the
+ * subscription; the MCP server calls it on teardown.
+ */
+export type McpResourcesChangedHook = (notify: () => void, ctx: DevframeNodeContext) => () => void
