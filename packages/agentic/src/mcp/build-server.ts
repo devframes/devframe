@@ -361,7 +361,10 @@ function registerResourceHandlers(
       }
     }
 
-    resources.push(...await listTemplateResources(ctx, templates))
+    for (const { template } of templates) {
+      for (const entry of await template.list?.(ctx) ?? [])
+        resources.push({ ...entry, mimeType: entry.mimeType ?? template.mimeType })
+    }
 
     return { resources }
   })
@@ -435,34 +438,10 @@ interface ResourceListing {
   mimeType?: string
 }
 
-/** The entries the `list` of each template returns, in template order, for `resources/list`. */
-async function listTemplateResources(ctx: DevframeNodeContext, templates: CompiledResourceTemplate[]): Promise<ResourceListing[]> {
-  const resources: ResourceListing[] = []
-  for (const { template } of templates) {
-    for (const entry of await template.list?.(ctx) ?? []) {
-      const mimeType = entry.mimeType ?? template.mimeType
-      resources.push({
-        uri: entry.uri,
-        name: entry.name,
-        ...(entry.title !== undefined ? { title: entry.title } : {}),
-        ...(entry.description !== undefined ? { description: entry.description } : {}),
-        ...(mimeType !== undefined ? { mimeType } : {}),
-      })
-    }
-  }
-  return resources
-}
-
 /** Serve `resources/templates/list`: one entry per template, in the given order. */
 function registerResourceTemplateHandlers(server: Server, templates: CompiledResourceTemplate[]): void {
   server.setRequestHandler('resources/templates/list', async () => ({
-    resourceTemplates: templates.map(({ template }) => ({
-      uriTemplate: template.uriTemplate,
-      name: template.name,
-      ...(template.title !== undefined ? { title: template.title } : {}),
-      ...(template.description !== undefined ? { description: template.description } : {}),
-      ...(template.mimeType !== undefined ? { mimeType: template.mimeType } : {}),
-    })),
+    resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
   }))
 }
 

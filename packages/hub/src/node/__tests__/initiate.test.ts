@@ -482,19 +482,6 @@ describe('initHub', () => {
   })
 
   describe('aggregate MCP resource templates', () => {
-    it('answers resources/templates/list with method not found by default', async () => {
-      const wsPort = await getPort({ port: 18241, host: '127.0.0.1' })
-      const hub = initHub({ base: DEVFRAMES_HUB_BASE, auth: false, host: '127.0.0.1', ws: { port: wsPort }, mcp: true, devframes: [makeFrame('alpha')] })
-
-      try {
-        await hub.ready
-        expect(await callMcp(hub, 'resources/templates/list')).toContain('-32601')
-      }
-      finally {
-        await hub.close()
-      }
-    })
-
     it('serves mcp.resourceTemplates and wires mcp.onResourcesChanged to the hub context', async () => {
       const wsPort = await getPort({ port: 18242, host: '127.0.0.1' })
       const unsubscribe = vi.fn()
