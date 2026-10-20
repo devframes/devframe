@@ -500,8 +500,9 @@ function compileResourceTemplate(template: McpResourceTemplate): CompiledResourc
 /**
  * Match `uri` in one pass from left to right, with no regular expression, so
  * the time grows with the URI length only and a crafted URI cannot block the
- * process. Each value runs to the first place the next literal appears (the
- * last value runs to the tail). A value must not be empty or contain `/`.
+ * process. Each value runs to the first place the next literal appears
+ * outside a `%XX` escape (the last value runs to the tail). A value must not
+ * be empty or contain `/`.
  * The params object has no prototype, so a variable such as `__proto__`
  * keeps its value.
  */
@@ -518,7 +519,7 @@ function matchTemplate(uri: string, literals: string[], names: string[]): Record
   for (let index = 0; index < names.length; index++) {
     const isLast = index === names.length - 1
     const next = literals[index + 1]!
-    const stop = isLast ? end : uri.indexOf(next, position + 1)
+    const stop = isLast ? end : findLiteral(uri, next, position)
     if (stop <= position || stop > end)
       return undefined
     const raw = uri.slice(position, stop)
@@ -533,6 +534,18 @@ function matchTemplate(uri: string, literals: string[], names: string[]): Record
     position = stop + (isLast ? 0 : next.length)
   }
   return params
+}
+
+/**
+ * The first place `literal` appears after the value that starts at `start`
+ * (which must not be empty), or -1. A place inside a `%XX` escape of the
+ * value is skipped, so `{a}D{b}` reads `a%2DbDc` as `a-b` and `c`.
+ */
+function findLiteral(uri: string, literal: string, start: number): number {
+  let at = uri.indexOf(literal, start + 1)
+  while (at !== -1 && (uri[at - 1] === '%' || (at - 2 >= start && uri[at - 2] === '%')))
+    at = uri.indexOf(literal, at + 1)
+  return at
 }
 
 /**

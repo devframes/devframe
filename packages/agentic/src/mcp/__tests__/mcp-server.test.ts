@@ -770,6 +770,14 @@ describe('mcp adapter (in-memory)', () => {
         expect(range!.match(uri)).toBeUndefined()
     })
 
+    it('does not split a value inside a percent-encoded character', () => {
+      const [pair] = compileResourceTemplates([{ uriTemplate: 'test://pair/{a}D{b}', name: 'pair', read: () => ({}) }])
+      expect(pair!.match('test://pair/a%2DbDc')).toEqual({ a: 'a-b', b: 'c' })
+      expect(pair!.match('test://pair/a%2dbDc')).toEqual({ a: 'a-b', b: 'c' })
+      const [hex] = compileResourceTemplates([{ uriTemplate: 'test://hex/{a}2D{b}', name: 'hex', read: () => ({}) }])
+      expect(hex!.match('test://hex/x%2D2Dy')).toEqual({ a: 'x-', b: 'y' })
+    })
+
     it('keeps a value named __proto__', () => {
       const [proto] = compileResourceTemplates([{ uriTemplate: 'test://proto/{__proto__}', name: 'proto', read: () => ({}) }])
       expect(Object.entries(proto!.match('test://proto/x')!)).toEqual([['__proto__', 'x']])
