@@ -450,17 +450,13 @@ const TEMPLATE_EXPRESSION_RE = /\{([^{}]*)\}/g
 /** RFC 6570 `varname`: letters, digits and `_`, with single dots between them. */
 const TEMPLATE_VARNAME_RE = /^\w+(?:\.\w+)*$/
 
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 /**
  * Compile resource templates to URI matchers, once per endpoint. Only RFC
  * 6570 level 1 is supported: plain `{name}` expressions. Each expression
- * matches one non-empty URI segment (no `/`), and its value is
- * percent-decoded, so an encoded `%2F` reads back as `/`. A URI with
- * malformed percent-encoding matches no template. Any other template syntax
- * throws `DF0084`.
+ * matches a non-empty value with no `/`, and its value is percent-decoded,
+ * so an encoded `%2F` reads back as `/`. A URI with malformed
+ * percent-encoding matches no template. Any other template syntax, and two
+ * expressions with nothing between them, throw `DF0084`.
  *
  * @internal
  */
@@ -472,7 +468,8 @@ function compileResourceTemplate(template: McpResourceTemplate): CompiledResourc
   const { name, uriTemplate } = template
   const invalid = (reason: string) => diagnostics.DF0084({ name, uriTemplate, reason })
   const names: string[] = []
-  let source = '^'
+  // The text around the expressions: one more than `names`.
+  const literals: string[] = []
   let last = 0
   for (const expression of uriTemplate.matchAll(TEMPLATE_EXPRESSION_RE)) {
     const literal = uriTemplate.slice(last, expression.index)
@@ -483,33 +480,59 @@ function compileResourceTemplate(template: McpResourceTemplate): CompiledResourc
       throw invalid(`the expression "{${varname}}" is not a plain \`{name}\`.`)
     if (names.includes(varname))
       throw invalid(`the name "${varname}" is used more than once.`)
+    if (names.length > 0 && literal === '')
+      throw invalid(`"{${names.at(-1)}}" and "{${varname}}" have nothing between them, so a URI cannot show where one ends.`)
+    literals.push(literal)
     names.push(varname)
-    source += `${escapeRegExp(literal)}([^/]+)`
     last = expression.index + expression[0].length
   }
   const tail = uriTemplate.slice(last)
   if (/[{}]/.test(tail))
     throw invalid('a `{` or `}` is outside an expression.')
-  const pattern = new RegExp(`${source}${escapeRegExp(tail)}$`)
+  literals.push(tail)
 
   return {
     template,
-    match(uri) {
-      const found = pattern.exec(uri)
-      if (!found)
-        return undefined
-      const params: Record<string, string> = {}
-      try {
-        names.forEach((varname, index) => {
-          params[varname] = decodeURIComponent(found[index + 1]!)
-        })
-      }
-      catch {
-        return undefined
-      }
-      return params
-    },
+    match: uri => matchTemplate(uri, literals, names),
   }
+}
+
+/**
+ * Match `uri` in one pass from left to right, with no regular expression, so
+ * the time grows with the URI length only and a crafted URI cannot block the
+ * process. Each value runs to the first place the next literal appears (the
+ * last value runs to the tail). A value must not be empty or contain `/`.
+ * The params object has no prototype, so a variable such as `__proto__`
+ * keeps its value.
+ */
+function matchTemplate(uri: string, literals: string[], names: string[]): Record<string, string> | undefined {
+  const head = literals[0]!
+  const tail = literals.at(-1)!
+  const params: Record<string, string> = Object.create(null)
+  if (names.length === 0)
+    return uri === head ? params : undefined
+  if (!uri.startsWith(head) || !uri.endsWith(tail))
+    return undefined
+  const end = uri.length - tail.length
+  let position = head.length
+  for (let index = 0; index < names.length; index++) {
+    const isLast = index === names.length - 1
+    const next = literals[index + 1]!
+    const stop = isLast ? end : uri.indexOf(next, position + 1)
+    if (stop <= position || stop > end)
+      return undefined
+    const raw = uri.slice(position, stop)
+    if (raw.includes('/'))
+      return undefined
+    try {
+      params[names[index]!] = decodeURIComponent(raw)
+    }
+    catch {
+      return undefined
+    }
+    position = stop + (isLast ? 0 : next.length)
+  }
+  return params
 }
 
 /**

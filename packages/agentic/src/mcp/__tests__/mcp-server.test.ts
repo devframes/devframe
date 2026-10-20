@@ -756,10 +756,32 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('throws DF0084 for a template beyond RFC 6570 level 1', () => {
-      for (const uriTemplate of ['test://file/{+path}', 'test://search{?q}', 'test://pair/{a,b}', 'test://file/{path*}', 'test://file/{path', 'test://file/path}', 'test://pair/{a}/{a}', 'test://file/{}']) {
+      for (const uriTemplate of ['test://file/{+path}', 'test://search{?q}', 'test://pair/{a,b}', 'test://file/{path*}', 'test://file/{path', 'test://file/path}', 'test://pair/{a}/{a}', 'test://file/{}', 'test://pair/{a}{b}']) {
         expect(() => compileResourceTemplates([{ uriTemplate, name: 'bad', read: () => ({}) }])).toThrow(expect.objectContaining({ code: 'DF0084' }))
       }
       expect(compileResourceTemplates([{ uriTemplate: 'test://fixed', name: 'fixed', read: () => ({}) }])[0]!.match('test://fixed')).toEqual({})
+    })
+
+    it('matches several values in one segment, each up to the next literal', () => {
+      const [range] = compileResourceTemplates([{ uriTemplate: 'test://range/{from}-{to}.json', name: 'range', read: () => ({}) }])
+      expect(range!.match('test://range/1-2.json')).toEqual({ from: '1', to: '2' })
+      expect(range!.match('test://range/1-2-3.json')).toEqual({ from: '1', to: '2-3' })
+      for (const uri of ['test://range/-2.json', 'test://range/1-.json', 'test://range/1.json', 'test://range/1-2.txt', 'test://range/1-2/3.json'])
+        expect(range!.match(uri)).toBeUndefined()
+    })
+
+    it('keeps a value named __proto__', () => {
+      const [proto] = compileResourceTemplates([{ uriTemplate: 'test://proto/{__proto__}', name: 'proto', read: () => ({}) }])
+      expect(Object.entries(proto!.match('test://proto/x')!)).toEqual([['__proto__', 'x']])
+    })
+
+    it('rejects a long URI that matches no template without backtracking', () => {
+      const [many] = compileResourceTemplates([{ uriTemplate: 'test://many/{a}-{b}-{c}-{d}.json', name: 'many', read: () => ({}) }])
+      // Ends like a match, but the `/` near the end fails it only after every value is read.
+      const uri = `test://many/${'x-'.repeat(25_000)}/.json`
+      const start = performance.now()
+      expect(many!.match(uri)).toBeUndefined()
+      expect(performance.now() - start).toBeLessThan(500)
     })
   })
 

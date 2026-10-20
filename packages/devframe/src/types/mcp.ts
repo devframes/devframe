@@ -148,8 +148,9 @@ export interface McpResourceTemplateContent {
 /**
  * A resource template the MCP server lists in `resources/templates/list` and
  * reads in `resources/read`. The `uriTemplate` uses RFC 6570 level 1 only:
- * plain `{name}` expressions. Each expression matches one non-empty URI
- * segment (no `/`), and its value is percent-decoded.
+ * plain `{name}` expressions, with text between any two of them. Each
+ * expression matches a non-empty value with no `/`, and its value is
+ * percent-decoded.
  *
  * `list` and `read` get the node context of the devframe (or of the hub), so
  * they can read live state such as `ctx.rpc.sharedState` or `ctx.agent`. The
