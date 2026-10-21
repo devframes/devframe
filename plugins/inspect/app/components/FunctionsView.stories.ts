@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
+import type { RpcFunctionInfo } from '../connect'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import FunctionsView from './FunctionsView.vue'
 
 const meta = {
@@ -117,5 +119,73 @@ export const WithResultsAndPending: Story = {
     pending: {
       'vite:rolldown:list-sessions': true,
     },
+  },
+}
+
+const query: RpcFunctionInfo = {
+  name: 'audit:echo',
+  type: 'query',
+  jsonSerializable: true,
+  snapshot: false,
+  cacheable: false,
+  hasArgs: true,
+  hasReturns: false,
+  hasDump: false,
+  hasSetup: true,
+  hasHandler: true,
+  invokable: true,
+}
+
+export const InvalidArguments: Story = {
+  args: {
+    ...Default.args,
+    functions: [query],
+    onInvoke: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText('echo'))
+    const input = canvas.getByPlaceholderText('[]')
+    const invoke = canvas.getByRole('button', { name: 'Invoke' })
+
+    await userEvent.type(input, '{{')
+    await userEvent.click(invoke)
+    const error = canvas.getByRole('alert')
+    await expect(error).toHaveTextContent('Invalid JSON arguments:')
+    await expect(input).toHaveAttribute('aria-invalid', 'true')
+    await expect(input).toHaveAttribute('aria-describedby', error.id)
+    await expect(args.onInvoke).not.toHaveBeenCalled()
+
+    await userEvent.clear(input)
+    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
+    await expect(input).toHaveAttribute('aria-invalid', 'false')
+    await userEvent.type(input, '[["recovered"]')
+    await userEvent.click(invoke)
+    await expect(args.onInvoke).toHaveBeenLastCalledWith(query, ['recovered'])
+
+    await userEvent.clear(input)
+    await userEvent.type(input, '42')
+    await userEvent.click(invoke)
+    await expect(args.onInvoke).toHaveBeenLastCalledWith(query, [42])
+  },
+}
+
+export const InvalidArgumentsAfterSuccess: Story = {
+  args: {
+    ...InvalidArguments.args,
+    results: {
+      'audit:echo': { ok: true, result: 'previous result', durationMs: 1 },
+    },
+    onInvoke: fn(),
+  },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(canvas.getByText('echo'))
+    const input = canvas.getByPlaceholderText('[]')
+    await userEvent.type(input, '{{')
+    await userEvent.click(canvas.getByRole('button', { name: 'Invoke' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent('Invalid JSON arguments:')
+    await expect(canvas.getByText('"previous result"')).toBeVisible()
+    await expect(args.onInvoke).not.toHaveBeenCalled()
   },
 }
