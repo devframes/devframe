@@ -23,6 +23,7 @@
     "./core": "./dist/core.mjs",
     "./hub": "./dist/hub.mjs",
     "./node": "./dist/node/index.mjs",
+    "./view": "./dist/view.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
