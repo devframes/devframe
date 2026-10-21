@@ -1,9 +1,9 @@
 import type { Tool } from '@modelcontextprotocol/server'
-import type { DevframeInstanceRecord } from 'devframe/internal'
+import type { ConnectedClient, DevframeInstanceRecord } from 'devframe/internal'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { Server } from '@modelcontextprotocol/server'
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
-import { diagnostics, listLiveDevframeInstances, probeDevframeOrigin } from 'devframe/internal'
+import { diagnostics, LIST_CLIENTS_TOOL, listLiveDevframeInstances, probeDevframeOrigin } from 'devframe/internal'
 import { toAgentToolName } from 'devframe/utils/agent-tool-name'
 import { Diagnostic } from 'devframe/utils/nostics'
 import { joinURL, withLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
@@ -82,10 +82,15 @@ interface IndexedInstance extends Omit<DevframeInstanceRecord, 'mcp'> {
   mcp: {
     url: string
     tools?: IndexedInstanceTools[]
+    /** Browser tabs connected to the instance, when it forwards client tools. */
+    clients?: ConnectedClient[]
     error?: string
   } | null
   hint?: string
 }
+
+/** Wire name of the built-in tab-listing tool an instance exposes once a browser tab connects. */
+const LIST_CLIENTS_NAME = toAgentToolName(LIST_CLIENTS_TOOL)
 
 // Gateway tool ids follow the `devframe:<area>:<fn>` convention; the wire
 // names are their sanitized forms (`devframe_connect_list-instances`, …).
@@ -99,7 +104,7 @@ const GATEWAY_TOOLS: Tool[] = [
   {
     name: INDEX_TOOL,
     title: 'Discover running devframes',
-    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools. Call this FIRST, before assuming which devtools are available; the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
+    description: 'Discover every running devframe dev server on this machine and list each one\'s MCP tools, plus the browser tabs connected to it (`mcp.clients`). Call this FIRST, before assuming which devtools are available; the result names the instance (id, project root, origin) and the port to pass to the call tool. Safe to call freely.',
     inputSchema: { type: 'object', properties: {} },
     annotations: { readOnlyHint: true, destructiveHint: false },
   },
@@ -112,7 +117,7 @@ const GATEWAY_TOOLS: Tool[] = [
       properties: {
         port: { type: 'number', description: 'The instance\'s port, from the list-instances tool.' },
         tool: { type: 'string', description: 'Tool name, from the instance\'s tool list.' },
-        args: { type: 'object', description: 'Arguments object for the tool. Omit for zero-argument tools.' },
+        args: { type: 'object', description: 'Arguments object for the tool. Omit for zero-argument tools. Tools forwarded from a browser tab accept `client_id` (from `mcp.clients` in list-instances) to target one tab; omitted, the most recently focused tab runs it.' },
       },
       required: ['port', 'tool'],
       additionalProperties: false,
@@ -187,7 +192,7 @@ async function index(options: ConnectServerOptions): Promise<unknown> {
     }
     const url = `${record.origin}${mcp.path}`
     try {
-      entry.mcp = { url, tools: await listInstanceTools(url, resolveAuthToken(options.authToken, record)) }
+      entry.mcp = { url, ...await indexInstanceMcp(url, resolveAuthToken(options.authToken, record)) }
     }
     catch (error) {
       entry.mcp = { url, error: error instanceof Error ? error.message : String(error) }
@@ -228,8 +233,19 @@ export async function probePort(port: number, base = '/', timeoutMs?: number): P
   }
 }
 
-async function listInstanceTools(url: string, token: string | undefined): Promise<IndexedInstanceTools[]> {
-  return withInstanceClient(url, token, async client => (await client.listTools()).tools)
+async function indexInstanceMcp(
+  url: string,
+  token: string | undefined,
+): Promise<Pick<NonNullable<IndexedInstance['mcp']>, 'tools' | 'clients'>> {
+  return withInstanceClient(url, token, async (client) => {
+    const tools: IndexedInstanceTools[] = (await client.listTools()).tools
+    if (!tools.some(tool => tool.name === LIST_CLIENTS_NAME))
+      return { tools }
+    const result = await client.callTool({ name: LIST_CLIENTS_NAME, arguments: {} })
+    // `structuredContent` is untyped on the wire; the tool's outputSchema fixes this shape.
+    const clients = (result.structuredContent as { clients?: ConnectedClient[] } | undefined)?.clients ?? []
+    return { tools, clients }
+  })
 }
 
 async function call(
