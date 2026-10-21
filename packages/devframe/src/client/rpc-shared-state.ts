@@ -1,6 +1,7 @@
 import type { RpcSharedStateGetOptions, RpcSharedStateHost } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { DevframeRpcClient } from './rpc'
+import { nanoid } from 'devframe/utils/nanoid'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { DEVFRAME_EVENTS } from '../events'
 
@@ -42,10 +43,10 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
     },
   })
 
-  function registerSharedState<T extends object>(key: string, state: SharedState<T>) {
+  function registerSharedState<T extends object>(key: string, state: SharedState<T>, initialSyncId?: string) {
     const offs: (() => void)[] = []
     offs.push(state.on('updated', (fullState, patches, syncId) => {
-      if (isStaticBackend)
+      if (isStaticBackend || syncId === initialSyncId)
         return
       if (patches) {
         rpc.callEvent('devframe:rpc:server-state:patch', key, patches, syncId)
@@ -99,15 +100,18 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
           sharedState.set(key, state)
           for (const fn of keyAddedListeners)
             fn(key)
+          const initialState = state.value()
+          const initialSyncId = nanoid()
           rpc.call('devframe:rpc:server-state:get', key)
             .then((serverState) => {
-              if (serverState !== undefined)
-                state.mutate(() => mergeWithInitialValue(key, serverState))
+              // A pending read must not replace a newer update or a deleted state.
+              if (serverState !== undefined && sharedState.get(key) === state && state.value() === initialState)
+                state.mutate(() => mergeWithInitialValue(key, serverState), initialSyncId)
             })
             .catch((error) => {
               console.error('Error getting server state', error)
             })
-          stateDisposers.set(key, registerSharedState(key, state))
+          stateDisposers.set(key, registerSharedState(key, state, initialSyncId))
           return state
         }
         else {
