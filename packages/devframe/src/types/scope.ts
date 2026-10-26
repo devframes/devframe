@@ -82,8 +82,8 @@ export interface DevframeSettingsStore<T extends Record<string, any> = Record<st
 /**
  * The two settings scopes available on a scoped context.
  *
- *   - `project`: private per-checkout state, persisted under the host's
- *     `project` storage dir. Project-local settings.
+ *   - `project`: private per-checkout state, persisted under the `project`
+ *     storage directory provided by `DevframeHost`. Project-local settings.
  *   - `global`:  per-user state, persisted under the host's `global`
  *     storage dir. Machine-wide preferences.
  */
