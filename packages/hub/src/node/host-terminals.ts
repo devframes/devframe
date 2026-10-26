@@ -20,6 +20,7 @@ import process from 'node:process'
 import { createEventEmitter } from 'devframe/utils/events'
 import { HUB_EVENTS } from '../events'
 import { diagnostics } from './diagnostics'
+import { resolvePtyCommand } from './pty-command'
 
 type PartialWithoutId<T extends { id: string }> = Partial<T> & { id: string }
 
@@ -443,18 +444,21 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
 
     const spawnPty = (): IPty => {
       const currentRun = ++runId
-      const ptyProcess = spawn(executeOptions.command, executeOptions.args ?? [], {
+      const cwd = executeOptions.cwd ?? process.cwd()
+      const env = {
+        ...process.env,
+        TERM: PTY_TERM_NAME,
+        COLORTERM: 'truecolor',
+        FORCE_COLOR: '1',
+        ...(executeOptions.env ?? {}),
+      }
+      const { command, args } = resolvePtyCommand(executeOptions.command, executeOptions.args ?? [], { cwd, env })
+      const ptyProcess = spawn(command, args, {
         name: PTY_TERM_NAME,
         cols,
         rows,
-        cwd: executeOptions.cwd ?? process.cwd(),
-        env: {
-          ...process.env,
-          TERM: PTY_TERM_NAME,
-          COLORTERM: 'truecolor',
-          FORCE_COLOR: '1',
-          ...(executeOptions.env ?? {}),
-        },
+        cwd,
+        env,
       })
       const outputChunks: string[] = []
       let killed = false
