@@ -1,6 +1,11 @@
 import type { StartedServer } from 'devframe/internal'
 import type { DevframeDefinition, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import { getDefaultEnvironment, StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import { createDevServer } from 'devframe/adapters/dev'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
@@ -84,6 +89,35 @@ describe('client tools over the MCP route', () => {
     }
     finally {
       await mcp.close()
+    }
+  })
+
+  it('devframe connect nests the connected tabs under each instance', async () => {
+    const instancesDir = mkdtempSync(join(tmpdir(), 'devframe-instances-'))
+    const env = { ...process.env }
+    process.env.DEVFRAME_INSTANCES_DIR = instancesDir
+    process.env.DEVFRAME_DISABLE_INSTANCE_REGISTRY = '0'
+    const gateway = new Client({ name: 'test', version: '0.0.0' })
+    try {
+      server = await createDevServer(definition, { host: '127.0.0.1', port: 0, auth: false, mcp: true })
+      await connectTab(server.origin, { id: 'tab-a', focused: true }).sync()
+
+      await gateway.connect(new StdioClientTransport({
+        command: process.execPath,
+        args: [fileURLToPath(new URL('../../../../devframe/bin/devframe.mjs', import.meta.url)), 'connect'],
+        env: { ...getDefaultEnvironment(), DEVFRAME_INSTANCES_DIR: instancesDir },
+      }))
+      const listed = await gateway.callTool({ name: 'devframe_connect_list-instances', arguments: {} })
+      const { instances } = JSON.parse((listed.content as any)[0].text)
+      expect(instances).toHaveLength(1)
+      expect(instances[0].mcp.clients).toEqual([
+        expect.objectContaining({ id: 'tab-a', url: 'http://app.local/tab-a', focused: true, tools: ['page:selection'] }),
+      ])
+    }
+    finally {
+      await gateway.close().catch(() => {})
+      process.env = env
+      rmSync(instancesDir, { recursive: true, force: true })
     }
   })
 })

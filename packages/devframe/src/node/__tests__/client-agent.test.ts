@@ -134,11 +134,60 @@ describe('client agent tools', () => {
     }
   })
 
-  it('does not republish the tool list on a focus-only re-sync', () => {
-    const h = harness()
-    const a = h.session('tab-a')
-    h.sync(a)
-    h.sync(a, true)
-    expect(h.notifyChanged).toHaveBeenCalledTimes(1)
+  it('keeps the focused tab ahead of a background tab that synced later', async () => {
+    vi.useFakeTimers()
+    try {
+      const h = harness()
+      const a = h.session('tab-a')
+      const b = h.session('tab-b')
+      vi.setSystemTime(1000)
+      h.sync(a, true)
+      // A visible background tab re-syncs (e.g. registers a tool) after the user focused a.
+      vi.setSystemTime(2000)
+      h.sync(b, false)
+      await expect(h.tool('pinia-colada:refetch').handler({})).resolves.toBe('from tab-a')
+    }
+    finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('remembers the last focused tab after the user leaves the browser', async () => {
+    vi.useFakeTimers()
+    try {
+      const h = harness()
+      const a = h.session('tab-a')
+      const b = h.session('tab-b')
+      vi.setSystemTime(1000)
+      h.sync(a, true)
+      vi.setSystemTime(2000)
+      h.sync(b, true)
+      // The user switches to the terminal: b blurs, no tab holds focus.
+      vi.setSystemTime(3000)
+      h.sync(b, false)
+      await expect(h.tool('pinia-colada:refetch').handler({})).resolves.toBe('from tab-b')
+    }
+    finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not republish the tool list on a focus-only re-sync, and keeps connectedAt', () => {
+    vi.useFakeTimers()
+    try {
+      const h = harness()
+      const a = h.session('tab-a')
+      vi.setSystemTime(1000)
+      h.sync(a)
+      vi.setSystemTime(2000)
+      h.sync(a, true)
+      expect(h.notifyChanged).toHaveBeenCalledTimes(1)
+      expect(h.tool(LIST_CLIENTS_TOOL).handler({})).toEqual({
+        clients: [expect.objectContaining({ id: 'tab-a', focused: true, connectedAt: 1000 })],
+      })
+    }
+    finally {
+      vi.useRealTimers()
+    }
   })
 })
