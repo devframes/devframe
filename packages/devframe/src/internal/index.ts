@@ -67,6 +67,7 @@ export type {
   InstanceWsTier,
   StartedServer,
 } from '../node/instance-shell'
+export type { RequestAccessContext, RequestAccessPolicy } from '../node/request-access'
 export { createContextRpcServer } from '../node/rpc-core'
 export type { ContextRpcServer, CreateContextRpcServerOptions } from '../node/rpc-core'
 export { normalizeHttpServerUrl } from '../node/utils'

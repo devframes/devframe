@@ -7,6 +7,7 @@ import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeInstanceRecord } from '../node/instance-registry'
 import type { InstanceShellInternals, StartedServer } from '../node/instance-shell'
+import type { RequestAccessPolicy } from '../node/request-access'
 import type { DevframeDefinition, DevframeSetupInfo, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import type { ResolvedMcpConfig } from './_shared'
@@ -26,6 +27,7 @@ import { loadAutoMcpAdapter, normalizeBasePath, resolveMcpConfig } from './_shar
 import { resolveDevServerPort } from './dev'
 
 export interface InitDevframeOptions {
+  access?: RequestAccessPolicy
   /**
    * Mount base the handler answers under (e.g. `/__my-tool/`), required so
    * the mount path is explicit at the call site. A handler is by definition
@@ -157,6 +159,7 @@ export interface InitDevframeOptions {
 }
 
 export interface DevframeInstance {
+  authorizeRequest: (request: IncomingMessage) => Promise<boolean>
   /**
    * The normalized mount base this instance answers under (leading and
    * trailing slash, e.g. `/__my-tool/`). Reference it when wiring the mount
@@ -260,6 +263,7 @@ export function initDevframe(
 
   const shell = createInstanceShell<DevframeNodeContext>({
     base,
+    access: options.access,
     app,
     host,
     origin: options.origin,
@@ -332,6 +336,7 @@ export function initDevframe(
     base: shell.base,
     handler: shell.handler,
     nodeMiddleware: shell.nodeMiddleware,
+    authorizeRequest: shell.authorizeRequest,
     attach: shell.attach,
     handleUpgrade: shell.handleUpgrade,
     ready: shell.ready,

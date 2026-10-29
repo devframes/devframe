@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface AttachBunWsTransportOptions {
+  authorizePeer?: (_: string | undefined) => Promise<boolean>;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
 }
 export interface BunWsTier {

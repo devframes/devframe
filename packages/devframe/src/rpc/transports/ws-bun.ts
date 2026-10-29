@@ -3,6 +3,7 @@ import type { WsOriginRegistry } from './ws-server'
 import { createWsRpcPeerHooks, isAllowedOrigin } from './ws-server'
 
 export interface AttachBunWsTransportOptions {
+  authorizePeer?: (remoteAddress: string | undefined) => Promise<boolean>
   /** Same contract as `WsRpcTransportOptions.allowedOrigins`. */
   allowedOrigins?: readonly string[] | WsOriginRegistry | false
 }
@@ -46,6 +47,7 @@ export async function attachBunWsTransport(
       ...createWsRpcPeerHooks(core.rpcGroup, {
         onConnected: core.onConnected,
         onDisconnected: core.onDisconnected,
+        authorizePeer: options.authorizePeer,
       }),
       /**
        * The same origin policy `routeUpgrades` applies for the Node
@@ -64,8 +66,12 @@ export async function attachBunWsTransport(
   })
 
   return {
-    handleUpgrade: (request, server) =>
-      ws.handleUpgrade(request, server as Parameters<typeof ws.handleUpgrade>[1]),
+    handleUpgrade: async (request, server) => {
+      const peer = (server as { requestIP?: (request: Request) => { address: string } | null }).requestIP?.(request)
+      if (options.authorizePeer && !await options.authorizePeer(peer?.address))
+        return new Response('Forbidden', { status: 403 })
+      return ws.handleUpgrade(request, server as Parameters<typeof ws.handleUpgrade>[1])
+    },
     websocket: ws.websocket as BunWsTierWebSocket,
     close: () => ws.close(),
   }

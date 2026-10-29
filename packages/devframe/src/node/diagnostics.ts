@@ -220,6 +220,10 @@ export const diagnostics = defineDiagnostics({
         `The \`mcp\` option is enabled, but the optional peer "@devframes/agentic" could not be loaded: ${p.reason}`,
       fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
+    DF0082: {
+      why: 'Request access authorization failed on a WebSocket connection.',
+      fix: 'Check the server-side access callback and its reported cause.',
+    },
     DF0081: {
       why: (p: { name: string, reason: string }) =>
         `Tool "${p.name}" returned invalid MCP content blocks: ${p.reason}`,

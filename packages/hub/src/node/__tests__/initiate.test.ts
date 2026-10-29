@@ -1,12 +1,15 @@
 import type { DevframeDefinition, DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from 'devframe/types'
+import type { InitHubOptions } from '../initiate'
+import { once } from 'node:events'
 import { mkdtempSync, writeFileSync } from 'node:fs'
-import { createServer } from 'node:http'
+import { createServer, request } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import WebSocket from 'ws'
 import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
@@ -43,6 +46,146 @@ function connectWsClient(url: string) {
     { channel: createWsRpcChannel({ url }) },
   )
 }
+
+async function startAccessHub(options: Pick<InitHubOptions, 'access' | 'auth' | 'ws' | 'mcp'>) {
+  const server = createServer()
+  const hub = initHub({ base: DEVFRAMES_HUB_BASE, server, auth: false, devframes: [makeFrame('access')], ...options })
+  server.on('request', hub.nodeMiddleware)
+  onTestFinished(async () => {
+    await hub.close()
+    server.closeAllConnections()
+    await new Promise<void>(resolve => server.close(() => resolve()))
+  })
+  await hub.ready
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+  const address = server.address() as { port: number }
+  return { hub, server, origin: `http://127.0.0.1:${address.port}` }
+}
+
+async function upgradeStatus(url: string, origin?: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const client = new WebSocket(url, origin ? { origin } : undefined)
+    client.on('error', reject)
+    client.once('open', () => {
+      resolve(101)
+      client.close()
+    })
+    client.once('unexpected-response', (_request, response) => {
+      resolve(response.statusCode!)
+      response.resume()
+      client.terminate()
+    })
+  })
+}
+
+describe('request access policy', () => {
+  it('authorizes metadata routes mounted outside the hub namespace', async () => {
+    let allowed = true
+    const { hub, server, origin } = await startAccessHub({ access: { authorize: () => allowed } })
+    server.removeListener('request', hub.nodeMiddleware)
+    server.on('request', (req, res) => {
+      void hub.authorizeRequest(req).then((permitted) => {
+        res.statusCode = permitted ? 200 : 403
+        res.end(permitted ? 'connection capabilities' : 'Forbidden')
+      })
+    })
+    expect((await fetch(`${origin}/external/__connection.json`)).status).toBe(200)
+    allowed = false
+    const denied = await fetch(`${origin}/external/__connection.json`)
+    expect(denied.status).toBe(403)
+    expect(await denied.text()).not.toContain('capabilities')
+  })
+
+  it('admits allowed HTTP, MCP, SSE, and WebSocket requests', async () => {
+    const { origin } = await startAccessHub({ access: { internalIPs: ['127.0.0.1'] }, mcp: true })
+    const mcp = await fetch(`${origin}${DEVFRAMES_HUB_BASE}__mcp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'Origin': origin },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+    })
+    expect(mcp.status).toBe(200)
+    expect(await mcp.text()).toContain('access-tool')
+    const sse = await fetch(`${origin}${DEVFRAMES_HUB_BASE}__sse`)
+    expect(sse.status).toBe(200)
+    await sse.body?.cancel()
+    expect(await upgradeStatus(`${origin.replace('http:', 'ws:')}${DEVFRAMES_HUB_BASE}__ws`)).toBe(101)
+  })
+
+  it('rejects hostile Host headers before serving metadata', async () => {
+    const { origin } = await startAccessHub({ access: { internalIPs: ['127.0.0.1'] } })
+    const code = await new Promise<number | undefined>((resolve, reject) => {
+      const req = request(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`, { headers: { Host: 'attacker.example' } }, (response) => {
+        response.resume()
+        resolve(response.statusCode)
+      })
+      req.on('error', reject)
+      req.end()
+    })
+    expect(code).toBe(403)
+  })
+
+  it('protects sidecar WebSocket upgrades', async () => {
+    const { hub } = await startAccessHub({ ws: { sidecar: true }, access: { internalIPs: [] } })
+    const endpoint = hub.connectionMeta().websocket as { port: number, path: string }
+    expect(await upgradeStatus(`ws://localhost:${endpoint.port}/${endpoint.path}`)).toBe(403)
+  })
+
+  it.each([false, true])('denies all protected HTTP endpoints independently of auth=%s', async (auth) => {
+    const { origin } = await startAccessHub({ auth, access: { internalIPs: [] }, mcp: true })
+    for (const route of ['', '__connection.json', '__index.json', '__client-imports.js', 'embedded.js', 'access/__connection.json', '__sse', '__mcp']) {
+      const response = await fetch(`${origin}${DEVFRAMES_HUB_BASE}${route}`)
+      expect(response.status, route).toBe(403)
+      expect(await response.text()).not.toContain('websocket')
+    }
+  })
+
+  it('accepts normalized peers and ignores spoofed forwarding headers', async () => {
+    const { origin } = await startAccessHub({ access: { internalIPs: ['::ffff:127.0.0.1'] } })
+    const response = await fetch(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`, { headers: { 'X-Forwarded-For': '203.0.113.8' } })
+    expect(response.status).toBe(200)
+    const denied = await startAccessHub({ access: { internalIPs: ['203.0.113.8'] } })
+    expect((await fetch(`${denied.origin}${DEVFRAMES_HUB_BASE}__connection.json`, {
+      headers: { 'X-Forwarded-For': '203.0.113.8', 'Forwarded': 'for=203.0.113.8', 'X-Real-IP': '203.0.113.8' },
+    })).status).toBe(403)
+  })
+
+  it('fails closed for fetch requests without peer metadata', async () => {
+    const { hub, origin } = await startAccessHub({ access: { internalIPs: ['127.0.0.1'] } })
+    expect((await hub.handler(new Request(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`))).status).toBe(403)
+  })
+
+  it.each([false, true])('evaluates a request-time callback (async=%s)', async (asynchronous) => {
+    const authorize = vi.fn(({ remoteAddress }: { remoteAddress: string }) => asynchronous ? Promise.resolve(remoteAddress === '127.0.0.1') : remoteAddress === '127.0.0.1')
+    const { origin } = await startAccessHub({ access: { authorize } })
+    expect(authorize).not.toHaveBeenCalled()
+    expect((await fetch(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`)).status).toBe(200)
+    expect(authorize).toHaveBeenCalledWith({ remoteAddress: '127.0.0.1' })
+  })
+
+  it('denies hostile browser origins even for an allowed peer with auth disabled', async () => {
+    const { origin } = await startAccessHub({ access: { internalIPs: ['127.0.0.1'] } })
+    expect((await fetch(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`, { headers: { Origin: 'https://attacker.example' } })).status).toBe(403)
+    expect(await upgradeStatus(`${origin.replace('http:', 'ws:')}${DEVFRAMES_HUB_BASE}__ws`, 'https://attacker.example')).toBe(403)
+  })
+
+  it('requires both restrictions on HTTP and WebSocket upgrades', async () => {
+    const { origin } = await startAccessHub({ access: { internalIPs: ['127.0.0.1'], authorize: async () => false } })
+    expect((await fetch(`${origin}${DEVFRAMES_HUB_BASE}__connection.json`)).status).toBe(403)
+    expect(await upgradeStatus(`${origin.replace('http:', 'ws:')}${DEVFRAMES_HUB_BASE}__ws`)).toBe(403)
+  })
+
+  it('rechecks policy on an already admitted connection', async () => {
+    let allowed = true
+    const { origin } = await startAccessHub({ access: { authorize: () => allowed } })
+    const client = new WebSocket(`${origin.replace('http:', 'ws:')}${DEVFRAMES_HUB_BASE}__ws`)
+    await once(client, 'open')
+    onTestFinished(() => client.terminate())
+    allowed = false
+    const closed = once(client, 'close')
+    client.send('{}')
+    expect((await closed)[0]).toBe(1008)
+  })
+})
 
 describe('initHub', () => {
   it('publishes an empty renderer manifest when no renderers are registered', async () => {

@@ -14,6 +14,7 @@ import crossws from 'crossws/adapters/node'
 import { DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM, DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM } from 'devframe/constants'
 import { randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
 import { isAllowedOrigin } from 'devframe/utils/origin'
+import { diagnostics } from '../../node/diagnostics'
 import { createRpcWireCodec } from '../wire-codec'
 import { createRpcSessionMeta } from './session'
 
@@ -26,6 +27,7 @@ export type {
 } from './session'
 
 export interface WsRpcTransportOptions {
+  authorizePeer?: (remoteAddress: string | undefined) => Promise<boolean>
   /**
    * Attach to an existing HTTP(S) server, sharing its port. Combine with
    * `path` to bind the WS endpoint to a single route so it coexists with
@@ -253,6 +255,7 @@ function createUpgradeListener(
   path: string | undefined,
   destroyUnmatched: boolean,
   allowedOrigins: readonly string[] | WsOriginRegistry | false | undefined,
+  authorizePeer: WsRpcTransportOptions['authorizePeer'],
 ): (req: IncomingMessage, socket: Duplex, head: Buffer) => void {
   return (req, socket, head) => {
     socket.on('error', () => {
@@ -282,7 +285,17 @@ function createUpgradeListener(
       socket.destroy()
       return
     }
-    void ws.handleUpgrade(req, socket, head)
+    const upgrade = async (): Promise<void> => {
+      if (authorizePeer && !await authorizePeer(req.socket.remoteAddress)) {
+        socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
+        return
+      }
+      await ws.handleUpgrade(req, socket, head)
+    }
+    void upgrade().catch((cause: unknown) => {
+      socket.destroy()
+      diagnostics.DF0082({ cause }, { method: 'error' })
+    })
   }
 }
 
@@ -299,7 +312,7 @@ export function createWsRpcPeerHooks<
   ServerFunctions extends object,
 >(
   rpcGroup: BirpcGroup<ClientFunctions, ServerFunctions, false>,
-  options: Pick<WsRpcTransportOptions, 'onConnected' | 'onDisconnected' | 'definitions' | 'serialize' | 'deserialize'> = {},
+  options: Pick<WsRpcTransportOptions, 'onConnected' | 'onDisconnected' | 'definitions' | 'serialize' | 'deserialize' | 'authorizePeer'> = {},
 ): Partial<Hooks> {
   const {
     onConnected = NOOP,
@@ -354,7 +367,20 @@ export function createWsRpcPeerHooks<
       })
       onConnected(connection, meta)
     },
-    message: (peer, message) => {
+    message: async (peer, message) => {
+      if (options.authorizePeer) {
+        try {
+          if (!await options.authorizePeer(peer.remoteAddress)) {
+            peer.close(1008, 'Forbidden')
+            return
+          }
+        }
+        catch (cause) {
+          peer.close(1011, 'Authorization failed')
+          diagnostics.DF0082({ cause }, { method: 'error' })
+          return
+        }
+      }
       states.get(peer)?.onMessage?.(message.text())
     },
     close: (peer) => {
@@ -406,8 +432,8 @@ export function attachWsRpcTransport<
 
   // One listener shape for every binding: the transport's own server, a
   // shared host server, and the caller-driven `handleUpgrade` / `attach`.
-  const sharedUpgradeListener = createUpgradeListener(ws, path, destroyUnmatched, allowedOrigins)
-  const ownedUpgradeListener = createUpgradeListener(ws, path, true, allowedOrigins)
+  const sharedUpgradeListener = createUpgradeListener(ws, path, destroyUnmatched, allowedOrigins, options.authorizePeer)
+  const ownedUpgradeListener = createUpgradeListener(ws, path, true, allowedOrigins, options.authorizePeer)
 
   /** Bind a server's `upgrade` events, tracked so `close()` detaches them. */
   const attachments = new Set<() => void>()

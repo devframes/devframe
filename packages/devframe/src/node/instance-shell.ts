@@ -11,17 +11,19 @@ import type { DevframeSseOptions, DevframeWsOptions } from '../types/devframe'
 import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
 import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
+import type { RequestAccessPolicy } from './request-access'
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
 import process from 'node:process'
 import { Server as TlsServer } from 'node:tls'
-import { validateOriginCandidate } from 'devframe/utils/origin'
+import { isAllowedOrigin, validateOriginCandidate } from 'devframe/utils/origin'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'devframe/utils/url'
-import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
+import { defineHandler, getRequestIP, H3 as H3App, toNodeHandler } from 'h3'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
+import { createRequestAccess } from './request-access'
 import { detectServerRuntime } from './runtime'
 import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
@@ -52,6 +54,7 @@ export interface StartedServer {
 
 /** How {@link bindHttpAndWs} binds the socket: own a fresh server, or share one. */
 interface BindHttpAndWsOptions {
+  authorizePeer?: (remoteAddress: string | undefined) => Promise<boolean>
   context: DevframeNodeContext
   /** The context's RPC core (birpc group + connection lifecycle hooks). */
   core: ContextRpcServer
@@ -108,6 +111,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
       path: options.path,
       destroyUnmatched: options.destroyUnmatched ?? ownsHttpServer,
       allowedOrigins: options.allowedOrigins,
+      authorizePeer: options.authorizePeer,
       onConnected: core.onConnected,
       onDisconnected: core.onDisconnected,
     })
@@ -186,6 +190,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
  */
 interface BunServerLike {
   port: number
+  requestIP: (request: Request) => { address: string } | null
   stop: (closeActiveConnections?: boolean) => void | Promise<void>
 }
 interface BunGlobal {
@@ -262,7 +267,7 @@ async function bindNativeHttpAndWs(
 
   if (runtime === 'bun') {
     const { attachBunWsTransport } = await import('devframe/rpc/transports/ws-bun')
-    const tier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins })
+    const tier = await attachBunWsTransport(core, { allowedOrigins: options.allowedOrigins, authorizePeer: options.authorizePeer })
     closeWs = tier.close
     const Bun = (globalThis as typeof globalThis & { Bun: BunGlobal }).Bun
     let server: BunServerLike
@@ -273,7 +278,7 @@ async function bindNativeHttpAndWs(
         fetch: async (request, srv) =>
           isWsUpgradeRequest(request, wsPath)
             ? await tier.handleUpgrade(request, srv)
-            : await app.fetch(request),
+            : await app.fetch(Object.assign(request, { context: { clientAddress: srv.requestIP(request)?.address } })),
         websocket: tier.websocket,
       })
     }
@@ -287,7 +292,7 @@ async function bindNativeHttpAndWs(
   }
   else {
     const { attachDenoWsTransport } = await import('devframe/rpc/transports/ws-deno')
-    const tier = await attachDenoWsTransport(core, { allowedOrigins: options.allowedOrigins })
+    const tier = await attachDenoWsTransport(core, { allowedOrigins: options.allowedOrigins, authorizePeer: options.authorizePeer })
     closeWs = tier.close
     const Deno = (globalThis as typeof globalThis & { Deno: DenoGlobal }).Deno
     let server: DenoServerLike
@@ -299,7 +304,7 @@ async function bindNativeHttpAndWs(
         async (request, info) =>
           isWsUpgradeRequest(request, wsPath)
             ? await tier.handleUpgrade(request, info)
-            : await app.fetch(request),
+            : await app.fetch(Object.assign(request, { context: { clientAddress: (info as { remoteAddr?: { hostname?: string } }).remoteAddr?.hostname } })),
       )
     }
     catch (error) {
@@ -375,6 +380,7 @@ export interface InstanceShellInit<TContext extends DevframeNodeContext> {
 }
 
 export interface CreateInstanceShellOptions<TContext extends DevframeNodeContext> {
+  access?: RequestAccessPolicy
   /** Normalized mount base (leading and trailing slash). */
   base: string
   /** h3 app to mount on. A fresh one is created when omitted. */
@@ -471,6 +477,7 @@ export interface InstanceShellInternals {
 }
 
 export interface InstanceShell<TContext extends DevframeNodeContext> {
+  authorizeRequest: (request: IncomingMessage) => Promise<boolean>
   base: string
   handler: (request: Request) => Promise<Response>
   nodeMiddleware: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void
@@ -488,6 +495,37 @@ export interface InstanceShell<TContext extends DevframeNodeContext> {
 /** Compare two URL paths ignoring a trailing slash. */
 export function samePath(a: string, b: string): boolean {
   return withoutTrailingSlash(a) === withoutTrailingSlash(b)
+}
+
+function createAccessBoundary(app: H3, options: { access?: RequestAccessPolicy, allowedOrigins?: readonly string[] | WsOriginRegistry | false }) {
+  const authorizePeer = options.access ? createRequestAccess(options.access) : undefined
+  const configuredOrigins = options.allowedOrigins
+  const origins = Array.isArray(configuredOrigins) ? configuredOrigins : []
+  const originAllowed = (origin: string | undefined): boolean => {
+    if (configuredOrigins === false)
+      return true
+    if (configuredOrigins && !Array.isArray(configuredOrigins))
+      return (configuredOrigins as WsOriginRegistry).isAllowed(origin)
+    return isAllowedOrigin(origin, origins)
+  }
+  const hostAllowed = (origin: string): boolean => !!validateOriginCandidate(origin, origins)
+  const authorizeRequest = async (request: IncomingMessage): Promise<boolean> => {
+    if (!authorizePeer)
+      return true
+    const scheme = (request.socket as { encrypted?: boolean }).encrypted ? 'https' : 'http'
+    if (!hostAllowed(`${scheme}://${request.headers.host ?? ''}`) || !originAllowed(request.headers.origin))
+      return false
+    return authorizePeer(request.socket.remoteAddress)
+  }
+  if (authorizePeer) {
+    app.use(defineHandler(async (event) => {
+      if (!hostAllowed(new URL(event.req.url).origin) || !originAllowed(event.req.headers.get('origin') ?? undefined) || !await authorizePeer(getRequestIP(event))) {
+        event.res.status = 403
+        return 'Forbidden'
+      }
+    }))
+  }
+  return { authorizePeer, authorizeRequest, hostAllowed }
 }
 
 /**
@@ -526,6 +564,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const base = options.base
   const baseNoSlash = withoutTrailingSlash(base)
   const app = options.app ?? new H3App()
+  const access = createAccessBoundary(app, options)
 
   // Bun/Deno drive WebSockets through a native `fetch`-upgrade server;
   // crossws's Node adapter throws off Node. Owned-server tiers use the
@@ -721,6 +760,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         port,
         path: withLeadingSlash(route),
         allowedOrigins: options.allowedOrigins,
+        authorizePeer: access.authorizePeer,
       }
       // A side-car is devframe's own dedicated server, so on Bun/Deno it binds
       // the native adapter for a real WebSocket; on Node it takes crossws's
@@ -774,6 +814,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       server: options.server,
       path: routePath,
       allowedOrigins: options.allowedOrigins,
+      authorizePeer: access.authorizePeer,
       destroyUnmatched: options.destroyUnmatchedUpgrades,
     })
     return { websocketMeta: { path: advertisedPath }, wsAvailable: !wsDisabled }
@@ -871,6 +912,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         unbound: true,
         path: routePath,
         allowedOrigins: options.allowedOrigins,
+        authorizePeer: access.authorizePeer,
         onConnected: core.onConnected,
         onDisconnected: core.onDisconnected,
       })
@@ -910,8 +952,13 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     void initPromise
       .then(async () => {
         const host = req.headers.host
+        const encrypted = (req.socket as { encrypted?: boolean }).encrypted
+        if (options.access && !access.hostAllowed(`${encrypted ? 'https' : 'http'}://${host ?? ''}`)) {
+          res.statusCode = 403
+          res.end('Forbidden')
+          return
+        }
         if (host) {
-          const encrypted = (req.socket as { encrypted?: boolean }).encrypted
           noteOrigin(`${encrypted ? 'https' : 'http'}://${host}`)
         }
         if (!nodeHandler) {
@@ -994,6 +1041,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   return {
     base,
     handler: handleRequest,
+    authorizeRequest: access.authorizeRequest,
     nodeMiddleware,
     ready: initPromise,
     context: contextPromise,

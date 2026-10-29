@@ -23,6 +23,7 @@ export interface HubDevframeEntry {
   dock?: InstallDevframeOptions['dock'];
 }
 export interface HubInstance {
+  authorizeRequest: (_: IncomingMessage) => Promise<boolean>;
   base: string;
   handler: (_: Request) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
@@ -34,6 +35,7 @@ export interface HubInstance {
   close: () => Promise<void>;
 }
 export interface InitHubOptions {
+  access?: RequestAccessPolicy;
   name?: string;
   version?: string;
   base: string;

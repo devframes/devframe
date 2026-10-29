@@ -1,4 +1,4 @@
-import type { AgenticMcpModule, DevframeInstanceRecord, InstanceShellApi, ResolvedMcpConfig } from 'devframe/internal'
+import type { AgenticMcpModule, DevframeInstanceRecord, InstanceShellApi, RequestAccessPolicy, ResolvedMcpConfig } from 'devframe/internal'
 import type { DevframeAuthHandler } from 'devframe/node/auth'
 import type { AuthBannerFunction } from 'devframe/recipes/interactive-auth'
 import type { WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
@@ -143,6 +143,7 @@ export type DevframesInput = Array<
 >
 
 export interface InitHubOptions {
+  access?: RequestAccessPolicy
   /**
    * Name for the hub instance, used in logs and diagnostics, and mcp server.
    */
@@ -299,6 +300,7 @@ export interface InitHubOptions {
 }
 
 export interface HubInstance {
+  authorizeRequest: (request: IncomingMessage) => Promise<boolean>
   /**
    * The normalized mount base this hub answers under (leading and trailing
    * slash, e.g. `/__devframes/`). Reference it when wiring the mount (route
@@ -407,6 +409,7 @@ export function initHub(options: InitHubOptions): HubInstance {
 
   const shell = createInstanceShell<DevframeHubContext>({
     base,
+    access: options.access,
     app,
     host: options.host,
     origin: options.origin,
@@ -612,6 +615,7 @@ export function initHub(options: InitHubOptions): HubInstance {
     base: shell.base,
     handler: shell.handler,
     nodeMiddleware: shell.nodeMiddleware,
+    authorizeRequest: shell.authorizeRequest,
     attach: shell.attach,
     handleUpgrade: shell.handleUpgrade,
     ready: shell.ready,

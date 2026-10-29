@@ -371,6 +371,10 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.";
   };
+  readonly DF0082: {
+    readonly why: "Request access authorization failed on a WebSocket connection.";
+    readonly fix: "Check the server-side access callback and its reported cause.";
+  };
   readonly DF0081: {
     readonly why: (p: {
       name: string;
@@ -407,6 +411,8 @@ export { MountMcpHttpOptions }
 export { normalizeBasePath }
 export { probeDevframeOrigin }
 export { registerDevframeInstance }
+export { RequestAccessContext }
+export { RequestAccessPolicy }
 export { resolveBasePath }
 export { ResolvedMcpConfig }
 export { resolveInstanceRegister }

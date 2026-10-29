@@ -24,5 +24,7 @@ export declare function createStorage<T extends object>(_: CreateStorageOptions<
 // #endregion
 
 // #region Other
+export { RequestAccessContext }
+export { RequestAccessPolicy }
 export { RpcFunctionsHost }
 // #endregion

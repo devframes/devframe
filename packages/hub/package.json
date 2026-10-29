@@ -63,6 +63,7 @@
     "devframe": "workspace:*",
     "get-port-please": "catalog:deps",
     "tsdown": "catalog:build",
-    "valibot": "catalog:deps"
+    "valibot": "catalog:deps",
+    "ws": "catalog:deps"
   }
 }

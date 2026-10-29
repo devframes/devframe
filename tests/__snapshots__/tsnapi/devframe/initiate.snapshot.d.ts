@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface DevframeInstance {
+  authorizeRequest: (_: IncomingMessage) => Promise<boolean>;
   base: string;
   handler: (_: Request) => Promise<Response>;
   nodeMiddleware: (_: IncomingMessage, _: ServerResponse, _?: (_?: unknown) => void) => void;
@@ -18,6 +19,7 @@ export interface DevframeInstanceInternals {
   readonly authHandler?: DevframeAuthHandler;
 }
 export interface InitDevframeOptions {
+  access?: RequestAccessPolicy;
   base: string;
   distDir?: StaticAssetsSource | false;
   server?: Server;

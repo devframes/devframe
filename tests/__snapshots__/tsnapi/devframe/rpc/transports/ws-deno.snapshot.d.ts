@@ -3,6 +3,7 @@
  */
 // #region Interfaces
 export interface AttachDenoWsTransportOptions {
+  authorizePeer?: (_: string | undefined) => Promise<boolean>;
   allowedOrigins?: readonly string[] | WsOriginRegistry | false;
 }
 export interface DenoWsTier {

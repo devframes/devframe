@@ -15,4 +15,5 @@ export * from './context'
 // `RpcFunctionsHost` type so consumers can type/cast `ctx.rpc` without
 // pulling in the implementation's `@internal` members.
 export type { RpcFunctionsHost } from './host-functions'
+export type { RequestAccessContext, RequestAccessPolicy } from './request-access'
 export * from './storage'
