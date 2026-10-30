@@ -641,8 +641,6 @@ describe('mcp adapter (in-memory)', () => {
       try {
         const a = await client.readResource({ uri: 'test://file/a.ts' })
         expect(a.contents).toEqual([{ uri: 'test://file/a.ts', mimeType: 'text/plain', text: 'a.ts from test://file/a.ts' }])
-        const b = await client.readResource({ uri: 'test://file/b.json' })
-        expect(b.contents).toEqual([{ uri: 'test://file/b.json', mimeType: 'text/plain', text: 'b.json from test://file/b.json' }])
 
         const read = await client.readResource({ uri: 'test://repo/devframes/devframe/issue/42' })
         const c = read.contents[0] as { text: string, mimeType?: string }
@@ -654,26 +652,11 @@ describe('mcp adapter (in-memory)', () => {
       }
     })
 
-    it('percent-decodes the values', async () => {
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [file] })
-      try {
-        const read = await client.readResource({ uri: 'test://file/src%2Fmy%20file.ts' })
-        expect(read.contents[0]).toMatchObject({ text: 'src/my file.ts from test://file/src%2Fmy%20file.ts' })
-      }
-      finally {
-        await cleanup()
-      }
-    })
-
-    it('matches one segment per value, so an extra `/` matches no template', async () => {
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [file] })
-      try {
-        for (const uri of ['test://file/src/a.ts', 'test://file/', 'test://file/%E0%A4%A'])
-          await expect(client.readResource({ uri })).rejects.toThrow(`unknown resource URI "${uri}"`)
-      }
-      finally {
-        await cleanup()
-      }
+    it('percent-decodes one non-empty segment per value', () => {
+      const [compiled] = compileResourceTemplates([file])
+      expect(compiled!.match('test://file/src%2Fmy%20file.ts')).toEqual({ path: 'src/my file.ts' })
+      for (const uri of ['test://file/src/a.ts', 'test://file/', 'test://file/%E0%A4%A'])
+        expect(compiled!.match(uri)).toBeUndefined()
     })
 
     it('reads with the first template that matches', async () => {

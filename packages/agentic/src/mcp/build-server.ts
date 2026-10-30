@@ -1,7 +1,7 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpResourcesChangedHook, McpResourceTemplate, McpServerHandle } from 'devframe/types'
+import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpResourcesChangedHook, McpResourceTemplate, McpResourceTemplateEntry, McpServerHandle } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
 import { Server } from '@modelcontextprotocol/server'
@@ -68,8 +68,11 @@ export function buildMcpServerFromContext(
   registerToolHandlers(server, ctx, options.exposeSharedState)
   const templates = options.resourceTemplates ?? []
   registerResourceHandlers(server, ctx, options.exposeSharedState, templates)
-  if (templates.length)
-    registerResourceTemplateHandlers(server, templates)
+  if (templates.length) {
+    server.setRequestHandler('resources/templates/list', async () => ({
+      resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
+    }))
+  }
 
   return server
 }
@@ -341,7 +344,7 @@ function registerResourceHandlers(
   const stateFilter = sharedStateFilter(exposeSharedState)
 
   server.setRequestHandler('resources/list', async () => {
-    const resources: ResourceListing[] = ctx.agent.list().resources.map(resource => ({
+    const resources: McpResourceTemplateEntry[] = ctx.agent.list().resources.map(resource => ({
       uri: resource.uri,
       name: resource.name,
       description: resource.description,
@@ -429,24 +432,8 @@ function registerResourceHandlers(
   })
 }
 
-/** One entry of the `resources/list` result. */
-interface ResourceListing {
-  uri: string
-  name: string
-  title?: string
-  description?: string
-  mimeType?: string
-}
-
-/** Serve `resources/templates/list`: one entry per template, in the given order. */
-function registerResourceTemplateHandlers(server: Server, templates: CompiledResourceTemplate[]): void {
-  server.setRequestHandler('resources/templates/list', async () => ({
-    resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
-  }))
-}
-
 /** One `{name}` expression of a URI template. */
-const TEMPLATE_EXPRESSION_RE = /\{([^{}]*)\}/g
+const TEMPLATE_EXPRESSION_RE = /\{([^{}]*)\}/
 /** RFC 6570 `varname`: letters, digits and `_`, with single dots between them. */
 const TEMPLATE_VARNAME_RE = /^\w+(?:\.\w+)*$/
 
@@ -461,40 +448,25 @@ const TEMPLATE_VARNAME_RE = /^\w+(?:\.\w+)*$/
  * @internal
  */
 export function compileResourceTemplates(templates: McpResourceTemplate[] = []): CompiledResourceTemplate[] {
-  return templates.map(compileResourceTemplate)
-}
-
-function compileResourceTemplate(template: McpResourceTemplate): CompiledResourceTemplate {
-  const { name, uriTemplate } = template
-  const invalid = (reason: string) => diagnostics.DF0084({ name, uriTemplate, reason })
-  const names: string[] = []
-  // The text around the expressions: one more than `names`.
-  const literals: string[] = []
-  let last = 0
-  for (const expression of uriTemplate.matchAll(TEMPLATE_EXPRESSION_RE)) {
-    const literal = uriTemplate.slice(last, expression.index)
-    if (/[{}]/.test(literal))
+  return templates.map((template) => {
+    const { name, uriTemplate } = template
+    const invalid = (reason: string) => diagnostics.DF0084({ name, uriTemplate, reason })
+    // The capture group keeps each name: literals at even indexes, names at odd ones.
+    const parts = uriTemplate.split(TEMPLATE_EXPRESSION_RE)
+    const literals = parts.filter((_, index) => index % 2 === 0)
+    const names = parts.filter((_, index) => index % 2 === 1)
+    if (literals.some(literal => /[{}]/.test(literal)))
       throw invalid('a `{` or `}` is outside an expression.')
-    const varname = expression[1]!
-    if (!TEMPLATE_VARNAME_RE.test(varname))
-      throw invalid(`the expression "{${varname}}" is not a plain \`{name}\`.`)
-    if (names.includes(varname))
-      throw invalid(`the name "${varname}" is used more than once.`)
-    if (names.length > 0 && literal === '')
-      throw invalid(`"{${names.at(-1)}}" and "{${varname}}" have nothing between them, so a URI cannot show where one ends.`)
-    literals.push(literal)
-    names.push(varname)
-    last = expression.index + expression[0].length
-  }
-  const tail = uriTemplate.slice(last)
-  if (/[{}]/.test(tail))
-    throw invalid('a `{` or `}` is outside an expression.')
-  literals.push(tail)
-
-  return {
-    template,
-    match: uri => matchTemplate(uri, literals, names),
-  }
+    names.forEach((varname, index) => {
+      if (!TEMPLATE_VARNAME_RE.test(varname))
+        throw invalid(`the expression "{${varname}}" is not a plain \`{name}\`.`)
+      if (names.indexOf(varname) !== index)
+        throw invalid(`the name "${varname}" is used more than once.`)
+      if (index > 0 && literals[index] === '')
+        throw invalid(`"{${names[index - 1]}}" and "{${varname}}" have nothing between them, so a URI cannot show where one ends.`)
+    })
+    return { template, match: uri => matchTemplate(uri, literals, names) }
+  })
 }
 
 /**
@@ -520,7 +492,7 @@ function matchTemplate(uri: string, literals: string[], names: string[]): Record
     const isLast = index === names.length - 1
     const next = literals[index + 1]!
     const stop = isLast ? end : findLiteral(uri, next, position)
-    if (stop <= position || stop > end)
+    if (stop <= position)
       return undefined
     const raw = uri.slice(position, stop)
     if (raw.includes('/'))
