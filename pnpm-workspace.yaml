@@ -99,6 +99,9 @@ overrides:
   unhead: ^3.4.3
   unocss: &unocss ^66.11.0
   '@unocss/core': *unocss
+  # rolldown 1.2.13+ emits `export { t as x } from "./chunk"`, which tsnapi 1.5.0
+  # snapshots as hashed chunk re-exports. Keep tsdown on 1.2.12 until tsnapi follows it.
+  tsdown>rolldown: 1.2.12
   vueuse: &vueuse ^14.4.0
 
 patchedDependencies:
@@ -126,7 +129,8 @@ catalogs:
     magic-string: ^1.4.3
     mlly: ^1.8.2
     nuxt: ^4.6.2
-    tsdown: ^0.23.1
+    # Pinned with the `tsdown>rolldown` override above; 0.23.1 requires rolldown ~1.2.13.
+    tsdown: 0.23.0
     tsx: ^4.23.15
     turbo: ^2.11.10
     vite: ^8.3.4
