@@ -1,5 +1,6 @@
 import { createEventEmitter } from 'devframe/utils/events'
 import { describe, expect, it } from 'vitest'
+import { DEVFRAME_EVENTS } from '../events'
 import { createRpcSharedStateClientHost } from './rpc-shared-state'
 
 function makeFakeRpc() {
@@ -48,5 +49,108 @@ describe('client shared state', () => {
       d.a = 2
     })
     expect(setCalls).toHaveLength(1) // exactly one server-state:set, not two
+  })
+})
+
+describe('initial shared-state snapshots', () => {
+  function setup() {
+    const { rpc, setCalls } = makeFakeRpc()
+    const snapshot = Promise.withResolvers<object | undefined>()
+    const handlers = new Map<string, (...args: any[]) => void>()
+    rpc.isTrusted = true
+    rpc.call = () => snapshot.promise
+    rpc.client.register = (definition: any) => handlers.set(definition.name, definition.handler)
+    const host = createRpcSharedStateClientHost(rpc)
+    return { rpc, host, snapshot, handlers, setCalls }
+  }
+
+  it('reads a snapshot without writing it back to the node side', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0, localDefault: true } })
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 1, localDefault: true })
+    expect(setCalls).toEqual([])
+    state.mutate((draft) => {
+      draft.count = 2
+    })
+    expect(setCalls[0]?.[1]).toEqual({ count: 2, localDefault: true })
+  })
+
+  it('keeps an update received while the initial snapshot is pending', async () => {
+    const { host, snapshot, handlers } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    handlers.get(DEVFRAME_EVENTS.broadcast.clientStateUpdated)!('k', { count: 2 }, 'newer')
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 2 })
+  })
+
+  it('keeps a local write made while the initial snapshot is pending', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    state.mutate((draft) => {
+      draft.count = 2
+    })
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 2 })
+    expect(setCalls).toHaveLength(1)
+  })
+
+  it('keeps a local undo that restores the initial object while the snapshot is pending', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    const initialValue = state.value()
+    state.mutate((draft) => {
+      draft.count = 2
+    })
+    state.mutate(() => initialValue)
+    expect(state.value()).toBe(initialValue)
+    expect(setCalls.map(([, value]) => value)).toEqual([{ count: 2 }, { count: 0 }])
+
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toBe(initialValue)
+    expect(setCalls).toHaveLength(2)
+  })
+
+  it('applies the initial snapshot after a mutation that leaves the value unchanged', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    state.mutate((draft) => {
+      draft.count = 0
+    })
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 1 })
+    expect(setCalls).toEqual([])
+  })
+
+  it('forwards a local write triggered by the initial snapshot', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    state.on('updated', (value) => {
+      if (value.count === 1) {
+        state.mutate((draft) => {
+          draft.count = 2
+        })
+      }
+    })
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 2 })
+    expect(setCalls).toHaveLength(1)
+    expect(setCalls[0]?.[1]).toEqual({ count: 2 })
+  })
+
+  it('ignores a snapshot after its state is deleted', async () => {
+    const { host, snapshot, setCalls } = setup()
+    const state = await host.get('k', { initialValue: { count: 0 } })
+    host.delete('k')
+    snapshot.resolve({ count: 1 })
+    await snapshot.promise
+    expect(state.value()).toEqual({ count: 0 })
+    expect(setCalls).toEqual([])
   })
 })
