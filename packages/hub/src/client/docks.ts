@@ -194,6 +194,14 @@ export interface DocksEntriesContext {
    */
   toggleEntry: (id: string) => Promise<boolean>
   /**
+   * Turn a {@link import('../types/docks').DevframeViewAction.toggle toggle action}
+   * on or off without touching the selection. Turning it on hides an open panel;
+   * turning it off restores that panel.
+   *
+   * @returns Whether the action's state changed
+   */
+  setActionActive: (id: string, active: boolean) => Promise<boolean>
+  /**
    * Register a **client-only** dock entry, live in this page and merged with
    * the server-provided docks (`devframe:docks` shared state) into
    * {@link entries}. Unlike a dock registered on the node
@@ -226,6 +234,7 @@ export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntr
 
 export interface DockEntryState {
   entryMeta: DevframeDockEntry
+  /** Whether the entry is selected, or, for a toggle action, whether it is on. */
   readonly isActive: boolean
   domElements: {
     iframe?: HTMLIFrameElement | null

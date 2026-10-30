@@ -11,6 +11,7 @@
 
   "command.togglePalette": "コマンドパレットの切り替え",
   "command.closePanel": "パネルを閉じる",
+  "command.stopActiveTool": "アクティブなツールを停止",
   "command.openSettings": "設定を開く",
   "command.hide": "{productName} を隠す",
   "command.dockMode": "ドックモード",

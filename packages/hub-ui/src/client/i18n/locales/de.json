@@ -11,6 +11,7 @@
 
   "command.togglePalette": "Befehlspalette umschalten",
   "command.closePanel": "Panel schließen",
+  "command.stopActiveTool": "Aktives Werkzeug beenden",
   "command.openSettings": "Einstellungen öffnen",
   "command.hide": "{productName} ausblenden",
   "command.dockMode": "Dock-Modus",

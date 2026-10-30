@@ -11,6 +11,7 @@
 
   "command.togglePalette": "Basculer la palette de commandes",
   "command.closePanel": "Fermer le panneau",
+  "command.stopActiveTool": "Arrêter l'outil actif",
   "command.openSettings": "Ouvrir les paramètres",
   "command.hide": "Masquer {productName}",
   "command.dockMode": "Mode d'ancrage",

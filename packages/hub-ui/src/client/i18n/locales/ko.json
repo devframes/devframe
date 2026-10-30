@@ -11,6 +11,7 @@
 
   "command.togglePalette": "명령 팔레트 전환",
   "command.closePanel": "패널 닫기",
+  "command.stopActiveTool": "활성 도구 중지",
   "command.openSettings": "설정 열기",
   "command.hide": "{productName} 숨기기",
   "command.dockMode": "도킹 모드",

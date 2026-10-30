@@ -37,12 +37,14 @@ export function DEFAULT_DOCK_SESSION_STORE(): DockSessionStorage {
 export function createDockEntryState(
   entry: DevframeDockEntry,
   selected: Ref<DevframeDockEntry | null>,
+  /** Toggle actions that are on. Their own activation emits the entry events. */
+  activeActions: ReadonlySet<string> = new Set(),
 ): DockEntryState {
   const events = createEventEmitter<DockEntryStateEvents>()
   const state: DockEntryState = reactive({
     entryMeta: entry,
     get isActive() {
-      return selected.value?.id === entry.id
+      return selected.value?.id === entry.id || activeActions.has(entry.id)
     },
     domElements: {},
     events: markRaw(events),
@@ -54,7 +56,8 @@ export function createDockEntryState(
       if (newSelectedId === entry.id) {
         events.emit('entry:activated')
       }
-      else {
+      // A toggle action that is on stays on across selection changes it didn't cause.
+      else if (!activeActions.has(entry.id)) {
         events.emit('entry:deactivated')
       }
     },

@@ -105,6 +105,7 @@ export interface DocksEntriesContext {
   getStateById: (_: string) => DockEntryState | undefined;
   switchEntry: (_?: string | null) => Promise<boolean>;
   toggleEntry: (_: string) => Promise<boolean>;
+  setActionActive: (_: string, _: boolean) => Promise<boolean>;
   register: <T extends DevframeDockEntry>(_: T, _?: boolean) => DockRegistration<T>;
   update: (_: DevframeDockUserEntry) => void;
 }

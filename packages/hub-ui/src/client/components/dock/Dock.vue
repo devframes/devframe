@@ -226,6 +226,9 @@ const isMinimized = computed(() => {
     return false
   if (docksGroupPanel.value)
     return false
+  // Keep an active tool's button in sight while it hides the panel.
+  if (context.when.context.dockActionActive)
+    return false
   if (context.panel.store.inactiveTimeout === 0)
     return true
   // @ts-expect-error compatibility

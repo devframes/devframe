@@ -11,6 +11,7 @@
 
   "command.togglePalette": "切換命令面板",
   "command.closePanel": "關閉面板",
+  "command.stopActiveTool": "停止使用中的工具",
   "command.openSettings": "開啟設定",
   "command.hide": "隱藏 {productName}",
   "command.dockMode": "停靠模式",
