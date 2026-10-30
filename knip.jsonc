@@ -35,7 +35,9 @@
       // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
       // copy-and-run reference snippets (`skills/devframe/SKILL.md`) - each
       // one a standalone, runnable example, not imported by anything else.
-      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"]
+      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"],
+      // `@x18n/cli` is run by hand (`pnpm x18n`) and no script calls it yet.
+      "ignoreDependencies": ["@x18n/cli"]
     },
     "packages/hub-ui-onboard": {
       // The playground is a dev-only Vite app (`pnpm play`); its config is
@@ -170,15 +172,6 @@
       // (its literal `entry` object parses cleanly); only `core.ts`/`hub.ts`
       // need to be declared explicitly.
       "entry": ["src/{index,core,hub}.ts"]
-    },
-    "packages/nuxt": {
-      // `@nuxt/kit`'s own `defineNuxtModule` return type resolves through
-      // `@nuxt/schema`; tsdown's dts bundler inlines that as a lazy
-      // `import("@nuxt/schema")` type reference in the built
-      // `dist/module.d.mts` (visible only once this workspace has been
-      // built locally) - a transitive type-only leak from a dependency's
-      // own dependency, not a real gap in this package's own manifest.
-      "ignoreDependencies": ["@nuxt/schema"]
     },
     "packages/json-render-ui": {
       // Published node-safe entries are `spa.ts`/`hub.ts`; the browser
