@@ -112,6 +112,7 @@ export interface DockSessionStorage {
   open: boolean;
   selectedDockId: string | null;
   selectedDockRoute: string | null;
+  recentDockIds?: string[];
   recentDockId?: string | null;
   groupLastChildIds?: Record<string, string>;
 }

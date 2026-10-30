@@ -4,6 +4,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import { computed } from 'vue'
 import { t } from '../../i18n'
 import { accentVarStyle } from '../../utils/accent-color'
+import { openDockContextMenu } from './DockContextMenu'
 import DockIcon from './DockIcon.vue'
 
 const props = defineProps<{
@@ -19,6 +20,15 @@ const emit = defineEmits<{
 }>()
 
 const isEmpty = computed(() => props.members.every(([, items]) => items.length === 0))
+
+function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
+  e.preventDefault()
+  openDockContextMenu({
+    context: props.context,
+    entry: member,
+    el: e.currentTarget as HTMLElement,
+  })
+}
 </script>
 
 <template>
@@ -47,6 +57,7 @@ const isEmpty = computed(() => props.members.every(([, items]) => items.length =
         class="flex items-center gap-2 w-full px2 py1.5 rounded text-sm text-left transition"
         :class="selectedId === member.id ? 'text-primary bg-active' : 'op80 hover:op100 hover:bg-active'"
         @click="emit('select', member)"
+        @contextmenu="openContextMenu($event, member)"
       >
         <DockIcon :icon="member.icon" class="w-4.5 h-4.5 flex-none" />
         <span class="truncate flex-1">{{ member.title }}</span>

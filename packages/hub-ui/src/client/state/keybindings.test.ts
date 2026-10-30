@@ -1,7 +1,7 @@
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, findKeybindingConflict, getShortcutRows, walkCommands } from './keybindings'
+import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, findKeybindingConflict, getShortcutRows, normalizeKeyEvent, walkCommands } from './keybindings'
 
 describe('findKeybindingConflict', () => {
   const commands: DevframeCommandEntry[] = [
@@ -257,5 +257,19 @@ describe('filterCommandsByWhen', () => {
     ] as DevframeCommandEntry[]
 
     expect(filterCommandsByWhen(withWhen, whenContext)).toEqual([])
+  })
+})
+
+describe('normalizeKeyEvent', () => {
+  // Chrome's native autofill dispatches `keydown` events without `key`
+  it('ignores key events without a key, like Chrome autofill', () => {
+    const event = { ctrlKey: false, metaKey: false, altKey: false, shiftKey: false } as KeyboardEvent
+    expect(() => normalizeKeyEvent(event)).not.toThrow()
+    expect(normalizeKeyEvent(event)).toBe('')
+  })
+
+  it('normalizes a regular shortcut', () => {
+    const event = { key: 'k', ctrlKey: false, metaKey: false, altKey: false, shiftKey: true } as KeyboardEvent
+    expect(normalizeKeyEvent(event)).toBe('Shift+K')
   })
 })

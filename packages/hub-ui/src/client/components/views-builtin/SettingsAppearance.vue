@@ -46,6 +46,18 @@ const localeOptions = computed(() => [
   ...Object.entries(HUB_UI_LOCALES).map(([value, label]) => ({ value, label })),
 ])
 
+// `0` turns the recent slots off; the upper bound keeps the bar short.
+const recentLimitOptions = computed(() => [
+  { value: '0', label: t('appearance.recentDocksOff') },
+  ...[1, 2, 3, 4, 5].map(count => ({ value: String(count), label: String(count) })),
+])
+
+function onRecentLimitChange(value: string | undefined): void {
+  const limit = Number(value)
+  if (Number.isInteger(limit) && limit >= 0)
+    settingsStore.mutate((s) => { s.docksRecentLimit = limit })
+}
+
 function onLocaleChange(value: string | undefined): void {
   setLocalePreference(matchLocale(value) ?? 'auto')
 }
@@ -119,6 +131,21 @@ function setDockMode(mode: string) {
           {{ option.label }}
         </button>
       </div>
+    </div>
+
+    <!-- Recent docks on the float bar -->
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-col">
+        <span class="text-sm">{{ t('appearance.recentDocks') }}</span>
+        <span class="text-xs op50">{{ t('appearance.recentDocksHint') }}</span>
+      </div>
+      <FormSelect
+        :model-value="String(settings.docksRecentLimit)"
+        :options="recentLimitOptions"
+        :aria-label="t('appearance.recentDocks')"
+        class="w-fit"
+        @update:model-value="onRecentLimitChange"
+      />
     </div>
 
     <!-- Show iframe address bar toggle -->

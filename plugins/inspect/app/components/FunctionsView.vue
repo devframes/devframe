@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const search = ref('')
 const argsInput = reactive<Record<string, string>>({})
+const invokeErrors = reactive<Record<string, string>>({})
 
 const filtered = computed(() => {
   const list = props.functions ?? []
@@ -38,9 +39,16 @@ function invoke(fn: RpcFunctionInfo): void {
     parsed = Array.isArray(raw) ? raw : [raw]
   }
   catch (e) {
-    throw new Error(`Invalid JSON args: ${(e as Error).message}`)
+    invokeErrors[fn.name] = `Invalid JSON arguments: ${(e as Error).message}`
+    return
   }
+  delete invokeErrors[fn.name]
   emit('invoke', fn, parsed)
+}
+
+function updateArgs(name: string, value: string): void {
+  argsInput[name] = value
+  delete invokeErrors[name]
 }
 </script>
 
@@ -70,11 +78,12 @@ function invoke(fn: RpcFunctionInfo): void {
         :key="fn.name"
         :fn="fn"
         :args-input="argsInput"
+        :invoke-error="invokeErrors[fn.name]"
         :results="results"
         :pending="pending"
         :is-static="isStatic"
         @invoke="invoke"
-        @update-args="(n, v) => argsInput[n] = v"
+        @update-args="updateArgs"
       />
     </div>
   </div>

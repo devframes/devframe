@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "Close the {productName} panel when clicking outside of it (embedded mode only)",
   "appearance.autoCollapse": "Auto-collapse edge toolbar",
   "appearance.autoCollapseHint": "Shrink the edge-docked toolbar to a small handle when idle and closed (edge mode only)",
+  "appearance.recentDocks": "Recent tools on the dock bar",
+  "appearance.recentDocksHint": "Keep the tools you last opened from a group or the overflow menu on the dock bar (float mode only).",
+  "appearance.recentDocksOff": "Off",
 
   "docks.intro": "Manage visibility and order of dock entries. Hidden entries will not appear in the dock bar.",
   "docks.resetOrder": "Reset custom order",

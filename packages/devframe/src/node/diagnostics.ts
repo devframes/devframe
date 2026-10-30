@@ -225,6 +225,11 @@ export const diagnostics = defineDiagnostics({
         `Tool "${p.name}" returned invalid MCP content blocks: ${p.reason}`,
       fix: 'Pass `withMcpContent` a non-empty array of `{ type: \'text\', text }`, `{ type: \'image\', data, mimeType }` or `{ type: \'audio\', data, mimeType }` blocks, with string fields and base64 `data`.',
     },
+    DF0082: {
+      why: (p: { clientId: string, tool: string, live: string[] }) =>
+        `Tool "${p.tool}" was addressed to client "${p.clientId}", but no connected browser tab has that id and the tool.${p.live.length ? ` Connected clients: ${p.live.join(', ')}.` : ' No browser tab is connected.'}`,
+      fix: 'Re-list the connected clients (`devframe:agent:list-clients`) and retry with a live `client_id`, or omit `client_id` to target the most recently focused tab.',
+    },
     DF0084: {
       why: (p: { name: string, uriTemplate: string, reason: string }) =>
         `MCP resource template "${p.name}" has an invalid \`uriTemplate\` "${p.uriTemplate}": ${p.reason}`,

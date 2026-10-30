@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.2.6",
   "private": true,
-  "packageManager": "pnpm@12.9.1",
+  "packageManager": "pnpm@12.14.0",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -37,7 +37,7 @@
     "release": "bumpp -r",
     "typecheck": "pnpm run verify:typecheck-coverage && turbo run typecheck",
     "verify:typecheck-coverage": "tsx scripts/verify-typecheck-coverage.ts",
-    "postinstall": "npx simple-git-hooks && skills-npm && pnpm run build:css"
+    "prepare": "npx simple-git-hooks && skills experimental_sync -y && pnpm run build:css"
   },
   "devDependencies": {
     "@antfu/design": "catalog:frontend",
@@ -50,6 +50,7 @@
     "@types/prompts": "catalog:types",
     "@types/ws": "catalog:types",
     "@unocss/reset": "catalog:frontend",
+    "@x18n/cli": "catalog:tooling",
     "bumpp": "catalog:tooling",
     "crossws": "catalog:deps",
     "esbuild": "catalog:build",
@@ -65,7 +66,7 @@
     "prompts": "catalog:tooling",
     "satori": "catalog:docs",
     "simple-git-hooks": "catalog:tooling",
-    "skills-npm": "catalog:tooling",
+    "skills": "catalog:tooling",
     "tinyexec": "catalog:deps",
     "tinyglobby": "catalog:deps",
     "tsnapi": "catalog:testing",
