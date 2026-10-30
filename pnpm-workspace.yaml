@@ -115,6 +115,7 @@ allowBuilds:
 catalogs:
   build:
     '@nuxt/kit': ^4.6.2
+    '@nuxt/schema': ^4.6.2
     '@preact/preset-vite': ^2.10.6
     '@rsbuild/core': ^2.2.14
     '@sveltejs/adapter-node': ^6.0.0

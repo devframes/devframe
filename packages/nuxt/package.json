@@ -50,6 +50,7 @@
   "peerDependencies": {
     "@devframes/hub": "workspace:*",
     "@nuxt/kit": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
+    "@nuxt/schema": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
     "devframe": "workspace:*",
     "vue": "^3.0.0"
   },
@@ -67,6 +68,7 @@
   "devDependencies": {
     "@devframes/hub": "workspace:*",
     "@nuxt/kit": "catalog:build",
+    "@nuxt/schema": "catalog:build",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "nuxt": "catalog:build",
