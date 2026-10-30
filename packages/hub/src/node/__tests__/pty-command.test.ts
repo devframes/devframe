@@ -49,7 +49,12 @@ describe('resolvePtyCommand', () => {
   })
 
   it('leaves arguments zigpty quotes untouched', () => {
-    expect(resolvePtyCommand('pnpm', ['a b&c', '', 'say "hi"'], win32).args).toEqual(['/d', '/c', 'pnpm', 'a b&c', '', 'say "hi"'])
+    expect(resolvePtyCommand('pnpm', ['a b&c', '', 'say "hi"', 'a\tb&c'], win32).args).toEqual(['/d', '/c', 'pnpm', 'a b&c', '', 'say "hi"', 'a\tb&c'])
+  })
+
+  it('leaves arguments with backslashes untouched, since zigpty quotes them', () => {
+    expect(resolvePtyCommand('pnpm', ['src\\**\\*.ts', 'dir\\file(1).txt'], win32).args).toEqual(['/d', '/c', 'pnpm', 'src\\**\\*.ts', 'dir\\file(1).txt'])
+    expect(resolvePtyCommand('C:\\a(1)\\x.cmd', [], win32).args).toEqual(['/d', '/c', 'C:\\a(1)\\x.cmd'])
   })
 
   it('skips the cwd when NoDefaultCurrentDirectoryInExePath is set', () => {

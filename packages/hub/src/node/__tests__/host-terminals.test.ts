@@ -623,13 +623,13 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
 
       const session = await host.startPtySession({
         command: 'echo-args',
-        args: ['a&b', 'c d'],
+        args: ['a&b', 'c d', 'src\\x&y'],
         // Reuse the inherited key: Windows env blocks are case-insensitive.
         env: { [pathKey]: `${dir};${process.env[pathKey]}` },
       }, { id: 'pty-cmd-shim', title: 'PTY .cmd shim' })
       const output = await session.getResult()
 
-      expect(output.output).toContain('["a&b","c d"]')
+      expect(output.output).toContain('["a&b","c d","src\\\\x&y"]')
       expect(output.exitCode).toBe(0)
     }
     finally {

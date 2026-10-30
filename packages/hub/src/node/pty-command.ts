@@ -37,6 +37,8 @@ export function resolvePtyCommand(
   // `.cmd`/`.bat` shims re-parse their arguments
   // metachar need a second round of escaping to survive both passes
   const isBatch = ext === '.cmd' || ext === '.bat'
+  // Known limit: a quoted command path plus a quoted argument makes `cmd /c`
+  // strip the line's outer quotes. Pass shims by name (`vite`), not by path.
   return {
     command: comSpec,
     args: ['/d', '/c', escapeCmd(command, false), ...args.map(arg => escapeCmd(arg, isBatch))],
@@ -54,7 +56,8 @@ function isCmd(command: string, comSpec: string): boolean {
 }
 
 function findExecutable(command: string, cwd: string, env: ResolvePtyCommandOptions['env']): string | undefined {
-  const extensions = (getEnv(env, 'PATHEXT') || DEFAULT_PATHEXT).split(';').filter(Boolean)
+  // Windows paths ignore case; lower-case so the lookup also works on case-sensitive filesystems.
+  const extensions = (getEnv(env, 'PATHEXT') || DEFAULT_PATHEXT).toLowerCase().split(';').filter(Boolean)
   const candidates = extname(command) ? [command, ...extensions.map(ext => command + ext)] : extensions.map(ext => command + ext)
 
   const searchCwd = getEnv(env, 'NoDefaultCurrentDirectoryInExePath') === undefined
@@ -73,11 +76,12 @@ function findExecutable(command: string, cwd: string, env: ResolvePtyCommandOpti
 
 /**
  * Escape `cmd.exe` metacharacters in an argument zigpty passes unquoted.
- * zigpty already double-quotes arguments with whitespace or quotes, and
- * `cmd.exe` keeps quoted metacharacters literal, so those are left alone.
+ * zigpty double-quotes empty arguments and ones with a space, tab, quote or
+ * backslash, and `cmd.exe` keeps quoted metacharacters literal, so those
+ * are left alone - a `^` added there would reach the program as-is.
  */
 function escapeCmd(arg: string, doubleEscape: boolean): string {
-  if (!arg || /[\s"]/.test(arg))
+  if (!arg || /[ \t"\\]/.test(arg))
     return arg
   const escaped = arg.replace(CMD_META_CHARS, '^$&')
   return doubleEscape ? escaped.replace(CMD_META_CHARS, '^$&') : escaped
