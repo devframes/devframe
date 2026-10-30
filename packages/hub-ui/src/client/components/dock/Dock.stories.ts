@@ -92,6 +92,18 @@ export const WithGroups: Story = floatStory(
   { entries: groupedEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } },
 )
 
+/**
+ * Pinned and recent group members: pinning Nuxt > Components gives it its own
+ * bar button (it also leads inside the Nuxt popover), and Nuxt > Pages, last
+ * opened from the popover, keeps a recent slot after the divider.
+ */
+export const WithPinnedAndRecentMembers: Story = floatStory({
+  entries: groupedEntries,
+  settings: { docksPinned: ['nuxt:components'] },
+  session: { recentDockIds: ['nuxt:pages'] },
+  panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 },
+})
+
 /** Past capacity: an overflow button appears at the end of the bar. */
 export const WithOverflow: Story = floatStory(
   { entries: overflowEntries, panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } },
@@ -137,15 +149,16 @@ export const LowerCapacity: Story = {
 
 /**
  * A recent dock raised out of the overflow: selecting an entry from the
- * overflow popover reserves the slot between the divider and the overflow
- * button for it, and deselecting it (or selecting a visible neighbour) keeps
- * it there instead of folding it straight back into the overflow.
+ * overflow popover gives it its own slot after the divider, and deselecting
+ * it (or selecting a visible neighbour) keeps it there instead of folding it
+ * straight back into the overflow. Up to `docksRecentLimit` (default 3) docks
+ * keep a slot, newest first.
  */
 export const WithRecentDock: Story = {
   ...floatStory({
     entries: overflowEntries,
     selectedId: 'network',
-    session: { recentDockId: 'network' },
+    session: { recentDockIds: ['network'] },
     panel: { position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 },
   }),
   args: { maxVisibleItems: 3 },

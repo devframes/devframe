@@ -8,6 +8,7 @@ import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGro
 import { setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
+import { openDockContextMenu } from './DockContextMenu'
 import DockGroupPopover from './DockGroupPopover.vue'
 import DockIcon from './DockIcon.vue'
 
@@ -147,6 +148,16 @@ watchDebounced(
   { debounce: 1000 },
 )
 
+function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
+  e.preventDefault()
+  hideTooltip()
+  openDockContextMenu({
+    context: props.context,
+    entry: member,
+    el: e.currentTarget as HTMLElement,
+  })
+}
+
 // Highlight the button when the hidden selection lives here, or while open.
 const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPanelVisible.value)
 </script>
@@ -185,6 +196,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
         @pointerleave="hideTooltip"
         @pointerdown="hideTooltip"
         @click="select(member.id)"
+        @contextmenu="openContextMenu($event, member)"
       >
         <DockIcon :icon="member.icon" class="w-5 h-5 flex-none" />
         <div

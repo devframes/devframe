@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "{productName} パネルの外側をクリックしたときにパネルを閉じます（埋め込みモードのみ）",
   "appearance.autoCollapse": "エッジツールバーを自動的に折りたたむ",
   "appearance.autoCollapseHint": "アイドル状態で閉じているとき、エッジに固定されたツールバーを小さなハンドルに縮めます（エッジモードのみ）",
+  "appearance.recentDocks": "ドックバーの最近使ったツール",
+  "appearance.recentDocksHint": "グループやオーバーフローメニューから最後に開いたツールをドックバーに表示します（フロートモードのみ）。",
+  "appearance.recentDocksOff": "オフ",
 
   "docks.intro": "ドック項目の表示と順序を管理します。非表示の項目はドックバーに表示されません。",
   "docks.resetOrder": "カスタム順序をリセット",

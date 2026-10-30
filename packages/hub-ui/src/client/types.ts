@@ -31,6 +31,13 @@ declare module '@devframes/hub/types' {
      * Settings → Advanced.
      */
     showDevframeInspector?: boolean
+    /**
+     * How many recently opened docks the float bar keeps in their own slots
+     * after its visible items. Only docks opened from beyond the bar (the
+     * overflow popover or a group popover) take a slot. `0` turns the slots
+     * off.
+     */
+    docksRecentLimit?: number
   }
 }
 

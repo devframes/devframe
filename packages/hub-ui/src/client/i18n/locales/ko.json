@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "{productName} 패널 바깥쪽을 클릭하면 패널을 닫습니다 (임베디드 모드 전용)",
   "appearance.autoCollapse": "가장자리 도구 모음 자동 접기",
   "appearance.autoCollapseHint": "유휴 상태로 닫혀 있을 때 가장자리에 도킹된 도구 모음을 작은 핸들로 줄입니다 (가장자리 모드 전용)",
+  "appearance.recentDocks": "도크 바의 최근 도구",
+  "appearance.recentDocksHint": "그룹이나 오버플로 메뉴에서 마지막으로 연 도구를 도크 바에 유지합니다 (플로트 모드 전용).",
+  "appearance.recentDocksOff": "끄기",
 
   "docks.intro": "도크 항목의 표시 여부와 순서를 관리합니다. 숨긴 항목은 도크 바에 나타나지 않습니다.",
   "docks.resetOrder": "사용자 지정 순서 초기화",

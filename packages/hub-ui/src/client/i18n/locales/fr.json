@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "Ferme le panneau {productName} lors d'un clic en dehors de celui-ci (mode intégré uniquement)",
   "appearance.autoCollapse": "Réduire automatiquement la barre de bord",
   "appearance.autoCollapseHint": "Réduit la barre ancrée au bord en une petite poignée lorsqu'elle est inactive et fermée (mode bord uniquement)",
+  "appearance.recentDocks": "Outils récents dans la barre",
+  "appearance.recentDocksHint": "Garder dans la barre les derniers outils ouverts depuis un groupe ou le menu de débordement (mode flottant uniquement).",
+  "appearance.recentDocksOff": "Désactivé",
 
   "docks.intro": "Gérez la visibilité et l'ordre des panneaux. Les panneaux masqués n'apparaissent pas dans la barre.",
   "docks.resetOrder": "Réinitialiser l'ordre personnalisé",

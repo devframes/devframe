@@ -6,9 +6,9 @@ import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { t } from '../../i18n'
-import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockId, resolveRecentDockEntry } from '../../state/dock-settings'
-import { sharedStateToRef } from '../../state/docks'
+import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockIds, resolveRecentDockEntries } from '../../state/dock-settings'
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
+import { useSettings } from '../../state/settings-defaults'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
 import BrandMark from '../icons/BrandMark.vue'
 import {
@@ -95,30 +95,35 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
 
 const groupedEntries = computed(() => context.docks.groupedEntries)
 
-const settings = sharedStateToRef(context.docks.settings)
+const settings = useSettings(context)
 
-// The recent dock: the entry last selected from beyond the bar (the overflow
-// popover or a group popover), raised into its own slot between the visible
-// items and the overflow button so deselecting it keeps it one click away.
-// Persisted per-tab in the session store; resolved to `null` when the id no
-// longer maps to a raisable entry.
-const recentEntry = computed(() => resolveRecentDockEntry({
-  entries: context.docks.entries,
-  groups: groupedEntries.value,
-  recentId: context.panel.session.recentDockId,
-  settings: settings.value,
-  whenContext: context.when.context,
-}))
+// The recent docks: the entries last selected from beyond the bar (the
+// overflow popover or a group popover), raised into their own slots after the
+// visible items so they stay one click away. Persisted per-tab in the session
+// store (newest first); ids that no longer map to a raisable entry drop out.
+// `recentDockId` is the older single-entry field, read until a tab writes
+// `recentDockIds`.
+const recentEntries = computed(() => {
+  const session = context.panel.session
+  return resolveRecentDockEntries({
+    entries: context.docks.entries,
+    groups: groupedEntries.value,
+    recentIds: session.recentDockIds ?? (session.recentDockId ? [session.recentDockId] : []),
+    limit: settings.value.docksRecentLimit,
+    settings: settings.value,
+    whenContext: context.when.context,
+  })
+})
 
 const splitEntries = computed(() => {
-  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems, recentEntry.value)
+  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems, recentEntries.value)
 })
 
 const selectedEntry = computed(() => {
   return context.docks.selected
 })
 
-// Remember the recent dock whenever the selection lands on an entry that has
+// Remember a recent dock whenever the selection lands on an entry that has
 // no slot on the bar as currently rendered (grouped members always; top-level
 // entries when picked from the overflow popover). Observing the selection
 // (rather than the bar's own click handlers) also covers selections made via
@@ -126,13 +131,15 @@ const selectedEntry = computed(() => {
 watch(selectedEntry, (entry) => {
   if (!entry)
     return
-  context.panel.session.recentDockId = resolveNextRecentDockId({
+  context.panel.session.recentDockIds = resolveNextRecentDockIds({
     groups: groupedEntries.value,
     capacity: layout.value.maxVisibleItems,
-    recentEntry: recentEntry.value,
+    recentEntries: recentEntries.value,
     selected: entry,
     selectedIsGroupMember: !!getEntryGroup(context.docks.entries, entry),
+    limit: settings.value.docksRecentLimit,
   })
+  context.panel.session.recentDockId = undefined
 })
 
 onMounted(async () => {
@@ -344,16 +351,18 @@ onMounted(() => {
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
 
-          <template v-if="splitEntries.overflow.length > 0">
+          <template v-if="splitEntries.recent.length > 0">
             <div class="border-base m1 h-20px w-px border-r-1.5" />
             <DockEntries
-              v-if="splitEntries.recent"
               :context="context"
-              :entries="[splitEntries.recent]"
+              :entries="splitEntries.recent"
               :is-vertical="context.panel.isVertical"
               :selected="selectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
             />
+          </template>
+          <template v-if="splitEntries.overflow.length > 0">
+            <div v-if="splitEntries.recent.length === 0" class="border-base m1 h-20px w-px border-r-1.5" />
             <DockOverflowButton
               :context="context"
               :is-vertical="context.panel.isVertical"

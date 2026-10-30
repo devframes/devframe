@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "Fecha o painel do {productName} ao clicar fora dele (somente no modo incorporado)",
   "appearance.autoCollapse": "Recolher automaticamente a barra de borda",
   "appearance.autoCollapseHint": "Reduz a barra encaixada na borda a uma pequena alça quando inativa e fechada (somente no modo de borda)",
+  "appearance.recentDocks": "Ferramentas recentes na barra",
+  "appearance.recentDocksHint": "Manter na barra as ferramentas abertas por último a partir de um grupo ou do menu de excedentes (somente no modo flutuante).",
+  "appearance.recentDocksOff": "Desativado",
 
   "docks.intro": "Gerencie a visibilidade e a ordem dos painéis. Painéis ocultos não aparecem na barra.",
   "docks.resetOrder": "Redefinir ordem personalizada",

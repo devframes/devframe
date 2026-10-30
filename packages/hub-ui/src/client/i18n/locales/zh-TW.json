@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "在 {productName} 面板外部點擊時將其關閉（僅嵌入模式）",
   "appearance.autoCollapse": "自動收合邊緣工具列",
   "appearance.autoCollapseHint": "閒置且關閉時，將邊緣停靠的工具列收合為一個小把手（僅邊緣模式）",
+  "appearance.recentDocks": "停靠列中的最近工具",
+  "appearance.recentDocksHint": "在停靠列中保留最近從群組或溢出選單開啟的工具（僅限浮動模式）。",
+  "appearance.recentDocksOff": "關閉",
 
   "docks.intro": "管理工具面板項目的可見性和順序。隱藏的項目不會出現在工具列中。",
   "docks.resetOrder": "重設自訂順序",

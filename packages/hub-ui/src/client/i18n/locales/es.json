@@ -68,6 +68,9 @@
   "appearance.closeOutsideHint": "Cierra el panel de {productName} al hacer clic fuera de él (solo en modo integrado)",
   "appearance.autoCollapse": "Contraer automáticamente la barra de borde",
   "appearance.autoCollapseHint": "Reduce la barra anclada al borde a un pequeño asa cuando está inactiva y cerrada (solo en modo de borde)",
+  "appearance.recentDocks": "Herramientas recientes en la barra",
+  "appearance.recentDocksHint": "Mantén en la barra las herramientas que abriste por última vez desde un grupo o el menú de desbordamiento (solo en modo flotante).",
+  "appearance.recentDocksOff": "Desactivado",
 
   "docks.intro": "Gestiona la visibilidad y el orden de los paneles. Los paneles ocultos no aparecerán en la barra.",
   "docks.resetOrder": "Restablecer orden personalizado",

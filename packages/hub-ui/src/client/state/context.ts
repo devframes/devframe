@@ -456,7 +456,7 @@ export async function createDocksContext(
   // delivered once via the connection handshake.
   const categoryOrderOverride = rpc.connectionMeta.configs?.ui?.dockPreferences?.categoryOrder
   const groupedEntries = computed(() => {
-    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, categoryOrderOverride })
+    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, liftPinnedMembers: true, categoryOrderOverride })
   })
 
   // Initialize commands context with reactive when-context

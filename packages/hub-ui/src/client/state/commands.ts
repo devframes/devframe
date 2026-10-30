@@ -153,6 +153,10 @@ function setupShortcutListener(
     // work for elements belonging to the popup window's realm.
     if (e.composedPath().some(target => (target as Element).classList?.contains('shortcut-key-input')))
       return
+    // An open dock context menu owns its keys (Escape closes the menu, not
+    // the panel; arrows move between items).
+    if (e.composedPath().some(target => (target as Element).classList?.contains('devframes-dock-menu')))
+      return
 
     const pressed = normalizeKeyEvent(e)
     if (!pressed || pressed === 'Mod' || pressed === 'Shift' || pressed === 'Alt')
