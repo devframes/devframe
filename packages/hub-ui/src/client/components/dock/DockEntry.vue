@@ -3,7 +3,7 @@ import type { DevframeDockBadgeVariant, DevframeDockEntryBase } from '@devframes
 import type { DocksContext } from '@devframes/hub/client'
 import { useEventListener } from '@vueuse/core'
 import { computed, useTemplateRef } from 'vue'
-import { setFloatingTooltip } from '../../state/floating-tooltip'
+import { dockTooltipContent, setFloatingTooltip } from '../../state/floating-tooltip'
 import { openDockContextMenu } from './DockContextMenu'
 import DockIcon from './DockIcon.vue'
 
@@ -51,7 +51,7 @@ function updateTooltip() {
   if (!button.value)
     return
   setFloatingTooltip({
-    content: props.dock.title,
+    content: dockTooltipContent(props.dock),
     el: button.value,
   })
 }

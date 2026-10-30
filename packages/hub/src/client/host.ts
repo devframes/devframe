@@ -140,6 +140,10 @@ export async function createDevframeClientRuntime(
   ])
 
   let selectedId: string | null = null
+  /** Toggle actions that are on; they never take the selection. */
+  const activeActions = new Set<string>()
+  /** Whether turning the last toggle action off should reopen the panel it hid. */
+  let reopenPanel = false
   /** Bumped by every `switchEntry` call, so a stale one can tell it was superseded. */
   let switchRequest = 0
   const entryToStateMap = new Map<string, DockEntryState>()
@@ -269,7 +273,7 @@ export async function createDevframeClientRuntime(
     return {
       entryMeta,
       get isActive() {
-        return selectedId === entryMeta.id
+        return selectedId === entryMeta.id || activeActions.has(entryMeta.id)
       },
       domElements: {},
       events: createEventEmitter(),
@@ -347,6 +351,8 @@ export async function createDevframeClientRuntime(
         continue
       const removed = entryToStateMap.get(id)
       entryToStateMap.delete(id)
+      if (activeActions.delete(id) && activeActions.size === 0)
+        restorePanel()
       // Tear down a shared-frame adapter when its anchor iframe goes away.
       const removedMeta = removed?.entryMeta as DevframeViewIframe | undefined
       if (removedMeta?.type === 'iframe' && removedMeta.subTabs) {
@@ -396,6 +402,7 @@ export async function createDevframeClientRuntime(
       getStateById: id => entryToStateMap.get(id),
       switchEntry,
       toggleEntry: id => (selectedId === id ? switchEntry(null) : switchEntry(id)),
+      setActionActive,
       register(entry, force) {
         if (clientDocks.has(entry.id) && !force)
           throw new Error(`[@devframes/hub] a client dock "${entry.id}" is already registered; pass force to overwrite`)
@@ -442,8 +449,70 @@ export async function createDevframeClientRuntime(
       await setupClientScript(entry.id, entry.renderer)
   }
 
+  function isToggleAction(entry: DevframeDockEntry | undefined): boolean {
+    return entry?.type === 'action' && !!entry.toggle
+  }
+
+  function restorePanel(): void {
+    if (reopenPanel)
+      panel.session.open = true
+    reopenPanel = false
+  }
+
+  /** A new selection wins over the panel a toggle action hid, so it is not restored. */
+  function turnOffActions(): void {
+    reopenPanel = false
+    for (const id of [...activeActions]) {
+      activeActions.delete(id)
+      entryToStateMap.get(id)?.events.emit('entry:deactivated')
+    }
+  }
+
+  async function setActionActive(id: string, active: boolean): Promise<boolean> {
+    const state = entryToStateMap.get(id)
+    const entry = state?.entryMeta
+    if (!state || entry?.type !== 'action' || !entry.toggle || activeActions.has(id) === active)
+      return false
+    if (!active) {
+      activeActions.delete(id)
+      state.events.emit('entry:deactivated')
+      if (activeActions.size === 0)
+        restorePanel()
+      return true
+    }
+    if (loadScriptsEnabled) {
+      if (!rpc.isTrusted)
+        return false
+      // Run once: the script listens to the entry events instead of re-running per click.
+      await setupClientScript(id, entry.action)
+      if (disposed || activeActions.has(id) || entryToStateMap.get(id) !== state)
+        return false
+    }
+    if (activeActions.size === 0) {
+      reopenPanel = panel.session.open
+      panel.session.open = false
+    }
+    activeActions.add(id)
+    state.events.emit('entry:activated')
+    return true
+  }
+
+  /** A click flips a toggle action; clearing an empty selection still turns tools off. */
+  function switchToggleAction(next: string | null): Promise<boolean> | undefined {
+    if (next !== null && isToggleAction(entryToStateMap.get(next)?.entryMeta))
+      return setActionActive(next, !activeActions.has(next))
+    if (next === null && selectedId === null && activeActions.size > 0) {
+      turnOffActions()
+      return Promise.resolve(true)
+    }
+    return undefined
+  }
+
   async function switchEntry(id?: string | null): Promise<boolean> {
     const next = id ?? null
+    const toggled = switchToggleAction(next)
+    if (toggled)
+      return toggled
     if (next === selectedId && entryToStateMap.get(next ?? '')?.entryMeta.type !== 'action')
       return false
     if (next !== null && !entryToStateMap.has(next))
@@ -462,6 +531,7 @@ export async function createDevframeClientRuntime(
 
     const previous = selectedId
     selectedId = next
+    turnOffActions()
     // Mirror onto the session context so a persisting host and the when-clause
     // context see the current selection.
     panel.session.selectedDockId = next

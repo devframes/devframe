@@ -3,6 +3,7 @@ import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup }
 import type { DocksContext } from '@devframes/hub/client'
 import { computed } from 'vue'
 import { t } from '../../i18n'
+import { dockTooltipContent, setFloatingTooltip } from '../../state/floating-tooltip'
 import { accentVarStyle } from '../../utils/accent-color'
 import { openDockContextMenu } from './DockContextMenu'
 import DockIcon from './DockIcon.vue'
@@ -18,6 +19,16 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'select', entry: DevframeDockEntry): void
 }>()
+
+// A row already shows its title, so only a `description` is worth a tooltip.
+function showTooltip(event: PointerEvent, member: DevframeDockEntry) {
+  if (member.description)
+    setFloatingTooltip({ content: dockTooltipContent(member), el: event.currentTarget as HTMLElement, placement: 'right' })
+}
+
+function hideTooltip() {
+  setFloatingTooltip(null)
+}
 
 const isEmpty = computed(() => props.members.every(([, items]) => items.length === 0))
 
@@ -55,9 +66,11 @@ function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
         v-for="member of items"
         :key="member.id"
         class="flex items-center gap-2 w-full px2 py1.5 rounded text-sm text-left transition"
-        :class="selectedId === member.id ? 'text-primary bg-active' : 'op80 hover:op100 hover:bg-active'"
-        @click="emit('select', member)"
-        @contextmenu="openContextMenu($event, member)"
+        :class="selectedId === member.id || context.docks.getStateById(member.id)?.isActive ? 'text-primary bg-active' : 'op80 hover:op100 hover:bg-active'"
+        @pointerenter="showTooltip($event, member)"
+        @pointerleave="hideTooltip"
+        @click="hideTooltip(); emit('select', member)"
+        @contextmenu="hideTooltip(); openContextMenu($event, member)"
       >
         <DockIcon :icon="member.icon" class="w-4.5 h-4.5 flex-none" />
         <span class="truncate flex-1">{{ member.title }}</span>

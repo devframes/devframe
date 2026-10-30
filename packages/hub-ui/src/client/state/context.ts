@@ -124,6 +124,16 @@ export async function createDocksContext(
       ?? null
   })
 
+  /** Toggle actions that are on; they never take the selection. */
+  const activeActions: Set<string> = reactive(new Set())
+  /** Whether turning the last toggle action off should reopen the panel it hid. */
+  let reopenPanel = false
+  const restorePanel = (): void => {
+    if (reopenPanel)
+      sessionStore.value.open = true
+    reopenPanel = false
+  }
+
   const dockEntryStateMap: Map<string, DockEntryState> = reactive(new Map())
   watchEffect(() => {
     for (const entry of entries.value) {
@@ -133,7 +143,7 @@ export async function createDocksContext(
       }
       dockEntryStateMap.set(
         entry.id,
-        createDockEntryState(entry, selected),
+        createDockEntryState(entry, selected, activeActions),
       )
     }
   })
@@ -148,7 +158,7 @@ export async function createDocksContext(
     // `getStateById`) synchronously right after registering, so the state has
     // to exist immediately, mirroring hub's synchronous client-host reconcile.
     if (!dockEntryStateMap.has(entry.id))
-      dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected))
+      dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected, activeActions))
     return {
       update: (patch: Partial<T>) => {
         if (patch.id != null && patch.id !== entry.id)
@@ -161,6 +171,8 @@ export async function createDocksContext(
         if (!clientDocks.delete(entry.id))
           return
         dockEntryStateMap.delete(entry.id)
+        if (activeActions.delete(entry.id) && activeActions.size === 0)
+          restorePanel()
         // Clearing the selection when the active member vanishes matches the
         // hub reconcile behavior for a removed selected entry (shared-iframe
         // soft-nav §7.5).
@@ -207,6 +219,7 @@ export async function createDocksContext(
     paletteOpen: commandsContext?.paletteOpen ?? false,
     dockSelectedId: selectedDockId.value ?? '',
     popupOpen: isDockPopupOpen.value,
+    dockActionActive: activeActions.size > 0,
   })
 
   // The shared frame's live member tab, keyed by `frameId`. Lets `switchEntry`
@@ -315,8 +328,44 @@ export async function createDocksContext(
     })
   }
 
+  /** A new selection wins over the panel a toggle action hid, so it is not restored. */
+  const turnOffActions = (): void => {
+    reopenPanel = false
+    for (const id of [...activeActions]) {
+      activeActions.delete(id)
+      dockEntryStateMap.get(id)?.events.emit('entry:deactivated')
+    }
+  }
+
+  const setActionActive = async (id: string, active: boolean): Promise<boolean> => {
+    const entry = entries.value.find(e => e.id === id)
+    if (entry?.type !== 'action' || !entry.toggle || activeActions.has(id) === active)
+      return false
+    if (!active) {
+      activeActions.delete(id)
+      dockEntryStateMap.get(id)?.events.emit('entry:deactivated')
+      if (activeActions.size === 0)
+        restorePanel()
+      return true
+    }
+    if (!rpc.isTrusted)
+      return false
+    // Run once: the script listens to the entry events instead of re-running per click.
+    await executeSetupScript(entry, scriptContext(entry), true)
+    if (!rpc.isTrusted || activeActions.has(id))
+      return false
+    if (activeActions.size === 0) {
+      reopenPanel = sessionStore.value.open
+      sessionStore.value.open = false
+    }
+    activeActions.add(id)
+    dockEntryStateMap.get(id)?.events.emit('entry:activated')
+    return true
+  }
+
   const switchEntry = async (id: string | null = null): Promise<boolean> => {
     if (id == null) {
+      turnOffActions()
       initialRestorePending.value = false
       selectedDockId.value = null
       sessionStore.value.open = false
@@ -324,6 +373,7 @@ export async function createDocksContext(
       return true
     }
     if (id === '~client-auth-notice') {
+      turnOffActions()
       initialRestorePending.value = false
       selectedDockId.value = id
       sessionStore.value.open = true
@@ -338,6 +388,14 @@ export async function createDocksContext(
       return false
     if (redirect !== null)
       return switchEntry(redirect)
+
+    // A toggle action never takes the selection, so it skips the group's default
+    // member load as well. A popup forwards the click to the main frame.
+    if (entry.type === 'action' && entry.toggle) {
+      if (await triggerMainFrameDockAction(clientType, entry.id) != null)
+        return false
+      return setActionActive(entry.id, !activeActions.has(entry.id))
+    }
 
     const loading = loadGroupDefaultChild(entry, switchEntry)
     if (loading)
@@ -357,6 +415,7 @@ export async function createDocksContext(
       return false
 
     initialRestorePending.value = false
+    turnOffActions()
     selectedDockId.value = entry.id
     sessionStore.value.open = true
 
@@ -490,6 +549,18 @@ export async function createDocksContext(
         action: () => {
           sessionStore.value.open = false
           selectedDockId.value = null
+        },
+      },
+      {
+        id: 'devframes:stop-active-tool',
+        source: 'client',
+        title: t('command.stopActiveTool'),
+        icon: 'ph:stop-circle-duotone',
+        when: 'dockActionActive && !paletteOpen',
+        keybindings: [{ key: 'Escape' }],
+        action: () => {
+          for (const id of [...activeActions])
+            void setActionActive(id, false)
         },
       },
       {
@@ -692,6 +763,7 @@ export async function createDocksContext(
       getStateById: (id: string) => dockEntryStateMap.get(id),
       switchEntry,
       toggleEntry,
+      setActionActive,
       register: registerClientDock,
       update: updateClientDock,
     },

@@ -11,6 +11,7 @@
 
   "command.togglePalette": "Toggle Command Palette",
   "command.closePanel": "Close Panel",
+  "command.stopActiveTool": "Stop Active Tool",
   "command.openSettings": "Open Settings",
   "command.hide": "Hide {productName}",
   "command.dockMode": "Dock Mode",

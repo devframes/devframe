@@ -11,6 +11,7 @@
 
   "command.togglePalette": "Переключить палитру команд",
   "command.closePanel": "Закрыть панель",
+  "command.stopActiveTool": "Остановить активный инструмент",
   "command.openSettings": "Открыть настройки",
   "command.hide": "Скрыть {productName}",
   "command.dockMode": "Режим панели",

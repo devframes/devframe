@@ -312,3 +312,89 @@ it('does not activate an iframe when trust is lost while its setup completes', a
     delete fixture.__DF_SETUP_REVOKE_UI__
   }
 })
+
+describe('toggle action docks', () => {
+  const toolScript = 'data:text/javascript,export default ctx => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__(ctx)'
+
+  async function setup() {
+    const events: string[] = []
+    let attempts = 0
+    globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__ = ((ctx: any) => {
+      attempts++
+      ctx.current.events.on('entry:activated', () => events.push('on'))
+      ctx.current.events.on('entry:deactivated', () => events.push('off'))
+    }) as () => void
+    const { rpc, sharedStates } = createStubRpc()
+    const context = await createDocksContext('embedded', rpc)
+    const panel = { id: 'panel', type: 'iframe', title: 'Panel', icon: 'ph:browser', url: '/fixture' } satisfies DevframeDockEntry
+    const tool = { id: 'tool', type: 'action', title: 'Inspect', icon: 'ph:cursor', toggle: true, action: { importFrom: toolScript } } satisfies DevframeDockEntry
+    sharedStates.get('devframe:docks')!.push([panel, tool])
+    await nextTick()
+    return { context, events, attempts: () => attempts }
+  }
+
+  it('turns on without taking the selection, hides the panel, and restores it on a second click', async () => {
+    const { context, events, attempts } = await setup()
+    await context.docks.switchEntry('panel')
+
+    await expect(context.docks.switchEntry('tool')).resolves.toBe(true)
+    expect(context.docks.selectedId).toBe('panel')
+    expect(context.panel.session.open).toBe(false)
+    expect(context.docks.getStateById('tool')!.isActive).toBe(true)
+    expect(context.when.context.dockActionActive).toBe(true)
+
+    await expect(context.docks.switchEntry('tool')).resolves.toBe(true)
+    expect(context.docks.getStateById('tool')!.isActive).toBe(false)
+    expect(context.panel.session.open).toBe(true)
+    expect(context.docks.selectedId).toBe('panel')
+
+    await context.docks.switchEntry('tool')
+    expect(attempts()).toBe(1)
+    expect(events.filter(e => e === 'on')).toHaveLength(2)
+    expect(events.at(-1)).toBe('on')
+  })
+
+  it('turns off from the script or Escape and restores the panel', async () => {
+    const { context } = await setup()
+    await context.docks.switchEntry('panel')
+    await context.docks.switchEntry('tool')
+
+    await expect(context.docks.setActionActive('tool', false)).resolves.toBe(true)
+    await expect(context.docks.setActionActive('tool', false)).resolves.toBe(false)
+    expect(context.panel.session.open).toBe(true)
+
+    await context.docks.switchEntry('tool')
+    await context.commands.execute('devframes:stop-active-tool')
+    await nextTick()
+    expect(context.docks.getStateById('tool')!.isActive).toBe(false)
+    expect(context.panel.session.open).toBe(true)
+  })
+
+  it('leaves the panel closed when it was closed before the tool turned on', async () => {
+    const { context } = await setup()
+    await context.docks.switchEntry('tool')
+    expect(context.docks.selectedId).toBeNull()
+    await context.docks.switchEntry('tool')
+    expect(context.panel.session.open).toBe(false)
+  })
+
+  it('turns off without restoring when another dock is selected or the selection is cleared', async () => {
+    const { context, events } = await setup()
+    await context.docks.switchEntry('tool')
+    await context.docks.switchEntry('panel')
+    expect(context.docks.getStateById('tool')!.isActive).toBe(false)
+    expect(context.docks.selectedId).toBe('panel')
+    expect(context.panel.session.open).toBe(true)
+    expect(events.at(-1)).toBe('off')
+
+    await context.docks.switchEntry('tool')
+    await context.docks.switchEntry(null)
+    expect(context.docks.getStateById('tool')!.isActive).toBe(false)
+    expect(context.panel.session.open).toBe(false)
+  })
+
+  it('rejects setActionActive for a dock that is not a toggle action', async () => {
+    const { context } = await setup()
+    await expect(context.docks.setActionActive('panel', true)).resolves.toBe(false)
+  })
+})
