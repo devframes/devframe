@@ -1,4 +1,5 @@
-import type { JsonRenderDockRenderer } from '@devframes/json-render/hub'
+import type { DockRendererInstance } from '@devframes/hub/client'
+import type { JsonRenderDockRenderer, JsonRenderRpcContext } from '@devframes/json-render/hub'
 import css from '../.generated/css'
 import { createJsonRenderDockRenderer } from '../dock-renderer'
 
@@ -32,7 +33,7 @@ const inner = createJsonRenderDockRenderer()
  * there, fully styled in a light-DOM host page and inside a viewer's shadow
  * root alike, without leaking the reset or any global rule into the page.
  */
-const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container, context }) => {
+const jsonRenderDockRenderer: JsonRenderDockRenderer<JsonRenderRpcContext> = async ({ entry, container, context }) => {
   const shadow = container.shadowRoot ?? container.attachShadow({ mode: 'open' })
   if (!shadow.querySelector(`style[${STYLE_MARKER}]`)) {
     const style = document.createElement('style')
@@ -66,7 +67,15 @@ const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container
   colorSchemeRoot.append(root)
   shadow.append(colorSchemeRoot)
 
-  const instance = await inner({ entry, container: root, context })
+  let instance: DockRendererInstance
+  try {
+    instance = await inner({ entry, container: root, context })
+  }
+  catch (error) {
+    observer.disconnect()
+    colorSchemeRoot.remove()
+    throw error
+  }
   return {
     dispose() {
       observer.disconnect()

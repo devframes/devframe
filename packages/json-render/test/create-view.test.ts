@@ -4,6 +4,7 @@ import type { DevframeJsonRenderSpec } from '../src/types'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { createJsonRenderView as createPortableView } from '@devframes/json-render/view'
 import { createHostContext } from 'devframe/node'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createJsonRenderView } from '../src/node/index'
@@ -57,6 +58,23 @@ describe('createJsonRenderView identity', () => {
 })
 
 describe('createJsonRenderView state', () => {
+  it('publishes and disposes through a shared-state-only context', async () => {
+    expect.assertions(5)
+    const context = { rpc: { sharedState: ctx.rpc.sharedState } }
+    const view = createPortableView(context, { id: 'portable', spec })
+    const state = await context.rpc.sharedState.get(view.ref.stateKey)
+    expect(state.value()).toEqual(spec)
+    const secondView = createPortableView(context, { id: 'second', spec })
+    const index = await context.rpc.sharedState.get(JSON_RENDER_INDEX_KEY)
+    expect(Object.keys(index.value())).toEqual([view.ref.stateKey, secondView.ref.stateKey])
+    expect(() => createPortableView(context, { id: 'portable', spec })).toThrow()
+    view.patchState([{ op: 'replace', path: '/count', value: 2 }])
+    expect(state.value().state).toEqual({ count: 2 })
+    view.dispose()
+    expect(context.rpc.sharedState.keys()).not.toContain(view.ref.stateKey)
+    secondView.dispose()
+  })
+
   it('registers a shared state carrying the spec', async () => {
     const view = createJsonRenderView(ctx, { id: 'v', spec })
     expect(ctx.rpc.sharedState.keys()).toContain(view.ref.stateKey)
