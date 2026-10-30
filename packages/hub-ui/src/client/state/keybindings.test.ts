@@ -259,3 +259,17 @@ describe('filterCommandsByWhen', () => {
     expect(filterCommandsByWhen(withWhen, whenContext)).toEqual([])
   })
 })
+
+describe('normalizeKeyEvent', () => {
+  // Chrome's native autofill dispatches `keydown` events without `key`
+  it('ignores key events without a key, like Chrome autofill', () => {
+    const event = { ctrlKey: false, metaKey: false, altKey: false, shiftKey: false } as KeyboardEvent
+    expect(() => normalizeKeyEvent(event)).not.toThrow()
+    expect(normalizeKeyEvent(event)).toBe('')
+  })
+
+  it('normalizes a regular shortcut', () => {
+    const event = { key: 'k', ctrlKey: false, metaKey: false, altKey: false, shiftKey: true } as KeyboardEvent
+    expect(normalizeKeyEvent(event)).toBe('Shift+K')
+  })
+})
