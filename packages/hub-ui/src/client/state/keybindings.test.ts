@@ -1,7 +1,7 @@
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
 import { describe, expect, it } from 'vitest'
-import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, findKeybindingConflict, getShortcutRows, walkCommands } from './keybindings'
+import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, findKeybindingConflict, getShortcutRows, normalizeKeyEvent, walkCommands } from './keybindings'
 
 describe('findKeybindingConflict', () => {
   const commands: DevframeCommandEntry[] = [
