@@ -94,6 +94,7 @@ export interface CreateMcpFetchHandlerOptions {
   instructions?: string;
   resourceTemplates?: McpResourceTemplate[];
   onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
@@ -103,6 +104,7 @@ export interface CreateMcpServerOptions {
   instructions?: string;
   resourceTemplates?: McpResourceTemplate[];
   onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
   serverName?: string;
   serverVersion?: string;
   onReady?: (_: {
@@ -448,6 +450,29 @@ export interface McpFetchHandler {
   fetch: (_: Request, _?: McpConnectionInfo) => Promise<Response>;
   dispose: () => Promise<void>;
 }
+export interface McpPrompt {
+  name: string;
+  title?: string;
+  description?: string;
+  arguments?: McpPromptArgument[];
+  get: (_: Record<string, string>) => McpPromptResult | Promise<McpPromptResult>;
+}
+export interface McpPromptArgument {
+  name: string;
+  description?: string;
+  required?: boolean;
+}
+export interface McpPromptMessage {
+  role: 'user' | 'assistant';
+  content: {
+    type: 'text';
+    text: string;
+  };
+}
+export interface McpPromptResult {
+  description?: string;
+  messages: McpPromptMessage[];
+}
 export interface McpResourceTemplate {
   uriTemplate: string;
   name: string;
@@ -477,6 +502,7 @@ export interface McpRouteOptions {
   instructions?: string;
   resourceTemplates?: McpResourceTemplate[];
   onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
 }
 export interface McpServerHandle {
   stop: () => Promise<void>;

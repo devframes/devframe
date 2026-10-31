@@ -1,10 +1,10 @@
 import type { Tool } from '@modelcontextprotocol/server'
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { RpcFunctionDefinitionAnyWithContext } from 'devframe/rpc'
-import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpResourcesChangedHook, McpResourceTemplate, McpResourceTemplateEntry, McpServerHandle } from 'devframe/types'
+import type { AgentTool, CreateMcpServerOptions, DevframeDefinition, DevframeHost, DevframeNodeContext, McpContentBlock, McpPrompt, McpResourcesChangedHook, McpResourceTemplate, McpResourceTemplateEntry, McpServerHandle } from 'devframe/types'
 import { homedir } from 'node:os'
 import process from 'node:process'
-import { Server } from '@modelcontextprotocol/server'
+import { ProtocolError, ProtocolErrorCode, Server } from '@modelcontextprotocol/server'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { argsToJsonSchema, diagnostics, formatMcpError, getMcpContent, returnToJsonSchema, stringifyForMcp } from 'devframe/internal'
 import { createHostContext } from 'devframe/node'
@@ -22,6 +22,11 @@ export interface BuildMcpServerOptions {
    * omitted or empty keeps the resource handlers unchanged.
    */
   resourceTemplates?: CompiledResourceTemplate[]
+  /**
+   * Prompts by name (see {@link compilePrompts}); omitted or empty declares
+   * no `prompts` capability.
+   */
+  prompts?: Map<string, McpPrompt>
 }
 
 /**
@@ -60,6 +65,7 @@ export function buildMcpServerFromContext(
       capabilities: {
         tools: { listChanged: true },
         resources: { listChanged: true },
+        ...(options.prompts?.size ? { prompts: { listChanged: false } } : {}),
       },
       ...(options.instructions ? { instructions: options.instructions } : {}),
     },
@@ -73,6 +79,8 @@ export function buildMcpServerFromContext(
       resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
     }))
   }
+  if (options.prompts?.size)
+    registerPromptHandlers(server, options.prompts)
 
   return server
 }
@@ -127,8 +135,10 @@ export async function createMcpServer(
   const transport = options.transport ?? 'stdio'
   if (transport !== 'stdio')
     throw diagnostics.DF0017({ transport, reason: 'Only stdio transport is supported in this release.' })
-  // Compile before setup, so an invalid template fails fast (DF0084).
+  // Compile before setup, so an invalid template fails fast (DF0084), and
+  // so does a repeated prompt name (DF0085).
   const resourceTemplates = compileResourceTemplates(options.resourceTemplates)
+  const prompts = compilePrompts(options.prompts)
 
   const host: DevframeHost = {
     mountStatic: () => { /* MCP has no static surface */ },
@@ -160,6 +170,7 @@ export async function createMcpServer(
     exposeSharedState: options.exposeSharedState ?? true,
     instructions: options.instructions,
     resourceTemplates,
+    prompts,
   }
 
   // `serveStdio` pins ONE instance for the connection's lifetime. Each pinned
@@ -429,6 +440,52 @@ function registerResourceHandlers(
     }
 
     throw new Error(`[devframe/mcp] unknown resource URI "${uri}"`)
+  })
+}
+
+/**
+ * Index prompts by name, once per endpoint. A repeated name throws
+ * `DF0085`, since `prompts/get` finds a prompt by its name.
+ *
+ * @internal
+ */
+export function compilePrompts(prompts: McpPrompt[] = []): Map<string, McpPrompt> {
+  const byName = new Map<string, McpPrompt>()
+  for (const prompt of prompts) {
+    if (byName.has(prompt.name))
+      throw diagnostics.DF0085({ name: prompt.name })
+    byName.set(prompt.name, prompt)
+  }
+  return byName
+}
+
+/**
+ * Serve `prompts/list` and `prompts/get`. An unknown name, or a required
+ * argument that is missing or empty, is an invalid-params error. An error
+ * thrown by `get` goes to the MCP client.
+ */
+function registerPromptHandlers(server: Server, prompts: Map<string, McpPrompt>): void {
+  server.setRequestHandler('prompts/list', async () => ({
+    prompts: [...prompts.values()].map(({ name, title, description, arguments: args }) => ({
+      name,
+      title,
+      description,
+      ...(args?.length ? { arguments: args.map(argument => ({ name: argument.name, description: argument.description, required: argument.required })) } : {}),
+    })),
+  }))
+
+  server.setRequestHandler('prompts/get', async (request) => {
+    const { name, arguments: given = {} } = request.params
+    const prompt = prompts.get(name)
+    if (!prompt)
+      throw new ProtocolError(ProtocolErrorCode.InvalidParams, `[devframe/mcp] unknown prompt "${name}"`)
+    const missing = (prompt.arguments ?? [])
+      .filter(argument => argument.required && !given[argument.name])
+      .map(argument => argument.name)
+    if (missing.length)
+      throw new ProtocolError(ProtocolErrorCode.InvalidParams, `[devframe/mcp] prompt "${name}" needs the argument(s): ${missing.join(', ')}`)
+    const { description, messages } = await prompt.get(given)
+    return { description, messages }
   })
 }
 

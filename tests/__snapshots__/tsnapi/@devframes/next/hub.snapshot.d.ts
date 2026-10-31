@@ -23,6 +23,7 @@ export interface DevframeNextHostMcpOptions {
   instructions?: string;
   resourceTemplates?: McpResourceTemplate[];
   onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
   allowedOrigins?: readonly string[] | false;
 }
 export interface NextDevframeHubHandle {

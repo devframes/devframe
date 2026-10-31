@@ -71,6 +71,10 @@ export { McpAuthorization }
 export { McpConnectionInfo }
 export { McpContentBlock }
 export { McpFetchHandler }
+export { McpPrompt }
+export { McpPromptArgument }
+export { McpPromptMessage }
+export { McpPromptResult }
 export { McpResourcesChangedHook }
 export { McpResourceTemplate }
 export { McpResourceTemplateContent }

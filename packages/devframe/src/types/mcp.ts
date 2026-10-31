@@ -41,6 +41,11 @@ export interface CreateMcpServerOptions {
    * `notifications/resources/list_changed`. See {@link McpResourcesChangedHook}.
    */
   onResourcesChanged?: McpResourcesChangedHook
+  /**
+   * Prompt templates served through `prompts/list` and `prompts/get`.
+   * Omitted or empty declares no `prompts` capability.
+   */
+  prompts?: McpPrompt[]
   /** Override the name reported in the MCP handshake. */
   serverName?: string
   /** Override the version reported in the MCP handshake. Defaults to `definition.version ?? '0.0.0'`. */
@@ -76,6 +81,8 @@ export interface CreateMcpFetchHandlerOptions {
   resourceTemplates?: McpResourceTemplate[]
   /** Host subscription for resource-list changes; see {@link CreateMcpServerOptions.onResourcesChanged}. */
   onResourcesChanged?: McpResourcesChangedHook
+  /** Prompt templates; see {@link CreateMcpServerOptions.prompts}. */
+  prompts?: McpPrompt[]
   /**
    * Optional identity check, layered on top of the origin gate and checked
    * **after** it: a bearer token string (matched in constant time against
@@ -179,3 +186,38 @@ export interface McpResourceTemplate {
  * subscription; the MCP server calls it on teardown.
  */
 export type McpResourcesChangedHook = (notify: () => void, ctx: DevframeNodeContext) => () => void
+
+/** One argument of an {@link McpPrompt}. */
+export interface McpPromptArgument {
+  name: string
+  description?: string
+  /** `prompts/get` answers invalid params when a required argument is missing or empty. */
+  required?: boolean
+}
+
+/** One message of the answer to `prompts/get`. */
+export interface McpPromptMessage {
+  role: 'user' | 'assistant'
+  content: { type: 'text', text: string }
+}
+
+/** What an {@link McpPrompt} returns from `get`, sent as the `prompts/get` result. */
+export interface McpPromptResult {
+  description?: string
+  messages: McpPromptMessage[]
+}
+
+/**
+ * A prompt template the MCP server lists in `prompts/list` and builds in
+ * `prompts/get`. A coding agent usually offers it to the user as a slash
+ * command. Each `name` is used once; a repeated name throws `DF0085`.
+ */
+export interface McpPrompt {
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  arguments?: McpPromptArgument[]
+  /** Build the messages from the arguments the coding agent sent. */
+  get: (args: Record<string, string>) => McpPromptResult | Promise<McpPromptResult>
+}
