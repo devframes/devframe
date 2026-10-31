@@ -1,7 +1,7 @@
 {
   "name": "@devframes/hub-ui-onboard",
   "type": "module",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "A tiny stand-in for the devframe hub UI: a floating button that installs it on demand.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

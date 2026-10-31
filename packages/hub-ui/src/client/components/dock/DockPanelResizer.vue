@@ -48,7 +48,7 @@ function handleResize(e: MouseEvent | TouchEvent) {
 
   let widthPx: number, heightPx: number
   if (resizingState.value.right) {
-    widthPx = Math.abs(e instanceof MouseEvent ? e.clientX : (e.touches[0]?.clientX || 0) - (box?.left || 0))
+    widthPx = Math.abs((e instanceof MouseEvent ? e.clientX : (e.touches[0]?.clientX || 0)) - (box?.left || 0))
     store.width = Math.min(PANEL_MAX, Math.max(PANEL_MIN, widthPx / window.innerWidth * 100))
   }
   else if (resizingState.value.left) {
@@ -61,7 +61,7 @@ function handleResize(e: MouseEvent | TouchEvent) {
     store.height = Math.min(PANEL_MAX, Math.max(PANEL_MIN, heightPx / window.innerHeight * 100))
   }
   else if (resizingState.value.bottom) {
-    heightPx = Math.abs(e instanceof MouseEvent ? e.clientY : (e.touches[0]?.clientY || 0) - (box?.top || 0))
+    heightPx = Math.abs((e instanceof MouseEvent ? e.clientY : (e.touches[0]?.clientY || 0)) - (box?.top || 0))
     store.height = Math.min(PANEL_MAX, Math.max(PANEL_MIN, heightPx / window.innerHeight * 100))
   }
 }

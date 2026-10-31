@@ -47,6 +47,9 @@ const isActive = computed(() => {
   return !!id && members.value.some(m => m.id === id)
 })
 
+// A member toggle action that is on lights the button up too, without owning the panel.
+const hasActiveTool = computed(() => members.value.some(m => m.type === 'action' && props.context.docks.getStateById(m.id)?.isActive))
+
 const groupButton = useTemplateRef<HTMLElement>('groupButton')
 const isPanelVisible = ref(false)
 const docksGroupPanel = useDocksGroupPanel()
@@ -131,9 +134,9 @@ function onClick() {
       :context="context"
       :dock="group"
       :is-vertical="isVertical"
-      :is-selected="isActive || isPanelVisible"
+      :is-selected="isActive || isPanelVisible || hasActiveTool"
       :is-current="isActive"
-      :is-dimmed="dimInactive && selected ? !isActive : false"
+      :is-dimmed="dimInactive && selected ? !isActive && !hasActiveTool : false"
       :badge="group.badge"
       :badge-variant="group.badgeVariant"
       @click="onClick"

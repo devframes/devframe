@@ -1,7 +1,8 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup } from '@devframes/hub'
 import type { WhenContext } from 'devframe/utils/when'
+import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { describe, expect, it } from 'vitest'
-import { docksSplitGroupsBySize, docksSplitGroupsWithCapacity, resolveGroupPreferredChild, resolveNextRecentDockId, resolveRecentDockEntry } from './dock-settings'
+import { docksGroupByCategories, docksSplitGroupsBySize, docksSplitGroupsWithCapacity, getGroupMembersGrouped, resolveGroupPreferredChild, resolveNextRecentDockIds, resolveRecentDockEntries } from './dock-settings'
 
 function iframe(id: string, extra: Partial<DevframeDockEntry> = {}): DevframeDockEntry {
   return { id, type: 'iframe', url: '/', title: id.toUpperCase(), icon: 'ph:cube-duotone', ...extra } as DevframeDockEntry
@@ -71,88 +72,137 @@ describe('docksSplitGroupsBySize', () => {
 })
 
 describe('docksSplitGroupsWithCapacity', () => {
-  it('splits naturally without a recent entry', () => {
+  it('splits naturally without recent entries', () => {
     const split = docksSplitGroupsWithCapacity(rail, 3)
     expect(ids(split.visible)).toEqual(['a', 'b', 'c'])
     expect(ids(split.overflow)).toEqual(['d', 'e'])
-    expect(split.recent).toBeNull()
+    expect(split.recent).toEqual([])
   })
 
-  it('reserves a slot for a recent entry from the overflow', () => {
-    const split = docksSplitGroupsWithCapacity(rail, 3, d)
-    expect(ids(split.visible)).toEqual(['a', 'b'])
-    expect(ids(split.overflow)).toEqual(['c', 'e'])
-    expect(split.recent).toBe(d)
+  it('raises a recent entry out of the overflow without displacing bar items', () => {
+    const split = docksSplitGroupsWithCapacity(rail, 3, [d])
+    // Only `e` is left beyond the bar, so it folds in instead of overflowing.
+    expect(ids(split.visible)).toEqual(['a', 'b', 'c', 'e'])
+    expect(ids(split.overflow)).toEqual([])
+    expect(split.recent).toEqual([d])
   })
 
-  it('renders a recent entry inside the natural slice in place, releasing the slot', () => {
-    const split = docksSplitGroupsWithCapacity(rail, 3, c)
+  it('keeps several recent entries newest first', () => {
+    const f = iframe('f')
+    const longRail: DevframeDockEntriesGrouped = [['default', [a, b, c, d, e, f]]]
+    const split = docksSplitGroupsWithCapacity(longRail, 3, [e, d])
+    expect(ids(split.visible)).toEqual(['a', 'b', 'c', 'f'])
+    expect(split.recent).toEqual([e, d])
+  })
+
+  it('renders a recent entry inside the visible slice in place', () => {
+    const split = docksSplitGroupsWithCapacity(rail, 3, [c])
     expect(ids(split.visible)).toEqual(['a', 'b', 'c'])
     expect(ids(split.overflow)).toEqual(['d', 'e'])
-    expect(split.recent).toBeNull()
+    expect(split.recent).toEqual([])
   })
 
-  it('raises a grouped member without touching the rail items in the overflow', () => {
+  it('raises a grouped member without touching the overflow', () => {
     const g = group('g')
     const member = iframe('g:member', { groupId: 'g' })
     const groupedRail: DevframeDockEntriesGrouped = [['default', [a, b, g, c, d]]]
-    const split = docksSplitGroupsWithCapacity(groupedRail, 3, member)
-    expect(ids(split.visible)).toEqual(['a', 'b'])
-    expect(ids(split.overflow)).toEqual(['g', 'c', 'd'])
-    expect(split.recent).toBe(member)
+    const split = docksSplitGroupsWithCapacity(groupedRail, 3, [member])
+    expect(ids(split.visible)).toEqual(['a', 'b', 'g'])
+    expect(ids(split.overflow)).toEqual(['c', 'd'])
+    expect(split.recent).toEqual([member])
   })
 
-  it('skips the reservation when there is no overflow', () => {
+  it('raises a grouped member when the bar does not overflow', () => {
     const member = iframe('g:member', { groupId: 'g' })
     const smallRail: DevframeDockEntriesGrouped = [['default', [a, b, c]]]
-    const split = docksSplitGroupsWithCapacity(smallRail, 3, member)
+    const split = docksSplitGroupsWithCapacity(smallRail, 3, [member])
     expect(ids(split.visible)).toEqual(['a', 'b', 'c'])
     expect(split.overflow).toEqual([])
-    expect(split.recent).toBeNull()
+    expect(split.recent).toEqual([member])
   })
 
-  it('keeps the lone-overflow fold ahead of the reservation', () => {
+  it('folds a lone overflowing entry, which then renders in place', () => {
     const foldRail: DevframeDockEntriesGrouped = [['default', [a, b, c, d]]]
-    const split = docksSplitGroupsWithCapacity(foldRail, 3, d)
+    const split = docksSplitGroupsWithCapacity(foldRail, 3, [d])
     expect(ids(split.visible)).toEqual(['a', 'b', 'c', 'd'])
     expect(split.overflow).toEqual([])
-    expect(split.recent).toBeNull()
+    expect(split.recent).toEqual([])
   })
 })
 
-describe('resolveNextRecentDockId', () => {
-  function next(recentEntry: DevframeDockEntry | null, selected: DevframeDockEntry, selectedIsGroupMember = false) {
-    return resolveNextRecentDockId({ groups: rail, capacity: 3, recentEntry, selected, selectedIsGroupMember })
+describe('resolveNextRecentDockIds', () => {
+  function next(recentEntries: DevframeDockEntry[], selected: DevframeDockEntry, selectedIsGroupMember = false, limit = 3) {
+    return resolveNextRecentDockIds({ groups: rail, capacity: 3, recentEntries, selected, selectedIsGroupMember, limit })
   }
 
-  it('follows the a–e walkthrough on a 3-slot bar', () => {
-    // [a] [b] [c] | [O]: selecting d from the overflow raises it
-    expect(next(null, d)).toBe('d')
-    // [a] [b] | {d} [O]: selecting visible a/b (or d itself) keeps d raised
-    expect(next(d, a)).toBe('d')
-    expect(next(d, b)).toBe('d')
-    expect(next(d, d)).toBe('d')
-    // [a] [b] | [d] [O]: selecting e from the overflow replaces d
-    expect(next(d, e)).toBe('e')
-    // selecting c (folded out by the reserved slot) becomes recent, and the
-    // split renders it in its natural place, back to [a] [b] {c} | [O]
-    expect(next(d, c)).toBe('c')
-    expect(docksSplitGroupsWithCapacity(rail, 3, c).recent).toBeNull()
+  it('follows the a-e walkthrough on a 3-slot bar', () => {
+    // [a] [b] [c] | [O: d, e]: selecting d from the overflow raises it
+    expect(next([], d)).toEqual(['d'])
+    // [a] [b] [c] [e] | [d]: selecting a bar item or d itself keeps the list
+    expect(next([d], a)).toEqual(['d'])
+    expect(next([d], e)).toEqual(['d'])
+    expect(next([d], d)).toEqual(['d'])
   })
 
-  it('always raises a grouped member', () => {
-    const member = iframe('g:member', { groupId: 'g' })
-    expect(next(null, member, true)).toBe('g:member')
-    expect(next(d, member, true)).toBe('g:member')
+  it('puts a new grouped member first and drops the oldest past the limit', () => {
+    const [m1, m2, m3] = ['g:1', 'g:2', 'g:3'].map(id => iframe(id, { groupId: 'g' }))
+    expect(next([], m1, true)).toEqual(['g:1'])
+    expect(next([m1], m2, true)).toEqual(['g:2', 'g:1'])
+    expect(next([m2, m1], m3, true, 2)).toEqual(['g:3', 'g:2'])
   })
 
-  it('keeps the recent dock when the selection is off the rail entirely', () => {
-    expect(next(d, iframe('~notice'))).toBe('d')
-    expect(next(null, iframe('~notice'))).toBeNull()
+  it('keeps the slots in place when a recent member is opened again', () => {
+    const [m1, m2] = ['g:1', 'g:2'].map(id => iframe(id, { groupId: 'g' }))
+    expect(next([m2, m1], m1, true)).toEqual(['g:2', 'g:1'])
   })
 
-  it('keeps a naturally-visible selection from claiming the slot', () => {
-    expect(next(null, a)).toBeNull()
+  it('remembers nothing when the limit is 0', () => {
+    expect(next([d], e, false, 0)).toEqual([])
+    expect(next([], iframe('g:1', { groupId: 'g' }), true, 0)).toEqual([])
+  })
+
+  it('keeps the list when the selection is off the rail entirely', () => {
+    expect(next([d], iframe('~notice'))).toEqual(['d'])
+    expect(next([], iframe('~notice'))).toEqual([])
+  })
+
+  it('keeps a visible selection from claiming a slot', () => {
+    expect(next([], a)).toEqual([])
+  })
+})
+
+describe('pinned group members', () => {
+  const g = group('g', { category: 'framework' })
+  const m1 = iframe('g:1', { groupId: 'g' })
+  const m2 = iframe('g:2', { groupId: 'g' })
+  const entries = [a, g, m1, m2]
+  const settings = { ...DEFAULT_STATE_USER_SETTINGS(), docksPinned: ['g:2'] }
+
+  it('lifts a pinned member onto the bar when asked', () => {
+    const groups = docksGroupByCategories(entries, settings, { collapseGroups: true, liftPinnedMembers: true })
+    expect(groups.map(([category, items]) => [category, items.map(item => item.id)])).toEqual([
+      ['~pinned', ['g:2']],
+      ['framework', ['g']],
+      ['default', ['a']],
+    ])
+  })
+
+  it('keeps a pinned member collapsed without liftPinnedMembers', () => {
+    const groups = docksGroupByCategories(entries, settings, { collapseGroups: true })
+    expect(ids(groups)).toEqual(['g', 'a'])
+  })
+
+  it('still leads the pinned member inside its group', () => {
+    const members = getGroupMembersGrouped(entries, 'g', settings)
+    expect(members.map(([category, items]) => [category, items.map(item => item.id)])).toEqual([
+      ['~pinned', ['g:2']],
+      ['default', ['g:1']],
+    ])
+  })
+
+  it('renders a pinned recent member in place instead of in a recent slot', () => {
+    const groups = docksGroupByCategories(entries, settings, { collapseGroups: true, liftPinnedMembers: true })
+    expect(docksSplitGroupsWithCapacity(groups, 5, [m2, m1]).recent).toEqual([m1])
   })
 })
 
@@ -197,32 +247,32 @@ describe('resolveGroupPreferredChild', () => {
   })
 })
 
-describe('resolveRecentDockEntry', () => {
+describe('resolveRecentDockEntries', () => {
   const g = group('g')
   const member = iframe('g:member', { groupId: 'g' })
   const entries = [a, b, c, d, e, g, member]
   const groupedRail: DevframeDockEntriesGrouped = [['default', [a, b, c, d, e, g]]]
 
-  function resolve(recentId: string | null) {
-    return resolveRecentDockEntry({ entries, groups: groupedRail, recentId })
+  function resolve(recentIds: string[] | null, limit = 3) {
+    return resolveRecentDockEntries({ entries, groups: groupedRail, recentIds, limit })
   }
 
-  it('resolves a top-level rail entry', () => {
-    expect(resolve('d')).toBe(d)
+  it('resolves top-level rail entries and grouped members in order', () => {
+    expect(resolve(['g:member', 'd'])).toEqual([member, d])
   })
 
-  it('resolves a grouped member', () => {
-    expect(resolve('g:member')).toBe(member)
+  it('drops unknown ids and group buttons', () => {
+    expect(resolve(null)).toEqual([])
+    expect(resolve(['missing', 'g', 'd'])).toEqual([d])
   })
 
-  it('returns null for no id, an unknown id, or a group button', () => {
-    expect(resolve(null)).toBeNull()
-    expect(resolve('missing')).toBeNull()
-    expect(resolve('g')).toBeNull()
-  })
-
-  it('returns null for an entry that is off the rail', () => {
+  it('drops an entry that is off the rail', () => {
     const hidden = iframe('hidden')
-    expect(resolveRecentDockEntry({ entries: [...entries, hidden], groups: groupedRail, recentId: 'hidden' })).toBeNull()
+    expect(resolveRecentDockEntries({ entries: [...entries, hidden], groups: groupedRail, recentIds: ['hidden'], limit: 3 })).toEqual([])
+  })
+
+  it('caps the list at the limit', () => {
+    expect(resolve(['d', 'e', 'g:member'], 2)).toEqual([d, e])
+    expect(resolve(['d'], 0)).toEqual([])
   })
 })

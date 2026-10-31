@@ -18,6 +18,7 @@ export { diagnostics }
 export { getMcpContent }
 export { importAgenticMcp }
 export { importRuntimeModule }
+export { LIST_CLIENTS_TOOL }
 export { listLiveDevframeInstances }
 export { loadAutoMcpAdapter }
 export { normalizeBasePath }

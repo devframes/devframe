@@ -41,13 +41,18 @@ export interface DockSessionStorage {
    */
   selectedDockRoute: string | null
   /**
-   * The dock entry most recently selected from beyond the float bar's inline
-   * capacity, whether from the overflow popover or from inside a dock group. A hub UI
-   * provider raises this entry into a dedicated slot between the bar's visible
-   * items and the overflow button, so deselecting it (or selecting a visible
-   * neighbour) keeps it one click away instead of folding it straight back
-   * into the overflow. `null` (or absent, for stores persisted before this
-   * field existed) when no entry has been raised.
+   * The dock entries most recently selected from beyond the float bar's
+   * inline capacity, whether from the overflow popover or from inside a dock
+   * group, newest first. A hub UI provider raises these entries into their own
+   * slots after the bar's visible items, so they stay one click away instead
+   * of folding back into the overflow or the group popover. Absent (for stores
+   * persisted before this field existed) or empty when nothing has been raised.
+   */
+  recentDockIds?: string[]
+  /**
+   * @deprecated Superseded by {@link DockSessionStorage.recentDockIds}. Still
+   * read as a one-entry list when `recentDockIds` is absent, so a tab that
+   * persisted the older field keeps its recent dock after an upgrade.
    */
   recentDockId?: string | null
   /**
@@ -189,6 +194,14 @@ export interface DocksEntriesContext {
    */
   toggleEntry: (id: string) => Promise<boolean>
   /**
+   * Turn a {@link import('../types/docks').DevframeViewAction.toggle toggle action}
+   * on or off without touching the selection. Turning it on hides an open panel;
+   * turning it off restores that panel.
+   *
+   * @returns Whether the action's state changed
+   */
+  setActionActive: (id: string, active: boolean) => Promise<boolean>
+  /**
    * Register a **client-only** dock entry, live in this page and merged with
    * the server-provided docks (`devframe:docks` shared state) into
    * {@link entries}. Unlike a dock registered on the node
@@ -221,6 +234,7 @@ export interface DockRegistration<T extends DevframeDockEntry = DevframeDockEntr
 
 export interface DockEntryState {
   entryMeta: DevframeDockEntry
+  /** Whether the entry is selected, or, for a toggle action, whether it is on. */
   readonly isActive: boolean
   domElements: {
     iframe?: HTMLIFrameElement | null

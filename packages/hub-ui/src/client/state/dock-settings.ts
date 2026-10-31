@@ -49,13 +49,13 @@ export interface SplitGroupsResult {
   visible: DevframeDockEntriesGrouped
   overflow: DevframeDockEntriesGrouped
   /**
-   * The recent dock raised out of the overflow into its own slot, rendered
-   * between the visible items and the overflow button. `null` when no slot is
-   * reserved: no recent dock, no overflow at all, or a recent dock that
-   * already sits inside the natural visible slice (it renders in place there
-   * instead of occupying a redundant slot).
+   * The recent docks raised into their own slots, newest first, rendered
+   * after the visible items and before the overflow button. Empty when no
+   * recent dock needs a slot: a recent dock that already sits inside the
+   * visible slice (a top-level entry, or a pinned member) renders in place
+   * there instead.
    */
-  recent: DevframeDockEntry | null
+  recent: DevframeDockEntry[]
 }
 
 /**
@@ -144,7 +144,8 @@ export function getEntryGroup(
  * `'default'`); the group's `category` is the *outer* bucket the whole group
  * lives in, so it never bleeds into the sub-category split here. A pinned member
  * moves to a `~pinned` sub-category (leading the group, via
- * {@link PINNED_CATEGORY_ORDER}). Sub-categories are ordered by the same
+ * {@link PINNED_CATEGORY_ORDER}); the dock bar also shows it on its own (see
+ * `liftPinnedMembers` on {@link docksGroupByCategories}). Sub-categories are ordered by the same
  * {@link DEFAULT_CATEGORIES_ORDER} table as top-level categories, unless the
  * group entry itself sets {@link DevframeViewGroup.categoryOrder}, whose
  * weights take precedence for this group's sub-categories only, leaving every
@@ -295,40 +296,52 @@ function compareEntryOrder(a: DevframeDockEntry, b: DevframeDockEntry, docksCust
   return ib === ia ? getDefaultTitle(b).localeCompare(getDefaultTitle(a)) : ia - ib
 }
 
-// A pinned top-level entry or group button re-buckets into `~pinned`; a grouped
-// member's outer bucket is left alone so pinning never promotes it onto the bar.
+// A pinned top-level entry or group button re-buckets into `~pinned`. A grouped
+// member's outer bucket is its group's category, unless the member is lifted
+// onto the bar (`liftPinnedMembers`), where it joins `~pinned` too.
 function resolveOuterCategory(
   entry: DevframeDockEntry,
   resolvedGroupCategory: string | undefined,
   docksPinned: readonly string[],
+  liftPinnedMembers: boolean,
 ): string {
   const ownCategory = resolvedGroupCategory ?? entry.category ?? 'default'
-  return docksPinned.includes(entry.id) && resolvedGroupCategory === undefined
+  return docksPinned.includes(entry.id) && (resolvedGroupCategory === undefined || liftPinnedMembers)
     ? PINNED_CATEGORY
     : ownCategory
+}
+
+// Collapse grouped members out of the top-level bar (orphans stay visible).
+// A lifted pinned member stays, so it gets its own button on the bar.
+function isCollapsedMember(
+  entry: DevframeDockEntry,
+  resolvedGroupCategory: string | undefined,
+  docksPinned: readonly string[],
+  liftPinnedMembers: boolean,
+): boolean {
+  return resolvedGroupCategory !== undefined && !(liftPinnedMembers && docksPinned.includes(entry.id))
 }
 
 function bucketEntriesByCategory(
   entries: DevframeDockEntry[],
   groupCategories: Map<string, string>,
   settings: Immutable<DevframeDocksUserSettings>,
-  options: { includeHidden: boolean, whenContext: WhenContext | undefined, collapseGroups: boolean, ignoreCategoryHidden: boolean },
+  options: { includeHidden: boolean, whenContext: WhenContext | undefined, collapseGroups: boolean, ignoreCategoryHidden: boolean, liftPinnedMembers: boolean },
 ): Map<string, DevframeDockEntry[]> {
   const { docksCategoriesHidden, docksPinned } = settings
-  const { includeHidden, whenContext, collapseGroups, ignoreCategoryHidden } = options
+  const { includeHidden, whenContext, collapseGroups, ignoreCategoryHidden, liftPinnedMembers } = options
   const map = new Map<string, DevframeDockEntry[]>()
   for (const entry of entries) {
     const resolvedGroupCategory = entry.type !== 'group' && entry.groupId
       ? groupCategories.get(entry.groupId)
       : undefined
 
-    // Collapse grouped members out of the top-level bar (orphans stay visible)
-    if (collapseGroups && resolvedGroupCategory !== undefined)
+    if (collapseGroups && isCollapsedMember(entry, resolvedGroupCategory, docksPinned, liftPinnedMembers))
       continue
     if (!includeHidden && isEntryRenderHidden(entry, settings, whenContext))
       continue
 
-    const category = resolveOuterCategory(entry, resolvedGroupCategory, docksPinned)
+    const category = resolveOuterCategory(entry, resolvedGroupCategory, docksPinned, liftPinnedMembers)
     // `~pinned` is never hideable, so a pinned entry survives its category being hidden.
     if (!includeHidden && !ignoreCategoryHidden && docksCategoriesHidden.includes(category))
       continue
@@ -365,8 +378,12 @@ function bucketEntriesByCategory(
  * entry or group button, or the in-group sub-category for a member (the
  * members-only in-group split has no group entries, so `resolvedGroupCategory`
  * is undefined there and the member's own category slot is the one replaced).
- * A grouped member's outer bucket is never re-pinned, so pinning a member
- * reorders it inside its group rather than promoting it onto the top-level bar.
+ * A grouped member's outer bucket is re-pinned only with `liftPinnedMembers`:
+ * the dock bar sets it, so a pinned member gets its own bar button (opening
+ * it opens that member, and its group button lights up as active) as well as
+ * leading inside its group. Without it (the settings list, which already
+ * shows members under their group) pinning only reorders the member inside
+ * its group.
  * Because the pinned bucket is chosen before the category-hide check and is
  * itself never hideable, a pinned entry stays visible even when its original
  * category is hidden.
@@ -380,13 +397,13 @@ function bucketEntriesByCategory(
 export function docksGroupByCategories(
   entries: DevframeDockEntry[],
   settings: Immutable<DevframeDocksUserSettings>,
-  options?: { includeHidden?: boolean, whenContext?: WhenContext, collapseGroups?: boolean, ignoreCategoryHidden?: boolean, categoryOrderOverride?: Record<string, number> },
+  options?: { includeHidden?: boolean, whenContext?: WhenContext, collapseGroups?: boolean, ignoreCategoryHidden?: boolean, liftPinnedMembers?: boolean, categoryOrderOverride?: Record<string, number> },
 ): DevframeDockEntriesGrouped {
   const { docksCustomOrder } = settings
-  const { includeHidden = false, whenContext, collapseGroups = false, ignoreCategoryHidden = false, categoryOrderOverride } = options ?? {}
+  const { includeHidden = false, whenContext, collapseGroups = false, ignoreCategoryHidden = false, liftPinnedMembers = false, categoryOrderOverride } = options ?? {}
 
   const groupCategories = collectGroupCategories(entries)
-  const map = bucketEntriesByCategory(entries, groupCategories, settings, { includeHidden, whenContext, collapseGroups, ignoreCategoryHidden })
+  const map = bucketEntriesByCategory(entries, groupCategories, settings, { includeHidden, whenContext, collapseGroups, ignoreCategoryHidden, liftPinnedMembers })
 
   const grouped = Array
     .from(map.entries())
@@ -481,50 +498,60 @@ function groupsHaveEntry(groups: DevframeDockEntriesGrouped, id: string): boolea
   return groups.some(([, items]) => items.some(item => item.id === id))
 }
 
+function countItems(groups: DevframeDockEntriesGrouped): number {
+  return groups.reduce((acc, [, items]) => acc + items.length, 0)
+}
+
+/**
+ * Slice at `capacity`, but fold a lone overflowing entry back into `visible`:
+ * a whole overflow affordance (button + badge + popover) just to reveal one
+ * icon costs more chrome than it saves, so that entry takes the slot the
+ * button would have used.
+ */
+function splitGroupsWithFold(
+  groups: DevframeDockEntriesGrouped,
+  capacity: number,
+): { visible: DevframeDockEntriesGrouped, overflow: DevframeDockEntriesGrouped } {
+  if (countItems(groups) <= capacity + 1)
+    return { visible: groups, overflow: [] }
+  return splitGroupsAt(groups, capacity)
+}
+
 /**
  * Split grouped entries into visible and overflow based on capacity.
  *
  * A lone overflowing entry folds back into `visible` instead of staying in
- * `overflow`: a whole overflow affordance (button + badge + popover) just to
- * reveal one icon costs more chrome than it saves, so that one entry renders
- * inline in the slot the affordance would have occupied. Folding only
- * triggers for exactly one overflowing entry; two or more still overflow
- * normally.
+ * `overflow` (see {@link splitGroupsWithFold}). Folding only triggers for
+ * exactly one overflowing entry; two or more still overflow normally.
  *
- * With a `recentEntry` (see {@link DockSessionStorage.recentDockId}; resolve
- * it via {@link resolveRecentDockEntry} first), one slot is reserved for the
- * recent dock: the natural items split at `capacity - 1`, the recent entry is
- * lifted out of the overflow buckets, and it is returned as `recent` for the
- * bar to render between the visible items and the overflow button. Total slot
- * count stays at `capacity`. The reservation is skipped (natural split, no
- * `recent`) when there is no overflow to raise out of, or when the recent
- * entry already sits inside the natural visible slice (it renders in place
- * there). A recent entry that is a grouped member never appears as a rail item
- * of its own, so it is always raised (its group button, if any, stays put).
+ * `recentEntries` (see {@link DockSessionStorage.recentDockIds}; resolve them
+ * via {@link resolveRecentDockEntries} first) are the docks the user last
+ * opened from beyond the bar. Each one that is not already in the visible
+ * slice is lifted out of the overflow and returned in `recent`, for the bar to
+ * render in its own slot after the visible items. Recent slots come on top of
+ * `capacity`, so opening a tool never pushes a bar item into the overflow. A
+ * grouped member has no bar button of its own (unless it is pinned), so a
+ * recent member always gets a slot, even when the bar does not overflow.
  */
 export function docksSplitGroupsWithCapacity(
   groups: DevframeDockEntriesGrouped,
   capacity: number,
-  recentEntry: DevframeDockEntry | null = null,
+  recentEntries: readonly DevframeDockEntry[] = [],
 ): SplitGroupsResult {
-  const natural = splitGroupsAt(groups, capacity)
+  const natural = splitGroupsWithFold(groups, capacity)
+  const recent = recentEntries.filter(entry => !groupsHaveEntry(natural.visible, entry.id))
+  if (recent.length === 0)
+    return { ...natural, recent }
 
-  if (natural.overflow.reduce((acc, [, items]) => acc + items.length, 0) === 1)
-    return { visible: [...natural.visible, ...natural.overflow], overflow: [], recent: null }
-
-  if (!recentEntry || natural.overflow.length === 0 || groupsHaveEntry(natural.visible, recentEntry.id))
-    return { ...natural, recent: null }
-
-  // Reserve one slot for the recent dock. The lone-overflow fold cannot apply
-  // here: a non-empty natural overflow implies at least two overflowing
-  // entries (a single one already folded above), so the reduced split always
-  // keeps two or more even after the recent entry is lifted out.
-  const reduced = splitGroupsAt(groups, Math.max(capacity - 1, 0))
-  const overflow = reduced.overflow
-    .map(([category, items]) => [category, items.filter(item => item.id !== recentEntry.id)] as [string, DevframeDockEntry[]])
+  // Raised entries sit beyond the visible slice, so dropping them from the
+  // groups leaves the visible slice as it was (or lets the lone-overflow fold
+  // apply to what remains).
+  const raisedIds = new Set(recent.map(entry => entry.id))
+  const remaining = groups
+    .map(([category, items]) => [category, items.filter(item => !raisedIds.has(item.id))] as [string, DevframeDockEntry[]])
     .filter(([, items]) => items.length > 0)
 
-  return { visible: reduced.visible, overflow, recent: recentEntry }
+  return { ...splitGroupsWithFold(remaining, capacity), recent }
 }
 
 /** Split an edge toolbar's entries using its available main-axis space. */
@@ -539,7 +566,7 @@ export function docksSplitGroupsBySize(
   const separators = Math.max(0, groups.length - 1)
   const fullSize = total * itemSize + separators * separatorSize + Math.max(0, total + separators - 1) * gap
   if (fullSize <= availableSize)
-    return docksSplitGroupsWithCapacity(groups, total)
+    return { visible: groups, overflow: [], recent: [] }
 
   // Reserve the overflow button first. Each visible entry/divider adds its
   // size plus a gap to the button or the next entry.
@@ -556,29 +583,16 @@ export function docksSplitGroupsBySize(
   }
   // Preserve a lone overflow entry: folding it inline can add a category
   // divider that exceeds the measured space.
-  return { ...splitGroupsAt(groups, capacity), recent: null }
+  return { ...splitGroupsAt(groups, capacity), recent: [] }
 }
 
-/**
- * Resolve a persisted recent-dock id (`DockSessionStorage.recentDockId`) to
- * the entry the float bar can raise, or `null` when the id no longer maps to a
- * raisable entry: it was unregistered, it is a group button (only concrete
- * docks occupy the recent slot), it is a grouped member hidden from its group,
- * or it is a top-level entry no longer present on the rail (hidden via user
- * settings, `when`, or `visibility`).
- */
-export function resolveRecentDockEntry(options: {
-  /** The raw dock entries (`context.docks.entries`). */
-  entries: DevframeDockEntry[]
-  /** The grouped rail items (`context.docks.groupedEntries`). */
-  groups: DevframeDockEntriesGrouped
-  recentId: string | null | undefined
-  settings?: Immutable<DevframeDocksUserSettings>
-  whenContext?: WhenContext
-}): DevframeDockEntry | null {
-  const { entries, groups, recentId, settings, whenContext } = options
-  if (!recentId)
-    return null
+function resolveRecentDockEntry(
+  entries: DevframeDockEntry[],
+  groups: DevframeDockEntriesGrouped,
+  recentId: string,
+  settings: Immutable<DevframeDocksUserSettings> | undefined,
+  whenContext: WhenContext | undefined,
+): DevframeDockEntry | null {
   const entry = entries.find(e => e.id === recentId)
   if (!entry || entry.type === 'group')
     return null
@@ -591,48 +605,71 @@ export function resolveRecentDockEntry(options: {
 }
 
 /**
- * Decide which dock id the recent slot should remember after a selection.
- *
- * The recent slot keeps the last dock selected from somewhere *not* on the
- * bar (the overflow popover or a group popover) one click away, so
- * deselecting it doesn't fold it straight back out of reach:
- *
- * - A grouped member always becomes the recent dock: its own entry never has
- *   a rail slot (only its group button does), so raising it is the only way
- *   the concrete selection stays directly toggleable.
- * - A top-level entry becomes the recent dock only when it was selected from
- *   the overflow popover (it is absent from the bar as currently rendered,
- *   including the recent slot itself). Selecting an entry already visible on
- *   the bar leaves the current recent dock in place.
- * - Anything off the rail entirely (e.g. a built-in notice) leaves the recent
- *   dock unchanged.
- *
- * Note the split runs against the *current* recent entry, so "visible" means
- * what the user actually saw when clicking. A newly selected entry that sits
- * inside the full-capacity natural slice still becomes the recent dock here;
- * {@link docksSplitGroupsWithCapacity} then renders it in its natural place,
- * releasing the reserved slot back to the bar.
+ * Resolve the persisted recent-dock ids (`DockSessionStorage.recentDockIds`)
+ * to the entries the float bar can raise, newest first and capped at `limit`.
+ * An id is dropped when it no longer maps to a raisable entry: it was
+ * unregistered, it is a group button (only concrete docks occupy a recent
+ * slot), it is a grouped member hidden from its group, or it is a top-level
+ * entry no longer present on the rail (hidden via user settings, `when`, or
+ * `visibility`).
  */
-export function resolveNextRecentDockId(options: {
+export function resolveRecentDockEntries(options: {
+  /** The raw dock entries (`context.docks.entries`). */
+  entries: DevframeDockEntry[]
+  /** The grouped rail items (`context.docks.groupedEntries`). */
+  groups: DevframeDockEntriesGrouped
+  recentIds: readonly string[] | null | undefined
+  /** Maximum number of recent slots ({@link DevframeDocksUserSettings.docksRecentLimit}). */
+  limit: number
+  settings?: Immutable<DevframeDocksUserSettings>
+  whenContext?: WhenContext
+}): DevframeDockEntry[] {
+  const { entries, groups, recentIds, limit, settings, whenContext } = options
+  if (!recentIds || limit <= 0)
+    return []
+  return recentIds
+    .map(id => resolveRecentDockEntry(entries, groups, id, settings, whenContext))
+    .filter((entry): entry is DevframeDockEntry => entry !== null)
+    .slice(0, limit)
+}
+
+/**
+ * Decide which dock ids the recent slots should remember after a selection.
+ *
+ * The recent slots keep the docks last opened from somewhere *not* on the
+ * bar (the overflow popover or a group popover) one click away:
+ *
+ * - A selection already reachable from the bar as rendered (a visible item,
+ *   including a pinned member, or a current recent slot) leaves the list
+ *   alone, so the slots never reshuffle under the cursor.
+ * - Otherwise a grouped member, or a top-level entry selected from the
+ *   overflow popover, moves to the front. The oldest id falls off past
+ *   `limit`.
+ * - Anything off the rail entirely (e.g. a built-in notice) leaves the list
+ *   unchanged.
+ */
+export function resolveNextRecentDockIds(options: {
   /** The grouped rail items (`context.docks.groupedEntries`). */
   groups: DevframeDockEntriesGrouped
   /** The bar's inline item capacity ({@link DockLayout.maxVisibleItems}). */
   capacity: number
-  /** The current recent entry, resolved via {@link resolveRecentDockEntry}. */
-  recentEntry: DevframeDockEntry | null
+  /** The current recent entries, resolved via {@link resolveRecentDockEntries}. */
+  recentEntries: readonly DevframeDockEntry[]
   /** The newly selected entry (post group→member resolution). */
   selected: DevframeDockEntry
   /** Whether `selected` is a member of a registered group. */
   selectedIsGroupMember: boolean
-}): string | null {
-  const { groups, capacity, recentEntry, selected, selectedIsGroupMember } = options
-  if (selectedIsGroupMember)
-    return selected.id
-  const current = recentEntry?.id ?? null
-  const split = docksSplitGroupsWithCapacity(groups, capacity, recentEntry)
-  if (split.recent?.id === selected.id || groupsHaveEntry(split.visible, selected.id))
+  /** Maximum number of recent slots; `0` turns the slots off. */
+  limit: number
+}): string[] {
+  const { groups, capacity, recentEntries, selected, selectedIsGroupMember, limit } = options
+  if (limit <= 0)
+    return []
+  const current = recentEntries.map(entry => entry.id).slice(0, limit)
+  const split = docksSplitGroupsWithCapacity(groups, capacity, recentEntries)
+  if (split.recent.some(entry => entry.id === selected.id) || groupsHaveEntry(split.visible, selected.id))
     return current
-  if (groupsHaveEntry(split.overflow, selected.id))
-    return selected.id
+  if (selectedIsGroupMember || groupsHaveEntry(split.overflow, selected.id))
+    return [selected.id, ...current.filter(id => id !== selected.id)].slice(0, limit)
   return current
 }

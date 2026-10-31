@@ -8,6 +8,10 @@ export { createMcpServer }
 export { CreateMcpServerOptions }
 export { McpConnectionInfo }
 export { McpFetchHandler }
+export { McpResourcesChangedHook }
+export { McpResourceTemplate }
+export { McpResourceTemplateContent }
+export { McpResourceTemplateEntry }
 export { McpServerHandle }
 export { MountedMcpHttp }
 export { mountMcpHttp }

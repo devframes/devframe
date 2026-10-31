@@ -1,4 +1,5 @@
 import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/transports/ws-server'
+import type { Server } from 'node:http'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
 import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
@@ -9,6 +10,7 @@ import { open } from 'devframe/utils/open'
 import { withBase } from 'devframe/utils/url'
 import { H3, toNodeHandler } from 'h3'
 import { diagnostics } from '../node/diagnostics'
+import { isAddressInUse, listenWithLoopbackTwin } from '../node/listen'
 import { normalizeHttpServerUrl } from '../node/utils'
 import { normalizeBasePath, resolveBasePath, resolveDevServerPort } from './_shared'
 import { getInstanceInternals, initDevframe } from './initiate'
@@ -22,9 +24,15 @@ export interface CreateDevServerOptions {
   /**
    * Port to listen on. When omitted, falls back to
    * {@link resolveDevServerPort}, which respects `def.cli?.port` /
-   * `portRange` / `random`.
+   * `portRange` / `random`. A port set here is used as given: if it is
+   * taken, startup fails (`DF0052`) instead of moving to another port.
    */
   port?: number
+  /**
+   * Preferred port when `port` is omitted, passed to
+   * {@link resolveDevServerPort}. Default: `def.cli?.port ?? 9999`.
+   */
+  defaultPort?: number
   /**
    * Parsed flag bag forwarded to `setup(ctx, { flags })`. The dev
    * server itself only reads `flags.open` from this bag, and only when
@@ -147,7 +155,6 @@ export async function createDevServer(
     throw diagnostics.DF0058({ id: def.id })
 
   const host = options.host ?? def.cli?.host ?? 'localhost'
-  const requestedPort = options.port ?? await resolveDevServerPort(def, { host })
   const flags = options.flags ?? {}
   const basePath = options.basePath ? normalizeBasePath(options.basePath) : resolveBasePath(def, 'standalone')
   const app = options.app ?? new H3()
@@ -157,27 +164,7 @@ export async function createDevServer(
   // starts first so the shared WS tier and advertised origin reflect the real
   // bound port (`port: 0` binds an ephemeral one).
   const server = createServer(toNodeHandler(app))
-  try {
-    await new Promise<void>((resolveListen, rejectListen) => {
-      const onError = (error: Error): void => rejectListen(error)
-      // Without this listener a failed bind emits `error` with nobody
-      // attached (an uncaughtException) and the `listen` callback never
-      // fires, so this promise never settles.
-      server.once('error', onError)
-      server.listen(requestedPort, host, () => {
-        server.removeListener('error', onError)
-        resolveListen()
-      })
-    })
-  }
-  catch (error) {
-    throw diagnostics.DF0052({
-      host,
-      port: requestedPort,
-      reason: error instanceof Error ? error.message : String(error),
-      cause: error,
-    })
-  }
+  const { requestedPort, closeLoopbackTwin } = await listenDevServer(server, def, host, options)
   const address = server.address()
   const port = typeof address === 'object' && address ? address.port : requestedPort
   // A wildcard bind host (`0.0.0.0` / `::`) isn't dialable from a browser, so
@@ -220,6 +207,7 @@ export async function createDevServer(
     await devframe.ready
   }
   catch (error) {
+    await closeLoopbackTwin()
     await new Promise<void>(resolveClose => server.close(() => resolveClose()))
     throw error
   }
@@ -244,8 +232,41 @@ export async function createDevServer(
       // transport (and closes any dedicated-port socket server), and disposes
       // MCP sessions; the HTTP server is this function's own to close.
       await devframe.close()
+      await closeLoopbackTwin()
       await new Promise<void>(resolveClose => server.close(() => resolveClose()))
     },
+  }
+}
+
+/**
+ * Bind the dev server. `getPort` probes only `host`, so it can call a port
+ * free while another process holds it on the other loopback address of
+ * `localhost`. The twin bind catches that, and a port that was not pinned
+ * moves to the next free one.
+ */
+async function listenDevServer(
+  server: Server,
+  def: DevframeDefinition,
+  host: string,
+  options: CreateDevServerOptions,
+): Promise<{ requestedPort: number, closeLoopbackTwin: () => Promise<void> }> {
+  let requestedPort = options.port ?? await resolveDevServerPort(def, { host, defaultPort: options.defaultPort })
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return { requestedPort, closeLoopbackTwin: await listenWithLoopbackTwin(server, requestedPort, host) }
+    }
+    catch (error) {
+      if (options.port == null && attempt < 3 && isAddressInUse(error)) {
+        requestedPort = await resolveDevServerPort(def, { host, defaultPort: requestedPort + 1 })
+        continue
+      }
+      throw diagnostics.DF0052({
+        host,
+        port: requestedPort,
+        reason: error instanceof Error ? error.message : String(error),
+        cause: error,
+      })
+    }
   }
 }
 

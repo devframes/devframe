@@ -1,7 +1,7 @@
 {
   "name": "@devframes/nuxt",
   "type": "module",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "Nuxt module that exposes a Nuxt app as a devframe client.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
@@ -50,6 +50,7 @@
   "peerDependencies": {
     "@devframes/hub": "workspace:*",
     "@nuxt/kit": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
+    "@nuxt/schema": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
     "devframe": "workspace:*",
     "vue": "^3.0.0"
   },
@@ -67,6 +68,7 @@
   "devDependencies": {
     "@devframes/hub": "workspace:*",
     "@nuxt/kit": "catalog:build",
+    "@nuxt/schema": "catalog:build",
     "@types/node": "catalog:types",
     "devframe": "workspace:*",
     "nuxt": "catalog:build",

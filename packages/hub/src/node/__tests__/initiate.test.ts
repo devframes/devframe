@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DOCK_RENDERERS_STATE_KEY } from '../../constants'
 import { DEVFRAMES_HUB_BASE, initHub } from '../initiate'
 
@@ -324,7 +324,7 @@ describe('initHub', () => {
     }
   })
 
-  describe('aggregate MCP shared-state exposure', () => {
+  describe('aggregate MCP resources', () => {
     const origin = 'http://localhost:3000'
 
     function makeStateFrame(): DevframeDefinition {
@@ -420,6 +420,40 @@ describe('initHub', () => {
       finally {
         await hub.close()
       }
+    })
+
+    it('serves mcp.resourceTemplates and wires mcp.onResourcesChanged to the hub context', async () => {
+      const wsPort = await getPort({ port: 18242, host: '127.0.0.1' })
+      const unsubscribe = vi.fn()
+      const onResourcesChanged = vi.fn(() => unsubscribe)
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: {
+          resourceTemplates: [{
+            uriTemplate: 'hub://frame/{id}',
+            name: 'frame',
+            list: () => [{ uri: 'hub://frame/alpha', name: 'alpha' }],
+            read: params => ({ json: { id: params.id } }),
+          }],
+          onResourcesChanged,
+        },
+        devframes: [makeFrame('alpha')],
+      })
+
+      try {
+        await hub.ready
+        expect(await callMcp(hub, 'resources/templates/list')).toContain('"uriTemplate":"hub://frame/{id}"')
+        expect(onResourcesChanged).toHaveBeenCalledWith(expect.any(Function), await hub.context)
+        expect(await callMcp(hub, 'resources/list')).toContain('"uri":"hub://frame/alpha"')
+        expect(await callMcp(hub, 'resources/read', { uri: 'hub://frame/beta' })).toContain('\\"id\\": \\"beta\\"')
+      }
+      finally {
+        await hub.close()
+      }
+      expect(unsubscribe).toHaveBeenCalledTimes(1)
     })
   })
 

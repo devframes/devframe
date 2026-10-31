@@ -116,6 +116,9 @@ const isCollapsed = computed(() => {
     return false
   if (hasPanelContent.value)
     return false
+  // Keep an active tool's button in sight while it hides the panel.
+  if (context.when.context.dockActionActive)
+    return false
   if (store.inactiveTimeout === 0)
     return true
   // @ts-expect-error compatibility (mirrors Dock.vue's own touch-device check)
