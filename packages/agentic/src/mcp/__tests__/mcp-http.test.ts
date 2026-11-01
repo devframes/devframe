@@ -130,6 +130,28 @@ describe('mcp adapter (streamable http route)', () => {
     }
   })
 
+  it('serves mcp.prompts through prompts/list and prompts/get', async () => {
+    const started = await boot({
+      prompts: [{
+        name: 'greet',
+        arguments: [{ name: 'who', required: true }],
+        get: ({ who }) => ({ messages: [{ role: 'user', content: { type: 'text', text: `Greet ${who}.` } }] }),
+      }],
+    })
+    const client = new Client({ name: 'test-client', version: '0.0.0' })
+    try {
+      await client.connect(originTransport(started))
+      const { prompts } = await client.listPrompts()
+      expect(prompts).toEqual([{ name: 'greet', arguments: [{ name: 'who', required: true }] }])
+
+      const prompt = await client.getPrompt({ name: 'greet', arguments: { who: 'the team' } })
+      expect(prompt.messages).toEqual([{ role: 'user', content: { type: 'text', text: 'Greet the team.' } }])
+    }
+    finally {
+      await client.close()
+    }
+  })
+
   it('serves mcp.resourceTemplates through resources/templates/list and resources/read', async () => {
     const started = await boot({
       resourceTemplates: [{

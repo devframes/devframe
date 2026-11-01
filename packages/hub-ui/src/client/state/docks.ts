@@ -1,9 +1,47 @@
 import type { DevframeDockEntry } from '@devframes/hub'
-import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
+import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage, DocksContext, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { Ref, ShallowRef } from 'vue'
 import { createEventEmitter } from 'devframe/utils/events'
 import { markRaw, reactive, shallowRef, watch } from 'vue'
+
+/**
+ * The id of the dock whose view is shown now, which the dock marks
+ * `aria-current`: none for an action, and none while the panel of an
+ * embedded dock is closed.
+ */
+export function getCurrentDockId(context: DocksContext): string | undefined {
+  const entry = context.docks.selected
+  if (!entry || entry.type === 'action')
+    return undefined
+  if (context.clientType === 'embedded' && !context.panel.session.open)
+    return undefined
+  return entry.id
+}
+
+/**
+ * Whether `entry` is the current dock, or a group whose member is the
+ * current dock and has no button of its own on the dock bar (a pinned or
+ * recent button), so the group button stands in for it. `currentId` is
+ * {@link getCurrentDockId}.
+ */
+export function holdsCurrentDock(context: DocksContext, entry: DevframeDockEntry, currentId: string | undefined): boolean {
+  if (!currentId)
+    return false
+  if (entry.id === currentId)
+    return true
+  return entry.type === 'group'
+    && context.docks.entries.find(e => e.id === currentId)?.groupId === entry.id
+    && !hasOwnDockButton(context, currentId)
+}
+
+/** Whether the dock has its own button on the dock bar: pinned out of its group, or raised as a recent dock. */
+function hasOwnDockButton(context: DocksContext, id: string): boolean {
+  const session = context.panel.session
+  const recentIds = session.recentDockIds ?? (session.recentDockId ? [session.recentDockId] : [])
+  return recentIds.includes(id)
+    || context.docks.groupedEntries.some(([, items]) => items.some(entry => entry.id === id))
+}
 
 export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
   return {

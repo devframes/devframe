@@ -1,4 +1,5 @@
 import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeDocksUserSettings, DevframeViewGroup } from '@devframes/hub'
+import type { DocksContext } from '@devframes/hub/client'
 import type { Immutable } from 'devframe/utils/shared-state'
 import type { WhenContext } from 'devframe/utils/when'
 import type { MessageKey } from '../i18n'
@@ -132,6 +133,18 @@ export function getEntryGroup(
     return undefined
   const group = entries.find(e => e.id === entry.groupId)
   return group?.type === 'group' ? group : undefined
+}
+
+/**
+ * The entry the dock panel shows, or `null` when the panel is hidden. The panel
+ * shows only while `session.open` is true: a toggle action closes it and keeps
+ * the selection, so the same view comes back when the tool turns off.
+ */
+export function getPanelViewEntry(context: Pick<DocksContext, 'panel' | 'docks'>): DevframeDockEntry | null {
+  const entry = context.docks.selected
+  if (!context.panel.session.open || !entry || entry.type === 'action')
+    return null
+  return entry
 }
 
 /**

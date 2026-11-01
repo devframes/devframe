@@ -383,6 +383,7 @@ async function mountMcpRoute(
     instructions: config.instructions,
     resourceTemplates: config.resourceTemplates,
     onResourcesChanged: config.onResourcesChanged,
+    prompts: config.prompts,
     authorization: config.authorization,
     allowedOrigins: config.allowedOrigins,
   })

@@ -90,6 +90,7 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0081](/errors/DF0081) | error | Invalid MCP Content Blocks |
 | [DF0082](/errors/DF0082) | error | Addressed Client Not Connected |
 | [DF0084](/errors/DF0084) | error | Invalid MCP Resource Template |
+| [DF0085](/errors/DF0085) | error | Repeated MCP Prompt Name |
 
 ## Hub: context & lifecycle (DF80xx)
 

@@ -526,6 +526,7 @@ export function initHub(options: InitHubOptions): HubInstance {
         instructions: mcpConfig.instructions,
         resourceTemplates: mcpConfig.resourceTemplates,
         onResourcesChanged: mcpConfig.onResourcesChanged,
+        prompts: mcpConfig.prompts,
         authorization: mcpConfig.authorization,
         allowedOrigins: mcpConfig.allowedOrigins,
       })

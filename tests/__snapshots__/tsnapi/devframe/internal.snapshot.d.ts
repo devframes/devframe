@@ -399,6 +399,12 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.";
   };
+  readonly DF0085: {
+    readonly why: (p: {
+      name: string;
+    }) => string;
+    readonly fix: "Give each entry in `prompts` its own `name`. `prompts/get` finds a prompt by its name, so two prompts cannot share one.";
+  };
 }, readonly [(d: import("nostics").Diagnostic, { method }?: {
   method?: "log" | "warn" | "error";
 }) => void], never>;

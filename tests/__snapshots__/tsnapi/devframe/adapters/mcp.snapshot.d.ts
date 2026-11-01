@@ -8,6 +8,10 @@ export { createMcpServer }
 export { CreateMcpServerOptions }
 export { McpConnectionInfo }
 export { McpFetchHandler }
+export { McpPrompt }
+export { McpPromptArgument }
+export { McpPromptMessage }
+export { McpPromptResult }
 export { McpResourcesChangedHook }
 export { McpResourceTemplate }
 export { McpResourceTemplateContent }

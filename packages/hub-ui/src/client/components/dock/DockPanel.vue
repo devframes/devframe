@@ -5,7 +5,7 @@ import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
 import { useElementBounding, useWindowSize } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, toRefs, useTemplateRef } from 'vue'
-import { getEntryGroup } from '../../state/dock-settings'
+import { getEntryGroup, getPanelViewEntry } from '../../state/dock-settings'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
 import ViewEntry from '../views/ViewEntry.vue'
 import { DEFAULT_DOCK_LAYOUT, resolveDockAnchor } from './dock-layout'
@@ -173,7 +173,7 @@ onMounted(() => {
 
 <template>
   <div
-    v-show="context.docks.selected && context.docks.selected.type !== 'action'"
+    v-show="getPanelViewEntry(context)"
     ref="dockPanel"
     class="bg-dock-glass rounded-lg border border-base color-base shadow overflow-hidden"
     :style="panelStyle"

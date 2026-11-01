@@ -123,6 +123,12 @@ const selectedEntry = computed(() => {
   return context.docks.selected
 })
 
+// The bar marks the selection only while its panel shows: a toggle action
+// hides the panel, and a click on the hidden view then reopens it.
+const barSelectedEntry = computed(() => {
+  return context.panel.session.open ? selectedEntry.value : null
+})
+
 // Remember a recent dock whenever the selection lands on an entry that has
 // no slot on the bar as currently rendered (grouped members always; top-level
 // entries when picked from the overflow popover). Observing the selection
@@ -350,7 +356,7 @@ onMounted(() => {
             :context="context"
             :groups="splitEntries.visible"
             :is-vertical="context.panel.isVertical"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
 
@@ -360,7 +366,7 @@ onMounted(() => {
               :context="context"
               :entries="splitEntries.recent"
               :is-vertical="context.panel.isVertical"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
             />
           </template>
@@ -370,7 +376,7 @@ onMounted(() => {
               :context="context"
               :is-vertical="context.panel.isVertical"
               :groups="splitEntries.overflow"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
               @activity="bringUp"
             />
