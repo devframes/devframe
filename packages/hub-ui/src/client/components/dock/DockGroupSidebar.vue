@@ -5,6 +5,7 @@ import { watchDebounced } from '@vueuse/core'
 import { computed, h, ref, useTemplateRef, watch } from 'vue'
 import { t } from '../../i18n'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
+import { getCurrentDockId } from '../../state/docks'
 import { dockTooltipContent, setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
@@ -17,6 +18,8 @@ const props = defineProps<{
   group: DevframeViewGroup
   selectedId: string | null
 }>()
+
+const currentId = computed(() => getCurrentDockId(props.context))
 
 // Vertical rhythm of the rail, in px. Mirrors the Uno classes on the template:
 // each button is `w-8 h-8` (32) and children sit in a `gap-0.5` (2) flex column;
@@ -83,6 +86,10 @@ const overflowGroups = computed(() => split.value.overflow)
 const overflowCount = computed(() => overflowGroups.value.reduce((acc, [, items]) => acc + items.length, 0))
 const hasOverflow = computed(() => overflowCount.value > 0)
 const overflowBadge = computed(() => (overflowCount.value > 9 ? '9+' : overflowCount.value.toString()))
+
+// The shown member is hidden inside the show-more popover.
+const currentInOverflow = computed(() =>
+  !!currentId.value && overflowGroups.value.some(([, items]) => items.some(m => m.id === currentId.value)))
 
 // The current selection is hidden inside the show-more popover.
 const selectedInOverflow = computed(() =>
@@ -190,6 +197,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
         v-for="member of members"
         :key="member.id"
         :aria-label="member.title"
+        :aria-current="currentId === member.id ? 'page' : undefined"
         class="relative flex items-center justify-center w-8 h-8 rounded-lg transition"
         :class="selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
         @pointerenter="showTooltip($event, member)"
@@ -213,6 +221,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
       v-if="hasOverflow"
       ref="moreButton"
       :aria-label="t('dock.showMore')"
+      :aria-current="currentInOverflow ? 'true' : undefined"
       class="relative flex items-center justify-center w-8 h-8 rounded-lg transition mt-auto flex-none"
       :class="moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
       @pointerenter="showTooltip($event, t('dock.showMore'))"
