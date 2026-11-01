@@ -7,7 +7,7 @@ import { useEventListener } from '@vueuse/core'
 import { computed, h, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_SETTINGS } from '../../constants'
 import { t } from '../../i18n'
-import { docksSplitGroupsBySize, getEntryGroup } from '../../state/dock-settings'
+import { docksSplitGroupsBySize, getEntryGroup, getPanelViewEntry } from '../../state/dock-settings'
 import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useDocksOverflowPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
@@ -74,13 +74,11 @@ const splitEntries = computed(() => {
   return docksSplitGroupsBySize(groupedEntries.value, (isVertical.value ? height : width) - settingsSize, item, gap, separatorSize)
 })
 const selectedEntry = computed(() => context.docks.selected)
+// The bar marks the selection only while its panel shows: a toggle action
+// hides the panel, and a click on the hidden view then reopens it.
+const barSelectedEntry = computed(() => context.panel.session.open ? selectedEntry.value : null)
 const activeGroup = computed(() => getEntryGroup(context.docks.entries, selectedEntry.value))
-const hasPanelContent = computed(() => {
-  const entry = selectedEntry.value
-  return context.panel.session.open
-    && !!entry
-    && entry.type !== 'action'
-})
+const hasPanelContent = computed(() => !!getPanelViewEntry(context))
 
 // Auto-collapse (on by default, opt out via `settings.autoCollapseEdgeToolbar:
 // false`): idle-timeout + hover tracking, mirroring Dock.vue's own float-bar
@@ -480,7 +478,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
             :groups="splitEntries.visible"
             :is-vertical="isVertical"
             :rotate="false"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
           <DockOverflowButton
@@ -489,7 +487,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
             :groups="splitEntries.overflow"
             :is-vertical="false"
             :placement="positionDropdownPlacement[store.position]"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
             @activity="bringUp"
           />
@@ -503,7 +501,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
               :context="context"
               :entries="settingsEntries"
               :is-vertical="false"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
             />
           </div>
