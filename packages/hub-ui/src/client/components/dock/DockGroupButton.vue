@@ -47,6 +47,17 @@ const isActive = computed(() => {
   return !!id && members.value.some(m => m.id === id)
 })
 
+// A hidden member can own the panel too, so `aria-current` looks at every member.
+const ownsPanel = computed(() => {
+  const id = props.selected?.id
+  return !!id && getGroupMembers(
+    props.context.docks.entries,
+    props.group.id,
+    settings.value,
+    { includeHidden: true, whenContext: props.context.when.context },
+  ).some(m => m.id === id)
+})
+
 // A member toggle action that is on lights the button up too, without owning the panel.
 const hasActiveTool = computed(() => members.value.some(m => m.type === 'action' && props.context.docks.getStateById(m.id)?.isActive))
 
@@ -135,7 +146,7 @@ function onClick() {
       :dock="group"
       :is-vertical="isVertical"
       :is-selected="isActive || isPanelVisible || hasActiveTool"
-      :is-current="isActive"
+      :is-current="ownsPanel"
       :is-dimmed="dimInactive && selected ? !isActive && !hasActiveTool : false"
       :badge="group.badge"
       :badge-variant="group.badgeVariant"

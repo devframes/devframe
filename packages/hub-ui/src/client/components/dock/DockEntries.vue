@@ -79,7 +79,7 @@ function toggleDockEntry(dock: DevframeDockEntry) {
         :dock
         :is-action="dock.type === 'action'"
         :is-selected="isDockActive(dock)"
-        :is-current="selected?.id === dock.id"
+        :is-current="dock.type !== 'action' && selected?.id === dock.id"
         :is-dimmed="dimInactive && selected ? !isDockActive(dock) : false"
         :is-vertical="isVertical"
         :badge="dock.badge"

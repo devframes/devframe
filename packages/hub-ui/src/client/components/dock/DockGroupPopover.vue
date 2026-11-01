@@ -65,6 +65,7 @@ function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
       <button
         v-for="member of items"
         :key="member.id"
+        :aria-current="selectedId === member.id ? 'page' : undefined"
         class="flex items-center gap-2 w-full px2 py1.5 rounded text-sm text-left transition"
         :class="selectedId === member.id || context.docks.getStateById(member.id)?.isActive ? 'text-primary bg-active' : 'op80 hover:op100 hover:bg-active'"
         @pointerenter="showTooltip($event, member)"
