@@ -7,6 +7,7 @@ import { createSharedState } from 'devframe/utils/shared-state'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { createDocksContext } from './context'
+import { getPanelViewEntry } from './dock-settings'
 
 interface StubSharedState<Value extends object> extends SharedState<Value> {
   push: (value: Value) => void
@@ -352,6 +353,27 @@ describe('toggle action docks', () => {
     expect(attempts()).toBe(1)
     expect(events.filter(e => e === 'on')).toHaveLength(2)
     expect(events.at(-1)).toBe('on')
+  })
+
+  it('hides the panel view while on and shows the same view and route again when off', async () => {
+    const { context } = await setup()
+    await context.docks.switchEntry('panel')
+    context.docks.selectedRoute = '/fixture/sub-tab'
+    expect(getPanelViewEntry(context)?.id).toBe('panel')
+
+    const offWays = [
+      () => context.docks.switchEntry('tool'),
+      () => context.docks.setActionActive('tool', false),
+      () => context.commands.execute('devframes:stop-active-tool'),
+    ]
+    for (const turnOff of offWays) {
+      await context.docks.switchEntry('tool')
+      expect(getPanelViewEntry(context)).toBeNull()
+      await turnOff()
+      await nextTick()
+      expect(getPanelViewEntry(context)?.id).toBe('panel')
+      expect(context.docks.selectedRoute).toBe('/fixture/sub-tab')
+    }
   })
 
   it('turns off from the script or Escape and restores the panel', async () => {
