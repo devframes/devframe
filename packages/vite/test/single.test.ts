@@ -196,6 +196,31 @@ describe('devframeViteBridge (bridge mode mcp)', () => {
       rpc.$close?.()
     }
   })
+
+  it('at base `/`, leaves the host app\'s own pages to Vite', async () => {
+    const host = '127.0.0.1'
+    const vitePort = await getPort({ port: 19717, host })
+    bridge = devframeViteBridge(defineTestDef(), { host, base: '/', auth: false })
+
+    vite = fakeViteServer()
+    await vite.listen(vitePort, host)
+    await bridge.configureServer(vite)
+    // Vite's own middlewares (transform, static, index.html) run after a
+    // plugin's `configureServer` middlewares.
+    vite.middlewares.use((req, res) => {
+      res.setHeader('content-type', 'text/html')
+      res.end(`vite ${req.url}`)
+    })
+
+    for (const path of ['/', '/main.tsx']) {
+      const res = await fetch(`http://${host}:${vitePort}${path}`)
+      expect(res.status).toBe(200)
+      expect(await res.text()).toBe(`vite ${path}`)
+    }
+
+    const meta = await (await fetch(`http://${host}:${vitePort}/__connection.json`)).json()
+    expect(meta.websocket).toEqual({ path: '__ws' })
+  })
 })
 
 describe('devframeViteBridge (auth default)', () => {

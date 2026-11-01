@@ -175,7 +175,9 @@ export interface DevframeInstance {
    * Connect/Express-style middleware over the same surface, for
    * `viteServer.middlewares.use(handler.nodeMiddleware)` or any other
    * node middleware stack. Mount it un-prefixed: paths outside the base
-   * call `next()` so the rest of the stack keeps working.
+   * call `next()` so the rest of the stack keeps working. At base `/`, a
+   * path no devframe route answers calls `next()` too, so the host app
+   * keeps its own pages.
    */
   nodeMiddleware: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void
   /**
