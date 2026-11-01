@@ -861,6 +861,23 @@ describe('mcp adapter (in-memory)', () => {
       }
     })
 
+    it('checks a required argument named like an Object.prototype key', async () => {
+      const proto: McpPrompt = {
+        name: 'proto',
+        arguments: [{ name: 'constructor', required: true }, { name: 'toString', required: true }],
+        get: args => ({ messages: [{ role: 'user', content: { type: 'text', text: `${args.constructor} ${args.toString}` } }] }),
+      }
+      const { client, cleanup } = await bootPair(true, { prompts: [proto] })
+      try {
+        await expect(client.getPrompt({ name: 'proto' })).rejects.toThrow('needs the argument(s): constructor, toString')
+        const prompt = await client.getPrompt({ name: 'proto', arguments: { constructor: 'a', toString: 'b' } })
+        expect(prompt.messages[0]!.content).toEqual({ type: 'text', text: 'a b' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
     it('sends an error thrown by get to the client', async () => {
       const broken: McpPrompt = {
         name: 'broken',
