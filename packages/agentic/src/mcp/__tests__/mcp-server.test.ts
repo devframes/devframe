@@ -1,11 +1,11 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { DevframeHost, McpContentBlock, McpResourceTemplate } from 'devframe/types'
+import type { DevframeHost, McpContentBlock, McpPrompt, McpResourceTemplate } from 'devframe/types'
 import { Client, InMemoryTransport } from '@modelcontextprotocol/client'
 import { withMcpContent } from 'devframe'
 import { createHostContext } from 'devframe/node'
 import * as v from 'valibot'
 import { describe, expect, it, vi } from 'vitest'
-import { bridgeListChanged, buildMcpServerFromContext, compileResourceTemplates } from '../build-server'
+import { bridgeListChanged, buildMcpServerFromContext, compilePrompts, compileResourceTemplates } from '../build-server'
 
 /** A 1x1 PNG. */
 const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
@@ -32,7 +32,7 @@ function nullHost(): DevframeHost {
 
 async function bootPair(
   exposeSharedState: boolean | ((key: string) => boolean) = true,
-  { instructions, resourceTemplates }: { instructions?: string, resourceTemplates?: McpResourceTemplate[] } = {},
+  { instructions, resourceTemplates, prompts }: { instructions?: string, resourceTemplates?: McpResourceTemplate[], prompts?: McpPrompt[] } = {},
 ) {
   const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
 
@@ -42,6 +42,7 @@ async function bootPair(
     exposeSharedState,
     instructions,
     resourceTemplates: compileResourceTemplates(resourceTemplates),
+    prompts: compilePrompts(prompts),
   })
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
@@ -773,6 +774,129 @@ describe('mcp adapter (in-memory)', () => {
       const start = performance.now()
       expect(many!.match(uri)).toBeUndefined()
       expect(performance.now() - start).toBeLessThan(500)
+    })
+  })
+
+  describe('prompts', () => {
+    const review: McpPrompt = {
+      name: 'review',
+      title: 'Review a file',
+      description: 'Ask for a review of one file.',
+      arguments: [
+        { name: 'file', description: 'The file to review.', required: true },
+        { name: 'focus' },
+      ],
+      get: ({ file, focus }) => ({
+        description: `Review ${file}`,
+        messages: [{ role: 'user', content: { type: 'text', text: `Review ${file}${focus ? ` for ${focus}` : ''}.` } }],
+      }),
+    }
+    const hello: McpPrompt = {
+      name: 'hello',
+      get: async () => ({ messages: [{ role: 'user', content: { type: 'text', text: 'Hello.' } }] }),
+    }
+
+    it('declares the prompts capability only when prompts are set', async () => {
+      const withPrompts = await bootPair(true, { prompts: [hello] })
+      const without = await bootPair(true)
+      try {
+        expect(withPrompts.client.getServerCapabilities()?.prompts).toEqual({ listChanged: false })
+        expect(without.client.getServerCapabilities()?.prompts).toBeUndefined()
+      }
+      finally {
+        await withPrompts.cleanup()
+        await without.cleanup()
+      }
+    })
+
+    it('lists each prompt with its arguments', async () => {
+      const { client, cleanup } = await bootPair(true, { prompts: [review, hello] })
+      try {
+        const { prompts } = await client.listPrompts()
+        expect(prompts).toEqual([
+          {
+            name: 'review',
+            title: 'Review a file',
+            description: 'Ask for a review of one file.',
+            arguments: [
+              { name: 'file', description: 'The file to review.', required: true },
+              { name: 'focus' },
+            ],
+          },
+          { name: 'hello' },
+        ])
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('builds the messages from the arguments, sync or async', async () => {
+      const { client, cleanup } = await bootPair(true, { prompts: [review, hello] })
+      try {
+        expect(await client.getPrompt({ name: 'review', arguments: { file: 'src/main.ts', focus: 'errors' } })).toEqual({
+          description: 'Review src/main.ts',
+          messages: [{ role: 'user', content: { type: 'text', text: 'Review src/main.ts for errors.' } }],
+        })
+        expect(await client.getPrompt({ name: 'hello' })).toEqual({
+          messages: [{ role: 'user', content: { type: 'text', text: 'Hello.' } }],
+        })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('answers invalid params for an unknown prompt or a missing required argument', async () => {
+      const get = vi.fn(review.get)
+      const { client, cleanup } = await bootPair(true, { prompts: [{ ...review, get }] })
+      try {
+        await expect(client.getPrompt({ name: 'nope' })).rejects.toThrow('unknown prompt "nope"')
+        await expect(client.getPrompt({ name: 'review' })).rejects.toThrow('needs the argument(s): file')
+        await expect(client.getPrompt({ name: 'review', arguments: { file: '' } })).rejects.toThrow('needs the argument(s): file')
+        expect(get).not.toHaveBeenCalled()
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('checks a required argument named like an Object.prototype key', async () => {
+      const proto: McpPrompt = {
+        name: 'proto',
+        arguments: [{ name: 'constructor', required: true }, { name: 'toString', required: true }],
+        get: args => ({ messages: [{ role: 'user', content: { type: 'text', text: `${args.constructor} ${args.toString}` } }] }),
+      }
+      const { client, cleanup } = await bootPair(true, { prompts: [proto] })
+      try {
+        await expect(client.getPrompt({ name: 'proto' })).rejects.toThrow('needs the argument(s): constructor, toString')
+        const prompt = await client.getPrompt({ name: 'proto', arguments: { constructor: 'a', toString: 'b' } })
+        expect(prompt.messages[0]!.content).toEqual({ type: 'text', text: 'a b' })
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('sends an error thrown by get to the client', async () => {
+      const broken: McpPrompt = {
+        name: 'broken',
+        get: () => {
+          throw new Error('no ideas left')
+        },
+      }
+      const { client, cleanup } = await bootPair(true, { prompts: [broken] })
+      try {
+        await expect(client.getPrompt({ name: 'broken' })).rejects.toThrow('no ideas left')
+      }
+      finally {
+        await cleanup()
+      }
+    })
+
+    it('throws DF0085 for a repeated prompt name', () => {
+      expect(() => compilePrompts([hello, { ...hello }])).toThrow(expect.objectContaining({ code: 'DF0085' }))
+      expect([...compilePrompts([review, hello]).keys()]).toEqual(['review', 'hello'])
     })
   })
 

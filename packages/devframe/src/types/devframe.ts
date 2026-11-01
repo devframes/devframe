@@ -2,7 +2,7 @@ import type { CAC } from 'cac'
 import type { CliFlagsSchema } from '../adapters/flags'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { DevframeNodeContext } from './context'
-import type { McpResourcesChangedHook, McpResourceTemplate } from './mcp'
+import type { McpPrompt, McpResourcesChangedHook, McpResourceTemplate } from './mcp'
 import type { StaticAssetsSource } from './remote-assets'
 import type { DevframeServiceInput } from './services'
 
@@ -199,6 +199,11 @@ export interface McpRouteOptions {
    * function that removes the subscription; the route calls it on teardown.
    */
   onResourcesChanged?: McpResourcesChangedHook
+  /**
+   * Prompt templates the route serves through MCP `prompts/list` and
+   * `prompts/get`. Omitted or empty declares no `prompts` capability.
+   */
+  prompts?: McpPrompt[]
 }
 
 export interface DevframeCliOptions {

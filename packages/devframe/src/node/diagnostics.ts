@@ -235,5 +235,10 @@ export const diagnostics = defineDiagnostics({
         `MCP resource template "${p.name}" has an invalid \`uriTemplate\` "${p.uriTemplate}": ${p.reason}`,
       fix: 'Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.',
     },
+    DF0085: {
+      why: (p: { name: string }) =>
+        `MCP prompt "${p.name}" is listed more than once.`,
+      fix: 'Give each entry in `prompts` its own `name`. `prompts/get` finds a prompt by its name, so two prompts cannot share one.',
+    },
   },
 })

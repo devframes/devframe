@@ -422,6 +422,32 @@ describe('initHub', () => {
       }
     })
 
+    it('serves mcp.prompts on the aggregate route', async () => {
+      const wsPort = await getPort({ port: 18243, host: '127.0.0.1' })
+      const hub = initHub({
+        base: DEVFRAMES_HUB_BASE,
+        auth: false,
+        host: '127.0.0.1',
+        ws: { port: wsPort },
+        mcp: {
+          prompts: [{
+            name: 'tour',
+            get: () => ({ messages: [{ role: 'user', content: { type: 'text', text: 'Show me around.' } }] }),
+          }],
+        },
+        devframes: [makeFrame('alpha')],
+      })
+
+      try {
+        await hub.ready
+        expect(await callMcp(hub, 'prompts/list')).toContain('"name":"tour"')
+        expect(await callMcp(hub, 'prompts/get', { name: 'tour' })).toContain('Show me around.')
+      }
+      finally {
+        await hub.close()
+      }
+    })
+
     it('serves mcp.resourceTemplates and wires mcp.onResourcesChanged to the hub context', async () => {
       const wsPort = await getPort({ port: 18242, host: '127.0.0.1' })
       const unsubscribe = vi.fn()

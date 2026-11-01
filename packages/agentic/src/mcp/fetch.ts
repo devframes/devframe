@@ -2,7 +2,7 @@ import type { CreateMcpFetchHandlerOptions, DevframeNodeContext, McpAuthorizatio
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
 import { isAllowedOrigin, isLoopbackAddress } from 'devframe/utils/origin'
-import { bridgeListChanged, buildMcpServerFromContext, compileResourceTemplates } from './build-server'
+import { bridgeListChanged, buildMcpServerFromContext, compilePrompts, compileResourceTemplates } from './build-server'
 
 /**
  * Parse exactly one `Authorization: Bearer <token>` credential, returning the
@@ -76,6 +76,8 @@ export function createMcpFetchHandler(
   // Compiled once for the endpoint, not per request; an invalid template
   // fails here, at mount time (DF0084).
   const resourceTemplates = compileResourceTemplates(options.resourceTemplates)
+  // A repeated prompt name fails here too (DF0085).
+  const prompts = compilePrompts(options.prompts)
 
   const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
     serverName: options.serverName,
@@ -83,6 +85,7 @@ export function createMcpFetchHandler(
     exposeSharedState: options.exposeSharedState,
     instructions: options.instructions,
     resourceTemplates,
+    prompts,
   }))
 
   // A single, long-lived bridge from devframe's change events onto the

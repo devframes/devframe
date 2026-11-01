@@ -2,7 +2,7 @@ import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAgentHost } from '../types/agent'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpSetting } from '../types/devframe'
-import type { McpResourcesChangedHook, McpResourceTemplate } from '../types/mcp'
+import type { McpPrompt, McpResourcesChangedHook, McpResourceTemplate } from '../types/mcp'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
 import { getPort } from 'get-port-please'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
@@ -77,6 +77,8 @@ export interface ResolvedMcpConfig {
   resourceTemplates?: McpResourceTemplate[]
   /** Resource-list change subscription from the route options; omitted means none. */
   onResourcesChanged?: McpResourcesChangedHook
+  /** Prompt templates from the route options; omitted means none. */
+  prompts?: McpPrompt[]
   /** The resolved identity policy: a bearer token, callback, or `false`. */
   authorization: McpAuthorization
 }
@@ -109,6 +111,7 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
     ...(mcp.instructions !== undefined ? { instructions: mcp.instructions } : {}),
     ...(mcp.resourceTemplates !== undefined ? { resourceTemplates: mcp.resourceTemplates } : {}),
     ...(mcp.onResourcesChanged !== undefined ? { onResourcesChanged: mcp.onResourcesChanged } : {}),
+    ...(mcp.prompts !== undefined ? { prompts: mcp.prompts } : {}),
     authorization,
   }
 }

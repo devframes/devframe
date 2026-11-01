@@ -1,4 +1,4 @@
-import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization, McpResourcesChangedHook, McpResourceTemplate } from 'devframe'
+import type { ConnectionMeta, DevframeHost, DevframeNodeContext, DevframeStorageScope, McpAuthorization, McpPrompt, McpResourcesChangedHook, McpResourceTemplate } from 'devframe'
 import { DEVFRAME_CONNECTION_META_FILENAME } from 'devframe/constants'
 import { importAgenticMcp } from 'devframe/internal'
 import { serveStaticHandler } from 'devframe/utils/serve-static'
@@ -47,6 +47,8 @@ export interface DevframeNextHostMcpOptions {
   resourceTemplates?: McpResourceTemplate[]
   /** Host subscription; each `notify()` sends `notifications/resources/list_changed`. Default: none. */
   onResourcesChanged?: McpResourcesChangedHook
+  /** Prompt templates served through `prompts/list` and `prompts/get`. Default: none. */
+  prompts?: McpPrompt[]
   /**
    * Origin allow-list beyond the loopback default. `false` disables the
    * origin gate entirely. Note the MCP route rejects `Origin`-less requests
@@ -189,6 +191,7 @@ export function createDevframeNextHost(
         instructions: mcpOptions.instructions,
         resourceTemplates: mcpOptions.resourceTemplates,
         onResourcesChanged: mcpOptions.onResourcesChanged,
+        prompts: mcpOptions.prompts,
         authorization: mcpOptions.authorization,
         allowedOrigins: mcpOptions.allowedOrigins,
       })
