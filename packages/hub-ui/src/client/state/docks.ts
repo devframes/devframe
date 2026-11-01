@@ -19,6 +19,18 @@ export function getCurrentDockId(context: DocksContext): string | undefined {
   return entry.id
 }
 
+/**
+ * Whether `entry` is the current dock, or a group whose member is the
+ * current dock. `currentId` is {@link getCurrentDockId}.
+ */
+export function holdsCurrentDock(context: DocksContext, entry: DevframeDockEntry, currentId: string | undefined): boolean {
+  if (!currentId)
+    return false
+  if (entry.id === currentId)
+    return true
+  return entry.type === 'group' && context.docks.entries.find(e => e.id === currentId)?.groupId === entry.id
+}
+
 export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
   return {
     mode: 'float',

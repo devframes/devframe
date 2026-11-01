@@ -6,6 +6,7 @@ import type { FloatingPopoverProps } from '../../state/floating-tooltip'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { t } from '../../i18n'
+import { getCurrentDockId, holdsCurrentDock } from '../../state/docks'
 import { setDocksOverflowPanel, useDocksOverflowPanel } from '../../state/floating-tooltip'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockEntry from './DockEntry.vue'
@@ -29,6 +30,12 @@ const overflowBadge = computed(() => {
   if (count > 9)
     return '9+'
   return count.toString()
+})
+
+// The shown dock, or the group that holds it, is in the overflow.
+const holdsCurrent = computed(() => {
+  const currentId = getCurrentDockId(props.context)
+  return props.groups.some(([, items]) => items.some(entry => holdsCurrentDock(props.context, entry, currentId)))
 })
 
 const isOverflowPanelVisible = ref(false)
@@ -110,6 +117,7 @@ onBeforeUnmount(() => {
       :is-vertical="isVertical"
       :is-selected="false"
       :is-dimmed="false"
+      :current="holdsCurrent ? 'true' : undefined"
       @click="toggleOverflowPanel"
     />
   </div>

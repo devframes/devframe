@@ -87,6 +87,10 @@ const overflowCount = computed(() => overflowGroups.value.reduce((acc, [, items]
 const hasOverflow = computed(() => overflowCount.value > 0)
 const overflowBadge = computed(() => (overflowCount.value > 9 ? '9+' : overflowCount.value.toString()))
 
+// The shown member is hidden inside the show-more popover.
+const currentInOverflow = computed(() =>
+  !!currentId.value && overflowGroups.value.some(([, items]) => items.some(m => m.id === currentId.value)))
+
 // The current selection is hidden inside the show-more popover.
 const selectedInOverflow = computed(() =>
   !!props.selectedId && overflowGroups.value.some(([, items]) => items.some(m => m.id === props.selectedId)))
@@ -217,6 +221,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
       v-if="hasOverflow"
       ref="moreButton"
       :aria-label="t('dock.showMore')"
+      :aria-current="currentInOverflow ? 'true' : undefined"
       class="relative flex items-center justify-center w-8 h-8 rounded-lg transition mt-auto flex-none"
       :class="moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
       @pointerenter="showTooltip($event, t('dock.showMore'))"

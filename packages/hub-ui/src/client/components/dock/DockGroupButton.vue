@@ -4,6 +4,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { getGroupMembers, getGroupMembersGrouped, resolveGroupPreferredChild } from '../../state/dock-settings'
+import { getCurrentDockId, holdsCurrentDock } from '../../state/docks'
 import { setDocksGroupPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
@@ -46,6 +47,9 @@ const isActive = computed(() => {
   const id = props.selected?.id
   return !!id && members.value.some(m => m.id === id)
 })
+
+// The shown dock is one of this group's members, hidden or not.
+const holdsCurrent = computed(() => holdsCurrentDock(props.context, props.group, getCurrentDockId(props.context)))
 
 // A member toggle action that is on lights the button up too, without owning the panel.
 const hasActiveTool = computed(() => members.value.some(m => m.type === 'action' && props.context.docks.getStateById(m.id)?.isActive))
@@ -136,6 +140,7 @@ function onClick() {
       :is-vertical="isVertical"
       :is-selected="isActive || isPanelVisible || hasActiveTool"
       :is-dimmed="dimInactive && selected ? !isActive && !hasActiveTool : false"
+      :current="holdsCurrent ? 'true' : undefined"
       :badge="group.badge"
       :badge-variant="group.badgeVariant"
       @click="onClick"

@@ -14,10 +14,11 @@ const props = withDefaults(
     isAction?: boolean
     isSelected?: boolean
     /**
-     * The dock is the one shown now. Unlike `isSelected`, which is also on
-     * while a group popover is open, this marks the button `aria-current`.
+     * The `aria-current` of the button: `page` for the dock shown now, `true`
+     * for a group or overflow button that holds it while it is out of sight.
+     * Unlike `isSelected`, which is also on while a group popover is open.
      */
-    isCurrent?: boolean
+    current?: 'page' | 'true'
     isDimmed?: boolean
     isVertical?: boolean
     badge?: string
@@ -103,7 +104,7 @@ useEventListener('pointerdown', () => {
     <button
       ref="button"
       :aria-label="dock.title"
-      :aria-current="isCurrent ? 'page' : undefined"
+      :aria-current="current"
       :class="[
         isVertical ? 'rotate-270' : '',
         isDimmed ? 'op50 saturate-0' : '',
