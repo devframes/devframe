@@ -21,14 +21,26 @@ export function getCurrentDockId(context: DocksContext): string | undefined {
 
 /**
  * Whether `entry` is the current dock, or a group whose member is the
- * current dock. `currentId` is {@link getCurrentDockId}.
+ * current dock and has no button of its own on the dock bar (a pinned or
+ * recent button), so the group button stands in for it. `currentId` is
+ * {@link getCurrentDockId}.
  */
 export function holdsCurrentDock(context: DocksContext, entry: DevframeDockEntry, currentId: string | undefined): boolean {
   if (!currentId)
     return false
   if (entry.id === currentId)
     return true
-  return entry.type === 'group' && context.docks.entries.find(e => e.id === currentId)?.groupId === entry.id
+  return entry.type === 'group'
+    && context.docks.entries.find(e => e.id === currentId)?.groupId === entry.id
+    && !hasOwnDockButton(context, currentId)
+}
+
+/** Whether the dock has its own button on the dock bar: pinned out of its group, or raised as a recent dock. */
+function hasOwnDockButton(context: DocksContext, id: string): boolean {
+  const session = context.panel.session
+  const recentIds = session.recentDockIds ?? (session.recentDockId ? [session.recentDockId] : [])
+  return recentIds.includes(id)
+    || context.docks.groupedEntries.some(([, items]) => items.some(entry => entry.id === id))
 }
 
 export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
