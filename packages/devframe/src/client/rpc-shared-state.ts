@@ -9,7 +9,20 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
   const stateDisposers = new Map<string, () => void>()
   const initialValues = new Map<string, any>()
   const keyAddedListeners = new Set<(key: string) => void>()
+  /** Suppress the received change while preserving new writes from update listeners. */
+  let receivedServerChange: { state: object, syncId: string } | undefined
   const isStaticBackend = rpc.connectionMeta.backend === 'static'
+
+  function applyServerChange(state: object, syncId: string, applyChange: () => void) {
+    const previousChange = receivedServerChange
+    receivedServerChange = { state, syncId }
+    try {
+      applyChange()
+    }
+    finally {
+      receivedServerChange = previousChange
+    }
+  }
 
   function mergeWithInitialValue(key: string, serverState: any): any {
     const initial = initialValues.get(key)
@@ -27,7 +40,9 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
       const state = sharedState.get(key)
       if (!state || state.syncIds.has(syncId))
         return
-      state.mutate(() => mergeWithInitialValue(key, fullState), syncId)
+      applyServerChange(state, syncId, () => {
+        state.mutate(() => mergeWithInitialValue(key, fullState), syncId)
+      })
     },
   })
 
@@ -38,14 +53,16 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
       const state = sharedState.get(key)
       if (!state || state.syncIds.has(syncId))
         return
-      state.patch(patches, syncId)
+      applyServerChange(state, syncId, () => {
+        state.patch(patches, syncId)
+      })
     },
   })
 
   function registerSharedState<T extends object>(key: string, state: SharedState<T>) {
     const offs: (() => void)[] = []
     offs.push(state.on('updated', (fullState, patches, syncId) => {
-      if (isStaticBackend)
+      if (isStaticBackend || (receivedServerChange?.state === state && receivedServerChange.syncId === syncId))
         return
       if (patches) {
         rpc.callEvent('devframe:rpc:server-state:patch', key, patches, syncId)
