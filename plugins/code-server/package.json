@@ -1,7 +1,7 @@
 {
   "name": "@devframes/plugin-code-server",
   "type": "module",
-  "version": "1.2.6",
+  "version": "1.3.0",
   "description": "Devframe plugin that runs VS Code in the browser as an embedded editor panel.",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",

@@ -31,6 +31,7 @@ const itPty = hasNative ? it : it.skip
 // doesn't reliably provide (echo timing); skip there, mirroring the terminals
 // plugin's own `itPosixPty` gate.
 const itPosixPty = (hasNative && process.platform !== 'win32') ? it : it.skip
+const itWindowsPty = (hasNative && process.platform === 'win32') ? it : it.skip
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -611,6 +612,29 @@ describe('devframeTerminalHost interactive PTY sessions', () => {
     expect(output.signal).toBeUndefined()
     expect(result.exitCode).toBe(0)
     expect(result.killed).toBe(false)
+  })
+
+  itWindowsPty('runs .cmd shims, which ConPTY cannot spawn directly', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-pty-shim-'))
+    try {
+      const pathKey = Object.keys(process.env).find(key => key.toUpperCase() === 'PATH') ?? 'PATH'
+      writeFileSync(join(dir, 'echo-args.cmd'), `@"${NODE}" -e "process.stdout.write(JSON.stringify(process.argv.slice(1)))" %*\r\n`)
+      const { host } = createTerminalHost()
+
+      const session = await host.startPtySession({
+        command: 'echo-args',
+        args: ['a&b', 'c d', 'src\\x&y'],
+        // Reuse the inherited key: Windows env blocks are case-insensitive.
+        env: { [pathKey]: `${dir};${process.env[pathKey]}` },
+      }, { id: 'pty-cmd-shim', title: 'PTY .cmd shim' })
+      const output = await session.getResult()
+
+      expect(output.output).toContain('["a&b","c d","src\\\\x&y"]')
+      expect(output.exitCode).toBe(0)
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   itPty('getResult() preserves a non-zero PTY exit code', async () => {

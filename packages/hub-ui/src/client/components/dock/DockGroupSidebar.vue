@@ -5,9 +5,10 @@ import { watchDebounced } from '@vueuse/core'
 import { computed, h, ref, useTemplateRef, watch } from 'vue'
 import { t } from '../../i18n'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
-import { setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
+import { dockTooltipContent, setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
+import { openDockContextMenu } from './DockContextMenu'
 import DockGroupPopover from './DockGroupPopover.vue'
 import DockIcon from './DockIcon.vue'
 
@@ -91,8 +92,8 @@ function select(id: string) {
   props.context.docks.switchEntry(id)
 }
 
-function showTooltip(event: PointerEvent, title: string) {
-  setFloatingTooltip({ content: title, el: event.currentTarget as HTMLElement })
+function showTooltip(event: PointerEvent, entry: { title: string, description?: string }) {
+  setFloatingTooltip({ content: dockTooltipContent(entry), el: event.currentTarget as HTMLElement })
 }
 
 function hideTooltip() {
@@ -147,6 +148,16 @@ watchDebounced(
   { debounce: 1000 },
 )
 
+function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
+  e.preventDefault()
+  hideTooltip()
+  openDockContextMenu({
+    context: props.context,
+    entry: member,
+    el: e.currentTarget as HTMLElement,
+  })
+}
+
 // Highlight the button when the hidden selection lives here, or while open.
 const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPanelVisible.value)
 </script>
@@ -164,7 +175,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
     <div
       class="flex items-center justify-center w-8 h-8 op60"
       :class="group.accentColor ? 'color-active' : ''"
-      @pointerenter="showTooltip($event, group.title)"
+      @pointerenter="showTooltip($event, group)"
       @pointerleave="hideTooltip"
     >
       <DockIcon :icon="group.icon" class="w-5 h-5 flex-none" />
@@ -181,10 +192,11 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
         :aria-label="member.title"
         class="relative flex items-center justify-center w-8 h-8 rounded-lg transition"
         :class="selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
-        @pointerenter="showTooltip($event, member.title)"
+        @pointerenter="showTooltip($event, member)"
         @pointerleave="hideTooltip"
         @pointerdown="hideTooltip"
         @click="select(member.id)"
+        @contextmenu="openContextMenu($event, member)"
       >
         <DockIcon :icon="member.icon" class="w-5 h-5 flex-none" />
         <div

@@ -1,7 +1,9 @@
 import type { DevframeNodeContext, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../../types'
+import { lookup } from 'node:dns/promises'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { createSecureServer } from 'node:http2'
+import { isIP } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { defineDevframe } from 'devframe'
@@ -12,6 +14,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { getTempAuthCode } from '../../node/auth/state'
 import { getInternalContext } from '../../node/hub-internals/context'
+import { formatHostForUrl } from '../../node/utils'
 import { initDevframe } from '../initiate'
 
 const HANDSHAKE = { authToken: '', ua: 'test', origin: 'http://localhost' }
@@ -534,6 +537,55 @@ describe('adapters/handler', () => {
     }
     finally {
       await devtools.close()
+    }
+  })
+
+  // The client dials the side-car on its page's own hostname, so a page on
+  // `127.0.0.1` and one on `[::1]` both have to reach a `localhost` side-car,
+  // whichever of the two addresses `localhost` resolves to first.
+  it('ws.sidecar on localhost: reachable on both loopback addresses', async () => {
+    const devtools = initDevframe(defineTestDef('handler-sidecar-localhost'), {
+      base: '/__handler-sidecar-localhost/',
+      auth: false,
+      ws: { sidecar: true },
+    })
+
+    try {
+      await devtools.ready
+      const { port } = devtools.connectionMeta().websocket as { port: number }
+      for (const host of ['127.0.0.1', '[::1]']) {
+        const client = connectWsClient(`ws://${host}:${port}/__ws`)
+        await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+        client.$close()
+      }
+    }
+    finally {
+      await devtools.close()
+    }
+  })
+
+  it('ws.sidecar on localhost: moves off a port another server holds on the other loopback', async () => {
+    const { address: primary } = await lookup('localhost')
+    const twin = isIP(primary) === 6 ? '127.0.0.1' : '::1'
+    const port = await getPort({ port: 18170, host: twin })
+    const squatter = createServer((_req, res) => res.end('squatter'))
+    await new Promise<void>(resolve => squatter.listen(port, twin, resolve))
+    const devtools = initDevframe(
+      defineDevframe({ ...defineTestDef('handler-sidecar-twin'), cli: { port } }),
+      { base: '/__handler-sidecar-twin/', auth: false, ws: { sidecar: true } },
+    )
+
+    try {
+      await devtools.ready
+      const advertised = (devtools.connectionMeta().websocket as { port: number }).port
+      expect(advertised).not.toBe(port)
+      const client = connectWsClient(`ws://${formatHostForUrl(twin)}:${advertised}/__ws`)
+      await expect(client.$call('test:probe' as any)).resolves.toBe('ok')
+      client.$close()
+    }
+    finally {
+      await devtools.close()
+      squatter.close()
     }
   })
 

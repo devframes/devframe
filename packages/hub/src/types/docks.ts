@@ -86,6 +86,12 @@ export interface DevframeDockEntryBase {
   title: string
   /** Translations of `title` by BCP 47 tag; see `resolveTitle()` from `@devframes/hub`. */
   titleLocales?: DevframeTitleLocales
+  /**
+   * A longer, one-line hint of what the entry does. A viewer shows it under
+   * the {@link title} in the dock button tooltip, so a button whose icon is
+   * ambiguous still explains itself on hover.
+   */
+  description?: string
   icon: DevframeDockEntryIcon
   /**
    * The default order of the entry in the dock.
@@ -396,6 +402,27 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
 export interface DevframeViewAction extends DevframeDockEntryBase {
   type: 'action'
   action: ClientScriptEntry
+  /**
+   * Make the action an on/off tool, such as an in-page element picker.
+   *
+   * - The {@link action} script runs once (cached like other client scripts)
+   *   and drives the tool from the entry's `entry:activated` /
+   *   `entry:deactivated` events.
+   * - Activating it does not select it: the panel's selected dock stays as is.
+   *   An open panel is hidden while the tool is on and comes back when it goes
+   *   off.
+   * - While on, the dock button renders as active (`DockEntryState.isActive`).
+   * - `docks.switchEntry(id)` (a click) flips it on and off.
+   * - It also goes off on `Escape` in a viewer that supports it, on
+   *   `docks.setActionActive(id, false)`, or when another dock is selected or
+   *   the selection is cleared (then the panel is not restored, the new
+   *   selection wins).
+   *
+   * When unset, the action is one-shot: each click runs the script again.
+   *
+   * @default false
+   */
+  toggle?: boolean
 }
 
 export interface DevframeViewCustomRender extends DevframeDockEntryBase {

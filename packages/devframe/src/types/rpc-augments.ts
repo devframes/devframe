@@ -58,7 +58,7 @@ export interface DevframeRpcServerFunctions {
   /** Methods eligible for automatic client caching. @internal */
   'devframe:rpc:cacheable-functions': () => Promise<string[]>
   /** Replace this connection's browser-agent tool manifest, tagged with the calling tab's stable client id. @internal */
-  'devframe:agent:sync-client-tools': (clientId: string, tools: import('../client/browser-agent').BrowserAgentToolManifest[]) => Promise<void>
+  'devframe:agent:sync-client-tools': (clientId: string, tools: import('../client/browser-agent').BrowserAgentToolManifest[], info: import('../client/browser-agent').BrowserAgentClientInfo) => Promise<void>
   /**
    * Authenticate a connection with a previously-issued bearer token; resolves
    * whether the connection is now trusted. The interactive handler is provided

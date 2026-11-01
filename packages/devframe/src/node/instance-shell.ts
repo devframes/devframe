@@ -22,6 +22,7 @@ import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
+import { listenWithLoopbackTwin } from './listen'
 import { detectServerRuntime } from './runtime'
 import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
 
@@ -115,19 +116,10 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     closeWs = transport.close
   }
 
+  let closeLoopbackTwin = async (): Promise<void> => {}
   if (ownsHttpServer) {
     try {
-      await new Promise<void>((resolve, reject) => {
-        const onError = (error: Error): void => reject(error)
-        // Without this listener a failed bind emits `error` with nobody
-        // attached (an uncaughtException) and the `listen` callback never
-        // fires, so this promise never settles.
-        httpServer.once('error', onError)
-        httpServer.listen(port, bindHost, () => {
-          httpServer.removeListener('error', onError)
-          resolve()
-        })
-      })
+      closeLoopbackTwin = await listenWithLoopbackTwin(httpServer, port, bindHost)
     }
     catch (error) {
       // The WS transport is already attached above, so tear it down before
@@ -172,6 +164,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     async close() {
       httpServer.off('listening', publishWsEndpoint)
       await closeWs()
+      await closeLoopbackTwin()
       if (ownsHttpServer)
         await new Promise<void>(r => httpServer.close(() => r()))
       if (wsUrl && getInternalContext(context).wsEndpoint?.url === wsUrl)

@@ -5,6 +5,7 @@
 export interface CreateDevServerOptions {
   host?: string;
   port?: number;
+  defaultPort?: number;
   flags?: Record<string, unknown>;
   distDir?: StaticAssetsSource;
   basePath?: string;

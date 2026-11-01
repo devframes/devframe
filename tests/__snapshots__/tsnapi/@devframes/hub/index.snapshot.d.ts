@@ -88,6 +88,7 @@ export interface DevframeDockEntryBase {
   id: string;
   title: string;
   titleLocales?: DevframeTitleLocales;
+  description?: string;
   icon: DevframeDockEntryIcon;
   defaultOrder?: number;
   category?: DevframeDockEntryCategory;
@@ -299,6 +300,7 @@ export interface DevframeTitled {
 export interface DevframeViewAction extends DevframeDockEntryBase {
   type: 'action';
   action: ClientScriptEntry;
+  toggle?: boolean;
 }
 export interface DevframeViewBuiltin extends DevframeDockEntryBase {
   type: '~builtin';

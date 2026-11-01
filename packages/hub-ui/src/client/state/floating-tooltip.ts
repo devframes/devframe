@@ -1,5 +1,5 @@
 import type { VNode } from 'vue'
-import { shallowRef } from 'vue'
+import { h, shallowRef } from 'vue'
 
 export interface FloatingPopoverProps {
   el: HTMLElement
@@ -12,6 +12,16 @@ const tooltip = shallowRef<FloatingPopoverProps | null>(null)
 const docksOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const docksSidebarOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const dockContextMenu = shallowRef<FloatingPopoverProps | null>(null)
+
+/** A dock entry's tooltip: its title, with its `description` below when set. */
+export function dockTooltipContent(entry: { title: string, description?: string }): FloatingPopoverProps['content'] {
+  if (!entry.description)
+    return entry.title
+  return () => h('div', { class: 'flex flex-col gap-0.5 max-w-64' }, [
+    h('span', entry.title),
+    h('span', { class: 'text-xs color-muted' }, entry.description),
+  ])
+}
 
 export function setFloatingTooltip(info: FloatingPopoverProps | null) {
   tooltip.value = info

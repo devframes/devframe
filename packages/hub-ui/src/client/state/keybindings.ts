@@ -30,7 +30,7 @@ export function normalizeKeyEvent(e: KeyboardEvent): string {
     parts.push('Shift')
 
   // Normalize key name
-  let key = e.key
+  let key = e.key ?? ''
   if (key.length === 1)
     key = key.toUpperCase()
 

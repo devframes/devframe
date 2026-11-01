@@ -590,3 +590,56 @@ it('does not activate an iframe when trust is lost while its setup completes', a
     runtime.dispose()
   }
 })
+
+it('runs a toggle action as an on/off tool that hides and restores the panel', async () => {
+  expect.assertions(12)
+  const { rpc, states } = createStubRpc()
+  const runtime = await createDevframeClientRuntime({ rpc })
+  const events: string[] = []
+  const setup = vi.fn((ctx: any) => {
+    ctx.current.events.on('entry:activated', () => events.push('on'))
+    ctx.current.events.on('entry:deactivated', () => events.push('off'))
+  })
+  const fixture = globalThis as typeof globalThis & { __DF_TOGGLE_TEST__?: (ctx: any) => void }
+  fixture.__DF_TOGGLE_TEST__ = setup
+  const tool = {
+    id: 'tool',
+    title: 'Inspect',
+    icon: 'ph:cursor',
+    type: 'action',
+    toggle: true,
+    action: { importFrom: 'data:text/javascript,export default ctx => globalThis.__DF_TOGGLE_TEST__(ctx)' },
+  } satisfies DevframeDockEntry
+  const { docks, panel } = runtime.context
+  try {
+    states.get('devframe:docks')!.push([iframeEntry('panel'), tool])
+    await docks.switchEntry('panel')
+    panel.session.open = true
+
+    await expect(docks.switchEntry('tool')).resolves.toBe(true)
+    expect(docks.selectedId).toBe('panel')
+    expect(docks.getStateById('tool')!.isActive).toBe(true)
+    expect(panel.session.open).toBe(false)
+
+    // A second click turns it off and brings the panel back.
+    await expect(docks.toggleEntry('tool')).resolves.toBe(true)
+    expect(panel.session.open).toBe(true)
+
+    await docks.switchEntry('tool')
+    await expect(docks.setActionActive('tool', false)).resolves.toBe(true)
+    await expect(docks.setActionActive('tool', false)).resolves.toBe(false)
+
+    // A new selection wins: the tool goes off and the old panel is not restored.
+    await docks.switchEntry('tool')
+    await docks.switchEntry(null)
+    expect(docks.getStateById('tool')!.isActive).toBe(false)
+    expect(panel.session.open).toBe(false)
+
+    expect(setup).toHaveBeenCalledOnce()
+    expect(events).toEqual(['on', 'off', 'on', 'off', 'on', 'off'])
+  }
+  finally {
+    runtime.dispose()
+    delete fixture.__DF_TOGGLE_TEST__
+  }
+})

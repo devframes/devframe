@@ -48,6 +48,11 @@ function isDockVisible(dock: DevframeDockEntry): boolean {
   return true
 }
 
+// Selected, or a toggle action that is on (it never takes the selection).
+function isDockActive(dock: DevframeDockEntry): boolean {
+  return selected.value?.id === dock.id || !!props.context.docks.getStateById(dock.id)?.isActive
+}
+
 function toggleDockEntry(dock: DevframeDockEntry) {
   if (selected.value?.id === dock.id)
     emit('select', undefined!)
@@ -73,8 +78,8 @@ function toggleDockEntry(dock: DevframeDockEntry) {
         :context="context"
         :dock
         :is-action="dock.type === 'action'"
-        :is-selected="selected?.id === dock.id"
-        :is-dimmed="dimInactive && selected ? (selected.id !== dock.id) : false"
+        :is-selected="isDockActive(dock)"
+        :is-dimmed="dimInactive && selected ? !isDockActive(dock) : false"
         :is-vertical="isVertical"
         :badge="dock.badge"
         :badge-variant="dock.badgeVariant"

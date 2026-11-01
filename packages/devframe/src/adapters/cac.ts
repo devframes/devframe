@@ -14,7 +14,7 @@ import cac from 'cac'
 import { colors as c } from 'devframe/utils/colors'
 import { importAgenticMcp } from '../node/agentic'
 import { createBuild } from './build'
-import { createDevServer, resolveDevServerPort } from './dev'
+import { createDevServer } from './dev'
 import { flagKeyToOption, isBooleanFlag, parseCliFlags } from './flags'
 
 export { defineCliFlags, parseCliFlags } from './flags'
@@ -103,7 +103,6 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
   devCommand.action(async (_args: unknown, rawFlags: CliFlags) => {
     const flags = resolveTypedFlags(d, rawFlags) as CliFlags
     const host = (flags.host as string | undefined) ?? defaultHost
-    const port = (flags.port as number | undefined) ?? await resolveDevServerPort(d, { host, defaultPort })
     // `--mcp` / `--no-mcp` map to a boolean override; when neither is passed
     // CAC leaves `mcp` undefined so we fall back to the assembly-stage
     // `options.mcp`, and `createDevServer` falls through to the `'auto'`
@@ -111,7 +110,10 @@ export function createCac(d: DevframeDefinition, options: CreateCacOptions = {})
     const mcp = (flags.mcp as boolean | undefined) ?? options.mcp
     await createDevServer(d, {
       host,
-      port,
+      // A `--port` flag pins the port; otherwise `createDevServer` resolves
+      // one and can move off a port it finds taken.
+      port: flags.port as number | undefined,
+      defaultPort,
       flags,
       mcp,
       onReady: options.onReady,

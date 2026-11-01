@@ -1,6 +1,6 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
-import { h } from 'vue'
+import { defineComponent, h, nextTick, onMounted, ref } from 'vue'
 import { t } from '../../i18n'
 import { setDockContextMenu } from '../../state/floating-tooltip'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
@@ -16,13 +16,63 @@ interface DockMenuItem {
 
 function renderMenuItem(item: DockMenuItem) {
   return h('button', {
-    class: 'flex items-center gap-2 px3 py1.5 rounded hover:bg-active transition text-left',
+    role: 'menuitem',
+    class: 'flex items-center gap-2 px3 py1.5 rounded hover:bg-active focus-visible:bg-active outline-none transition text-left',
     onClick: item.action,
   }, [
     h('div', { class: `${item.icon} text-base op60` }),
     h('span', item.label),
   ])
 }
+
+/**
+ * The menu body. Takes focus on open so a keyboard user (Shift+F10 or the
+ * Menu key fire `contextmenu` on the focused dock button) can pick an item
+ * right away: arrows and Home/End move between items, Escape closes the menu
+ * and hands focus back to the trigger, Tab closes it.
+ */
+const DockContextMenuList = defineComponent({
+  name: 'DockContextMenuList',
+  props: {
+    items: { type: Array as () => DockMenuItem[], required: true },
+    trigger: { type: Object as () => HTMLElement, required: true },
+  },
+  setup(props) {
+    const root = ref<HTMLElement>()
+    const buttons = () => Array.from(root.value?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])
+
+    onMounted(() => nextTick(() => buttons()[0]?.focus({ preventScroll: true })))
+
+    function onKeydown(e: KeyboardEvent) {
+      const list = buttons()
+      const index = list.indexOf(e.target as HTMLButtonElement)
+      const move = (to: number) => {
+        e.preventDefault()
+        list[(to + list.length) % list.length]?.focus()
+      }
+      switch (e.key) {
+        case 'ArrowDown': return move(index + 1)
+        case 'ArrowUp': return move(index - 1)
+        case 'Home': return move(0)
+        case 'End': return move(list.length - 1)
+        case 'Escape':
+          e.preventDefault()
+          setDockContextMenu(null)
+          props.trigger.focus({ preventScroll: true })
+          return
+        case 'Tab':
+          setDockContextMenu(null)
+      }
+    }
+
+    return () => h('div', {
+      ref: root,
+      role: 'menu',
+      class: 'devframes-dock-menu flex flex-col text-sm min-w-36 mx--1',
+      onKeydown,
+    }, props.items.map(renderMenuItem))
+  },
+})
 
 function hideDock(context: DocksContext, entry: DevframeDockEntry) {
   const settingsStore = context.docks.settings
@@ -49,6 +99,22 @@ function refreshDock(context: DocksContext, entry: DevframeDockEntry) {
   setDockContextMenu(null)
 }
 
+function togglePinDock(context: DocksContext, entry: DevframeDockEntry) {
+  const id = entry.id
+  context.docks.settings.mutate((state) => {
+    state.docksPinned = state.docksPinned.includes(id)
+      ? state.docksPinned.filter(item => item !== id)
+      : [...state.docksPinned, id]
+  })
+  setDockContextMenu(null)
+}
+
+function canPin(context: DocksContext, entry: DevframeDockEntry) {
+  if (entry.id.startsWith('~'))
+    return false
+  return context.docks.entries.some(item => item.id === entry.id)
+}
+
 function canHide(context: DocksContext, entry: DevframeDockEntry) {
   if (entry.id === '~settings')
     return false
@@ -67,7 +133,14 @@ export function openDockContextMenu(options: {
 }) {
   const { context, entry, el, gap = 6 } = options
   const isEdgeMode = context.panel.store.mode === 'edge'
+  const isPinned = context.docks.settings.value().docksPinned.includes(entry.id)
   const items: DockMenuItem[] = [
+    {
+      label: isPinned ? t('docks.unpin') : t('docks.pin'),
+      icon: isPinned ? 'i-ph-push-pin-slash-duotone' : 'i-ph-push-pin-duotone',
+      action: () => togglePinDock(context, entry),
+      visible: canPin(context, entry),
+    },
     {
       label: t('common.hide'),
       icon: 'i-ph-eye-slash-duotone',
@@ -131,6 +204,6 @@ export function openDockContextMenu(options: {
   setDockContextMenu({
     el,
     gap,
-    content: () => h('div', { class: 'flex flex-col text-sm min-w-36 mx--1' }, items.map(renderMenuItem)),
+    content: () => h(DockContextMenuList, { items, trigger: el }),
   })
 }

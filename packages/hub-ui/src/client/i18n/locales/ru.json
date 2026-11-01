@@ -11,6 +11,7 @@
 
   "command.togglePalette": "Переключить палитру команд",
   "command.closePanel": "Закрыть панель",
+  "command.stopActiveTool": "Остановить активный инструмент",
   "command.openSettings": "Открыть настройки",
   "command.hide": "Скрыть {productName}",
   "command.dockMode": "Режим панели",
@@ -68,6 +69,9 @@
   "appearance.closeOutsideHint": "Закрывать панель {productName} при клике вне её (только во встроенном режиме)",
   "appearance.autoCollapse": "Автоматически сворачивать панель у края",
   "appearance.autoCollapseHint": "Сворачивать закреплённую у края панель в небольшой ярлык, когда она неактивна и закрыта (только в режиме у края)",
+  "appearance.recentDocks": "Недавние инструменты на панели",
+  "appearance.recentDocksHint": "Оставлять на панели инструменты, недавно открытые из группы или меню переполнения (только в плавающем режиме).",
+  "appearance.recentDocksOff": "Выкл.",
 
   "docks.intro": "Управляйте видимостью и порядком панелей. Скрытые панели не отображаются на панели инструментов.",
   "docks.resetOrder": "Сбросить пользовательский порядок",
