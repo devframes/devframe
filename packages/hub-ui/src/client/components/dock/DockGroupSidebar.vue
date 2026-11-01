@@ -5,6 +5,7 @@ import { watchDebounced } from '@vueuse/core'
 import { computed, h, ref, useTemplateRef, watch } from 'vue'
 import { t } from '../../i18n'
 import { deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped } from '../../state/dock-settings'
+import { getCurrentDockId } from '../../state/docks'
 import { dockTooltipContent, setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
@@ -17,6 +18,8 @@ const props = defineProps<{
   group: DevframeViewGroup
   selectedId: string | null
 }>()
+
+const currentId = computed(() => getCurrentDockId(props.context))
 
 // Vertical rhythm of the rail, in px. Mirrors the Uno classes on the template:
 // each button is `w-8 h-8` (32) and children sit in a `gap-0.5` (2) flex column;
@@ -190,7 +193,7 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
         v-for="member of members"
         :key="member.id"
         :aria-label="member.title"
-        :aria-current="selectedId === member.id ? 'page' : undefined"
+        :aria-current="currentId === member.id ? 'page' : undefined"
         class="relative flex items-center justify-center w-8 h-8 rounded-lg transition"
         :class="selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
         @pointerenter="showTooltip($event, member)"

@@ -3,6 +3,7 @@ import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup }
 import type { DocksContext } from '@devframes/hub/client'
 import { computed } from 'vue'
 import { t } from '../../i18n'
+import { getCurrentDockId } from '../../state/docks'
 import { dockTooltipContent, setFloatingTooltip } from '../../state/floating-tooltip'
 import { accentVarStyle } from '../../utils/accent-color'
 import { openDockContextMenu } from './DockContextMenu'
@@ -19,6 +20,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'select', entry: DevframeDockEntry): void
 }>()
+
+const currentId = computed(() => getCurrentDockId(props.context))
 
 // A row already shows its title, so only a `description` is worth a tooltip.
 function showTooltip(event: PointerEvent, member: DevframeDockEntry) {
@@ -65,7 +68,7 @@ function openContextMenu(e: MouseEvent, member: DevframeDockEntry) {
       <button
         v-for="member of items"
         :key="member.id"
-        :aria-current="selectedId === member.id ? 'page' : undefined"
+        :aria-current="currentId === member.id ? 'page' : undefined"
         class="flex items-center gap-2 w-full px2 py1.5 rounded text-sm text-left transition"
         :class="selectedId === member.id || context.docks.getStateById(member.id)?.isActive ? 'text-primary bg-active' : 'op80 hover:op100 hover:bg-active'"
         @pointerenter="showTooltip($event, member)"

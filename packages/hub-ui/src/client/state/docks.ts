@@ -1,9 +1,23 @@
 import type { DevframeDockEntry } from '@devframes/hub'
-import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage, DockSessionStorage } from '@devframes/hub/client'
+import type { DevframeRpcClient, DockEntryState, DockEntryStateEvents, DockPanelStorage, DocksContext, DockSessionStorage } from '@devframes/hub/client'
 import type { SharedState } from 'devframe/utils/shared-state'
 import type { Ref, ShallowRef } from 'vue'
 import { createEventEmitter } from 'devframe/utils/events'
 import { markRaw, reactive, shallowRef, watch } from 'vue'
+
+/**
+ * The id of the dock whose view is shown now, which the dock marks
+ * `aria-current`: none for an action, and none while the panel of an
+ * embedded dock is closed.
+ */
+export function getCurrentDockId(context: DocksContext): string | undefined {
+  const entry = context.docks.selected
+  if (!entry || entry.type === 'action')
+    return undefined
+  if (context.clientType === 'embedded' && !context.panel.session.open)
+    return undefined
+  return entry.id
+}
 
 export function DEFAULT_DOCK_PANEL_STORE(): DockPanelStorage {
   return {
