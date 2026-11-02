@@ -30,10 +30,13 @@ trustPolicyExclude:
   - tinyexec@1.2.2
   - '@vercel/functions@3.9.3'
   - '@vercel/functions@3.9.5'
+  - '@vercel/functions@3.10.5'
   - '@vercel/oidc@3.8.4'
   - '@vercel/oidc@3.8.5'
+  - '@vercel/oidc@4.0.5'
   - '@vercel/cli-config@0.2.3'
   - '@vercel/cli-config@0.2.4'
+  - '@vercel/cli-config@0.3.5'
   - '@vercel/cli-exec@1.0.1'
 
 update:
@@ -91,9 +94,6 @@ overrides:
   unocss: &unocss ^66.12.0
   '@unocss/core': *unocss
   vueuse: &vueuse ^14.4.0
-
-patchedDependencies:
-  comark-docs@0.0.1: patches/comark-docs@0.0.1.patch
 
 allowBuilds:
   '@parcel/watcher': false
@@ -162,7 +162,10 @@ catalogs:
     zod: ^4.6.7
   docs:
     '@nuxt/devtools-kit': *nuxtDevtools
-    comark-docs: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
+    '@shikijs/themes': ^4.5.0
+    comark: ^0.8.1
+    comark-docs: github:comarkdown/comark-docs#4fcfb4f9600295700ac0a9152e562b258ef6fc88
+    comark-linter: ^0.7.6
     satori: ^0.63.2
   frontend:
     '@antfu/design': ^0.6.0
