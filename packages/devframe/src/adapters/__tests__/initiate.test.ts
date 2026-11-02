@@ -249,7 +249,12 @@ describe('adapters/handler', () => {
       })
     })
     // No distDir: the host app owns the pages, the devframe only its routes.
-    devtoolsRef = initDevframe(defineTestDef('handler-root'), { base: '/', auth: false, distDir: false, server })
+    devtoolsRef = initDevframe(defineTestDef('handler-root'), {
+      base: '/',
+      auth: false,
+      distDir: false,
+      server,
+    })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -265,7 +270,11 @@ describe('adapters/handler', () => {
 
       // The devframe's own routes still answer.
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
+      expect(meta).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        sse: { path: '__sse' },
+      })
 
       // Without a `next`, a miss is still the devframe's own 404.
       const bare = await devtoolsRef.handler(new Request(`http://${host}:${port}/main.tsx`))
