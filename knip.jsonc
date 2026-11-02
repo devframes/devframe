@@ -178,7 +178,7 @@
       // renderer ships only as self-contained Vite bundles (the standalone
       // SPA and the prebuilt renderer module, consumed at runtime via the
       // hub's renderer manifest).
-      "entry": ["src/{spa,hub}.ts", "src/renderer-module/index.ts"],
+      "entry": ["src/{spa,hub}.ts"],
       // The standalone SPA's own Vite config (`src/spa/vite.config.ts`)
       // mounts `unocss/vite` with no explicit config path, so UnoCSS
       // discovers this nested `uno.config.ts` by directory proximity to
@@ -265,7 +265,6 @@
       "entry": [
         "src/node/{index,setup,cli,constants}.ts",
         "src/node/rpc/index.ts",
-        "app/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-messages--assets", "@devframes/vite"]
@@ -275,7 +274,6 @@
       "entry": [
         "src/node/{index,setup,cli,constants,types,vite}.ts",
         "src/node/rpc/index.ts",
-        "app/client/index.ts",
         "app/**/*.stories.@(ts|tsx)"
       ],
       "ignoreDependencies": ["@devframes/plugin-terminals--assets"]

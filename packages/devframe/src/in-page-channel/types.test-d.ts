@@ -386,8 +386,8 @@ describe('Panel channel', () => {
       connectPanelChannel<PageScriptOnlyProtocol>({
         name: 'devframes:page-script-only',
         functions: {
-          // @ts-expect-error The protocol has no panel functions.
           notify: {
+            // @ts-expect-error The protocol has no panel functions.
             handler: () => { },
           },
         },
