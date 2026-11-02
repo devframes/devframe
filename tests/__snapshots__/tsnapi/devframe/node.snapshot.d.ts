@@ -18,11 +18,17 @@ export interface CreateStorageOptions<T extends object> {
 }
 // #endregion
 
+// #region Types
+export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
+  invokeLocal: <T extends keyof DevframeRpcServerFunctions, Args extends Parameters<DevframeRpcServerFunctions[T]>>(_: T, ..._: Args) => Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>>;
+  broadcast: <T extends keyof DevframeRpcClientFunctions, Args extends Parameters<DevframeRpcClientFunctions[T]>>(_: RpcBroadcastOptions<T, Args>) => Promise<void>;
+  getCurrentRpcSession: () => DevframeNodeRpcSession | undefined;
+  sharedState: RpcSharedStateHost;
+  streaming: RpcStreamingHost;
+};
+// #endregion
+
 // #region Functions
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
-// #endregion
-
-// #region Other
-export { RpcFunctionsHost }
 // #endregion

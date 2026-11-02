@@ -43,12 +43,12 @@ export class TerminalManager {
 // #endregion
 
 // #region Functions
+export function getTerminalManager(_) {}
 export async function isPtyAvailable() {}
+export function setTerminalManager(_, _) {}
 export async function setupTerminals(_, _) {}
 // #endregion
 
-// #region Other
-export { diagnostics }
-export { getTerminalManager }
-export { setTerminalManager }
+// #region Variables
+export var diagnostics /* const */
 // #endregion

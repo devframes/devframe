@@ -5,6 +5,6 @@
 export function initHub(_) {}
 // #endregion
 
-// #region Other
-export { DEVFRAMES_HUB_BASE }
+// #region Variables
+export var DEVFRAMES_HUB_BASE /* const */
 // #endregion
