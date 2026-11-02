@@ -32,6 +32,10 @@ const RESERVED_HEIGHT = 53
 
 const settings = useSettings(props.context)
 
+// Expanded: a wider rail with each member's title next to its icon. Row
+// heights stay the same, so the capacity math below holds in both modes.
+const expanded = computed(() => settings.value.expandGroupSidebar)
+
 // Members split by in-group sub-category so the sidebar can divide sections.
 const memberGroups = computed(() => getGroupMembersGrouped(
   props.context.docks.entries,
@@ -179,32 +183,42 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
        so the anchor + selected members' text-primary/bg-active render accent. -->
   <div
     ref="sidebar"
-    class="devframes-group-sidebar flex flex-col flex-none w-12 h-full border-r border-base of-y-hidden of-x-hidden select-none py1.5 items-center gap-0.5"
-    :class="group.accentColor ? 'devframes-accent-scope' : ''"
+    class="devframes-group-sidebar flex flex-col flex-none h-full border-r border-base of-y-hidden of-x-hidden select-none py1.5 gap-0.5"
+    :class="[
+      expanded ? 'w-44 px1.5 items-stretch' : 'w-12 items-center',
+      group.accentColor ? 'devframes-accent-scope' : '',
+    ]"
     :style="accentVarStyle(group.accentColor)"
   >
     <!-- Group anchor -->
     <div
-      class="flex items-center justify-center w-8 h-8 op60"
-      :class="group.accentColor ? 'color-active' : ''"
+      class="flex items-center h-8 op60"
+      :class="[
+        expanded ? 'gap-2 px1.5' : 'justify-center w-8',
+        group.accentColor ? 'color-active' : '',
+      ]"
       @pointerenter="showTooltip($event, group)"
       @pointerleave="hideTooltip"
     >
       <DockIcon :icon="group.icon" class="w-5 h-5 flex-none" />
+      <span v-if="expanded" class="text-sm font-medium truncate">{{ group.title }}</span>
     </div>
-    <div class="w-8 h-px border-t border-base my0.5" />
+    <div class="h-px border-t border-base my0.5" :class="expanded ? 'w-full' : 'w-8'" />
 
     <!-- Member icons, grouped by in-group sub-category -->
     <template v-for="([category, members], idx) of visibleGroups" :key="category">
       <!-- Sub-category divider, mirroring the group anchor separator -->
-      <div v-if="idx > 0 && members.length" class="w-8 h-px border-t border-base my0.5" />
+      <div v-if="idx > 0 && members.length" class="h-px border-t border-base my0.5" :class="expanded ? 'w-full' : 'w-8'" />
       <button
         v-for="member of members"
         :key="member.id"
         :aria-label="member.title"
         :aria-current="currentId === member.id ? 'page' : undefined"
-        class="relative flex items-center justify-center w-8 h-8 rounded-lg transition"
-        :class="selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
+        class="relative flex items-center h-8 rounded-lg transition"
+        :class="[
+          expanded ? 'gap-2 px1.5' : 'justify-center w-8',
+          selectedId === member.id ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active',
+        ]"
         @pointerenter="showTooltip($event, member)"
         @pointerleave="hideTooltip"
         @pointerdown="hideTooltip"
@@ -212,9 +226,11 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
         @contextmenu="openContextMenu($event, member)"
       >
         <DockIcon :icon="member.icon" class="w-5 h-5 flex-none" />
+        <span v-if="expanded" class="flex-1 min-w-0 text-left text-sm truncate">{{ member.title }}</span>
         <div
           v-if="member.badge"
-          class="absolute top-0.5 right-0.5 bg-gray-6 text-white text-0.6em px-0.5 rounded-full shadow leading-none"
+          class="bg-gray-6 text-white text-0.6em px-0.5 rounded-full shadow leading-none"
+          :class="expanded ? 'flex-none' : 'absolute top-0.5 right-0.5'"
         >
           {{ member.badge }}
         </div>
@@ -227,15 +243,22 @@ const moreButtonActive = computed(() => selectedInOverflow.value || isOverflowPa
       ref="moreButton"
       :aria-label="t('dock.showMore')"
       :aria-current="currentInOverflow ? 'true' : undefined"
-      class="relative flex items-center justify-center w-8 h-8 rounded-lg transition mt-auto flex-none"
-      :class="moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active'"
+      class="relative flex items-center h-8 rounded-lg transition mt-auto flex-none"
+      :class="[
+        expanded ? 'gap-2 px1.5' : 'justify-center w-8',
+        moreButtonActive ? 'text-primary bg-active' : 'op60 hover:op100 hover:bg-active',
+      ]"
       @pointerenter="showTooltip($event, t('dock.showMore'))"
       @pointerleave="hideTooltip"
       @pointerdown="hideTooltip"
       @click="toggleOverflowPanel"
     >
       <DockIcon icon="ph:dots-three-circle-duotone" class="w-5 h-5 flex-none" />
-      <div class="absolute top-0.5 right-0.5 bg-gray-6 text-white text-0.6em px-0.5 rounded-full shadow leading-none">
+      <span v-if="expanded" class="flex-1 min-w-0 text-left text-sm truncate">{{ t('dock.showMore') }}</span>
+      <div
+        class="bg-gray-6 text-white text-0.6em px-0.5 rounded-full shadow leading-none"
+        :class="expanded ? 'flex-none' : 'absolute top-0.5 right-0.5'"
+      >
         {{ overflowBadge }}
       </div>
     </button>

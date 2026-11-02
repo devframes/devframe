@@ -72,6 +72,8 @@
   "appearance.recentDocks": "Ferramentas recentes na barra",
   "appearance.recentDocksHint": "Manter na barra as ferramentas abertas por último a partir de um grupo ou do menu de excedentes (somente no modo flutuante).",
   "appearance.recentDocksOff": "Desativado",
+  "appearance.expandSidebar": "Expandir a barra lateral do grupo",
+  "appearance.expandSidebarHint": "Mostra o nome de cada ferramenta ao lado do ícone na barra lateral do grupo.",
 
   "docks.intro": "Gerencie a visibilidade e a ordem dos painéis. Painéis ocultos não aparecem na barra.",
   "docks.resetOrder": "Redefinir ordem personalizada",

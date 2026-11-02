@@ -72,6 +72,8 @@
   "appearance.recentDocks": "ドックバーの最近使ったツール",
   "appearance.recentDocksHint": "グループやオーバーフローメニューから最後に開いたツールをドックバーに表示します（フロートモードのみ）。",
   "appearance.recentDocksOff": "オフ",
+  "appearance.expandSidebar": "グループサイドバーを展開",
+  "appearance.expandSidebarHint": "グループサイドバーでアイコンの横にツール名を表示します。",
 
   "docks.intro": "ドック項目の表示と順序を管理します。非表示の項目はドックバーに表示されません。",
   "docks.resetOrder": "カスタム順序をリセット",

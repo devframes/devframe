@@ -234,5 +234,23 @@ function setDockMode(mode: string) {
         <span class="text-xs op50">{{ t('appearance.autoCollapseHint') }}</span>
       </div>
     </label>
+
+    <!-- Expand group sidebar toggle -->
+    <label class="flex items-center gap-3 cursor-pointer group">
+      <button
+        class="w-10 h-6 rounded-full transition-colors relative shrink-0"
+        :class="settings.expandGroupSidebar ? 'bg-primary' : 'bg-gray/30'"
+        @click="settingsStore.mutate((s) => { s.expandGroupSidebar = !settings.expandGroupSidebar })"
+      >
+        <div
+          class="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform"
+          :class="settings.expandGroupSidebar ? 'translate-x-5' : 'translate-x-1'"
+        />
+      </button>
+      <div class="flex flex-col">
+        <span class="text-sm">{{ t('appearance.expandSidebar') }}</span>
+        <span class="text-xs op50">{{ t('appearance.expandSidebarHint') }}</span>
+      </div>
+    </label>
   </div>
 </template>
