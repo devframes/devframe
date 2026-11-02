@@ -1,4 +1,4 @@
-import type { DevframeNodeContext, DevframeScopedNodeContext } from 'devframe'
+import type { RpcSharedStateHost } from 'devframe/types'
 import type { SharedState, SharedStatePatch } from 'devframe/utils/shared-state'
 import type { StandardSchemaV1 } from 'devframe/utils/simple-schema'
 import type { DevframeJsonRenderSpec, JsonRenderStatePatch, JsonRenderView } from '../types'
@@ -34,9 +34,20 @@ export interface CreateJsonRenderViewOptions<SpecType extends DevframeJsonRender
   title?: string
 }
 
-type AnyContext = DevframeNodeContext | DevframeScopedNodeContext<string>
+/** Reuse one context per native shared-state instance for view discovery and duplicate detection. */
+export interface JsonRenderViewContext {
+  rpc: { sharedState: RpcSharedStateHost }
+}
 
-function isScoped(ctx: AnyContext): ctx is DevframeScopedNodeContext<string> {
+/** Namespace and base shared state supplied by a scoped node context. */
+export interface JsonRenderScopedViewContext {
+  base: JsonRenderViewContext
+  namespace: string
+}
+
+type AnyContext = JsonRenderViewContext | JsonRenderScopedViewContext
+
+function isScoped(ctx: AnyContext): ctx is JsonRenderScopedViewContext {
   return 'base' in ctx && 'namespace' in ctx
 }
 
@@ -44,7 +55,7 @@ function isScoped(ctx: AnyContext): ctx is DevframeScopedNodeContext<string> {
 // scope is caught deterministically (not left to shared-state get() returning
 // the pre-existing entry).
 const registries = new WeakMap<object, Set<string>>()
-function registryFor(ctx: DevframeNodeContext): Set<string> {
+function registryFor(ctx: JsonRenderViewContext): Set<string> {
   let set = registries.get(ctx)
   if (!set) {
     set = new Set()
@@ -57,7 +68,7 @@ function registryFor(ctx: DevframeNodeContext): Set<string> {
 // `JSON_RENDER_INDEX_KEY`, so a frontend that does not know view ids ahead of
 // time can discover every live view from a single subscription.
 const indexStates = new WeakMap<object, SharedState<JsonRenderIndex>>()
-function indexStateFor(ctx: DevframeNodeContext): SharedState<JsonRenderIndex> {
+function indexStateFor(ctx: JsonRenderViewContext): SharedState<JsonRenderIndex> {
   let state = indexStates.get(ctx)
   if (!state) {
     state = createSharedState<JsonRenderIndex>({ initialValue: {} })
