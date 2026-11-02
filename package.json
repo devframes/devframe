@@ -26,6 +26,7 @@
     "storybook": "pnpm -C storybook dev",
     "storybook:build": "pnpm --filter @devframes/storybook run storybook:build",
     "lint": "eslint --cache",
+    "lint:docs": "pnpm -C docs run lint",
     "knip": "knip",
     "test": "pnpm run build && vitest",
     "test:e2e": "pnpm run build && playwright test",

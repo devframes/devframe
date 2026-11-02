@@ -15,7 +15,7 @@ jobs:
     with:
       build: pnpm run ci:build
       test: pnpm exec vitest
-      lint: pnpm run lint && pnpm run knip
+      lint: pnpm run lint && pnpm run lint:docs && pnpm run knip
       build-for-lint: true
 
   # The RPC transport binds a native WebSocket on Bun/Deno (crossws's

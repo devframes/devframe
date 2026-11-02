@@ -9,6 +9,10 @@ export default defineNuxtConfig({
    */
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
+  comarkDocs: {
+    highlighter: './highlighter.ts',
+  },
+
   css: [
     '@shikijs/magic-move/style.css',
     '~/assets/css/devframe.css',

@@ -4,7 +4,7 @@ title: 'Build a devtool once. Mount it anywhere.'
 description: 'Devframe is a framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host framework, ship as a CLI or static report, and expose to coding agents.'
 ---
 
-::u-page-hero
+::landing-hero
 ---
 orientation: horizontal
 ---
@@ -32,7 +32,7 @@ Build a devtool once. Mount it anywhere.
 A framework-neutral foundation for devtools. One definition becomes a Web Standard handler you can mount into any host framework, ship as a CLI or static report, and expose to coding agents.
 
 #links
-  :::u-button
+  :::button
   ---
   to: /guide/getting-started
   size: lg
@@ -41,7 +41,7 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
   Get started
   :::
 
-  :::u-button
+  :::button
   ---
   icon: i-simple-icons-github
   color: neutral
@@ -53,7 +53,7 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
   View on GitHub
   :::
 
-  :::u-button
+  :::button
   ---
   icon: i-simple-icons-discord
   color: neutral
@@ -67,7 +67,7 @@ A framework-neutral foundation for devtools. One definition becomes a Web Standa
 ::
 
 
-::u-page-section
+::page-section
   :::callout
   ---
   icon: i-lucide-newspaper
