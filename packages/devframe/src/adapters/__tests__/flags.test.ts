@@ -4,7 +4,9 @@ import { defineCliFlags, flagKeyToOption, isBooleanFlag, parseCliFlags } from '.
 
 describe('adapters/flags', () => {
   it('defineCliFlags returns the input untouched (identity)', () => {
-    const schema = { depth: v.number() }
+    const schema = {
+      depth: v.number(),
+    }
     expect(defineCliFlags(schema)).toBe(schema)
   })
 

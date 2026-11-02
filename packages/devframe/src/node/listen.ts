@@ -44,7 +44,9 @@ export async function listenWithLoopbackTwin(server: NodeHttpServer, port: numbe
   twin.on('request', (req, res) => server.emit('request', req, res))
   twin.on('upgrade', (req, socket, head) => server.emit('upgrade', req, socket, head))
   try {
-    await listen(twin, bound.port, bound.family === 'IPv6' ? '127.0.0.1' : '::1')
+    await listen(twin, bound.port, bound.family === 'IPv6'
+      ? '127.0.0.1'
+      : '::1')
     return () => new Promise<void>(r => twin.close(() => r()))
   }
   catch (error) {

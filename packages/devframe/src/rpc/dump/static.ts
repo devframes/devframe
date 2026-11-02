@@ -135,7 +135,9 @@ export async function collectStaticRpcDump(
     ensureAgentJsonSerializable(definition)
     const type = definition.type ?? 'query'
     const serialization: StaticRpcDumpSerialization
-      = definition.jsonSerializable === true ? 'json' : 'structured-clone'
+      = definition.jsonSerializable === true
+        ? 'json'
+        : 'structured-clone'
 
     if (type === 'static') {
       manifest[definition.name] = await collectStaticDefinition(definition, context, serialization, files)

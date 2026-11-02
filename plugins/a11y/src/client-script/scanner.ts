@@ -17,9 +17,14 @@ function normalizeImpact(value: unknown): Violation['impact'] {
  * single selector; nodes inside frames yield one per frame depth.
  */
 function flattenTarget(target: unknown): string[] {
-  if (!Array.isArray(target))
-    return [String(target)]
-  return target.map(entry => (Array.isArray(entry) ? entry.join(' ') : String(entry)))
+  if (!Array.isArray(target)) {
+    return [
+      String(target),
+    ]
+  }
+  return target.map(entry => (Array.isArray(entry)
+    ? entry.join(' ')
+    : String(entry)))
 }
 
 /** Resolve the element a target points at within the top document. */
@@ -63,7 +68,9 @@ export interface ScanOptions {
  * Stamps each violating element with {@link A11Y_NODE_ATTR} as a side effect.
  */
 export async function scan(options: ScanOptions = {}): Promise<ScanReport> {
-  const tags = options.tags?.length ? options.tags : [...DEFAULT_AXE_TAGS]
+  const tags = options.tags?.length
+    ? options.tags
+    : [...DEFAULT_AXE_TAGS]
   const results = await axe.run(document, {
     resultTypes: ['violations'],
     /**
@@ -86,7 +93,9 @@ export async function scan(options: ScanOptions = {}): Promise<ScanReport> {
     const nodes: ViolationNode[] = rule.nodes.map((node) => {
       const target = flattenTarget(node.target)
       const el = resolveElement(target)
-      const id = el ? stamp(el) : target.join('|')
+      const id = el
+        ? stamp(el)
+        : target.join('|')
       counts[impact] += 1
       return {
         id,

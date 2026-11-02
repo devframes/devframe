@@ -22,7 +22,9 @@ export const Default: Story = {
         type: 'call',
         method: 'devframes:plugin:inspect:list-functions',
         args: [],
-        result: [{ name: 'dummy' }],
+        result: [
+          { name: 'dummy' },
+        ],
         duration: 42,
         time: Date.now() - 10000,
       },
@@ -30,7 +32,9 @@ export const Default: Story = {
         id: 2,
         type: 'state',
         key: 'devframe:docks',
-        value: [{ id: 'dock1' }],
+        value: [
+          { id: 'dock1' },
+        ],
         syncId: 'xyz123',
         time: Date.now() - 5000,
       },

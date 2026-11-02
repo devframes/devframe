@@ -73,7 +73,11 @@ function buildPlacementStyle(align: FloatingAlign, g: PlacementGeometry): Record
   const style: Record<string, string> = {}
 
   if (align === 'top' || align === 'bottom') {
-    style[align === 'bottom' ? 'top' : 'bottom'] = align === 'bottom' ? `${anchorBottom + gap}px` : `${vh - rect.top + gap}px`
+    style[align === 'bottom'
+      ? 'top'
+      : 'bottom'] = align === 'bottom'
+      ? `${anchorBottom + gap}px`
+      : `${vh - rect.top + gap}px`
     if (panelWidth) {
       style.left = `${clamp(rect.left + rect.width / 2 - panelWidth / 2, VIEWPORT_MARGIN, vw - panelWidth - VIEWPORT_MARGIN)}px`
     }
@@ -84,7 +88,11 @@ function buildPlacementStyle(align: FloatingAlign, g: PlacementGeometry): Record
     return style
   }
 
-  style[align === 'right' ? 'left' : 'right'] = align === 'right' ? `${anchorRight + gap}px` : `${vw - rect.left + gap}px`
+  style[align === 'right'
+    ? 'left'
+    : 'right'] = align === 'right'
+    ? `${anchorRight + gap}px`
+    : `${vw - rect.left + gap}px`
   if (panelHeight) {
     style.top = `${clamp(rect.top + rect.height / 2 - panelHeight / 2, VIEWPORT_MARGIN, vh - panelHeight - VIEWPORT_MARGIN)}px`
   }
@@ -121,11 +129,22 @@ export function resolveFloatingPosition(options: ResolveFloatingPositionOptions)
   if (!placement && panelWidth && panelHeight)
     align = flipForOverflow(align, geometry)
 
-  return { align, style: buildPlacementStyle(align, geometry) }
+  return {
+    align,
+    style: buildPlacementStyle(align, geometry),
+  }
 }
 
 /** Properties whose computed value, when not `none`, makes an element a containing block for `position: fixed` descendants. */
-const FIXED_CONTAINING_BLOCK_PROPERTIES = ['transform', 'translate', 'rotate', 'scale', 'perspective', 'filter', 'backdropFilter'] as const
+const FIXED_CONTAINING_BLOCK_PROPERTIES = [
+  'transform',
+  'translate',
+  'rotate',
+  'scale',
+  'perspective',
+  'filter',
+  'backdropFilter',
+] as const
 
 /**
  * The element a fixed-position panel anchored to `anchor` must be `<Teleport>`ed into to

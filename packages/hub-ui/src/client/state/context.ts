@@ -81,7 +81,10 @@ export async function createDocksContext(
     const localized = base.map(entry => localizeTitle(entry))
     if (localized.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
       return localized
-    return [...localized, localizeTitle(BUILTIN_ENTRY_SETTINGS, t('dock.settings'))]
+    return [
+      ...localized,
+      localizeTitle(BUILTIN_ENTRY_SETTINGS, t('dock.settings')),
+    ]
   })
 
   // Per-tab session UI state (open/selectedId/route). A caller (the embedded and
@@ -164,8 +167,12 @@ export async function createDocksContext(
         if (patch.id != null && patch.id !== entry.id)
           throw new Error(`[@devframes/hub-ui] a client dock id is immutable ("${entry.id}")`)
         const existing = clientDocks.get(entry.id)
-        if (existing)
-          clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
+        if (existing) {
+          clientDocks.set(entry.id, {
+            ...existing,
+            ...patch,
+          } as DevframeDockEntry)
+        }
       },
       dispose: () => {
         if (!clientDocks.delete(entry.id))
@@ -196,7 +203,9 @@ export async function createDocksContext(
     if (!_settingsStorePromise) {
       _settingsStorePromise = rpc.sharedState.get(
         'devframe:user-settings',
-        { initialValue: DEFAULT_STATE_USER_SETTINGS() },
+        {
+          initialValue: DEFAULT_STATE_USER_SETTINGS(),
+        },
       )
     }
     return _settingsStorePromise
@@ -515,7 +524,12 @@ export async function createDocksContext(
   // delivered once via the connection handshake.
   const categoryOrderOverride = rpc.connectionMeta.configs?.ui?.dockPreferences?.categoryOrder
   const groupedEntries = computed(() => {
-    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, liftPinnedMembers: true, categoryOrderOverride })
+    return docksGroupByCategories(entries.value, settings.value, {
+      whenContext: getWhenContext(),
+      collapseGroups: true,
+      liftPinnedMembers: true,
+      categoryOrderOverride,
+    })
   })
 
   // Initialize commands context with reactive when-context
@@ -534,7 +548,9 @@ export async function createDocksContext(
         title: t('command.togglePalette'),
         icon: 'ph:magnifying-glass-duotone',
         showInPalette: false,
-        keybindings: [{ key: 'Mod+K' }],
+        keybindings: [
+          { key: 'Mod+K' },
+        ],
         action: () => {
           commandsContext.paletteOpen = !commandsContext.paletteOpen
         },
@@ -545,7 +561,9 @@ export async function createDocksContext(
         title: t('command.closePanel'),
         icon: 'ph:x-circle-duotone',
         when: 'dockOpen && !paletteOpen',
-        keybindings: [{ key: 'Escape' }],
+        keybindings: [
+          { key: 'Escape' },
+        ],
         action: () => {
           sessionStore.value.open = false
           selectedDockId.value = null
@@ -557,7 +575,9 @@ export async function createDocksContext(
         title: t('command.stopActiveTool'),
         icon: 'ph:stop-circle-duotone',
         when: 'dockActionActive && !paletteOpen',
-        keybindings: [{ key: 'Escape' }],
+        keybindings: [
+          { key: 'Escape' },
+        ],
         action: () => {
           for (const id of [...activeActions])
             void setActionActive(id, false)
@@ -598,7 +618,9 @@ export async function createDocksContext(
          * renders the standalone layout, so neither mode is observable, mirroring
          * the Appearance settings hiding its own dock-mode control.
          */
-        when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
+        when: clientType === 'embedded'
+          ? 'clientType == embedded && !popupOpen'
+          : undefined,
         children: [
           {
             id: 'devframes:dock-mode:float',
@@ -672,14 +694,19 @@ export async function createDocksContext(
       .filter(entry => entry.type !== '~builtin')
       .filter(entry => !(entry.groupId && registeredGroupIds.has(entry.groupId)))
       .flatMap((entry): DevframeClientCommand[] => {
-        if (entry.type !== 'group')
-          return [toCommand(entry)]
+        if (entry.type !== 'group') {
+          return [
+            toCommand(entry),
+          ]
+        }
         // Members hang directly off their group, in the dock rail's sub-category
         // order. The rail's sub-category *dividers* have no counterpart here: a
         // category is not something you can run, and turning one into a command
         // would add an inert row nothing can bind to. Ordering carries the
         // grouping instead.
-        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
+        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, {
+          whenContext: getWhenContext(),
+        })
         const preferredChildId = resolveGroupPreferredChild(
           entries.value,
           entry,
@@ -693,14 +720,18 @@ export async function createDocksContext(
         if (visibleMembers.length === 0 && !preferredChildId)
           return []
         const commandId = dockCommandId(entry.id)
-        return [{
-          ...toCommand(entry),
-          action: () => activateGroup(
-            commandId,
-            preferredChildId ?? (visibleMembers.length === 1 ? visibleMembers[0]!.id : undefined),
-          ),
-          children: visibleMembers.map(toCommand),
-        }]
+        return [
+          {
+            ...toCommand(entry),
+            action: () => activateGroup(
+              commandId,
+              preferredChildId ?? (visibleMembers.length === 1
+                ? visibleMembers[0]!.id
+                : undefined),
+            ),
+            children: visibleMembers.map(toCommand),
+          },
+        ]
       })
 
     if (dockChildren.length > 0) {
@@ -717,7 +748,9 @@ export async function createDocksContext(
   // One-shot boot route (see `DocksPanelContext.consumeBootRoute`): the persisted
   // address-bar URL is handed back to exactly the iframe dock that was selected
   // before the reload, once.
-  let bootRoute: string | null = restoreIntent.selectedDockId != null ? restoreIntent.selectedDockRoute : null
+  let bootRoute: string | null = restoreIntent.selectedDockId != null
+    ? restoreIntent.selectedDockRoute
+    : null
   const consumeBootRoute = (id: string): string | null => {
     if (bootRoute != null && id === restoreIntent.selectedDockId) {
       const route = bootRoute
@@ -758,7 +791,12 @@ export async function createDocksContext(
       entries,
       entryToStateMap: markRaw(dockEntryStateMap),
       groupedEntries,
-      categoryOrder: categoryOrderOverride ? { ...DEFAULT_CATEGORIES_ORDER, ...categoryOrderOverride } : DEFAULT_CATEGORIES_ORDER,
+      categoryOrder: categoryOrderOverride
+        ? {
+            ...DEFAULT_CATEGORIES_ORDER,
+            ...categoryOrderOverride,
+          }
+        : DEFAULT_CATEGORIES_ORDER,
       settings: settingsStore,
       getStateById: (id: string) => dockEntryStateMap.get(id),
       switchEntry,
@@ -839,7 +877,11 @@ export async function createDocksContext(
   }
   let previousPanelState = docksContext.panel.state
   watch(
-    [panelVisible, () => sessionStore.value.open, selectedDockId],
+    [
+      panelVisible,
+      () => sessionStore.value.open,
+      selectedDockId,
+    ],
     () => {
       const panelState = docksContext.panel.state
       if (

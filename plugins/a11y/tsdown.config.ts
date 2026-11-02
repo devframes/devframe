@@ -36,7 +36,9 @@ export default defineConfig([
     tsconfig,
     dts: false,
     outExtensions: () => ({ js: '.mjs' }),
-    deps: { alwaysBundle: [/^devframe(\/|$)/, 'axe-core'] },
+    deps: {
+      alwaysBundle: [/^devframe(\/|$)/, 'axe-core'],
+    },
     entry: clientScriptEntries,
   },
   {
@@ -52,6 +54,9 @@ export default defineConfig([
     tsconfig,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientScriptEntries, ...nodeEntries },
+    entry: {
+      ...clientScriptEntries,
+      ...nodeEntries,
+    },
   },
 ])

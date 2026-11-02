@@ -65,9 +65,15 @@ export function buildMcpServerFromContext(
       capabilities: {
         tools: { listChanged: true },
         resources: { listChanged: true },
-        ...(options.prompts?.size ? { prompts: { listChanged: false } } : {}),
+        ...(options.prompts?.size
+          ? {
+              prompts: { listChanged: false },
+            }
+          : {}),
       },
-      ...(options.instructions ? { instructions: options.instructions } : {}),
+      ...(options.instructions
+        ? { instructions: options.instructions }
+        : {}),
     },
   )
 
@@ -76,7 +82,13 @@ export function buildMcpServerFromContext(
   registerResourceHandlers(server, ctx, options.exposeSharedState, templates)
   if (templates.length) {
     server.setRequestHandler('resources/templates/list', async () => ({
-      resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({ uriTemplate, name, title, description, mimeType })),
+      resourceTemplates: templates.map(({ template: { uriTemplate, name, title, description, mimeType } }) => ({
+        uriTemplate,
+        name,
+        title,
+        description,
+        mimeType,
+      })),
     }))
   }
   if (options.prompts?.size)
@@ -196,7 +208,9 @@ export async function createMcpServer(
     })
   }
   catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
+    const reason = error instanceof Error
+      ? error.message
+      : String(error)
     throw diagnostics.DF0017({ transport, reason, cause: error })
   }
 
@@ -222,7 +236,9 @@ const READ_STATE_NAME = toAgentToolName(READ_STATE_TOOL)
 function sharedStateFilter(exposeSharedState: boolean | ((key: string) => boolean)): ((key: string) => boolean) | undefined {
   if (exposeSharedState === false)
     return undefined
-  return typeof exposeSharedState === 'function' ? exposeSharedState : () => true
+  return typeof exposeSharedState === 'function'
+    ? exposeSharedState
+    : () => true
 }
 
 function readStateToolProjection(): Tool {
@@ -258,7 +274,10 @@ async function readStateResult(
   if (!keys.includes(key))
     throw diagnostics.DF0048({ key })
   const state = await ctx.rpc.sharedState.get(key)
-  return { key, value: state.value() }
+  return {
+    key,
+    value: state.value(),
+  }
 }
 
 function registerToolHandlers(
@@ -296,7 +315,9 @@ function registerToolHandlers(
       }
       byName.set(name, tool)
     }
-    const tools = [...byName.entries()].map(([name, tool]) => projectTool(name, tool, ctx))
+    const tools = [
+      ...byName.entries(),
+    ].map(([name, tool]) => projectTool(name, tool, ctx))
     // A registered agent tool projecting to the same wire name wins over
     // the built-in.
     if (stateFilter && !byName.has(READ_STATE_NAME))
@@ -315,7 +336,12 @@ function registerToolHandlers(
         const key = (args as { key?: string } | undefined)?.key
         const result = await readStateResult(ctx, stateFilter, key)
         return {
-          content: [{ type: 'text', text: stringifyForMcp(result) }],
+          content: [
+            {
+              type: 'text',
+              text: stringifyForMcp(result),
+            },
+          ],
           structuredContent: result as Record<string, unknown>,
         }
       }
@@ -326,10 +352,17 @@ function registerToolHandlers(
       // Blocks attached with `withMcpContent` replace the default JSON text
       // block. `structuredContent` stays the plain result either way, so a
       // tool with an output schema still matches it.
-      const content = mcpContentOf(name, result) ?? [{ type: 'text', text: stringifyForMcp(result) }]
+      const content = mcpContentOf(name, result) ?? [
+        {
+          type: 'text',
+          text: stringifyForMcp(result),
+        },
+      ]
       return {
         content,
-        ...(outputSchema ? { structuredContent: result as Record<string, unknown> } : {}),
+        ...(outputSchema
+          ? { structuredContent: result as Record<string, unknown> }
+          : {}),
       }
     }
     catch (error) {
@@ -466,11 +499,17 @@ export function compilePrompts(prompts: McpPrompt[] = []): Map<string, McpPrompt
  */
 function registerPromptHandlers(server: Server, prompts: Map<string, McpPrompt>): void {
   server.setRequestHandler('prompts/list', async () => ({
-    prompts: [...prompts.values()].map(({ name, title, description, arguments: args }) => ({
+    prompts: [
+      ...prompts.values(),
+    ].map(({ name, title, description, arguments: args }) => ({
       name,
       title,
       description,
-      ...(args?.length ? { arguments: args.map(argument => ({ name: argument.name, description: argument.description, required: argument.required })) } : {}),
+      ...(args?.length
+        ? {
+            arguments: args.map(argument => ({ name: argument.name, description: argument.description, required: argument.required })),
+          }
+        : {}),
     })),
   }))
 
@@ -523,7 +562,10 @@ export function compileResourceTemplates(templates: McpResourceTemplate[] = []):
       if (index > 0 && literals[index] === '')
         throw invalid(`"{${names[index - 1]}}" and "{${varname}}" have nothing between them, so a URI cannot show where one ends.`)
     })
-    return { template, match: uri => matchTemplate(uri, literals, names) }
+    return {
+      template,
+      match: uri => matchTemplate(uri, literals, names),
+    }
   })
 }
 
@@ -540,8 +582,11 @@ function matchTemplate(uri: string, literals: string[], names: string[]): Record
   const head = literals[0]!
   const tail = literals.at(-1)!
   const params: Record<string, string> = Object.create(null)
-  if (names.length === 0)
-    return uri === head ? params : undefined
+  if (names.length === 0) {
+    return uri === head
+      ? params
+      : undefined
+  }
   if (!uri.startsWith(head) || !uri.endsWith(tail))
     return undefined
   const end = uri.length - tail.length
@@ -549,7 +594,9 @@ function matchTemplate(uri: string, literals: string[], names: string[]): Record
   for (let index = 0; index < names.length; index++) {
     const isLast = index === names.length - 1
     const next = literals[index + 1]!
-    const stop = isLast ? end : findLiteral(uri, next, position)
+    const stop = isLast
+      ? end
+      : findLiteral(uri, next, position)
     if (stop <= position)
       return undefined
     const raw = uri.slice(position, stop)
@@ -621,7 +668,9 @@ function projectTool(name: string, tool: AgentTool, ctx: DevframeNodeContext): T
     title: tool.title,
     description: tool.description,
     inputSchema,
-    ...(outputSchema ? { outputSchema } : {}),
+    ...(outputSchema
+      ? { outputSchema }
+      : {}),
     annotations: {
       title: tool.title,
       readOnlyHint: tool.safety === 'read',

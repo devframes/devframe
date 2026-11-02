@@ -88,12 +88,22 @@ export async function startTerminalsServer(
     mount: () => {},
   })
 
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: h3Host,
+  })
   if (hub)
     (ctx as { terminals?: FakeHubTerminals }).terminals = hub
   await definition.setup(ctx)
 
-  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({
+    context: ctx,
+    host,
+    port,
+    app,
+    auth: false,
+  })
 
   // Tear down spawned terminal processes (PTYs / piped children) alongside
   // the HTTP+WS server so tests don't leak `node`/shell processes.

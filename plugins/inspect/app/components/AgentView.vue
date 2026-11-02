@@ -23,7 +23,9 @@ const argsInput = reactive<Record<string, string>>({})
 const invokeErrors = reactive<Record<string, string>>({})
 
 function toggle(id: string): void {
-  expanded.value = expanded.value === id ? null : id
+  expanded.value = expanded.value === id
+    ? null
+    : id
   if (argsInput[id] === undefined) {
     argsInput[id] = '{}'
   }

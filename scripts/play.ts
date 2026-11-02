@@ -12,7 +12,12 @@ import prompts from 'prompts'
  * new example, plugin, or other playground shows up here for free, with no
  * change to this script.
  */
-const WORKSPACE_PATTERNS = ['examples/*', 'packages/*', 'plugins/*', 'storybook']
+const WORKSPACE_PATTERNS = [
+  'examples/*',
+  'packages/*',
+  'plugins/*',
+  'storybook',
+]
 
 /**
  * Script names that make a workspace package runnable as a "play"; the

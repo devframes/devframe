@@ -54,7 +54,9 @@ function getEffectiveKeybindings(id: string): DevframeCommandKeybinding[] {
  * worth of space.
  */
 function rowIndentStyle(row: ShortcutRow): Record<string, string> {
-  return row.depth > 0 ? { marginLeft: `${row.depth * 1.5}rem` } : {}
+  return row.depth > 0
+    ? { marginLeft: `${row.depth * 1.5}rem` }
+    : {}
 }
 
 function isExecutable(command: DevframeCommandEntry): boolean {
@@ -154,7 +156,10 @@ const editorWarnings = computed<string[]>(() => {
   // Browser / OS conflict: show the description
   const browserDescription = KNOWN_BROWSER_SHORTCUTS[key]
   if (browserDescription) {
-    warnings.push(t('shortcuts.warnBrowser', { description: browserDescription, keys: formatKeybinding(key).join('+') }))
+    warnings.push(t('shortcuts.warnBrowser', {
+      description: browserDescription,
+      keys: formatKeybinding(key).join('+'),
+    }))
   }
 
   // Hidden commands can share the same mode again after the user switches modes.
@@ -194,7 +199,9 @@ function onEditorKeyDown(e: KeyboardEvent) {
 function saveEditor() {
   if (!editorCommandId.value || !editorCanSave.value)
     return
-  const override = [{ key: editorComposedKey.value }]
+  const override = [
+    { key: editorComposedKey.value },
+  ]
   if (isKeybindingOverrideDifferentFromDefault(override, getDefaultKeybindings(editorCommandId.value))) {
     commandsCtx.settings.mutate((state) => {
       state.commandShortcuts[editorCommandId.value!] = override

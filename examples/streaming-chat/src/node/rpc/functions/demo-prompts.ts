@@ -5,5 +5,7 @@ export const demoPrompts = defineRpcFunction({
   name: 'demo-prompts',
   type: 'static',
   jsonSerializable: true,
-  handler: () => ({ prompts: [...DEMO_PROMPTS] }),
+  handler: () => ({
+    prompts: [...DEMO_PROMPTS],
+  }),
 })

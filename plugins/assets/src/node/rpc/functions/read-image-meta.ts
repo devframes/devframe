@@ -10,7 +10,9 @@ export const readImageMeta = defineRpcFunction({
   name: 'devframes:plugin:assets:read-image-meta',
   type: 'query',
   jsonSerializable: true,
-  args: [s.string()],
+  args: [
+    s.string(),
+  ],
   returns: s.nullable(s.object({
     width: s.optional(s.number()),
     height: s.optional(s.number()),

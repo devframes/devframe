@@ -40,7 +40,9 @@ describe('createUi branding background', () => {
     expect.assertions(2)
 
     const context = createContext()
-    const ui = createUi({ branding: { background: 'transparent' } })
+    const ui = createUi({
+      branding: { background: 'transparent' },
+    })
     ui.setup?.(context)
 
     expect(context.staticConfig.ui).toEqual({
@@ -57,10 +59,14 @@ describe('createUi branding background', () => {
       light: 'linear-gradient(white, transparent)',
       dark: 'linear-gradient(#111, transparent)',
     }
-    const ui = createUi({ branding: { background } })
+    const ui = createUi({
+      branding: { background },
+    })
     ui.setup?.(context)
 
-    expect(context.staticConfig.ui).toEqual({ branding: { background } })
+    expect(context.staticConfig.ui).toEqual({
+      branding: { background },
+    })
   })
 
   it('publishes standalone and iframe viewer backgrounds with the branding', () => {
@@ -70,10 +76,14 @@ describe('createUi branding background', () => {
       standalone: { light: '#fff', dark: '#282828' },
       iframe: 'transparent',
     }
-    const ui = createUi({ branding: { background } })
+    const ui = createUi({
+      branding: { background },
+    })
     const context = createContext()
     ui.setup?.(context)
-    expect(context.staticConfig.ui).toEqual({ branding: { background } })
+    expect(context.staticConfig.ui).toEqual({
+      branding: { background },
+    })
   })
 
   it('publishes the default locale', () => {

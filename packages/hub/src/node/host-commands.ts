@@ -153,7 +153,9 @@ export class DevframeCommandsHost implements DevframeCommandsHostType {
       ...rest,
       source: 'server',
       ...(children
-        ? { children: children.map((c: DevframeServerCommandInput) => this.toSerializable(c)) }
+        ? {
+            children: children.map((c: DevframeServerCommandInput) => this.toSerializable(c)),
+          }
         : {}
       ),
     }

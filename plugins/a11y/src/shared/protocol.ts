@@ -53,7 +53,12 @@ export const DEFAULT_AXE_TAGS = [
 ] as const
 
 /** axe-core impact buckets, ordered most → least severe. */
-export const IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'] as const
+export const IMPACT_ORDER = [
+  'critical',
+  'serious',
+  'moderate',
+  'minor',
+] as const
 export type Impact = (typeof IMPACT_ORDER)[number]
 
 /**
@@ -195,7 +200,12 @@ export interface A11yChannelProtocol {
 
 /** Empty per-impact counter, a handy initial value. */
 export function emptyCounts(): Record<Impact, number> {
-  return { critical: 0, serious: 0, moderate: 0, minor: 0 }
+  return {
+    critical: 0,
+    serious: 0,
+    moderate: 0,
+    minor: 0,
+  }
 }
 
 /** Roll the per-impact counts of many reports into one total. */

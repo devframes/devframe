@@ -173,7 +173,9 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
 
   await docks.init()
 
-  const debounceMs = options.mode === 'build' ? 0 : 10
+  const debounceMs = options.mode === 'build'
+    ? 0
+    : 10
 
   const docksSharedState = await context.rpc.sharedState.get(HUB_EVENTS.sharedState.docks, { initialValue: [] })
   const refreshDocks = debounce(() => {
@@ -193,7 +195,9 @@ export async function createHubContext(options: CreateHubContextOptions): Promis
   // only mounts *because* of the switch still converges on it.
   const activeDockSharedState = await context.rpc.sharedState.get<DevframeDocksActiveState>(
     HUB_EVENTS.sharedState.docksActive,
-    { initialValue: { activation: null } },
+    {
+      initialValue: { activation: null },
+    },
   )
   docks.events.on(HUB_EVENTS.bus.docksActivate, (activation) => {
     activeDockSharedState.mutate((state) => {

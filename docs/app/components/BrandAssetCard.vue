@@ -28,7 +28,9 @@ async function copySvg(): Promise<void> {
 
 function downloadSvg(): void {
   triggerDownload(
-    URL.createObjectURL(new Blob([withXmlns(props.svg)], { type: 'image/svg+xml;charset=utf-8' })),
+    URL.createObjectURL(new Blob([
+      withXmlns(props.svg),
+    ], { type: 'image/svg+xml;charset=utf-8' })),
     `${props.file}.svg`,
   )
 }

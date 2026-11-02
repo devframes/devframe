@@ -61,7 +61,9 @@ describe('@devframes/plugin-git', () => {
 
   it('stages, unstages, and commits over the service RPC', async () => {
     const rpc = bootRpc(server.port)
-    await rpc.$call('devframes:service:git:stage', { paths: ['README.md'] })
+    await rpc.$call('devframes:service:git:stage', {
+      paths: ['README.md'],
+    })
     const result = await rpc.$call('devframes:service:git:commit', { message: 'test: commit from ui' }) as CommitResult
     expect(result.ok).toBe(true)
     const log = await rpc.$call('devframes:service:git:log', {}) as GitLog

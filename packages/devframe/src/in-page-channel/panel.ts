@@ -55,12 +55,16 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
   const eventBufferLimit = options.eventBufferLimit ?? DEFAULT_EVENT_BUFFER_LIMIT
   const win = options.window === false
     ? undefined
-    : options.window ?? (typeof window === 'undefined' ? undefined : window)
+    : options.window ?? (typeof window === 'undefined'
+      ? undefined
+      : window)
   const allowedOrigins = resolveAllowedOrigins(options.allowedOrigins, win)
   const heartbeat = resolveHeartbeat(options.heartbeat)
   const codec = { serialize: options.serialize, deserialize: options.deserialize }
   const panelId = nanoid()
-  const targets = options.targets ?? (win ? defaultHandshakeTargets(win) : [])
+  const targets = options.targets ?? (win
+    ? defaultHandshakeTargets(win)
+    : [])
   const canHandshake = !!win && targets.length > 0
 
   const events = createEventEmitter<PanelChannelEvents>()
@@ -98,7 +102,12 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     stateRegistry.registerInternal(method, handler)
 
   function sendEventNow(method: string, args: unknown[]): void {
-    void attached?.rpc.$callRaw({ method, args, event: true, optional: true }).catch(() => {})
+    void attached?.rpc.$callRaw({
+      method,
+      args,
+      event: true,
+      optional: true,
+    }).catch(() => {})
   }
 
   function sendEvent(method: string, args: unknown[]): void {
@@ -138,7 +147,9 @@ export function connectPanelChannel<P extends InPageChannelProtocol>(
     return withCallDeadline(
       attempt,
       callTimeoutMs,
-      () => `in-page channel "${name}": call "${method}" timed out after ${callTimeoutMs}ms (status: ${status}${status === 'connecting' ? '; is the page script loaded?' : ''})`,
+      () => `in-page channel "${name}": call "${method}" timed out after ${callTimeoutMs}ms (status: ${status}${status === 'connecting'
+        ? '; is the page script loaded?'
+        : ''})`,
     )
   }
 

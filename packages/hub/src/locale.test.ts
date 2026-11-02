@@ -19,7 +19,10 @@ describe('matchLocale', () => {
 })
 
 describe('resolveTitle', () => {
-  const entry = { title: 'Build', titleLocales: { 'zh-CN': '构建', 'ja': 'ビルド' } }
+  const entry = {
+    title: 'Build',
+    titleLocales: { 'zh-CN': '构建', 'ja': 'ビルド' },
+  }
 
   it('picks the closest translation', () => {
     expect(resolveTitle(entry, 'zh-Hans-CN')).toBe('构建')

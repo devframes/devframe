@@ -16,7 +16,12 @@ export interface InstallPlan {
 export async function resolveInstallCommand(plan: InstallPlan): Promise<ResolvedCommand> {
   const detected = await detect({ cwd: plan.cwd })
   const agent = detected?.agent ?? 'npm'
-  const args = [...(plan.dev ? ['-D'] : []), ...plan.packages]
+  const args = [
+    ...(plan.dev
+      ? ['-D']
+      : []),
+    ...plan.packages,
+  ]
   // `add` exists for every agent the detector knows, so the null branch is unreachable.
   return resolveCommand(agent, 'add', args)!
 }
@@ -28,7 +33,10 @@ export async function resolveInstallCommand(plan: InstallPlan): Promise<Resolved
 export async function runInstall(plan: InstallPlan, command: ResolvedCommand): Promise<void> {
   const result = await exec(command.command, command.args, {
     // `CI` keeps every package manager non-interactive: nobody can answer a prompt here.
-    nodeOptions: { cwd: plan.cwd, env: { ...process.env, CI: '1' } },
+    nodeOptions: {
+      cwd: plan.cwd,
+      env: { ...process.env, CI: '1' },
+    },
   })
   if (result.exitCode !== 0) {
     throw diagnostics.DF9001({

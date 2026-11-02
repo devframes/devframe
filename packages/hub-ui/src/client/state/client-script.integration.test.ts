@@ -36,7 +36,9 @@ function createStubRpc() {
         return sharedStates.get(key)!
       },
     },
-    client: { register: vi.fn() },
+    client: {
+      register: vi.fn(),
+    },
     call: vi.fn(),
   } as unknown as DevframeRpcClient
   return { rpc, sharedStates }
@@ -93,7 +95,14 @@ it('starts an eager iframe script before dock activation, once per RPC client', 
   const { rpc, sharedStates } = createStubRpc()
   const context = await createDocksContext('embedded', rpc)
   const clientScript = { eager: true, importFrom: 'data:text/javascript,export default () => globalThis.__DEVFRAME_CLIENT_SCRIPT_ATTEMPT__()' }
-  const entry = { id: 'background-iframe', type: 'iframe', title: 'Background page script', icon: 'ph:browser', url: '/fixture', clientScript } satisfies DevframeDockEntry
+  const entry = {
+    id: 'background-iframe',
+    type: 'iframe',
+    title: 'Background page script',
+    icon: 'ph:browser',
+    url: '/fixture',
+    clientScript,
+  } satisfies DevframeDockEntry
   sharedStates.get('devframe:docks')!.push([entry])
   await expect.poll(() => attempts).toBe(1)
   expect(context.docks.selectedId).toBeNull()
@@ -128,8 +137,12 @@ it('waits for trust and keeps the same dock script bound separately to each RPC 
   Object.assign(first.rpc, { isTrusted: true })
   first.rpc.events.emit(DEVFRAME_EVENTS.client.isTrustedUpdated, true)
   await expect.poll(() => attempts).toBe(2)
-  first.sharedStates.get('devframe:docks')!.push([{ ...entry }])
-  second.sharedStates.get('devframe:docks')!.push([{ ...entry }])
+  first.sharedStates.get('devframe:docks')!.push([
+    { ...entry },
+  ])
+  second.sharedStates.get('devframe:docks')!.push([
+    { ...entry },
+  ])
   await nextTick()
   expect(attempts).toBe(2)
 })
@@ -327,11 +340,28 @@ describe('toggle action docks', () => {
     }) as () => void
     const { rpc, sharedStates } = createStubRpc()
     const context = await createDocksContext('embedded', rpc)
-    const panel = { id: 'panel', type: 'iframe', title: 'Panel', icon: 'ph:browser', url: '/fixture' } satisfies DevframeDockEntry
-    const tool = { id: 'tool', type: 'action', title: 'Inspect', icon: 'ph:cursor', toggle: true, action: { importFrom: toolScript } } satisfies DevframeDockEntry
+    const panel = {
+      id: 'panel',
+      type: 'iframe',
+      title: 'Panel',
+      icon: 'ph:browser',
+      url: '/fixture',
+    } satisfies DevframeDockEntry
+    const tool = {
+      id: 'tool',
+      type: 'action',
+      title: 'Inspect',
+      icon: 'ph:cursor',
+      toggle: true,
+      action: { importFrom: toolScript },
+    } satisfies DevframeDockEntry
     sharedStates.get('devframe:docks')!.push([panel, tool])
     await nextTick()
-    return { context, events, attempts: () => attempts }
+    return {
+      context,
+      events,
+      attempts: () => attempts,
+    }
   }
 
   it('turns on without taking the selection, hides the panel, and restores it on a second click', async () => {

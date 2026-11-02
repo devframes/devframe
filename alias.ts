@@ -140,7 +140,10 @@ const tsconfig = JSON.parse(raw)
 tsconfig.compilerOptions.paths = Object.fromEntries(
   Object.entries(alias)
     .filter(([key]) => !key.endsWith('.css'))
-    .map(([key, value]) => [key, [`./${relative(root, value)}`]]),
+    .map(([key, value]) => [
+      key,
+      [`./${relative(root, value)}`],
+    ]),
 )
 const newRaw = JSON.stringify(tsconfig, null, 2)
 if (newRaw !== raw)

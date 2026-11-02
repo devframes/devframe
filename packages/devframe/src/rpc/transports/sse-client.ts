@@ -29,7 +29,9 @@ function takeFrame(buffer: string): { frame: string, rest: string } | undefined 
     return undefined
   return {
     frame: buffer.slice(0, boundary),
-    rest: buffer.slice(boundary + (buffer[boundary] === '\r' ? 4 : 2)),
+    rest: buffer.slice(boundary + (buffer[boundary] === '\r'
+      ? 4
+      : 2)),
   }
 }
 
@@ -71,8 +73,11 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
   } = options
 
   let url = options.url
-  if (options.authToken)
-    url = `${url}${url.includes('?') ? '&' : '?'}${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${encodeURIComponent(options.authToken)}`
+  if (options.authToken) {
+    url = `${url}${url.includes('?')
+      ? '&'
+      : '?'}${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${encodeURIComponent(options.authToken)}`
+  }
 
   const codec = createRpcWireCodec(definitions)
   const abort = new AbortController()
@@ -156,7 +161,9 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
         end()
         return
       }
-      fail(error instanceof Error ? error : new Error(String(error)))
+      fail(error instanceof Error
+        ? error
+        : new Error(String(error)))
     }
   })()
 
@@ -208,7 +215,9 @@ export function createSseRpcChannel(options: SseRpcChannelOptions): ChannelOptio
           throw new Error(`Devframe SSE POST failed: ${response.status}`)
       }
       catch (error) {
-        onError(error instanceof Error ? error : new Error(String(error)))
+        onError(error instanceof Error
+          ? error
+          : new Error(String(error)))
       }
     },
     serialize: codec.serialize,

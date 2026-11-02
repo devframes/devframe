@@ -19,13 +19,21 @@ function createHost(): DevframeHost {
 }
 
 async function createContext(): Promise<DevframeNodeContext> {
-  return createHostContext({ cwd: process.cwd(), mode: 'dev', host: createHost() })
+  return createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: createHost(),
+  })
 }
 
 const spec: DevframeJsonRenderSpec = {
   root: 'a',
   elements: {
-    a: { type: 'Text', props: { text: 'hi' }, children: [] },
+    a: {
+      type: 'Text',
+      props: { text: 'hi' },
+      children: [],
+    },
   },
   state: { count: 1 },
 }
@@ -65,19 +73,33 @@ describe('createJsonRenderView state', () => {
   })
 
   it('normalizes a missing state to an empty object', () => {
-    const view = createJsonRenderView(ctx, { id: 'v', spec: { root: 'a', elements: {} } })
+    const view = createJsonRenderView(ctx, {
+      id: 'v',
+      spec: { root: 'a', elements: {} },
+    })
     expect(view.value().state).toEqual({})
   })
 
   it('replaces the whole spec on update', () => {
     const view = createJsonRenderView(ctx, { id: 'v', spec })
-    view.update({ root: 'b', elements: { b: { type: 'Badge', props: { text: 'x' }, children: [] } } })
+    view.update({
+      root: 'b',
+      elements: {
+        b: {
+          type: 'Badge',
+          props: { text: 'x' },
+          children: [],
+        },
+      },
+    })
     expect(view.value().root).toBe('b')
   })
 
   it('applies JSON-Pointer patches into /state', () => {
     const view = createJsonRenderView(ctx, { id: 'v', spec })
-    view.patchState([{ op: 'replace', path: '/count', value: 3 }])
+    view.patchState([
+      { op: 'replace', path: '/count', value: 3 },
+    ])
     expect((view.value().state as { count: number }).count).toBe(3)
   })
 })
@@ -86,7 +108,16 @@ describe('createJsonRenderView validation', () => {
   it('throws DF0038 on invalid element props at ingress', () => {
     expect(() => createJsonRenderView(ctx, {
       id: 'bad',
-      spec: { root: 'a', elements: { a: { type: 'Button', props: { variant: 'nope' }, children: [] } } },
+      spec: {
+        root: 'a',
+        elements: {
+          a: {
+            type: 'Button',
+            props: { variant: 'nope' },
+            children: [],
+          },
+        },
+      },
     })).toThrow(expect.objectContaining({ code: 'DF0038' }))
   })
 
@@ -108,7 +139,15 @@ describe('createJsonRenderView validation', () => {
 
     const view = createJsonRenderView(ctx, {
       id: 'custom',
-      spec: { root: 'a', elements: { a: { type: 'Button', props: { variant: 'custom' } } } },
+      spec: {
+        root: 'a',
+        elements: {
+          a: {
+            type: 'Button',
+            props: { variant: 'custom' },
+          },
+        },
+      },
       schema,
     })
 
@@ -121,7 +160,14 @@ describe('createJsonRenderView validation', () => {
       '~standard': {
         version: 1,
         vendor: 'test',
-        validate: () => ({ issues: [{ message: 'Expected a supported root', path: ['root'] }] }),
+        validate: () => ({
+          issues: [
+            {
+              message: 'Expected a supported root',
+              path: ['root'],
+            },
+          ],
+        }),
       },
     }
 
@@ -140,7 +186,14 @@ describe('createJsonRenderView validation', () => {
           const candidate = value as DevframeJsonRenderSpec
           return candidate.root === 'a'
             ? { value }
-            : { issues: [{ message: 'Only root a is supported', path: ['root'] }] }
+            : {
+                issues: [
+                  {
+                    message: 'Only root a is supported',
+                    path: ['root'],
+                  },
+                ],
+              }
         },
       },
     }
@@ -154,7 +207,15 @@ describe('createJsonRenderView validation', () => {
     expect.assertions(1)
     const view = createJsonRenderView(ctx, {
       id: 'permissive',
-      spec: { root: 'a', elements: { a: { type: 'Button', props: { variant: 'custom' } } } },
+      spec: {
+        root: 'a',
+        elements: {
+          a: {
+            type: 'Button',
+            props: { variant: 'custom' },
+          },
+        },
+      },
       schema: false,
     })
 
@@ -167,7 +228,9 @@ describe('createJsonRenderView validation', () => {
       '~standard': {
         version: 1,
         vendor: 'test',
-        validate: () => ({ value: { root: 'transformed', elements: {} } }),
+        validate: () => ({
+          value: { root: 'transformed', elements: {} },
+        }),
       },
     }
     const view = createJsonRenderView(ctx, { id: 'guard-only', spec, schema })

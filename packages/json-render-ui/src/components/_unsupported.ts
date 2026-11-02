@@ -3,7 +3,9 @@ import { h } from 'vue'
 
 /** Format a list of prop keys as a compact gist, e.g. `{ foo, bar }`. */
 function formatPropKeys(keys: readonly string[]): string {
-  return keys.length ? `{ ${keys.join(', ')} }` : '{}'
+  return keys.length
+    ? `{ ${keys.join(', ')} }`
+    : '{}'
 }
 
 /**

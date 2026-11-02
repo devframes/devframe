@@ -41,7 +41,11 @@ let selectedId: string | null = null
 let rpc: Awaited<ReturnType<typeof connectDevframe>>
 
 function setStatus(text: string, kind?: 'ready' | 'error') {
-  const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
+  const dot = kind === 'ready'
+    ? 'bg-success'
+    : kind === 'error'
+      ? 'bg-error'
+      : 'bg-neutral-400'
   connEl.innerHTML = `<span class="inline-block size-1.5 rounded-full shrink-0 ${dot} mr-1.5 align-middle"></span>${text}`
 }
 
@@ -79,11 +83,15 @@ function overlay(html: string) {
 function launcherTile(entry: LauncherDock): string {
   const l = entry.launcher
   const cls = iconClass(l.icon ?? entry.icon)
-  const glyph = cls ? `<span class="${cls} text-4xl color-active"></span>` : '<span class="i-ph-books-duotone text-4xl op-fade"></span>'
+  const glyph = cls
+    ? `<span class="${cls} text-4xl color-active"></span>`
+    : '<span class="i-ph-books-duotone text-4xl op-fade"></span>'
   return `
     ${glyph}
     <div class="text-base font-medium">${l.title}</div>
-    ${l.description ? `<div class="text-sm color-muted">${l.description}</div>` : ''}
+    ${l.description
+      ? `<div class="text-sm color-muted">${l.description}</div>`
+      : ''}
     <button type="button" data-launch="${entry.id}" class="btn-primary">
       <span class="i-ph-play-duotone"></span>${l.buttonStart ?? 'Start'}
     </button>`
@@ -99,7 +107,9 @@ function syncPanes() {
 }
 
 function errorTile(entry: Dock | undefined, rt: DockRuntime, title: string): string {
-  const detail = rt.error ? `<div class="text-xs font-mono op-mute break-words">${rt.error}</div>` : ''
+  const detail = rt.error
+    ? `<div class="text-xs font-mono op-mute break-words">${rt.error}</div>`
+    : ''
   const retry = entry && isLauncherDock(entry)
     ? `<button type="button" data-launch="${entry.id}" class="btn-action"><span class="i-ph-arrow-clockwise-duotone"></span>Retry</button>`
     : ''
@@ -115,7 +125,9 @@ function launcherStageTile(entry: LauncherDock, rt: DockRuntime, title: string):
   if (rt.status !== 'starting')
     return launcherTile(entry)
   const digest = entry.launcher.digest
-  const digestLine = digest ? `<div class="text-xs font-mono op-mute break-words">${digest}</div>` : ''
+  const digestLine = digest
+    ? `<div class="text-xs font-mono op-mute break-words">${digest}</div>`
+    : ''
   return `
         <span class="i-ph-circle-notch animate-spin text-3xl color-active"></span>
         <div class="text-sm font-medium">Starting ${title}…</div>
@@ -235,17 +247,25 @@ async function main() {
       docksEl.innerHTML = '<li class="op-mute px2 text-sm">No docks yet…</li>'
       return
     }
-    const categories = [...new Set(docks.map(d => d.category ?? 'Other'))].sort(
+    const categories = [
+      ...new Set(docks.map(d => d.category ?? 'Other')),
+    ].sort(
       (a, b) => {
         const ia = CATEGORY_ORDER.indexOf(a)
         const ib = CATEGORY_ORDER.indexOf(b)
-        return (ia === -1 ? Infinity : ia) - (ib === -1 ? Infinity : ib) || a.localeCompare(b)
+        return (ia === -1
+          ? Infinity
+          : ia) - (ib === -1
+          ? Infinity
+          : ib) || a.localeCompare(b)
       },
     )
     docksEl.innerHTML = categories.map((category) => {
       const items = docks.filter(d => (d.category ?? 'Other') === category)
       const buttons = items.map(d =>
-        `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-2.5 w-full px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active${d.id === selectedId ? ' op100! bg-active border-base! color-base' : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`).join('')
+        `<li><button type="button" data-dock-id="${d.id}" class="relative inline-flex items-center gap-2.5 w-full px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active${d.id === selectedId
+          ? ' op100! bg-active border-base! color-base'
+          : ''}" title="${d.title}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`).join('')
       return `<li class="px2 pt2 pb1 text-[0.68rem] uppercase tracking-wider color-muted">${category}</li>${buttons}`
     }).join('')
   }
@@ -262,7 +282,9 @@ async function main() {
     renderSidebar()
     // Auto-open plain iframe docks (terminals plugin); launcher docks stay idle
     // until the user starts them.
-    const entry = selectedId ? docks.find(d => d.id === selectedId) : undefined
+    const entry = selectedId
+      ? docks.find(d => d.id === selectedId)
+      : undefined
     if (entry && isIframeDock(entry) && runtimeFor(entry.id).status === 'idle')
       openIframe(entry)
     updateStage()

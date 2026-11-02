@@ -18,13 +18,16 @@ export interface CreateCacOptions {
 }
 // #endregion
 
-// #region Functions
-export declare function createCac(_: DevframeDefinition, _?: CreateCacOptions): CacHandle;
+// #region Types
+export type CliFlagsSchema = Record<string, StandardSchemaV1>;
+export type InferCliFlags<T extends CliFlagsSchema> = { [K in keyof T]: StandardSchemaV1.InferOutput<T[K]>; };
 // #endregion
 
-// #region Other
-export { CliFlagsSchema }
-export { defineCliFlags }
-export { InferCliFlags }
-export { parseCliFlags }
+// #region Functions
+export declare function createCac(_: DevframeDefinition, _?: CreateCacOptions): CacHandle;
+export declare function defineCliFlags<T extends CliFlagsSchema>(_: T): T;
+export declare function parseCliFlags(_: CliFlagsSchema, _: Record<string, unknown>): {
+  flags: Record<string, unknown>;
+  issues?: string[];
+};
 // #endregion

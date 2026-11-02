@@ -103,11 +103,15 @@ function walkObject(obj: object, w: SkeletonWalker, depth: number): unknown {
 }
 
 function walkArraySkeleton(arr: unknown[], w: SkeletonWalker, depth: number): unknown[] {
-  const items = w.opts.excludeFunctions ? arr.filter(item => typeof item !== 'function') : arr
+  const items = w.opts.excludeFunctions
+    ? arr.filter(item => typeof item !== 'function')
+    : arr
   if (items.length === 0)
     return []
   const first = walk(items[0], w, depth + 1)
-  return items.length > 1 ? [first, `+${items.length - 1} more`] : [first]
+  return items.length > 1
+    ? [first, `+${items.length - 1} more`]
+    : [first]
 }
 
 function walkMapSkeleton(map: Map<unknown, unknown>, w: SkeletonWalker, depth: number): unknown {
@@ -126,12 +130,16 @@ function walkSetSkeleton(set: Set<unknown>, w: SkeletonWalker, depth: number): u
   const first = set[Symbol.iterator]().next().value
   return first === undefined
     ? `Set(0)`
-    : { [`Set(${set.size})`]: walk(first, w, depth + 1) }
+    : {
+        [`Set(${set.size})`]: walk(first, w, depth + 1),
+      }
 }
 
 function walkPlainObject(obj: object, w: SkeletonWalker, depth: number): Record<string, unknown> {
   const proto = Object.getPrototypeOf(obj)
-  const className = proto && proto !== Object.prototype ? (proto.constructor?.name as string | undefined) : undefined
+  const className = proto && proto !== Object.prototype
+    ? (proto.constructor?.name as string | undefined)
+    : undefined
 
   const out: Record<string, unknown> = {}
   if (className && className !== 'Object')

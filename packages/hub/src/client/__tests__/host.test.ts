@@ -50,8 +50,14 @@ function createStubRpc() {
     },
     call: async (...args: any[]) => {
       calls.push(args)
-      if (args[0] === 'hub:messages:add')
-        return { id: 'msg-1', timestamp: 1, from: 'browser', ...args[1] }
+      if (args[0] === 'hub:messages:add') {
+        return {
+          id: 'msg-1',
+          timestamp: 1,
+          from: 'browser',
+          ...args[1],
+        }
+      }
       return `rpc:${args[0]}`
     },
     client: {
@@ -66,11 +72,24 @@ function createStubRpc() {
 }
 
 function iframeEntry(id: string, extra?: Record<string, unknown>): DevframeDockEntry {
-  return { id, title: id, icon: 'ph:cube', type: 'iframe', url: `/__${id}/`, ...extra } as DevframeDockEntry
+  return {
+    id,
+    title: id,
+    icon: 'ph:cube',
+    type: 'iframe',
+    url: `/__${id}/`,
+    ...extra,
+  } as DevframeDockEntry
 }
 
 function groupEntry(id: string, extra?: Record<string, unknown>): DevframeDockEntry {
-  return { id, title: id, icon: 'ph:folder', type: 'group', ...extra } as DevframeDockEntry
+  return {
+    id,
+    title: id,
+    icon: 'ph:folder',
+    type: 'group',
+    ...extra,
+  } as DevframeDockEntry
 }
 
 describe('createDevframeClientRuntime', () => {
@@ -87,11 +106,16 @@ describe('createDevframeClientRuntime', () => {
       panelState => panelStates.push(panelState),
     )
 
-    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('two')])
+    states.get('devframe:docks')!.push([
+      iframeEntry('one'),
+      iframeEntry('two'),
+    ])
     host.context.panel.session.open = true
     const switched = host.context.docks.switchEntry('one')
     await switched
-    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'one' }])
+    expect(panelStates).toEqual([
+      { state: 'open', selectedDockId: 'one' },
+    ])
     expect(host.context.panel.state).toEqual({ state: 'open', selectedDockId: 'one' })
 
     host.context.panel.session.open = true
@@ -131,11 +155,16 @@ describe('createDevframeClientRuntime', () => {
     const host = await createDevframeClientRuntime({ rpc })
     const docksState = states.get('devframe:docks')!
 
-    docksState.push([iframeEntry('one'), iframeEntry('two')])
+    docksState.push([
+      iframeEntry('one'),
+      iframeEntry('two'),
+    ])
     expect(host.context.docks.entries.map(e => e.id)).toEqual(['one', 'two'])
     expect(host.context.docks.getStateById('one')?.entryMeta.id).toBe('one')
 
-    docksState.push([iframeEntry('two')])
+    docksState.push([
+      iframeEntry('two'),
+    ])
     expect(host.context.docks.entries.map(e => e.id)).toEqual(['two'])
     expect(host.context.docks.getStateById('one')).toBeUndefined()
     host.dispose()
@@ -145,7 +174,10 @@ describe('createDevframeClientRuntime', () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
     states.get('devframe:docks')!.push([
-      iframeEntry('anchor', { subTabs: { protocol: 'postmessage' }, visibility: 'false' }),
+      iframeEntry('anchor', {
+        subTabs: { protocol: 'postmessage' },
+        visibility: 'false',
+      }),
       iframeEntry('visible'),
     ])
 
@@ -178,7 +210,10 @@ describe('createDevframeClientRuntime', () => {
     ])
 
     const grouped = Object.fromEntries(
-      host.context.docks.groupedEntries.map(([cat, entries]) => [cat, entries.map(e => e.id)]),
+      host.context.docks.groupedEntries.map(([cat, entries]) => [
+        cat,
+        entries.map(e => e.id),
+      ]),
     )
 
     // (a) grouped member lands under the group's category, alongside the group button.
@@ -201,7 +236,10 @@ describe('createDevframeClientRuntime', () => {
 
   it('merges the host-page categoryOrder option beneath DEFAULT_CATEGORIES_ORDER', async () => {
     const { rpc, states } = createStubRpc()
-    const host = await createDevframeClientRuntime({ rpc, categoryOrder: { app: -200, web: 999 } })
+    const host = await createDevframeClientRuntime({
+      rpc,
+      categoryOrder: { app: -200, web: 999 },
+    })
 
     states.get('devframe:docks')!.push([
       iframeEntry('app-entry', { category: 'app' }),
@@ -218,7 +256,10 @@ describe('createDevframeClientRuntime', () => {
   it('switches entries with activation/deactivation events and when-context updates', async () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
-    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('two')])
+    states.get('devframe:docks')!.push([
+      iframeEntry('one'),
+      iframeEntry('two'),
+    ])
 
     const activated: string[] = []
     const deactivated: string[] = []
@@ -252,7 +293,9 @@ describe('createDevframeClientRuntime', () => {
     })
     try {
       states.get('devframe:docks')!.push([
-        iframeEntry('slow', { clientScript: { importFrom: 'data:text/javascript,export default () => globalThis.__DF_SLOW_SCRIPT__' } }),
+        iframeEntry('slow', {
+          clientScript: { importFrom: 'data:text/javascript,export default () => globalThis.__DF_SLOW_SCRIPT__' },
+        }),
         iframeEntry('fast'),
       ])
 
@@ -272,11 +315,17 @@ describe('createDevframeClientRuntime', () => {
   it('switches the active dock when the hub broadcasts devframe:docks:activate', async () => {
     const { rpc, states, definitions } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
-    states.get('devframe:docks')!.push([iframeEntry('one'), iframeEntry('devframes_plugin_terminals')])
+    states.get('devframe:docks')!.push([
+      iframeEntry('one'),
+      iframeEntry('devframes_plugin_terminals'),
+    ])
 
     // Simulate the hub's server→client broadcast.
     const handler = definitions.get('devframe:docks:activate')!.handler!
-    handler({ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } })
+    handler({
+      dockId: 'devframes_plugin_terminals',
+      params: { sessionId: 'sess-1' },
+    })
     await vi.waitFor(() => expect(host.context.docks.selectedId).toBe('devframes_plugin_terminals'))
 
     // Unknown dock ids degrade to a no-op (the previous selection stands).
@@ -290,7 +339,9 @@ describe('createDevframeClientRuntime', () => {
     const { rpc, states } = createStubRpc()
     const host = await createDevframeClientRuntime({ rpc })
     const docks = host.context.docks
-    states.get('devframe:docks')!.push([iframeEntry('server')])
+    states.get('devframe:docks')!.push([
+      iframeEntry('server'),
+    ])
 
     // Client-only registration is merged with the server entries.
     const handle = docks.register(iframeEntry('client'))
@@ -298,7 +349,10 @@ describe('createDevframeClientRuntime', () => {
     expect(docks.getStateById('client')?.entryMeta.id).toBe('client')
 
     // It survives a server-driven reconcile and is switchable.
-    states.get('devframe:docks')!.push([iframeEntry('server'), iframeEntry('server2')])
+    states.get('devframe:docks')!.push([
+      iframeEntry('server'),
+      iframeEntry('server2'),
+    ])
     expect(docks.entries.map(e => e.id)).toEqual(['server', 'server2', 'client'])
     expect(await docks.switchEntry('client')).toBe(true)
     expect(docks.selected?.id).toBe('client')
@@ -331,7 +385,9 @@ describe('createDevframeClientRuntime', () => {
     const received: any[] = []
     ;(globalThis as any).__DF_TEST_CLIENT_DOCK__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_CLIENT_DOCK__(ctx)`
-    host.context.docks.register(iframeEntry('local', { clientScript: { eager: true, importFrom: dataUrl } }))
+    host.context.docks.register(iframeEntry('local', {
+      clientScript: { eager: true, importFrom: dataUrl },
+    }))
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
     expect(received[0].current.entryMeta.id).toBe('local')
@@ -355,7 +411,9 @@ describe('createDevframeClientRuntime', () => {
     })
 
     await host.context.commands.execute('test:client', 1, 2)
-    expect(ran).toEqual([[1, 2]])
+    expect(ran).toEqual([
+      [1, 2],
+    ])
 
     await expect(host.context.commands.execute('srv:cmd', 'x')).resolves.toBe('rpc:hub:commands:execute')
     expect(calls.at(-1)).toEqual(['hub:commands:execute', 'srv:cmd', 'x'])
@@ -374,20 +432,26 @@ describe('createDevframeClientRuntime', () => {
       id: 'test:parent',
       title: 'Parent',
       source: 'client',
-      children: [{
-        id: 'test:parent:child',
-        title: 'Child',
-        source: 'client',
-        children: [{
-          id: 'test:parent:child:grandchild',
-          title: 'Grandchild',
+      children: [
+        {
+          id: 'test:parent:child',
+          title: 'Child',
           source: 'client',
-          keybindings: [{ key: 'Mod+Shift+C' }],
-          action: (value: string) => {
-            ran.push(value)
-          },
-        }],
-      }],
+          children: [
+            {
+              id: 'test:parent:child:grandchild',
+              title: 'Grandchild',
+              source: 'client',
+              keybindings: [
+                { key: 'Mod+Shift+C' },
+              ],
+              action: (value: string) => {
+                ran.push(value)
+              },
+            },
+          ],
+        },
+      ],
     })
 
     await host.context.commands.execute('test:parent:child:grandchild', 'nested')
@@ -410,7 +474,9 @@ describe('createDevframeClientRuntime', () => {
     ;(globalThis as any).__DF_TEST_SCRIPT__ = (ctx: any) => received.push(ctx)
     const dataUrl = `data:text/javascript,export default ctx => globalThis.__DF_TEST_SCRIPT__(ctx)`
     states.get('devframe:docks')!.push([
-      iframeEntry('scripted', { clientScript: { eager: true, importFrom: dataUrl } }),
+      iframeEntry('scripted', {
+        clientScript: { eager: true, importFrom: dataUrl },
+      }),
     ])
 
     await vi.waitFor(() => expect(received).toHaveLength(1))
@@ -421,9 +487,15 @@ describe('createDevframeClientRuntime', () => {
     // The messages client is scoped to the entry: `category` defaults to the
     // entry id, and the doc'd per-level shortcuts delegate to add().
     await scriptCtx.messages.add({ message: 'hello', level: 'info' })
-    expect(calls.at(-1)).toEqual(['hub:messages:add', { message: 'hello', level: 'info', category: 'scripted' }])
+    expect(calls.at(-1)).toEqual([
+      'hub:messages:add',
+      { message: 'hello', level: 'info', category: 'scripted' },
+    ])
     await scriptCtx.messages.warn('careful', { category: 'a11y' })
-    expect(calls.at(-1)).toEqual(['hub:messages:add', { message: 'careful', level: 'warn', category: 'a11y' }])
+    expect(calls.at(-1)).toEqual([
+      'hub:messages:add',
+      { message: 'careful', level: 'warn', category: 'a11y' },
+    ])
 
     delete (globalThis as any).__DF_TEST_SCRIPT__
     host.dispose()
@@ -461,7 +533,9 @@ it('waits for trust for eager setup and activation for lazy setup in the headles
   const fixture = globalThis as typeof globalThis & { __DF_LAZY_TEST__?: () => void }
   fixture.__DF_LAZY_TEST__ = attempt
   const script = { importFrom: 'data:text/javascript,export default () => globalThis.__DF_LAZY_TEST__()' }
-  const eager = iframeEntry('eager', { clientScript: { ...script, eager: true } })
+  const eager = iframeEntry('eager', {
+    clientScript: { ...script, eager: true },
+  })
   const lazy = iframeEntry('lazy', { clientScript: script })
   try {
     states.get('devframe:docks')!.push([eager, lazy])
@@ -612,7 +686,10 @@ it('runs a toggle action as an on/off tool that hides and restores the panel', a
   } satisfies DevframeDockEntry
   const { docks, panel } = runtime.context
   try {
-    states.get('devframe:docks')!.push([iframeEntry('panel'), tool])
+    states.get('devframe:docks')!.push([
+      iframeEntry('panel'),
+      tool,
+    ])
     await docks.switchEntry('panel')
     panel.session.open = true
 

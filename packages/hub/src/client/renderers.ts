@@ -141,7 +141,9 @@ export function createDockRenderersContext(
     // a runtime URL served by the hub, not a build-time module.
     const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ script.importFrom)
     const renderer = mod[script.importName ?? 'default']
-    return typeof renderer === 'function' ? (renderer as DockRenderer) : undefined
+    return typeof renderer === 'function'
+      ? (renderer as DockRenderer)
+      : undefined
   }
 
   async function resolveRenderer(type: string): Promise<DockRenderer | undefined> {
@@ -190,7 +192,11 @@ export function createDockRenderersContext(
       }
       let instance: DockRendererInstance
       try {
-        instance = await renderer({ entry, container, context: options.context() })
+        instance = await renderer({
+          entry,
+          container,
+          context: options.context(),
+        })
       }
       catch (error) {
         console.error(`[@devframes/hub] renderer for dock type "${entry.type}" failed to mount (entry "${entry.id}")`, error)

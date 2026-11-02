@@ -58,22 +58,34 @@ type Story = StoryObj<EntryArgs>
 export const Default: Story = {}
 
 /** The active entry: scaled up and tinted while its panel owns the screen. */
-export const Selected: Story = { args: { isSelected: true } }
+export const Selected: Story = {
+  args: { isSelected: true },
+}
 
 /** Dimmed and desaturated because a sibling entry is the active one. */
-export const Dimmed: Story = { args: { isDimmed: true } }
+export const Dimmed: Story = {
+  args: { isDimmed: true },
+}
 
 /** Action entries (one-shot commands) get a circular, filled treatment. */
-export const Action: Story = { args: { isAction: true } }
+export const Action: Story = {
+  args: { isAction: true },
+}
 
 /** A count badge in the corner (e.g. pending items). */
-export const WithBadge: Story = { args: { badge: '3' } }
+export const WithBadge: Story = {
+  args: { badge: '3' },
+}
 
 /** A colored badge, e.g. flagging a state that needs attention. */
-export const WithBadgeVariant: Story = { args: { badge: '3', badgeVariant: 'warning' } }
+export const WithBadgeVariant: Story = {
+  args: { badge: '3', badgeVariant: 'warning' },
+}
 
 /** Rotated for a left/right edge dock. */
-export const Vertical: Story = { args: { isVertical: true } }
+export const Vertical: Story = {
+  args: { isVertical: true },
+}
 
 /** Every state laid out together for a quick visual diff. */
 export const States: Story = {
@@ -86,8 +98,18 @@ export const States: Story = {
         h(DockEntry, { context: ctx, dock: sample, isDimmed: true }),
         h(DockEntry, { context: ctx, dock: sample, isAction: true }),
         h(DockEntry, { context: ctx, dock: sample, badge: '9+' }),
-        h(DockEntry, { context: ctx, dock: sample, badge: '2', badgeVariant: 'warning' }),
-        h(DockEntry, { context: ctx, dock: sample, badge: '5', badgeVariant: 'success' }),
+        h(DockEntry, {
+          context: ctx,
+          dock: sample,
+          badge: '2',
+          badgeVariant: 'warning',
+        }),
+        h(DockEntry, {
+          context: ctx,
+          dock: sample,
+          badge: '5',
+          badgeVariant: 'success',
+        }),
       ])),
     ),
   }),

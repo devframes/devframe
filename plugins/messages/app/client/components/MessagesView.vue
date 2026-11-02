@@ -38,7 +38,9 @@ const emit = defineEmits<{
 const selectedId = ref<string | null>(null)
 
 const selectedEntry = computed(() =>
-  selectedId.value == null ? null : props.filters.allEntries.find(e => e.id === selectedId.value) ?? null)
+  selectedId.value == null
+    ? null
+    : props.filters.allEntries.find(e => e.id === selectedId.value) ?? null)
 
 // Viewing an auto-deleting entry pins it, so it can't vanish mid-read.
 watch(selectedEntry, (entry) => {
@@ -47,7 +49,9 @@ watch(selectedEntry, (entry) => {
 })
 
 function toggleSelect(id: string): void {
-  selectedId.value = selectedId.value === id ? null : id
+  selectedId.value = selectedId.value === id
+    ? null
+    : id
 }
 
 function removeEntry(id: string): void {

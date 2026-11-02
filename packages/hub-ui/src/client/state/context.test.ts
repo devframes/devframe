@@ -96,7 +96,9 @@ describe('createDocksContext', () => {
 
     panelVisible.value = true
     await nextTick()
-    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'git' }])
+    expect(panelStates).toEqual([
+      { state: 'open', selectedDockId: 'git' },
+    ])
     panelVisible.value = false
     await nextTick()
     panelStates.length = 0
@@ -212,9 +214,29 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
-      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
-      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      {
+        id: 'nuxt',
+        type: 'group',
+        title: 'Nuxt',
+        icon: 'ph:cube-duotone',
+        defaultChildId: 'nuxt:overview',
+      },
+      {
+        id: 'nuxt:overview',
+        type: 'iframe',
+        url: '/',
+        title: 'Overview',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
+      {
+        id: 'nuxt:modules',
+        type: 'iframe',
+        url: '/',
+        title: 'Modules',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -253,9 +275,29 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
-      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
-      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      {
+        id: 'nuxt',
+        type: 'group',
+        title: 'Nuxt',
+        icon: 'ph:cube-duotone',
+        defaultChildId: 'nuxt:overview',
+      },
+      {
+        id: 'nuxt:overview',
+        type: 'iframe',
+        url: '/',
+        title: 'Overview',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
+      {
+        id: 'nuxt:modules',
+        type: 'iframe',
+        url: '/',
+        title: 'Modules',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -281,8 +323,20 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
-      { id: 'tools:run', type: 'action', action: { importFrom: '/action.js' }, title: 'Run', icon: 'ph:play-duotone', groupId: 'tools' },
+      {
+        id: 'tools',
+        type: 'group',
+        title: 'Tools',
+        icon: 'ph:wrench-duotone',
+      },
+      {
+        id: 'tools:run',
+        type: 'action',
+        action: { importFrom: '/action.js' },
+        title: 'Run',
+        icon: 'ph:play-duotone',
+        groupId: 'tools',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -315,15 +369,72 @@ describe('createDocksContext', () => {
 })
 
 const groupEntries = [
-  { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
-  { id: 'tools:a', type: 'iframe', title: 'A', icon: 'ph:file-duotone', url: '/a', groupId: 'tools' },
-  { id: 'tools:b', type: 'iframe', title: 'B', icon: 'ph:file-duotone', url: '/b', groupId: 'tools', category: 'app' },
-  { id: 'solo', type: 'group', title: 'Solo', icon: 'ph:circle-duotone' },
-  { id: 'solo:only', type: 'iframe', title: 'Only', icon: 'ph:file-duotone', url: '/only', groupId: 'solo' },
-  { id: 'defaulted', type: 'group', title: 'Defaulted', icon: 'ph:star-duotone', defaultChildId: 'defaulted:second' },
-  { id: 'defaulted:first', type: 'iframe', title: 'First', icon: 'ph:file-duotone', url: '/first', groupId: 'defaulted' },
-  { id: 'defaulted:second', type: 'iframe', title: 'Second', icon: 'ph:file-duotone', url: '/second', groupId: 'defaulted' },
-  { id: 'empty', type: 'group', title: 'Empty', icon: 'ph:prohibit-duotone' },
+  {
+    id: 'tools',
+    type: 'group',
+    title: 'Tools',
+    icon: 'ph:wrench-duotone',
+  },
+  {
+    id: 'tools:a',
+    type: 'iframe',
+    title: 'A',
+    icon: 'ph:file-duotone',
+    url: '/a',
+    groupId: 'tools',
+  },
+  {
+    id: 'tools:b',
+    type: 'iframe',
+    title: 'B',
+    icon: 'ph:file-duotone',
+    url: '/b',
+    groupId: 'tools',
+    category: 'app',
+  },
+  {
+    id: 'solo',
+    type: 'group',
+    title: 'Solo',
+    icon: 'ph:circle-duotone',
+  },
+  {
+    id: 'solo:only',
+    type: 'iframe',
+    title: 'Only',
+    icon: 'ph:file-duotone',
+    url: '/only',
+    groupId: 'solo',
+  },
+  {
+    id: 'defaulted',
+    type: 'group',
+    title: 'Defaulted',
+    icon: 'ph:star-duotone',
+    defaultChildId: 'defaulted:second',
+  },
+  {
+    id: 'defaulted:first',
+    type: 'iframe',
+    title: 'First',
+    icon: 'ph:file-duotone',
+    url: '/first',
+    groupId: 'defaulted',
+  },
+  {
+    id: 'defaulted:second',
+    type: 'iframe',
+    title: 'Second',
+    icon: 'ph:file-duotone',
+    url: '/second',
+    groupId: 'defaulted',
+  },
+  {
+    id: 'empty',
+    type: 'group',
+    title: 'Empty',
+    icon: 'ph:prohibit-duotone',
+  },
 ] satisfies DevframeDockEntry[]
 
 async function createGroupedContext() {

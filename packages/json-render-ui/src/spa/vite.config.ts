@@ -15,12 +15,17 @@ export default defineConfig({
   base: './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [UnoCSS(), vue()],
+  plugins: [
+    UnoCSS(),
+    vue(),
+  ],
   /**
    * `@antfu/design` (pulled in by the renderer) ships raw `.vue`; let
    * `@vitejs/plugin-vue` compile its SFCs instead of esbuild pre-bundling.
    */
-  optimizeDeps: { exclude: ['@antfu/design', '@devframes/json-render-ui'] },
+  optimizeDeps: {
+    exclude: ['@antfu/design', '@devframes/json-render-ui'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../../dist/spa', import.meta.url)),
     emptyOutDir: true,

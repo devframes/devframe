@@ -57,7 +57,13 @@ function ok<T>(value: T): StandardSchemaV1.Result<T> {
 }
 
 function fail(message: string, path?: Issue['path']): StandardSchemaV1.FailureResult {
-  return { issues: [path ? { message, path } : { message }] }
+  return {
+    issues: [
+      path
+        ? { message, path }
+        : { message },
+    ],
+  }
 }
 
 function make<I, O = I>(
@@ -89,27 +95,37 @@ function runSync<T extends StandardSchemaV1>(
 
 /** Any string. */
 export function string(): SimpleSchema<string> {
-  return make('string', v => (typeof v === 'string' ? ok(v) : fail('Expected a string')))
+  return make('string', v => (typeof v === 'string'
+    ? ok(v)
+    : fail('Expected a string')))
 }
 
 /** A finite number (rejects `NaN`). */
 export function number(): SimpleSchema<number> {
-  return make('number', v => (typeof v === 'number' && !Number.isNaN(v) ? ok(v) : fail('Expected a number')))
+  return make('number', v => (typeof v === 'number' && !Number.isNaN(v)
+    ? ok(v)
+    : fail('Expected a number')))
 }
 
 /** A boolean. */
 export function boolean(): SimpleSchema<boolean> {
-  return make('boolean', v => (typeof v === 'boolean' ? ok(v) : fail('Expected a boolean')))
+  return make('boolean', v => (typeof v === 'boolean'
+    ? ok(v)
+    : fail('Expected a boolean')))
 }
 
 /** `undefined`, mirroring valibot's `void`. */
 export function voidType(): SimpleSchema<void> {
-  return make('void', v => (v === undefined ? ok(undefined) : fail('Expected undefined')))
+  return make('void', v => (v === undefined
+    ? ok(undefined)
+    : fail('Expected undefined')))
 }
 
 /** `null`. */
 export function nullType(): SimpleSchema<null> {
-  return make('null', v => (v === null ? ok(null) : fail('Expected null')))
+  return make('null', v => (v === null
+    ? ok(null)
+    : fail('Expected null')))
 }
 
 /** One of a fixed set of literal values. */
@@ -119,14 +135,18 @@ export function picklist<const T extends readonly (string | number | boolean)[]>
   const set = new Set<unknown>(values)
   return make(
     'picklist',
-    v => (set.has(v) ? ok(v as T[number]) : fail(`Expected one of: ${values.join(', ')}`)),
+    v => (set.has(v)
+      ? ok(v as T[number])
+      : fail(`Expected one of: ${values.join(', ')}`)),
     { values },
   )
 }
 
 /** A single literal value (string / number / boolean). */
 export function literal<const T extends string | number | boolean>(value: T): SimpleSchema<T> {
-  return make('literal', v => (v === value ? ok(v as T) : fail(`Expected ${JSON.stringify(value)}`)), { value })
+  return make('literal', v => (v === value
+    ? ok(v as T)
+    : fail(`Expected ${JSON.stringify(value)}`)), { value })
 }
 
 /** A value matching any one of the given schemas. */
@@ -158,11 +178,20 @@ export function record<V extends StandardSchemaV1>(
     for (const key of Object.keys(obj)) {
       const result = runSync(value, obj[key])
       if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [key, ...(issue.path ?? [])] })
+        for (const issue of result.issues) {
+          issues.push({
+            message: issue.message,
+            path: [
+              key,
+              ...(issue.path ?? []),
+            ],
+          })
+        }
       }
     }
-    return issues.length ? { issues } : ok(v as any)
+    return issues.length
+      ? { issues }
+      : ok(v as any)
   })
 }
 
@@ -177,11 +206,20 @@ export function array<T extends StandardSchemaV1>(
     for (let i = 0; i < v.length; i++) {
       const result = runSync(item, v[i])
       if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [i, ...(issue.path ?? [])] })
+        for (const issue of result.issues) {
+          issues.push({
+            message: issue.message,
+            path: [
+              i,
+              ...(issue.path ?? []),
+            ],
+          })
+        }
       }
     }
-    return issues.length ? { issues } : ok(v as any)
+    return issues.length
+      ? { issues }
+      : ok(v as any)
   })
 }
 
@@ -214,12 +252,21 @@ export function object<T extends Record<string, StandardSchemaV1>>(
     for (const [key, schema] of entries) {
       const result = runSync(schema, obj[key])
       if (result.issues) {
-        for (const issue of result.issues)
-          issues.push({ message: issue.message, path: [key, ...(issue.path ?? [])] })
+        for (const issue of result.issues) {
+          issues.push({
+            message: issue.message,
+            path: [
+              key,
+              ...(issue.path ?? []),
+            ],
+          })
+        }
       }
     }
     // Guard-only: return the original object so extra keys survive.
-    return issues.length ? { issues } : ok(v as any)
+    return issues.length
+      ? { issues }
+      : ok(v as any)
   })
 }
 
@@ -229,7 +276,9 @@ export function optional<T extends StandardSchemaV1>(
 ): SimpleSchema<StandardSchemaV1.InferInput<T> | undefined, StandardSchemaV1.InferOutput<T> | undefined> {
   return make(
     'optional',
-    v => (v === undefined ? ok(undefined) : runSync(inner, v)),
+    v => (v === undefined
+      ? ok(undefined)
+      : runSync(inner, v)),
     { wrapped: inner },
   )
 }
@@ -240,7 +289,9 @@ export function nullable<T extends StandardSchemaV1>(
 ): SimpleSchema<StandardSchemaV1.InferInput<T> | null, StandardSchemaV1.InferOutput<T> | null> {
   return make(
     'nullable',
-    v => (v === null ? ok(null) : runSync(inner, v)),
+    v => (v === null
+      ? ok(null)
+      : runSync(inner, v)),
     { wrapped: inner },
   )
 }

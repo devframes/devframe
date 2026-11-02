@@ -16,7 +16,14 @@ afterEach(() => resetDataSources())
 describe('data source registry (process-global)', () => {
   it('registers, lists, gets and unregisters', () => {
     const handle = registerDataSource({ id: 'a:x', title: 'X', data: 1 })
-    expect(listDataSources()).toMatchObject([{ id: 'a:x', title: 'X', static: false, writable: false }])
+    expect(listDataSources()).toMatchObject([
+      {
+        id: 'a:x',
+        title: 'X',
+        static: false,
+        writable: false,
+      },
+    ])
     expect(getDataSource('a:x')?.title).toBe('X')
     handle.unregister()
     expect(listDataSources()).toEqual([])
@@ -31,17 +38,36 @@ describe('data source registry (process-global)', () => {
   })
 
   it('resolves plain values, sync factories, and async factories', async () => {
-    registerDataSource({ id: 'v', title: 'v', data: { n: 1 } })
-    registerDataSource({ id: 's', title: 's', data: () => ({ n: 2 }) })
-    registerDataSource({ id: 'a', title: 'a', data: async () => ({ n: 3 }) })
+    registerDataSource({
+      id: 'v',
+      title: 'v',
+      data: { n: 1 },
+    })
+    registerDataSource({
+      id: 's',
+      title: 's',
+      data: () => ({ n: 2 }),
+    })
+    registerDataSource({
+      id: 'a',
+      title: 'a',
+      data: async () => ({ n: 3 }),
+    })
     expect(await resolveSourceData(getDataSource('v')!)).toEqual({ n: 1 })
     expect(await resolveSourceData(getDataSource('s')!)).toEqual({ n: 2 })
     expect(await resolveSourceData(getDataSource('a')!)).toEqual({ n: 3 })
   })
 
   it('memoizes static factories, once', async () => {
-    const factory = vi.fn(() => ({ at: Math.random() }))
-    registerDataSource({ id: 'st', title: 'st', static: true, data: factory })
+    const factory = vi.fn(() => ({
+      at: Math.random(),
+    }))
+    registerDataSource({
+      id: 'st',
+      title: 'st',
+      static: true,
+      data: factory,
+    })
     const first = await resolveSourceData(getDataSource('st')!)
     const second = await resolveSourceData(getDataSource('st')!)
     expect(first).toBe(second)
@@ -50,10 +76,20 @@ describe('data source registry (process-global)', () => {
 
   it('re-registering clears the static memo', async () => {
     let value = 1
-    registerDataSource({ id: 'st', title: 'st', static: true, data: () => value })
+    registerDataSource({
+      id: 'st',
+      title: 'st',
+      static: true,
+      data: () => value,
+    })
     expect(await resolveSourceData(getDataSource('st')!)).toBe(1)
     value = 2
-    registerDataSource({ id: 'st', title: 'st', static: true, data: () => value })
+    registerDataSource({
+      id: 'st',
+      title: 'st',
+      static: true,
+      data: () => value,
+    })
     expect(await resolveSourceData(getDataSource('st')!)).toBe(2)
   })
 
@@ -97,7 +133,12 @@ describe('data source registry (process-global)', () => {
 
   it('writable is opt-in and mirrored onto the meta', () => {
     registerDataSource({ id: 'ro', title: 'ro', data: {} })
-    registerDataSource({ id: 'rw', title: 'rw', data: {}, writable: true })
+    registerDataSource({
+      id: 'rw',
+      title: 'rw',
+      data: {},
+      writable: true,
+    })
     const byId = Object.fromEntries(listDataSources().map(s => [s.id, s]))
     expect(byId.ro.writable).toBe(false)
     expect(byId.rw.writable).toBe(true)
@@ -106,7 +147,13 @@ describe('data source registry (process-global)', () => {
   it('static + writable warns and stays read-only', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
-      registerDataSource({ id: 'st', title: 'st', static: true, writable: true, data: () => ({}) })
+      registerDataSource({
+        id: 'st',
+        title: 'st',
+        static: true,
+        writable: true,
+        data: () => ({}),
+      })
       expect(warn).toHaveBeenCalled()
       expect(warn.mock.calls.flat().map(String).join('\n')).toContain('DP_DATA_INSPECTOR_0004')
       expect(listDataSources()[0].writable).toBe(false)
@@ -179,9 +226,17 @@ describe('example source', () => {
       cwd: '/w/app',
       workspaceRoot: '/w',
       mode: 'dev',
-      rpc: { definitions: new Map([['a:fn', {}]]) },
-      services: { keys: () => ['a:svc'] },
-      host: { getStorageDir: (scope: string) => `/w/${scope}` },
+      rpc: {
+        definitions: new Map([
+          ['a:fn', {}],
+        ]),
+      },
+      services: {
+        keys: () => ['a:svc'],
+      },
+      host: {
+        getStorageDir: (scope: string) => `/w/${scope}`,
+      },
     } as any
     const data = await resolveSourceData(createExampleDataSource(ctx)) as Record<string, any>
     expect(data.devframe).toMatchObject({

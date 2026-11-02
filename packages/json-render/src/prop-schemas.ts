@@ -33,9 +33,18 @@ export const StackPropsSchema = z.object({
   gap: num.optional(),
   padding: num.optional(),
   align: z.enum(['start', 'center', 'end', 'stretch']).optional(),
-  justify: z.enum(['start', 'center', 'end', 'between', 'around']).optional(),
+  justify: z.enum([
+    'start',
+    'center',
+    'end',
+    'between',
+    'around',
+  ]).optional(),
   wrap: bool.optional(),
-  flex: scalar(z.union([z.number(), z.string()])).optional(),
+  flex: scalar(z.union([
+    z.number(),
+    z.string(),
+  ])).optional(),
 })
 
 export const CardPropsSchema = z.object({
@@ -48,20 +57,45 @@ export const CardPropsSchema = z.object({
 
 export const TextPropsSchema = z.object({
   text: str.optional(),
-  variant: z.enum(['heading', 'subheading', 'body', 'caption', 'code']).optional(),
+  variant: z.enum([
+    'heading',
+    'subheading',
+    'body',
+    'caption',
+    'code',
+  ]).optional(),
   weight: z.enum(['normal', 'medium', 'bold']).optional(),
-  color: z.enum(['base', 'muted', 'faint', 'primary', 'success', 'warning', 'danger']).optional(),
+  color: z.enum([
+    'base',
+    'muted',
+    'faint',
+    'primary',
+    'success',
+    'warning',
+    'danger',
+  ]).optional(),
 })
 
 export const BadgePropsSchema = z.object({
   text: str.optional(),
-  variant: z.enum(['default', 'success', 'warning', 'danger', 'info']).optional(),
+  variant: z.enum([
+    'default',
+    'success',
+    'warning',
+    'danger',
+    'info',
+  ]).optional(),
   minWidth: num.optional(),
 })
 
 export const ButtonPropsSchema = z.object({
   label: str.optional(),
-  variant: z.enum(['primary', 'secondary', 'ghost', 'danger']).optional(),
+  variant: z.enum([
+    'primary',
+    'secondary',
+    'ghost',
+    'danger',
+  ]).optional(),
   icon: str.optional(),
   disabled: bool.optional(),
   loading: bool.optional(),
@@ -81,7 +115,13 @@ export const TextInputPropsSchema = z.object({
   placeholder: str.optional(),
   label: str.optional(),
   disabled: bool.optional(),
-  type: z.enum(['text', 'number', 'password', 'email', 'search']).optional(),
+  type: z.enum([
+    'text',
+    'number',
+    'password',
+    'email',
+    'search',
+  ]).optional(),
   loading: bool.optional(),
 })
 
@@ -92,14 +132,20 @@ export const SwitchPropsSchema = z.object({
 })
 
 export const KeyValueTablePropsSchema = z.object({
-  data: z.union([z.record(z.string(), z.unknown()), dynamic]).optional(),
+  data: z.union([
+    z.record(z.string(), z.unknown()),
+    dynamic,
+  ]).optional(),
   loading: bool.optional(),
 })
 
 export const DataTablePropsSchema = z.object({
   columns: scalar(z.array(z.union([
     z.string(),
-    z.looseObject({ key: z.string(), label: z.string().optional() }),
+    z.looseObject({
+      key: z.string(),
+      label: z.string().optional(),
+    }),
   ]))).optional(),
   rows: scalar(z.array(z.unknown())).optional(),
   height: num.optional(),
@@ -131,7 +177,13 @@ export const TabsPropsSchema = z.object({
     label: z.string(),
     icon: z.string().optional(),
     badge: z.string().optional(),
-    badgeVariant: z.enum(['default', 'info', 'success', 'warning', 'danger']).optional(),
+    badgeVariant: z.enum([
+      'default',
+      'info',
+      'success',
+      'warning',
+      'danger',
+    ]).optional(),
   }))).optional(),
   value: str.optional(),
   defaultValue: str.optional(),

@@ -127,7 +127,9 @@ export function createWsOriginRegistry(
       const normalized = url.origin === 'null'
         ? `${url.protocol}//${url.host}`
         : url.origin
-      return origin === normalized ? normalized : undefined
+      return origin === normalized
+        ? normalized
+        : undefined
     }
     catch {}
   }
@@ -154,7 +156,9 @@ export function createWsOriginRegistry(
       }
       const origin = parsed.searchParams.get(DEVFRAME_VIEWER_ORIGIN_QUERY_PARAM) ?? undefined
       const candidateToken = parsed.searchParams.get(DEVFRAME_VIEWER_ORIGIN_TOKEN_QUERY_PARAM) ?? undefined
-      return registerOrigin(origin, candidateToken) ? origin : undefined
+      return registerOrigin(origin, candidateToken)
+        ? origin
+        : undefined
     },
     isAllowed(origin) {
       return isAllowedOrigin(origin, [...origins])
@@ -224,7 +228,9 @@ function listen(
 
 /** Compare two URL paths ignoring a trailing slash. */
 function pathMatches(a: string, b: string): boolean {
-  const strip = (p: string) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p)
+  const strip = (p: string) => (p.length > 1 && p.endsWith('/')
+    ? p.slice(0, -1)
+    : p)
   return strip(a) === strip(b)
 }
 
@@ -363,7 +369,9 @@ export function createWsRpcPeerHooks<
         return
       states.delete(peer)
       rpcGroup.updateChannels((channels) => {
-        const index = state.channel ? channels.indexOf(state.channel) : -1
+        const index = state.channel
+          ? channels.indexOf(state.channel)
+          : -1
         if (index >= 0)
           channels.splice(index, 1)
       })

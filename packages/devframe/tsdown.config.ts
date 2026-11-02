@@ -176,6 +176,9 @@ export default defineConfig([
     deps,
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
-    entry: { ...clientEntries, ...serverEntries },
+    entry: {
+      ...clientEntries,
+      ...serverEntries,
+    },
   },
 ])

@@ -8,7 +8,9 @@ import { markRaw, onScopeDispose, shallowRef, watch } from 'vue'
 export function getEntryPaneKey(entry: DevframeDockEntry | null | undefined): string | null {
   if (!entry)
     return null
-  return entry.type === 'iframe' ? (entry.frameId ?? entry.id) : entry.id
+  return entry.type === 'iframe'
+    ? (entry.frameId ?? entry.id)
+    : entry.id
 }
 
 /**

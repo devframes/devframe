@@ -26,7 +26,9 @@ function matches(cmd: DevframeInspectCommandInfo, q: string): boolean {
 const filtered = computed(() => {
   const list = props.commands ?? []
   const q = search.value.trim().toLowerCase()
-  const matched = q ? list.filter(cmd => matches(cmd, q)) : list
+  const matched = q
+    ? list.filter(cmd => matches(cmd, q))
+    : list
   return [...matched].sort((a, b) => a.title.localeCompare(b.title))
 })
 
@@ -43,7 +45,9 @@ function execute(cmd: DevframeInspectCommandInfo): void {
   let parsed: unknown[]
   try {
     const raw = JSON.parse(argsInput[cmd.id] || '[]')
-    parsed = Array.isArray(raw) ? raw : [raw]
+    parsed = Array.isArray(raw)
+      ? raw
+      : [raw]
   }
   catch (e) {
     throw new Error(`Invalid JSON args: ${(e as Error).message}`)

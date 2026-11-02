@@ -362,7 +362,9 @@ async function resolveHubContext(
   })
   const host = {
     ...h3Host,
-    ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
+    ...(options.getStorageDir
+      ? { getStorageDir: options.getStorageDir }
+      : {}),
     /**
      * Serve the hub's own connection meta under every mounted frame's
      * base, so each SPA discovers the shared RPC endpoint via its
@@ -379,7 +381,9 @@ async function resolveHubContext(
     workspaceRoot: cwd,
     mode: 'dev',
     host,
-    ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
+    ...(options.rpcDeclarations
+      ? { builtinRpcDeclarations: options.rpcDeclarations }
+      : {}),
   })
 }
 
@@ -427,7 +431,9 @@ export function initHub(options: InitHubOptions): HubInstance {
     destroyUnmatchedUpgrades: options.destroyUnmatchedUpgrades,
     register: resolveInstanceRegister(options.register, {
       id: options.name ?? 'devframes-hub',
-      ...(options.name !== undefined ? { name: options.name } : {}),
+      ...(options.name !== undefined
+        ? { name: options.name }
+        : {}),
       rootDir: cwd,
     }),
     /**
@@ -438,7 +444,11 @@ export function initHub(options: InitHubOptions): HubInstance {
     absoluteWsPath: true,
     resolveSidecarPort: async (sidecarHost) => {
       const { getPort } = await import('get-port-please')
-      return getPort({ port: 9777, portRange: [9777, 9877], host: sidecarHost })
+      return getPort({
+        port: 9777,
+        portRange: [9777, 9877],
+        host: sidecarHost,
+      })
     },
     onMetaUnavailable: () => {
       throw diagnostics.DF8003()
@@ -488,7 +498,9 @@ export function initHub(options: InitHubOptions): HubInstance {
       for (const registration of rendererRegistrations) {
         manifest[registration.type] = {
           importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
-          ...(registration.importName ? { importName: registration.importName } : {}),
+          ...(registration.importName
+            ? { importName: registration.importName }
+            : {}),
         }
       }
       const manifestState = await ctx.rpc.sharedState.get<Record<string, ClientScriptEntry>>(
@@ -530,7 +542,11 @@ export function initHub(options: InitHubOptions): HubInstance {
         authorization: mcpConfig.authorization,
         allowedOrigins: mcpConfig.allowedOrigins,
       })
-      return { context: ctx, mcp: { path: mcpRoute }, dispose: mounted.dispose }
+      return {
+        context: ctx,
+        mcp: { path: mcpRoute },
+        dispose: mounted.dispose,
+      }
     },
 
     mount(ctx, meta) {
@@ -552,8 +568,12 @@ export function initHub(options: InitHubOptions): HubInstance {
           clientImports: DEVFRAME_DOCK_IMPORTS_FILENAME,
           index: '__index.json',
           websocket: meta.websocket,
-          ...(meta.mcp ? { mcp: meta.mcp.path } : {}),
-          ...(options.ui?.embedded ? { embedded: 'embedded.js' } : {}),
+          ...(meta.mcp
+            ? { mcp: meta.mcp.path }
+            : {}),
+          ...(options.ui?.embedded
+            ? { embedded: 'embedded.js' }
+            : {}),
         },
       })
       app.use(joinURL(base, '__index.json'), () => indexDocument())

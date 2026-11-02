@@ -70,14 +70,21 @@ function getCreateQuery(): Promise<CreateQuery> {
       fromMap: (v) => {
         if (isMapLike(v))
           return Object.fromEntries(v.entries())
-        if (isMapTag(v))
-          return v.value ?? Object.fromEntries((v.entries ?? []).map(e => [String(e.key), e.value]))
+        if (isMapTag(v)) {
+          return v.value ?? Object.fromEntries((v.entries ?? []).map(e => [
+            String(e.key),
+            e.value,
+          ]))
+        }
         return v
       },
       /** Map(-like or normalized tag) -> [{ key, value }] preserving key identity. */
       mapEntries: (v) => {
-        if (isMapLike(v))
-          return [...v.entries()].map(([key, value]) => ({ key, value }))
+        if (isMapLike(v)) {
+          return [
+            ...v.entries(),
+          ].map(([key, value]) => ({ key, value }))
+        }
         if (isMapTag(v)) {
           if (v.entries)
             return v.entries
@@ -102,7 +109,9 @@ function getCreateQuery(): Promise<CreateQuery> {
         return (v as object).constructor?.name ?? 'Object'
       },
       /** All own keys (incl. non-enumerable), as strings. */
-      ownKeys: v => (v && typeof v === 'object') ? Reflect.ownKeys(v).map(String) : [],
+      ownKeys: v => (v && typeof v === 'object')
+        ? Reflect.ownKeys(v).map(String)
+        : [],
     },
   }))
 }
@@ -116,11 +125,20 @@ export async function runQuery(target: unknown, query: string, options?: Normali
     const { data, stats } = normalize(raw, options)
     // The normalizer guarantees plain JSON, so this measures the actual wire payload.
     const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
-    return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
+    return {
+      ok: true,
+      result: data,
+      stats: { queryMs, normalize: stats, payloadBytes },
+    }
   }
   catch (error) {
-    const e = error instanceof Error ? error : new Error(String(error))
-    return { ok: false, error: { message: e.message, name: e.name } }
+    const e = error instanceof Error
+      ? error
+      : new Error(String(error))
+    return {
+      ok: false,
+      error: { message: e.message, name: e.name },
+    }
   }
 }
 
@@ -140,11 +158,20 @@ export async function runQueryAtPath(target: unknown, query: string, path: NodeP
     const queryMs = Math.round((performance.now() - started) * 100) / 100
     const { data, stats } = normalize(node, options)
     const payloadBytes = new TextEncoder().encode(JSON.stringify(data) ?? '').length
-    return { ok: true, result: data, stats: { queryMs, normalize: stats, payloadBytes } }
+    return {
+      ok: true,
+      result: data,
+      stats: { queryMs, normalize: stats, payloadBytes },
+    }
   }
   catch (error) {
-    const e = error instanceof Error ? error : new Error(String(error))
-    return { ok: false, error: { message: e.message, name: e.name } }
+    const e = error instanceof Error
+      ? error
+      : new Error(String(error))
+    return {
+      ok: false,
+      error: { message: e.message, name: e.name },
+    }
   }
 }
 
@@ -190,6 +217,13 @@ export async function suggest(target: unknown, query: string, pos: number, limit
     return { ok: true, suggestions, statMs }
   }
   catch (error) {
-    return { ok: false, suggestions: [], statMs: 0, error: error instanceof Error ? error.message : String(error) }
+    return {
+      ok: false,
+      suggestions: [],
+      statMs: 0,
+      error: error instanceof Error
+        ? error.message
+        : String(error),
+    }
   }
 }

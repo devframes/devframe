@@ -114,7 +114,9 @@ const panelStyle = computed(() => {
 
   const style: CSSProperties = {
     position: 'fixed',
-    pointerEvents: (panel.isDragging || panel.isResizing) ? 'none' : 'auto',
+    pointerEvents: (panel.isDragging || panel.isResizing)
+      ? 'none'
+      : 'auto',
     width: `min(${store.width}vw, calc(100vw - ${marginHorizontal}px))`,
     height: `min(${store.height}vh, calc(100vh - ${marginVertical}px))`,
   }

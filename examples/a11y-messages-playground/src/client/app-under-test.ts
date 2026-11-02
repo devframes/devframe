@@ -36,7 +36,12 @@ const ROUTES: Route[] = [
     render: () => `
       <h1>Gallery</h1>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        ${['#c0653a', '#3a8fc0', '#4aa06a', '#b04a9a']
+        ${[
+          '#c0653a',
+          '#3a8fc0',
+          '#4aa06a',
+          '#b04a9a',
+        ]
           .map(c => `<img src="data:image/svg+xml;utf8,${banner(c)}" width="150" height="80" />`)
           .join('')}
       </div>
@@ -105,8 +110,12 @@ export function mountAppUnderTest(container: HTMLElement): void {
     container.innerHTML = `
       <nav aria-label="App under test" class="aut-nav">
         ${ROUTES.map(r =>
-          `<button type="button" data-route="${r.path}" aria-current="${r.path === active.path ? 'page' : 'false'}"
-             class="aut-tab${r.path === active.path ? ' aut-tab--active' : ''}">${r.label}</button>`,
+          `<button type="button" data-route="${r.path}" aria-current="${r.path === active.path
+            ? 'page'
+            : 'false'}"
+             class="aut-tab${r.path === active.path
+                ? ' aut-tab--active'
+                : ''}">${r.label}</button>`,
         ).join('')}
       </nav>
       <p class="aut-hint">Route <code>${active.path}</code> · seeds: <strong>${active.hint}</strong></p>

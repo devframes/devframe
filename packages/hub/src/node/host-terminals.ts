@@ -55,7 +55,12 @@ async function killProcessTree(cp: TinyExecResult): Promise<void> {
   }
   const { exec } = await import('tinyexec')
   try {
-    const { exitCode } = await exec('taskkill', ['/pid', String(pid), '/T', '/F'])
+    const { exitCode } = await exec('taskkill', [
+      '/pid',
+      String(pid),
+      '/T',
+      '/F',
+    ])
     if (exitCode === 0)
       return
   }
@@ -141,7 +146,12 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       }
     }
 
-    return { state, markStatus, closeStream, errorStream }
+    return {
+      state,
+      markStatus,
+      closeStream,
+      errorStream,
+    }
   }
 
   register(session: DevframeTerminalSession): DevframeTerminalSession {
@@ -350,15 +360,20 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       })
       cp.process?.once('close', (code) => {
         const killed = hostKilled.has(cp)
-        settle(killed ? undefined : code ?? undefined)
+        settle(killed
+          ? undefined
+          : code ?? undefined)
         if (currentRun !== runId)
           return
         closeStream()
         // A spawn/runtime error already settled the status; a non-zero exit
         // code is a crash. A clean exit, or a kill by the host (terminate()/
         // restart()), is a deliberate/normal stop.
-        if (!runErrored)
-          markStatus(!killed && typeof code === 'number' && code !== 0 ? 'error' : 'stopped')
+        if (!runErrored) {
+          markStatus(!killed && typeof code === 'number' && code !== 0
+            ? 'error'
+            : 'stopped')
+        }
       })
 
       currentResult = {
@@ -366,7 +381,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           return cp.process?.pid
         },
         get exitCode() {
-          return hostKilled.has(cp) ? undefined : cp.process?.exitCode ?? undefined
+          return hostKilled.has(cp)
+            ? undefined
+            : cp.process?.exitCode ?? undefined
         },
         get killed() {
           return hostKilled.has(cp) || cp.process?.killed === true
@@ -478,12 +495,16 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
         resolveOutput({
           output: outputChunks.join(''),
           exitCode: settledExitCode,
-          signal: signal === 0 ? undefined : signal,
+          signal: signal === 0
+            ? undefined
+            : signal,
         })
       }
 
       ptyProcess.onData((data) => {
-        const text = typeof data === 'string' ? data : data.toString('utf8')
+        const text = typeof data === 'string'
+          ? data
+          : data.toString('utf8')
         outputChunks.push(text)
         if (!state.streamClosed && currentRun === runId)
           state.controller?.enqueue(text)
@@ -497,14 +518,18 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
          * Killed runs and clean exits are stopped. Only a non-killed non-zero exit
          * code is a crash, matching the child-process path.
          */
-        markStatus(!killed && exitCode !== 0 ? 'error' : 'stopped')
+        markStatus(!killed && exitCode !== 0
+          ? 'error'
+          : 'stopped')
       })
       currentResult = {
         get pid() {
           return ptyProcess.pid
         },
         get exitCode() {
-          return killed ? undefined : (ptyProcess.exitCode ?? settledExitCode)
+          return killed
+            ? undefined
+            : (ptyProcess.exitCode ?? settledExitCode)
         },
         get killed() {
           return killed
@@ -527,7 +552,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       errorStream(error)
       throw diagnostics.DF8203({
         command: executeOptions.command,
-        reason: error instanceof Error ? error.message : String(error),
+        reason: error instanceof Error
+          ? error.message
+          : String(error),
       })
     }
 
@@ -557,7 +584,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
       getProcessName: () => {
         try {
           const name = pty?.process
-          return name && name !== PTY_TERM_NAME ? name : undefined
+          return name && name !== PTY_TERM_NAME
+            ? name
+            : undefined
         }
         catch {
           return undefined
@@ -583,7 +612,9 @@ export class DevframeTerminalsHost implements DevframeTerminalsHostType {
           markStatus('error')
           throw diagnostics.DF8203({
             command: executeOptions.command,
-            reason: error instanceof Error ? error.message : String(error),
+            reason: error instanceof Error
+              ? error.message
+              : String(error),
           })
         }
         markStatus('running')

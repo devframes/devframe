@@ -4,7 +4,9 @@ export function formatAddress(url: string, origin: string | undefined): string {
     return url
   try {
     const parsed = new URL(url)
-    return parsed.origin === origin ? `${parsed.pathname}${parsed.search}${parsed.hash}` : url
+    return parsed.origin === origin
+      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+      : url
   }
   catch {
     return url
@@ -14,5 +16,7 @@ export function formatAddress(url: string, origin: string | undefined): string {
 /** Resolve a typed `/path` against `origin`. Any other input goes to the server as typed. */
 export function resolveAddress(input: string, origin: string | undefined): string {
   const value = input.trim()
-  return origin && value.startsWith('/') ? new URL(value, origin).href : value
+  return origin && value.startsWith('/')
+    ? new URL(value, origin).href
+    : value
 }

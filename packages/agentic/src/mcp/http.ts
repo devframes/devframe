@@ -31,7 +31,9 @@ export function mountMcpHttp(
   // client cannot forge (a widened `allowedOrigins` or a proxy deployment opts
   // out via `authorization` / `allowedOrigins: false`).
   app.use(path, defineHandler(async event =>
-    respond(event, await handler.fetch(event.req, { remoteAddress: getRequestIP(event) })),
+    respond(event, await handler.fetch(event.req, {
+      remoteAddress: getRequestIP(event),
+    })),
   ))
 
   return {

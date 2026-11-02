@@ -126,7 +126,9 @@ export function getShortcutRows(commands: DevframeCommandEntry[]): ShortcutRow[]
     const parentTitle = ancestors.at(-1)?.title
     rows.push({
       command: cmd,
-      ...(parentTitle ? { parentTitle } : {}),
+      ...(parentTitle
+        ? { parentTitle }
+        : {}),
       depth: ancestors.length,
     })
   })

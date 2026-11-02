@@ -15,8 +15,11 @@ function h<K extends keyof HTMLElementTagNameMap>(
     if (v != null)
       el.setAttribute(k, v)
   }
-  for (const c of children)
-    el.append(typeof c === 'string' ? document.createTextNode(c) : c)
+  for (const c of children) {
+    el.append(typeof c === 'string'
+      ? document.createTextNode(c)
+      : c)
+  }
   return el
 }
 
@@ -37,7 +40,9 @@ export interface MountOptions {
 export async function mount(root: HTMLElement, options: MountOptions = {}): Promise<void> {
   root.replaceChildren(h('div', { class: 'connecting' }, ['Connecting to devframe…']))
 
-  const client = await connectDevframe(options.baseURL ? { baseURL: options.baseURL } : undefined)
+  const client = await connectDevframe(options.baseURL
+    ? { baseURL: options.baseURL }
+    : undefined)
   const ctx = client.scope(NAMESPACE) as StarterCtx
 
   const listCard = h('div', { class: 'card' })
@@ -67,7 +72,10 @@ export async function mount(root: HTMLElement, options: MountOptions = {}): Prom
   root.replaceChildren(
     h('div', { class: 'app' }, [
       h('header', { class: 'nav' }, [
-        h('span', { class: 'brand' }, [h('span', { class: 'dot' }), 'Devframe Starter']),
+        h('span', { class: 'brand' }, [
+          h('span', { class: 'dot' }),
+          'Devframe Starter',
+        ]),
         h('span', { class: 'spacer' }),
         h('small', { class: 'meta' }, [
           'node ',

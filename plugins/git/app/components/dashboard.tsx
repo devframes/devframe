@@ -169,7 +169,9 @@ function DashboardBody() {
     const current = branches.current
       ?? branches.branches.find(branch => branch.current)?.name
       ?? null
-    setSelectedBranch(prev => (prev && names.includes(prev)) ? prev : (current ?? names[0] ?? null))
+    setSelectedBranch(prev => (prev && names.includes(prev))
+      ? prev
+      : (current ?? names[0] ?? null))
   }, [branches])
 
   const selectBranch = (name: string) => {
@@ -202,7 +204,9 @@ function DashboardBody() {
               type="button"
               role="tab"
               aria-selected={pane === id}
-              data-state={pane === id ? 'active' : 'inactive'}
+              data-state={pane === id
+                ? 'active'
+                : 'inactive'}
               className={tabClass()}
               onClick={() => setPane(id)}
             >

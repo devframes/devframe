@@ -64,7 +64,9 @@ export async function createCommandsContext(
   })
 
   function register(cmd: DevframeClientCommand | DevframeClientCommand[]): () => void {
-    const cmds = Array.isArray(cmd) ? cmd : [cmd]
+    const cmds = Array.isArray(cmd)
+      ? cmd
+      : [cmd]
     for (const c of cmds) {
       clientCommands.set(c.id, c)
     }

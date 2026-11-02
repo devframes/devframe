@@ -18,7 +18,9 @@ export const listStateKeys = defineRpcFunction({
   },
   setup: ctx => ({
     handler: async (): Promise<string[]> => {
-      return [...ctx.rpc.sharedState.keys()].sort()
+      return [
+        ...ctx.rpc.sharedState.keys(),
+      ].sort()
     },
   }),
 })

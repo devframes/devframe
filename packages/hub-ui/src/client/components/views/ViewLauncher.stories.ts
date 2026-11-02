@@ -48,7 +48,10 @@ function launcherStory(
 ): Story {
   return {
     render: () => ({
-      setup: () => mountWithContext({}, ctx => stage(h(ViewLauncher, { context: ctx, entry: launcher(status, extras) }))),
+      setup: () => mountWithContext({}, ctx => stage(h(ViewLauncher, {
+        context: ctx,
+        entry: launcher(status, extras),
+      }))),
     }),
   }
 }

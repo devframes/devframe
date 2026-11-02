@@ -346,7 +346,9 @@ export async function createDevframeClientRuntime(
         existing.events.emit('entry:updated', meta as any)
       }
     }
-    for (const id of [...entryToStateMap.keys()]) {
+    for (const id of [
+      ...entryToStateMap.keys(),
+    ]) {
       if (seen.has(id))
         continue
       const removed = entryToStateMap.get(id)
@@ -401,7 +403,9 @@ export async function createDevframeClientRuntime(
       settings,
       getStateById: id => entryToStateMap.get(id),
       switchEntry,
-      toggleEntry: id => (selectedId === id ? switchEntry(null) : switchEntry(id)),
+      toggleEntry: id => (selectedId === id
+        ? switchEntry(null)
+        : switchEntry(id)),
       setActionActive,
       register(entry, force) {
         if (clientDocks.has(entry.id) && !force)
@@ -415,7 +419,10 @@ export async function createDevframeClientRuntime(
             const existing = clientDocks.get(entry.id)
             if (!existing)
               throw new Error(`[@devframes/hub] client dock "${entry.id}" was removed; register it again to update`)
-            clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
+            clientDocks.set(entry.id, {
+              ...existing,
+              ...patch,
+            } as DevframeDockEntry)
             refreshEntries()
           },
           dispose: () => {
@@ -554,7 +561,10 @@ export async function createDevframeClientRuntime(
     const clientCommands = new Map<string, DevframeClientCommand>()
 
     function allCommands(): DevframeCommandEntry[] {
-      return [...(commandsState.value() as DevframeServerCommandEntry[]), ...clientCommands.values()]
+      return [
+        ...(commandsState.value() as DevframeServerCommandEntry[]),
+        ...clientCommands.values(),
+      ]
     }
 
     function findCommand(commands: Iterable<DevframeCommandEntry>, id: string): DevframeCommandEntry | undefined {
@@ -576,7 +586,9 @@ export async function createDevframeClientRuntime(
         return allCommands().filter(c => c.showInPalette !== false)
       },
       register(input) {
-        const list = Array.isArray(input) ? input : [input]
+        const list = Array.isArray(input)
+          ? input
+          : [input]
         for (const cmd of list) clientCommands.set(cmd.id, cmd)
         return () => {
           for (const cmd of list) clientCommands.delete(cmd.id)
@@ -615,7 +627,9 @@ export async function createDevframeClientRuntime(
 
     return createDockRenderersContext({
       context: () => context,
-      ...(options.renderers ? { local: options.renderers } : {}),
+      ...(options.renderers
+        ? { local: options.renderers }
+        : {}),
       manifest: () => renderersManifestState.value() as DockRendererManifest,
       onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
@@ -683,7 +697,7 @@ export async function createDevframeClientRuntime(
       const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
       if (typeof fn !== 'function')
-        throw new Error(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
+        throw new TypeError(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
       const current = entryToStateMap.get(entryId)
       if (!current || disposed)
         return
@@ -692,7 +706,9 @@ export async function createDevframeClientRuntime(
         throw new Error('[@devframes/hub] RPC client is no longer trusted')
       // Scope the messages client to this entry: its messages default their
       // `category` to the entry id, so the feed can attribute and group them.
-      const messages = createMessagesClient(rpc, { defaults: { category: entryId } })
+      const messages = createMessagesClient(rpc, {
+        defaults: { category: entryId },
+      })
       const scriptContext: DockClientScriptContext = { ...context, current, messages }
       await fn(scriptContext)
     }
@@ -802,7 +818,9 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
 
   const groups = new Map<string, DevframeDockEntry[]>()
   for (const entry of entries) {
-    const resolvedGroup = entry.groupId ? groupsById.get(entry.groupId) : undefined
+    const resolvedGroup = entry.groupId
+      ? groupsById.get(entry.groupId)
+      : undefined
     const category = resolvedGroup
       ? resolvedGroup.category ?? 'default'
       : entry.category ?? 'default'
@@ -813,7 +831,9 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
     }
     list.push(entry)
   }
-  return [...groups.entries()].sort(
+  return [
+    ...groups.entries(),
+  ].sort(
     ([a], [b]) => (categoryOrder[a] ?? 0) - (categoryOrder[b] ?? 0),
   )
 }

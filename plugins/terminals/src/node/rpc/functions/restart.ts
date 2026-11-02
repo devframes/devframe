@@ -7,7 +7,11 @@ export const restart = defineRpcFunction({
   name: 'devframes:plugin:terminals:restart',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ id: s.string() })],
+  args: [
+    s.object({
+      id: s.string(),
+    }),
+  ],
   returns: sessionInfoSchema,
   setup: ctx => ({
     handler: ({ id }) => getTerminalManager(ctx).restart(id),

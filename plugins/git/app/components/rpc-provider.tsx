@@ -34,10 +34,17 @@ export function RpcProvider({ children }: { children: ReactNode }) {
     // A bare port (what `scripts/dev.mjs` sets) becomes a same-host socket on
     // the backend's WS route; a full `ws(s)://` URL is used verbatim.
     const websocket: ConnectionMeta['websocket'] | undefined = devWs
-      ? (/^\d+$/.test(devWs) ? { port: Number(devWs), path: DEVFRAME_WS_ROUTE } : devWs)
+      ? (/^\d+$/.test(devWs)
+          ? {
+              port: Number(devWs),
+              path: DEVFRAME_WS_ROUTE,
+            }
+          : devWs)
       : undefined
     const options = websocket
-      ? { connectionMeta: { backend: 'websocket' as const, websocket } }
+      ? {
+          connectionMeta: { backend: 'websocket' as const, websocket },
+        }
       : undefined
     connectDevframe(options).then(
       (rpc) => {
@@ -54,7 +61,9 @@ export function RpcProvider({ children }: { children: ReactNode }) {
         if (cancelled)
           return
         // Failing to even load the connection meta is a fatal connection error.
-        const message = err instanceof Error ? err.message : String(err)
+        const message = err instanceof Error
+          ? err.message
+          : String(err)
         setState({ rpc: null, status: 'error', error: message })
       },
     )

@@ -7,7 +7,9 @@ import { createDesignConfig, shadowSurfaceSafelist } from '../../design/uno.conf
  * Compiled ahead of time by `scripts/build-css.ts`.
  */
 export default mergeConfigs([
-  createDesignConfig({ base: presetWind3() }),
+  createDesignConfig({
+    base: presetWind3(),
+  }),
   {
     safelist: shadowSurfaceSafelist,
     content: {

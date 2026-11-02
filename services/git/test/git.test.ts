@@ -23,7 +23,11 @@ function nullHost(dir: string): DevframeHost {
 
 /** Install the git service against `cwd` and return its node API. */
 async function createGit(cwd: string): Promise<GitServiceApi> {
-  const ctx = await createHostContext({ cwd, mode: 'dev', host: nullHost(cwd) })
+  const ctx = await createHostContext({
+    cwd,
+    mode: 'dev',
+    host: nullHost(cwd),
+  })
   const install = ctx.services.install(createGitService())
   await ctx.services.ready()
   return (await install)!
@@ -163,10 +167,14 @@ describe('@devframes/service-git', () => {
 
     expect((await git.log({})).commits).toHaveLength(3)
 
-    const src = await git.log({ paths: ['src'] })
+    const src = await git.log({
+      paths: ['src'],
+    })
     expect(src.commits.map(c => c.subject)).toEqual(['fix: src a', 'feat: src a'])
 
-    const docs = await git.log({ paths: ['docs/b.md'] })
+    const docs = await git.log({
+      paths: ['docs/b.md'],
+    })
     expect(docs.commits.map(c => c.subject)).toEqual(['docs: b'])
   })
 
@@ -205,11 +213,15 @@ describe('@devframes/service-git', () => {
     cleanups.push(repo.cleanup)
     const git = await createGit(repo.dir)
 
-    let status = await git.stage({ paths: ['README.md', 'untracked.txt'] })
+    let status = await git.stage({
+      paths: ['README.md', 'untracked.txt'],
+    })
     expect(status.staged.map(f => f.path)).toEqual(
       expect.arrayContaining(['staged.txt', 'README.md', 'untracked.txt']),
     )
-    status = await git.unstage({ paths: ['staged.txt'] })
+    status = await git.unstage({
+      paths: ['staged.txt'],
+    })
     expect(status.staged.map(f => f.path)).not.toContain('staged.txt')
 
     const result = await git.commit({ message: 'test: commit from service' })
@@ -244,7 +256,11 @@ describe('@devframes/service-git', () => {
   it('registers scoped RPC that mirrors the node API', async () => {
     const repo = createTempRepo()
     cleanups.push(repo.cleanup)
-    const ctx = await createHostContext({ cwd: repo.dir, mode: 'dev', host: nullHost(repo.dir) })
+    const ctx = await createHostContext({
+      cwd: repo.dir,
+      mode: 'dev',
+      host: nullHost(repo.dir),
+    })
     void ctx.services.install(createGitService())
     await ctx.services.ready()
 
@@ -257,7 +273,11 @@ describe('@devframes/service-git', () => {
   it('exposes agent-flagged read ops on the agent surface', async () => {
     const repo = createTempRepo()
     cleanups.push(repo.cleanup)
-    const ctx = await createHostContext({ cwd: repo.dir, mode: 'dev', host: nullHost(repo.dir) })
+    const ctx = await createHostContext({
+      cwd: repo.dir,
+      mode: 'dev',
+      host: nullHost(repo.dir),
+    })
     void ctx.services.install(createGitService())
     await ctx.services.ready()
 

@@ -8,9 +8,27 @@ import DockEmbedded from './DockEmbedded.vue'
 // Entries whose iframes load `about:blank`, so the full shell (address bar +
 // iframe pane) renders without reaching for a dev server.
 const blankEntries: DevframeDockEntry[] = [
-  { id: 'overview', type: 'iframe', url: 'about:blank', title: 'Overview', icon: 'ph:gauge-duotone' },
-  { id: 'inspect', type: 'iframe', url: 'about:blank', title: 'Inspect', icon: 'ph:stethoscope-duotone' },
-  { id: 'assets', type: 'iframe', url: 'about:blank', title: 'Assets', icon: 'ph:images-duotone' },
+  {
+    id: 'overview',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Overview',
+    icon: 'ph:gauge-duotone',
+  },
+  {
+    id: 'inspect',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Inspect',
+    icon: 'ph:stethoscope-duotone',
+  },
+  {
+    id: 'assets',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Assets',
+    icon: 'ph:images-duotone',
+  },
 ] as DevframeDockEntry[]
 
 const meta = {
@@ -35,7 +53,16 @@ type Story = StoryObj
 export const FloatClosed: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: categorizedEntries, panel: { mode: 'float', position: 'bottom', left: 50, top: 100, inactiveTimeout: -1 } },
+      {
+        entries: categorizedEntries,
+        panel: {
+          mode: 'float',
+          position: 'bottom',
+          left: 50,
+          top: 100,
+          inactiveTimeout: -1,
+        },
+      },
       ctx => h(DockEmbedded, { context: ctx }),
     ),
   }),
@@ -45,7 +72,19 @@ export const FloatClosed: Story = {
 export const FloatOpen: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: blankEntries, selectedId: 'overview', panel: { mode: 'float', position: 'bottom', left: 50, top: 100, inactiveTimeout: -1, width: 60, height: 60 } },
+      {
+        entries: blankEntries,
+        selectedId: 'overview',
+        panel: {
+          mode: 'float',
+          position: 'bottom',
+          left: 50,
+          top: 100,
+          inactiveTimeout: -1,
+          width: 60,
+          height: 60,
+        },
+      },
       ctx => h(DockEmbedded, { context: ctx }),
     ),
   }),
@@ -59,8 +98,23 @@ export const FloatOpen: Story = {
 export const FloatReducedOverlap: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: blankEntries, selectedId: 'overview', panel: { mode: 'float', position: 'bottom', left: 50, top: 100, inactiveTimeout: -1, width: 60, height: 60 } },
-      ctx => h(DockEmbedded, { context: ctx, layout: { panelOverlapFactor: 0.2 } }),
+      {
+        entries: blankEntries,
+        selectedId: 'overview',
+        panel: {
+          mode: 'float',
+          position: 'bottom',
+          left: 50,
+          top: 100,
+          inactiveTimeout: -1,
+          width: 60,
+          height: 60,
+        },
+      },
+      ctx => h(DockEmbedded, {
+        context: ctx,
+        layout: { panelOverlapFactor: 0.2 },
+      }),
     ),
   }),
 }
@@ -69,7 +123,11 @@ export const FloatReducedOverlap: Story = {
 export const Edge: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: blankEntries, selectedId: 'overview', panel: { mode: 'edge', position: 'bottom', height: 45 } },
+      {
+        entries: blankEntries,
+        selectedId: 'overview',
+        panel: { mode: 'edge', position: 'bottom', height: 45 },
+      },
       ctx => h(DockEmbedded, { context: ctx }),
     ),
   }),
@@ -79,7 +137,11 @@ export const Edge: Story = {
 export const Unauthorized: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: categorizedEntries, isTrusted: false, panel: { mode: 'edge', position: 'bottom', inactiveTimeout: -1 } },
+      {
+        entries: categorizedEntries,
+        isTrusted: false,
+        panel: { mode: 'edge', position: 'bottom', inactiveTimeout: -1 },
+      },
       ctx => h(DockEmbedded, { context: ctx }),
     ),
   }),

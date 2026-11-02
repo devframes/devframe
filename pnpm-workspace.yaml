@@ -9,7 +9,6 @@ blockExoticSubdeps: false
 
 minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeExclude:
-  - vite@8.3.3
   - '@antfu/design@0.6.0'
   - '@shikijs/core@4.5.0'
   - '@shikijs/engine-javascript@4.5.0'
@@ -22,17 +21,9 @@ minimumReleaseAgeExclude:
   - shiki@4.5.0
   - magic-string@1.4.3
   - reka-ui@2.11.0
-  - '@modelcontextprotocol/client@2.3.1'
-  - '@modelcontextprotocol/core@2.3.1'
-  - '@modelcontextprotocol/server@2.3.1'
   - '@radix-ui/react-presence@1.1.11'
   - axe-core@4.14.0
   - launch-editor@2.14.2
-  - '@x18n/builtins@0.0.9'
-  - '@x18n/cli@0.0.9'
-  - '@x18n/core@0.0.9'
-  - '@x18n/node@0.0.9'
-  - '@x18n/ui@0.0.9'
 
 trustPolicy: no-downgrade
 trustPolicyExclude:
@@ -86,22 +77,19 @@ overrides:
   '@devframes/service-shiki': 'workspace:*'
   '@devframes/vite': 'workspace:*'
   # Nuxt bundles DevTools v3. The docs dogfood v4, which runs on the local devframe hub.
-  '@nuxt/devtools': &nuxtDevtools ^4.0.0-beta.7
+  '@nuxt/devtools': &nuxtDevtools ^4.0.0
   '@unhead/vue': ^3.4.3
-  chokidar: ^5.0.0
-  crossws: ^0.4.15
+  chokidar: ^6.0.0
+  crossws: ^0.4.17
   devframe: 'workspace:*'
-  nuxt: &nuxt ^4.6.2
+  nuxt: &nuxt ^4.6.3
   satori: catalog:docs
   semver: ^7.8.5
   shell-quote: ^1.12.0
-  storybook: &storybook ^10.6.3
+  storybook: &storybook ^10.6.5
   unhead: ^3.4.3
-  unocss: &unocss ^66.11.0
+  unocss: &unocss ^66.12.0
   '@unocss/core': *unocss
-  # rolldown 1.2.13+ emits `export { t as x } from "./chunk"`, which tsnapi 1.5.0
-  # snapshots as hashed chunk re-exports. Keep tsdown on 1.2.12 until tsnapi follows it.
-  tsdown>rolldown: 1.2.12
   vueuse: &vueuse ^14.4.0
 
 patchedDependencies:
@@ -117,42 +105,41 @@ allowBuilds:
 
 catalogs:
   build:
-    '@nuxt/kit': ^4.6.2
-    '@nuxt/schema': ^4.6.2
+    '@nuxt/kit': ^4.6.3
+    '@nuxt/schema': ^4.6.3
     '@preact/preset-vite': ^2.10.6
-    '@rsbuild/core': ^2.2.14
-    '@sveltejs/adapter-node': ^6.0.0
-    '@sveltejs/kit': ^3.1.0
+    '@rsbuild/core': ^2.3.0
+    '@sveltejs/adapter-node': ^6.0.1
+    '@sveltejs/kit': ^3.1.1
     '@vitejs/plugin-vue': ^6.0.10
     esbuild: ^0.28.2
     lightningcss: ^1.33.0
-    magic-string: ^1.4.3
+    magic-string: ^1.4.5
     mlly: ^1.8.2
-    nuxt: ^4.6.2
-    # Pinned with the `tsdown>rolldown` override above; 0.23.1 requires rolldown ~1.2.13.
-    tsdown: 0.23.0
+    nuxt: ^4.6.3
+    tsdown: ^0.23.4
     tsx: ^4.23.15
     turbo: ^2.11.10
-    vite: ^8.3.4
-    vite-plugin-solid: ^2.11.14
+    vite: ^8.3.5
+    vite-plugin-solid: ^2.11.15
   deps:
     '@fastify/middie': ^9.3.6
     '@hono/node-server': ^2.1.5
-    '@json-render/core': ^0.21.1
-    '@modelcontextprotocol/client': ^2.3.1
-    '@modelcontextprotocol/server': ^2.3.1
+    '@json-render/core': ^0.21.3
+    '@modelcontextprotocol/client': ^2.4.0
+    '@modelcontextprotocol/server': ^2.4.0
     '@standard-schema/spec': ^1.1.0
     birpc: ^4.2.0
     cac: ^7.1.0
-    chokidar: ^5.0.0
-    crossws: ^0.4.15
+    chokidar: ^6.0.0
+    crossws: ^0.4.17
     destr: ^2.0.5
     fastify: ^5.12.7
     get-port-please: ^3.2.0
-    h3: ^2.0.7
-    hono: ^4.13.13
-    image-meta: ^0.3.0
-    immer: ^11.2.3
+    h3: ^2.0.8
+    hono: ^4.13.15
+    image-meta: ^0.3.1
+    immer: ^11.2.9
     launch-editor: ^2.14.2
     mrmime: ^2.0.1
     nitro: ^3.0.260903-beta
@@ -170,35 +157,35 @@ catalogs:
     tinyglobby: ^0.2.17
     valibot: ^1.5.0
     whenexpr: ^0.1.2
-    ws: ^8.22.0
+    ws: ^8.22.1
     zigpty: ^0.2.1
     zod: ^4.6.7
   docs:
     '@nuxt/devtools-kit': *nuxtDevtools
     comark-docs: github:comarkdown/comark-docs#f97dc864b0aa702d54c600f868589b7a2c185b3a
-    satori: ^0.35.2
+    satori: ^0.63.2
   frontend:
     '@antfu/design': ^0.6.0
     '@discoveryjs/discovery': 1.0.0-beta.99
     '@floating-ui/react': ^0.27.20
-    '@iconify-json/carbon': ^1.2.28
+    '@iconify-json/carbon': ^1.2.29
     '@iconify-json/catppuccin': ^1.2.17
     '@iconify-json/icon-park-outline': ^1.2.4
-    '@iconify-json/logos': ^1.2.17
-    '@iconify-json/octicon': ^1.2.39
+    '@iconify-json/logos': ^1.2.18
+    '@iconify-json/octicon': ^1.2.40
     '@iconify-json/ph': ^1.2.2
     '@iconify-json/ri': ^1.2.10
     '@iconify-json/twemoji': ^1.2.5
     '@iconify-json/unjs': ^1.2.4
-    '@json-render/react': ^0.21.1
-    '@json-render/vue': ^0.21.1
+    '@json-render/react': ^0.21.3
+    '@json-render/vue': ^0.21.3
     '@radix-ui/react-scroll-area': ^1.4.0
     '@radix-ui/react-slot': ^1.5.0
     '@shikijs/magic-move': ^4.5.0
     '@sveltejs/vite-plugin-svelte': ^7.3.1
-    '@unocss/postcss': ^66.11.0
-    '@unocss/preset-icons': ^66.11.0
-    '@unocss/reset': ^66.11.0
+    '@unocss/postcss': ^66.12.0
+    '@unocss/preset-icons': ^66.12.0
+    '@unocss/reset': ^66.12.0
     '@vueuse/core': ^15.0.0
     '@xterm/addon-fit': ^0.11.0
     '@xterm/xterm': ^6.0.0
@@ -211,17 +198,17 @@ catalogs:
     fuse.js: ^7.5.0
     iframe-pane: ^1.1.0
     nanoevents: ^10.0.0
-    next: ^16.4.2
-    preact: ^11.0.1
+    next: ^16.4.3
+    preact: ^11.1.1
     react: ^19.3.1
     react-dom: ^19.3.1
     reka-ui: ^2.11.0
-    solid-js: ^1.9.17
+    solid-js: ^1.9.18
     splitpanes: ^4.1.2
-    svelte: ^5.57.2
+    svelte: ^5.57.3
     tailwind-merge: ^3.7.0
-    unocss: ^66.11.0
-    vite-plugin-css-injected-by-js: ^5.0.2
+    unocss: ^66.12.0
+    vite-plugin-css-injected-by-js: ^5.0.3
     vue: ^3.5.44
     vue-afloat: ^0.2.0
   inlined:
@@ -229,36 +216,36 @@ catalogs:
     jora: ^1.0.0-beta.16
     ua-parser-modern: ^0.1.1
   storybook:
-    '@storybook/addon-a11y': ^10.6.3
-    '@storybook/addon-docs': ^10.6.3
-    '@storybook/react-vite': ^10.6.3
-    '@storybook/svelte-vite': ^10.6.3
-    '@storybook/vue3-vite': ^10.6.3
+    '@storybook/addon-a11y': ^10.6.5
+    '@storybook/addon-docs': ^10.6.5
+    '@storybook/react-vite': ^10.6.5
+    '@storybook/svelte-vite': ^10.6.5
+    '@storybook/vue3-vite': ^10.6.5
     '@vitejs/plugin-react-oxc': ^0.4.3
-    storybook: ^10.6.3
+    storybook: ^10.6.5
     storybook-solidjs-vite: ^10.7.4
   testing:
     '@playwright/test': ^1.64.1
-    tsnapi: ^1.5.0
+    tsnapi: ^1.6.0
     vitest: ^5.0.5
   tooling:
-    '@antfu/eslint-config': ^9.5.1
-    '@antfu/skills': ^0.1.0
-    '@x18n/cli': ^0.0.9
+    '@antfu/eslint-config': ^10.0.0
+    '@antfu/skills': ^0.1.3
+    '@x18n/cli': ^0.1.5
     bumpp: ^12.3.0
-    eslint: ^10.13.0
+    eslint: ^10.14.0
     eslint-plugin-slop: ^0.1.3
     eslint-plugin-sonarjs: ^4.2.2
-    knip: ^6.42.1
+    knip: ^6.44.1
     nano-staged: ^1.0.2
     prompts: ^2.4.2
     simple-git-hooks: ^2.14.0
-    skills: ^1.7.2
+    skills: ^1.7.4
     typescript: ^6.0.3
   types:
     '@types/codemirror': ^5.60.18
     '@types/d3-shape': ^3.2.0
-    '@types/node': ^26.6.5
+    '@types/node': ^26.6.6
     '@types/prompts': ^2.4.9
     '@types/react': ^19.3.0
     '@types/react-dom': ^19.3.0

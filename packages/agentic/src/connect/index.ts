@@ -54,7 +54,9 @@ export function resolveAuthToken(
   authToken: ConnectServerOptions['authToken'],
   record: DevframeInstanceRecord,
 ): string | undefined {
-  return typeof authToken === 'function' ? authToken(record) : authToken
+  return typeof authToken === 'function'
+    ? authToken(record)
+    : authToken
 }
 
 /**
@@ -138,7 +140,9 @@ const GATEWAY_TOOLS: Tool[] = [
 export async function startConnectServer(options: ConnectServerOptions = {}): Promise<ConnectServerHandle> {
   const server = new Server(
     { name: 'devframe-connect', version: '0.0.0' },
-    { capabilities: { tools: {} } },
+    {
+      capabilities: { tools: {} },
+    },
   )
 
   server.setRequestHandler('tools/list', async () => ({ tools: GATEWAY_TOOLS }))
@@ -192,10 +196,18 @@ async function index(options: ConnectServerOptions): Promise<unknown> {
     }
     const url = `${record.origin}${mcp.path}`
     try {
-      entry.mcp = { url, ...await indexInstanceMcp(url, resolveAuthToken(options.authToken, record)) }
+      entry.mcp = {
+        url,
+        ...await indexInstanceMcp(url, resolveAuthToken(options.authToken, record)),
+      }
     }
     catch (error) {
-      entry.mcp = { url, error: error instanceof Error ? error.message : String(error) }
+      entry.mcp = {
+        url,
+        error: error instanceof Error
+          ? error.message
+          : String(error),
+      }
     }
     return entry
   }))
@@ -220,7 +232,9 @@ export async function probePort(port: number, base = '/', timeoutMs?: number): P
   const probed = await probeDevframeOrigin(`http://localhost:${port}`, basePath, timeoutMs)
   if (!probed)
     return null
-  const mcpPath = probed.meta.mcp ? joinURL(basePath, probed.meta.mcp.path) : null
+  const mcpPath = probed.meta.mcp
+    ? joinURL(basePath, probed.meta.mcp.path)
+    : null
   return {
     pid: -1,
     port,
@@ -228,7 +242,9 @@ export async function probePort(port: number, base = '/', timeoutMs?: number): P
     basePath,
     id: `port-${port}`,
     rootDir: '',
-    mcp: mcpPath ? { path: mcpPath } : null,
+    mcp: mcpPath
+      ? { path: mcpPath }
+      : null,
     startedAt: 0,
   }
 }
@@ -274,7 +290,9 @@ async function call(
       tool: args.tool,
       isError: result.isError ?? false,
       content: result.content,
-      ...(result.structuredContent ? { structuredContent: result.structuredContent } : {}),
+      ...(result.structuredContent
+        ? { structuredContent: result.structuredContent }
+        : {}),
     }
   })
 }
@@ -290,7 +308,11 @@ async function withInstanceClient<T>(
   // the credential ever appears.
   const transport = new StreamableHTTPClientTransport(
     new URL(url),
-    { requestInit: { headers: buildInstanceRequestHeaders(url, token) } },
+    {
+      requestInit: {
+        headers: buildInstanceRequestHeaders(url, token),
+      },
+    },
   )
   // Negotiate the era with `server/discover`, falling back to the 2025
   // `initialize` handshake for a 2025-only instance. Devframe's own route is
@@ -298,7 +320,9 @@ async function withInstanceClient<T>(
   // MCP servers reached by port) may still be 2025-era.
   const client = new Client(
     { name: 'devframe-connect', version: '0.0.0' },
-    { versionNegotiation: { mode: 'auto' } },
+    {
+      versionNegotiation: { mode: 'auto' },
+    },
   )
   await client.connect(transport)
   try {
@@ -310,7 +334,14 @@ async function withInstanceClient<T>(
 }
 
 function textResult(value: unknown): { content: { type: 'text', text: string }[] } {
-  return { content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] }
+  return {
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify(value, null, 2),
+      },
+    ],
+  }
 }
 
 interface ConnectErrorPayload {
@@ -330,13 +361,21 @@ function toErrorPayload(error: unknown): ConnectErrorPayload {
     return {
       code: error.code,
       message: error.message,
-      ...(error.fix ? { fix: error.fix } : {}),
-      ...(error.docs ? { docs: error.docs } : {}),
+      ...(error.fix
+        ? { fix: error.fix }
+        : {}),
+      ...(error.docs
+        ? { docs: error.docs }
+        : {}),
     }
   }
   return {
-    message: error instanceof Error ? error.message : String(error),
-    ...(error && typeof error === 'object' && 'fix' in error && typeof error.fix === 'string' ? { fix: error.fix } : {}),
+    message: error instanceof Error
+      ? error.message
+      : String(error),
+    ...(error && typeof error === 'object' && 'fix' in error && typeof error.fix === 'string'
+      ? { fix: error.fix }
+      : {}),
   }
 }
 
@@ -346,6 +385,11 @@ function errorResult(error: ConnectErrorPayload): {
 } {
   return {
     isError: true,
-    content: [{ type: 'text', text: JSON.stringify({ error }, null, 2) }],
+    content: [
+      {
+        type: 'text',
+        text: JSON.stringify({ error }, null, 2),
+      },
+    ],
   }
 }

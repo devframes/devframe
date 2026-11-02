@@ -5,6 +5,6 @@
 export function setupA11y(_, _) {}
 // #endregion
 
-// #region Other
-export { serverFunctions }
+// #region Variables
+export var serverFunctions /* const */
 // #endregion

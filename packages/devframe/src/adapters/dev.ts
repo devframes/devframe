@@ -156,7 +156,9 @@ export async function createDevServer(
 
   const host = options.host ?? def.cli?.host ?? 'localhost'
   const flags = options.flags ?? {}
-  const basePath = options.basePath ? normalizeBasePath(options.basePath) : resolveBasePath(def, 'standalone')
+  const basePath = options.basePath
+    ? normalizeBasePath(options.basePath)
+    : resolveBasePath(def, 'standalone')
   const app = options.app ?? new H3()
 
   // The dev server is `initDevframe` plus a node listener: the instance owns
@@ -166,7 +168,9 @@ export async function createDevServer(
   const server = createServer(toNodeHandler(app))
   const { requestedPort, closeLoopbackTwin } = await listenDevServer(server, def, host, options)
   const address = server.address()
-  const port = typeof address === 'object' && address ? address.port : requestedPort
+  const port = typeof address === 'object' && address
+    ? address.port
+    : requestedPort
   // A wildcard bind host (`0.0.0.0` / `::`) isn't dialable from a browser, so
   // advertise a loopback origin for anything that hands a client an absolute URL.
   const origin = normalizeHttpServerUrl(host, port)
@@ -185,7 +189,9 @@ export async function createDevServer(
      * The `--no-auth` flag forces the gate off regardless of the `auth`
      * option / definition default (which the instance resolves itself).
      */
-    auth: flags.auth === false ? false : options.auth,
+    auth: flags.auth === false
+      ? false
+      : options.auth,
     mcp: options.mcp,
     flags,
     onPeerConnect: options.onPeerConnect,
@@ -263,7 +269,9 @@ async function listenDevServer(
       throw diagnostics.DF0052({
         host,
         port: requestedPort,
-        reason: error instanceof Error ? error.message : String(error),
+        reason: error instanceof Error
+          ? error.message
+          : String(error),
         cause: error,
       })
     }

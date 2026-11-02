@@ -24,7 +24,11 @@ function createTestHost(dir: string): DevframeHost {
 async function createService(options?: Parameters<typeof createShikiService>[0]) {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-service-shiki-'))
   tempDirs.push(dir)
-  const ctx = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+  const ctx = await createHostContext({
+    cwd: dir,
+    mode: 'dev',
+    host: createTestHost(dir),
+  })
   const install = ctx.services.install(createShikiService(options))
   await ctx.services.ready()
   return { ctx, api: (await install)! }
@@ -66,7 +70,11 @@ describe('@devframes/service-shiki', () => {
     const first = api.highlight({ code: 'let x = 2', lang: 'ts' })
     const second = api.highlight({ code: 'let x = 2', lang: 'ts' })
     expect(second).toBe(first) // same cached promise
-    const other = api.highlight({ code: 'let x = 2', lang: 'ts', themes: { light: 'github-light', dark: 'github-dark' } })
+    const other = api.highlight({
+      code: 'let x = 2',
+      lang: 'ts',
+      themes: { light: 'github-light', dark: 'github-dark' },
+    })
     expect(other).not.toBe(first)
     await expect(other).resolves.toHaveProperty('html')
   })
@@ -74,11 +82,20 @@ describe('@devframes/service-shiki', () => {
   it('merges options: later themes win, langs union', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'devframe-service-shiki-'))
     tempDirs.push(dir)
-    const ctx = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
-    void ctx.services.install(createShikiService({ langs: ['ts'] }))
+    const ctx = await createHostContext({
+      cwd: dir,
+      mode: 'dev',
+      host: createTestHost(dir),
+    })
+    void ctx.services.install(createShikiService({
+      langs: ['ts'],
+    }))
     void ctx.services.install({
       package: '@devframes/service-shiki',
-      options: { langs: ['vue'], themes: SHIKI_DEFAULT_THEMES },
+      options: {
+        langs: ['vue'],
+        themes: SHIKI_DEFAULT_THEMES,
+      },
     })
     await ctx.services.ready()
     const api = ctx.services.get('@devframes/service-shiki')

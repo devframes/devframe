@@ -80,8 +80,16 @@ async function boot(options: BootOptions): Promise<MessagesServer> {
   })
 
   const ctx = options.hub
-    ? await createHubContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
-    : await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+    ? await createHubContext({
+        cwd: process.cwd(),
+        mode: 'dev',
+        host: h3Host,
+      })
+    : await createHostContext({
+        cwd: process.cwd(),
+        mode: 'dev',
+        host: h3Host,
+      })
   // Mirror the adapters: queue the definition's declared wire services,
   // ready them, THEN run setup (services ready before setup).
   for (const input of messagesDevframe.services ?? [])

@@ -36,10 +36,14 @@ export default defineDevframe({
     // A server-driven clock: each tick streams to every client over the SSE
     // event stream - the server→client half of the transport.
     const clock = await ctx.rpc.sharedState.get<{ now: string }>('sse-basic:clock', {
-      initialValue: { now: new Date().toLocaleTimeString() },
+      initialValue: {
+        now: new Date().toLocaleTimeString(),
+      },
     })
     const timer = setInterval(() => {
-      clock.mutate(() => ({ now: new Date().toLocaleTimeString() }))
+      clock.mutate(() => ({
+        now: new Date().toLocaleTimeString(),
+      }))
     }, 1000)
     timer.unref?.()
   },

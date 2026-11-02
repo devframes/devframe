@@ -52,8 +52,12 @@ function showOverflowPanel() {
       // Float mode keeps its existing sizing when no placement is supplied.
       style: props.placement
         ? {
-            maxWidth: `min(220px, calc(100vw - ${props.placement === 'left' || props.placement === 'right' ? 80 : 36}px))`,
-            maxHeight: `calc(100vh - ${props.placement === 'top' || props.placement === 'bottom' ? 80 : 36}px)`,
+            maxWidth: `min(220px, calc(100vw - ${props.placement === 'left' || props.placement === 'right'
+              ? 80
+              : 36}px))`,
+            maxHeight: `calc(100vh - ${props.placement === 'top' || props.placement === 'bottom'
+              ? 80
+              : 36}px)`,
             overflow: 'auto',
           }
         : undefined,

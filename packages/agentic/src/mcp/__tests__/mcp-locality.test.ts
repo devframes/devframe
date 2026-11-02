@@ -19,8 +19,17 @@ afterEach(async () => {
 })
 
 async function handlerWith(options: { authorization?: McpAuthorization, allowedOrigins?: readonly string[] | false } = {}) {
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
-  ctx.agent.registerTool({ id: 'greet', description: 'Say hello.', safety: 'read', handler: () => ({ greeting: 'hi' }) })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: nullHost(),
+  })
+  ctx.agent.registerTool({
+    id: 'greet',
+    description: 'Say hello.',
+    safety: 'read',
+    handler: () => ({ greeting: 'hi' }),
+  })
   const handler = createMcpFetchHandler(ctx, {
     serverName: 'test',
     serverVersion: '0.0.0-test',
@@ -45,7 +54,11 @@ function initRequest(headers: Record<string, string> = {}): Request {
       jsonrpc: '2.0',
       id: 1,
       method: 'initialize',
-      params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'x', version: '0' },
+      },
     }),
   })
 }
@@ -99,12 +112,24 @@ describe('mcp locality gate (origin-only default)', () => {
 
 describe('isLoopbackAddress', () => {
   it('accepts loopback literals a socket reports', () => {
-    for (const a of ['127.0.0.1', '127.5.5.5', '::1', '::ffff:127.0.0.1', '[::1]'])
+    for (const a of [
+      '127.0.0.1',
+      '127.5.5.5',
+      '::1',
+      '::ffff:127.0.0.1',
+      '[::1]',
+    ])
       expect(isLoopbackAddress(a)).toBe(true)
   })
 
   it('rejects routable and mapped-routable addresses', () => {
-    for (const a of ['203.0.113.7', '10.0.0.5', '192.168.1.9', '::ffff:203.0.113.7', '0.0.0.0'])
+    for (const a of [
+      '203.0.113.7',
+      '10.0.0.5',
+      '192.168.1.9',
+      '::ffff:203.0.113.7',
+      '0.0.0.0',
+    ])
       expect(isLoopbackAddress(a)).toBe(false)
   })
 })

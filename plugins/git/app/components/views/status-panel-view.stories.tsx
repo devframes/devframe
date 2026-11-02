@@ -65,10 +65,20 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Dirty: Story = {}
-export const ReadOnly: Story = { args: { canWrite: false } }
-export const Clean: Story = { args: { data: clean } }
-export const Loading: Story = { args: { data: null, loading: true } }
-export const NotARepo: Story = { args: { data: { ...clean, isRepo: false } } }
+export const ReadOnly: Story = {
+  args: { canWrite: false },
+}
+export const Clean: Story = {
+  args: { data: clean },
+}
+export const Loading: Story = {
+  args: { data: null, loading: true },
+}
+export const NotARepo: Story = {
+  args: {
+    data: { ...clean, isRepo: false },
+  },
+}
 export const FileSelected: Story = {
   args: {
     selectedKey: 'false:README.md',

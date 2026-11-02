@@ -22,17 +22,23 @@ describe('adapters/cac', () => {
   })
 
   it('skips the build subcommand when capabilities.build is false', () => {
-    const { cli } = createCac(baseDevframe({ capabilities: { build: false } }))
+    const { cli } = createCac(baseDevframe({
+      capabilities: { build: false },
+    }))
     expect(cli.commands.map(c => c.name)).not.toContain('build')
   })
 
   it('still registers build when capabilities.build is true', () => {
-    const truthy = createCac(baseDevframe({ capabilities: { build: true } }))
+    const truthy = createCac(baseDevframe({
+      capabilities: { build: true },
+    }))
     expect(truthy.cli.commands.map(c => c.name)).toContain('build')
   })
 
   it('always registers the dev and mcp commands regardless of capabilities.build', () => {
-    const { cli } = createCac(baseDevframe({ capabilities: { build: false } }))
+    const { cli } = createCac(baseDevframe({
+      capabilities: { build: false },
+    }))
     const names = cli.commands.map(c => c.name)
     expect(names).toContain('mcp')
     // The dev command is registered as the catch-all `[...args]` command,

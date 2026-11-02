@@ -10,7 +10,11 @@ const withTheme: Decorator = (story, context) => {
   return () => h(
     'div',
     { class: 'flex h-svh justify-center bg-base p-6 color-base font-sans' },
-    [h('div', { class: 'flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-base p-3' }, [h(story())])],
+    [
+      h('div', { class: 'flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-base p-3' }, [
+        h(story()),
+      ]),
+    ],
   )
 }
 

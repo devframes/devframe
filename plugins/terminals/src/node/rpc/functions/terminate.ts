@@ -6,7 +6,11 @@ export const terminate = defineRpcFunction({
   name: 'devframes:plugin:terminals:terminate',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ id: s.string() })],
+  args: [
+    s.object({
+      id: s.string(),
+    }),
+  ],
   returns: s.void(),
   agent: {
     description: 'Terminate a terminal session\'s running process. The session and its scrollback are kept; use restart to run it again.',

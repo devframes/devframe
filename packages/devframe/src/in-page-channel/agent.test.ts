@@ -37,11 +37,16 @@ describe('in-page channel agent tools', () => {
         add: {
           jsonSerializable: true,
           agent: { description: 'Add two numbers.' },
-          args: [schema<number>({ type: 'number' }), schema<number>({ type: 'number' })],
+          args: [
+            schema<number>({ type: 'number' }),
+            schema<number>({ type: 'number' }),
+          ],
           returns: schema<{ sum: number }>({ type: 'object' }),
           handler: (a, b) => ({ sum: a + b }),
         },
-        hidden: { handler: () => 'internal' },
+        hidden: {
+          handler: () => 'internal',
+        },
       },
     })
 
@@ -51,7 +56,10 @@ describe('in-page channel agent tools', () => {
       safety: 'read',
       inputSchema: {
         type: 'object',
-        properties: { arg0: { type: 'number' }, arg1: { type: 'number' } },
+        properties: {
+          arg0: { type: 'number' },
+          arg1: { type: 'number' },
+        },
         required: ['arg0', 'arg1'],
         additionalProperties: false,
       },
@@ -72,7 +80,9 @@ describe('in-page channel agent tools', () => {
           agent: { description: 'Add two numbers.' },
           handler: (a, b) => ({ sum: a + b }),
         },
-        hidden: { handler: () => 'internal' },
+        hidden: {
+          handler: () => 'internal',
+        },
       },
     })
     expect(listBrowserAgentTools().some(tool => tool.id === 'devframes:inferred:add')).toBe(true)
@@ -89,7 +99,9 @@ describe('in-page channel agent tools', () => {
           jsonSerializable: false,
           handler: (a, b) => ({ sum: a + b }),
         },
-        hidden: { handler: () => 'internal' },
+        hidden: {
+          handler: () => 'internal',
+        },
       },
     })).toThrowError(/MCP requires JSON-serializable/)
   })

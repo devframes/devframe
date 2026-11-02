@@ -6,17 +6,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLiveRpcClientMode } from './rpc-live'
 
 vi.mock('devframe/rpc/client', () => ({
-  createRpcClient: () => ({ $call: vi.fn(async () => ({ isTrusted: true })) }),
+  createRpcClient: () => ({
+    $call: vi.fn(async () => ({ isTrusted: true })),
+  }),
 }))
 
 function createMode() {
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>({ rpc: undefined! })
   return createLiveRpcClientMode({
     transport: 'websocket',
-    connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+    connectionMeta: {
+      backend: 'websocket',
+      websocket: { path: '__ws' },
+    },
     events: createEventEmitter<RpcClientEvents>(),
     clientRpc,
-    createChannel: () => ({ post: vi.fn(), on: vi.fn(), close: vi.fn() }),
+    createChannel: () => ({
+      post: vi.fn(),
+      on: vi.fn(),
+      close: vi.fn(),
+    }),
   })
 }
 

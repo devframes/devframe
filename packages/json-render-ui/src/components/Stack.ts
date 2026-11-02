@@ -12,7 +12,12 @@ interface StackProps {
   flex?: number | string
 }
 
-const alignMap: Record<string, string> = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' }
+const alignMap: Record<string, string> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  stretch: 'stretch',
+}
 const justifyMap: Record<string, string> = {
   start: 'flex-start',
   center: 'center',
@@ -28,7 +33,9 @@ const justifyMap: Record<string, string> = {
 export const Stack: JrComponent<StackProps> = ({ props, children }) => {
   const style: Record<string, string> = {
     display: 'flex',
-    flexDirection: props.direction === 'row' ? 'row' : 'column',
+    flexDirection: props.direction === 'row'
+      ? 'row'
+      : 'column',
     gap: `${toNumber(props.gap, 8)}px`,
   }
   if (props.padding != null)

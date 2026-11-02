@@ -23,8 +23,12 @@ const kind = computed<'array' | 'object' | 'primitive'>(() => {
 })
 
 const entries = computed<[string, unknown][]>(() => {
-  if (kind.value === 'array')
-    return (props.value as unknown[]).map((v, i) => [String(i), v])
+  if (kind.value === 'array') {
+    return (props.value as unknown[]).map((v, i) => [
+      String(i),
+      v,
+    ])
+  }
   if (kind.value === 'object')
     return Object.entries(props.value as Record<string, unknown>)
   return []
@@ -36,7 +40,9 @@ const isEmpty = computed(() => entries.value.length === 0)
 const changed = computed(() => !!props.path && props.highlightPaths?.has(props.path))
 
 function childPath(key: string): string {
-  return props.path ? `${props.path}.${key}` : key
+  return props.path
+    ? `${props.path}.${key}`
+    : key
 }
 
 function primitiveClass(v: unknown): string {
@@ -55,8 +61,12 @@ function primitiveText(v: unknown): string {
   return String(v)
 }
 
-const openBracket = computed(() => (kind.value === 'array' ? '[' : '{'))
-const closeBracket = computed(() => (kind.value === 'array' ? ']' : '}'))
+const openBracket = computed(() => (kind.value === 'array'
+  ? '['
+  : '{'))
+const closeBracket = computed(() => (kind.value === 'array'
+  ? ']'
+  : '}'))
 const summary = computed(() =>
   kind.value === 'array'
     ? `[${entries.value.length}]`

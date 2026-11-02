@@ -98,7 +98,9 @@ export function parseCliFlags(
       flags[key] = value
     }
   }
-  return issues.length ? { flags, issues } : { flags }
+  return issues.length
+    ? { flags, issues }
+    : { flags }
 }
 
 function toKebab(camel: string): string {

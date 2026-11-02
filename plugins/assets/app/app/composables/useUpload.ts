@@ -39,7 +39,9 @@ export function useUpload(rpc: Ref<DevframeRpcClient | null>, onDone: () => void
           await file.stream().pipeTo(sink.writable, { signal: sink.signal })
         }
         catch (cause) {
-          nextErrors.push(`${targetPath}: ${cause instanceof Error ? cause.message : String(cause)}`)
+          nextErrors.push(`${targetPath}: ${cause instanceof Error
+            ? cause.message
+            : String(cause)}`)
         }
       }
       errors.value = nextErrors

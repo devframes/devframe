@@ -37,5 +37,7 @@ export function fileNameOf(path: string): string {
 export function folderOf(path: string): string {
   const parts = path.split('/')
   parts.pop()
-  return parts.length ? `${parts.join('/')}/` : ''
+  return parts.length
+    ? `${parts.join('/')}/`
+    : ''
 }

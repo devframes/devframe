@@ -101,7 +101,9 @@ export function isCategoryHideable(category: string): boolean {
  */
 export function getCategoryLabel(category: string): string {
   const key = CATEGORY_LABELS[category]
-  return key ? t(key) : category
+  return key
+    ? t(key)
+    : category
 }
 
 /**
@@ -132,7 +134,9 @@ export function getEntryGroup(
   if (!entry || entry.type === 'group' || !entry.groupId)
     return undefined
   const group = entries.find(e => e.id === entry.groupId)
-  return group?.type === 'group' ? group : undefined
+  return group?.type === 'group'
+    ? group
+    : undefined
 }
 
 /**
@@ -173,8 +177,13 @@ export function getGroupMembersGrouped(
   options?: { includeHidden?: boolean, whenContext?: WhenContext },
 ): DevframeDockEntriesGrouped {
   const members = entries.filter(e => e.type !== 'group' && e.groupId === groupId)
-  if (!settings)
-    return members.length ? [['default', members]] : []
+  if (!settings) {
+    return members.length
+      ? [
+          ['default', members],
+        ]
+      : []
+  }
   const group = entries.find((e): e is DevframeViewGroup => e.type === 'group' && e.id === groupId)
   // Group by the members' own `category` (the in-group sub-category), never the
   // group's category. Category-hide is an outer-bar concern, so it is ignored.
@@ -257,14 +266,18 @@ export function resolveGroupPreferredChild(
   whenContext?: WhenContext,
 ): DevframeDockEntry | undefined {
   const remembered = resolveGroupDefaultChild(entries, group.id, lastChildId, whenContext)
-  return (remembered?.type === 'action' ? undefined : remembered)
-    ?? resolveGroupDefaultChild(entries, group.id, group.defaultChildId, whenContext)
+  return (remembered?.type === 'action'
+    ? undefined
+    : remembered)
+  ?? resolveGroupDefaultChild(entries, group.id, group.defaultChildId, whenContext)
 }
 
 function isClauseHidden(clause: string | undefined, whenContext: WhenContext | undefined): boolean {
   if (!clause)
     return false
-  return whenContext ? !evaluateWhen(clause, whenContext) : clause === 'false'
+  return whenContext
+    ? !evaluateWhen(clause, whenContext)
+    : clause === 'false'
 }
 
 // Whether a render pass (dock bar/popover/sidebar) drops the entry's own button.
@@ -296,7 +309,9 @@ function collectGroupCategories(entries: DevframeDockEntry[]): Map<string, strin
 function compareCategoryOrder(a: string, b: string, override: Record<string, number> | undefined): number {
   const ia = categoryOrder(a, override)
   const ib = categoryOrder(b, override)
-  return ib === ia ? b.localeCompare(a) : ia - ib
+  return ib === ia
+    ? b.localeCompare(a)
+    : ia - ib
 }
 
 function compareEntryOrder(a: DevframeDockEntry, b: DevframeDockEntry, docksCustomOrder: Immutable<DevframeDocksUserSettings>['docksCustomOrder']): number {
@@ -306,7 +321,9 @@ function compareEntryOrder(a: DevframeDockEntry, b: DevframeDockEntry, docksCust
     return customA - customB
   const ia = a.defaultOrder ?? 0
   const ib = b.defaultOrder ?? 0
-  return ib === ia ? getDefaultTitle(b).localeCompare(getDefaultTitle(a)) : ia - ib
+  return ib === ia
+    ? getDefaultTitle(b).localeCompare(getDefaultTitle(a))
+    : ia - ib
 }
 
 // A pinned top-level entry or group button re-buckets into `~pinned`. A grouped
@@ -416,7 +433,13 @@ export function docksGroupByCategories(
   const { includeHidden = false, whenContext, collapseGroups = false, ignoreCategoryHidden = false, liftPinnedMembers = false, categoryOrderOverride } = options ?? {}
 
   const groupCategories = collectGroupCategories(entries)
-  const map = bucketEntriesByCategory(entries, groupCategories, settings, { includeHidden, whenContext, collapseGroups, ignoreCategoryHidden, liftPinnedMembers })
+  const map = bucketEntriesByCategory(entries, groupCategories, settings, {
+    includeHidden,
+    whenContext,
+    collapseGroups,
+    ignoreCategoryHidden,
+    liftPinnedMembers,
+  })
 
   const grouped = Array
     .from(map.entries())
@@ -493,8 +516,14 @@ function splitGroupsAt(
       overflow.push([category, items])
     }
     else if (items.length > left) {
-      visible.push([category, items.slice(0, left)])
-      overflow.push([category, items.slice(left)])
+      visible.push([
+        category,
+        items.slice(0, left),
+      ])
+      overflow.push([
+        category,
+        items.slice(left),
+      ])
       left = 0
     }
     else {
@@ -561,10 +590,16 @@ export function docksSplitGroupsWithCapacity(
   // apply to what remains).
   const raisedIds = new Set(recent.map(entry => entry.id))
   const remaining = groups
-    .map(([category, items]) => [category, items.filter(item => !raisedIds.has(item.id))] as [string, DevframeDockEntry[]])
+    .map(([category, items]) => [
+      category,
+      items.filter(item => !raisedIds.has(item.id)),
+    ] as [string, DevframeDockEntry[]])
     .filter(([, items]) => items.length > 0)
 
-  return { ...splitGroupsWithFold(remaining, capacity), recent }
+  return {
+    ...splitGroupsWithFold(remaining, capacity),
+    recent,
+  }
 }
 
 /** Split an edge toolbar's entries using its available main-axis space. */
@@ -596,7 +631,10 @@ export function docksSplitGroupsBySize(
   }
   // Preserve a lone overflow entry: folding it inline can add a category
   // divider that exceeds the measured space.
-  return { ...splitGroupsAt(groups, capacity), recent: [] }
+  return {
+    ...splitGroupsAt(groups, capacity),
+    recent: [],
+  }
 }
 
 function resolveRecentDockEntry(
@@ -612,9 +650,13 @@ function resolveRecentDockEntry(
   const group = getEntryGroup(entries, entry)
   if (group) {
     const members = getGroupMembers(entries, group.id, settings, { whenContext })
-    return members.some(member => member.id === entry.id) ? entry : null
+    return members.some(member => member.id === entry.id)
+      ? entry
+      : null
   }
-  return groupsHaveEntry(groups, entry.id) ? entry : null
+  return groupsHaveEntry(groups, entry.id)
+    ? entry
+    : null
 }
 
 /**
@@ -682,7 +724,11 @@ export function resolveNextRecentDockIds(options: {
   const split = docksSplitGroupsWithCapacity(groups, capacity, recentEntries)
   if (split.recent.some(entry => entry.id === selected.id) || groupsHaveEntry(split.visible, selected.id))
     return current
-  if (selectedIsGroupMember || groupsHaveEntry(split.overflow, selected.id))
-    return [selected.id, ...current.filter(id => id !== selected.id)].slice(0, limit)
+  if (selectedIsGroupMember || groupsHaveEntry(split.overflow, selected.id)) {
+    return [
+      selected.id,
+      ...current.filter(id => id !== selected.id),
+    ].slice(0, limit)
+  }
   return current
 }

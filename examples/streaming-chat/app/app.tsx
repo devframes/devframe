@@ -51,7 +51,9 @@ export function App() {
     let off: (() => void) | undefined
     let active = true
     ctx.rpc
-      .sharedState(HISTORY, { initialValue: { messages: [] } })
+      .sharedState(HISTORY, {
+        initialValue: { messages: [] },
+      })
       .then((state) => {
         if (!active)
           return
@@ -143,7 +145,9 @@ export function App() {
       })
     }
     catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(err instanceof Error
+        ? err.message
+        : String(err))
     }
   }, [ctx, isStreaming])
 
@@ -161,7 +165,9 @@ export function App() {
       await ctx.rpc.call('clear')
     }
     catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setError(err instanceof Error
+        ? err.message
+        : String(err))
     }
   }, [ctx, isStreaming])
 
@@ -272,7 +278,9 @@ export function App() {
           {messages.length}
           {' '}
           message
-          {messages.length === 1 ? '' : 's'}
+          {messages.length === 1
+            ? ''
+            : 's'}
           {error && (
             <span class="text-error">
               {' · error: '}
@@ -299,7 +307,13 @@ function Message({ msg, live }: { msg: ChatMessage, live: string | undefined }) 
   )
 
   return (
-    <div class={cls} data-role={msg.role} data-streaming={msg.streamId !== undefined ? 'true' : undefined}>
+    <div
+      class={cls}
+      data-role={msg.role}
+      data-streaming={msg.streamId !== undefined
+        ? 'true'
+        : undefined}
+    >
       {displayed || (msg.streamId ? '' : '(empty)')}
       {/* Live "typing" indicator while the producer is still streaming tokens. */}
       {msg.streamId && <span class={spinner('ml-1 size-3! align-[-0.2em]')} />}

@@ -31,7 +31,10 @@ function storesFor(ctx: DevframeNodeContext): Record<SavedQueryScope, Store> {
       filepath: join(ctx.host.getStorageDir(scope), 'data-inspector/queries.json'),
       initialValue: { queries: {} },
     })
-    byScope = { workspace: open('workspace'), project: open('project') }
+    byScope = {
+      workspace: open('workspace'),
+      project: open('project'),
+    }
     stores.set(ctx, byScope)
   }
   return byScope
@@ -89,7 +92,9 @@ export function saveQuery(ctx: DevframeNodeContext, input: SaveQueryInput): Save
   })
   // The id is the storage key across both scopes, so saving into one scope
   // moves the query there rather than leaving a stale twin behind.
-  const other: SavedQueryScope = input.scope === 'project' ? 'workspace' : 'project'
+  const other: SavedQueryScope = input.scope === 'project'
+    ? 'workspace'
+    : 'project'
   if (byScope[other].value().queries[id]) {
     byScope[other].mutate((draft) => {
       delete draft.queries[id]

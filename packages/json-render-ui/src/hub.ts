@@ -40,5 +40,8 @@ function rendererFile(): string {
  * host can read the registration without pulling the browser renderer graph.
  */
 export function jsonRenderUiRenderer(): DockRendererRegistration {
-  return { type: 'json-render', file: rendererFile() }
+  return {
+    type: 'json-render',
+    file: rendererFile(),
+  }
 }

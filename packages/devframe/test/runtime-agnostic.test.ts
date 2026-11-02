@@ -41,7 +41,12 @@ interface Offender {
 
 function collectImports(src: string): string[] {
   const ids: string[] = []
-  for (const re of [IMPORT_FROM_RE, SIDE_EFFECT_IMPORT_RE, DYNAMIC_IMPORT_RE, REQUIRE_RE]) {
+  for (const re of [
+    IMPORT_FROM_RE,
+    SIDE_EFFECT_IMPORT_RE,
+    DYNAMIC_IMPORT_RE,
+    REQUIRE_RE,
+  ]) {
     for (const match of src.matchAll(re))
       ids.push(match[1])
   }
@@ -49,7 +54,12 @@ function collectImports(src: string): string[] {
 }
 
 function statementFor(src: string, specifier: string): string {
-  for (const re of [IMPORT_FROM_RE, SIDE_EFFECT_IMPORT_RE, DYNAMIC_IMPORT_RE, REQUIRE_RE]) {
+  for (const re of [
+    IMPORT_FROM_RE,
+    SIDE_EFFECT_IMPORT_RE,
+    DYNAMIC_IMPORT_RE,
+    REQUIRE_RE,
+  ]) {
     for (const match of src.matchAll(re)) {
       if (match[1] === specifier)
         return match[0].trim()

@@ -20,7 +20,9 @@ const { seo, docs } = useAppConfig()
 const site = useSiteConfig()
 
 const siteName = seo?.siteName || site.name || ''
-const host = site.url ? site.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : ''
+const host = site.url
+  ? site.url.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  : ''
 const accent = docs?.ogImage?.accent || '#fafafa'
 </script>
 

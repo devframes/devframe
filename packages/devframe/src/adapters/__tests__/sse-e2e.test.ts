@@ -26,8 +26,16 @@ function defineTestDef(id: string) {
     homepage: 'https://example.test',
     description: 'Test devframe.',
     setup: (ctx: DevframeNodeContext) => {
-      ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
-      ctx.rpc.register({ name: 'test:echo-map', type: 'query', handler: (input: Map<string, number>) => input })
+      ctx.rpc.register({
+        name: 'test:probe',
+        type: 'query',
+        handler: () => 'ok',
+      })
+      ctx.rpc.register({
+        name: 'test:echo-map',
+        type: 'query',
+        handler: (input: Map<string, number>) => input,
+      })
     },
   })
 }
@@ -40,8 +48,12 @@ async function bootServer(id: string, options: { ws?: false, sse?: boolean } = {
     base,
     auth: false,
     host: HOST,
-    ...(options.ws === false ? { ws: false } : {}),
-    ...(options.sse === false ? { sse: false } : {}),
+    ...(options.ws === false
+      ? { ws: false }
+      : {}),
+    ...(options.sse === false
+      ? { sse: false }
+      : {}),
   })
   // Devframe under its base via the node middleware; host fallback otherwise.
   const server = createServer((req, res) => {
@@ -80,7 +92,9 @@ describe('sse transport e2e', () => {
       )
       await expect((client as any).$call('test:probe')).resolves.toBe('ok')
       // Structured-clone round-trip over the POST/stream pair.
-      const echoed = await (client as any).$call('test:echo-map', new Map([['k', 7]]))
+      const echoed = await (client as any).$call('test:echo-map', new Map([
+        ['k', 7],
+      ]))
       expect(echoed).toBeInstanceOf(Map)
       expect(echoed.get('k')).toBe(7)
       channel.close()

@@ -16,12 +16,16 @@ import { createDevServer, resolveDevServerPort } from '../dev'
 
 // `--open` is exercised directly (asserting the URL handed to the OS opener)
 // rather than actually launching a browser in CI.
-vi.mock('devframe/utils/open', () => ({ open: vi.fn(async () => {}) }))
+vi.mock('devframe/utils/open', () => ({
+  open: vi.fn(async () => {}),
+}))
 
 function connectWsClient(host: string, port: number, authToken?: string) {
   return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     {} as DevframeRpcClientFunctions,
-    { channel: createWsRpcChannel({ url: `ws://${host}:${port}/__ws`, authToken }) },
+    {
+      channel: createWsRpcChannel({ url: `ws://${host}:${port}/__ws`, authToken }),
+    },
   )
 }
 
@@ -44,7 +48,11 @@ function listenOn(port: number, host: string): Promise<ReturnType<typeof createS
 
 async function connectRaw(url: string, origin?: string): Promise<'open' | 'closed'> {
   return await new Promise((resolve) => {
-    const ws = new WebSocket(url, origin ? { headers: { origin } } : undefined)
+    const ws = new WebSocket(url, origin
+      ? {
+          headers: { origin },
+        }
+      : undefined)
     ws.on('open', () => {
       ws.close()
       resolve('open')
@@ -85,7 +93,12 @@ describe('adapters/dev', () => {
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19398, host })
-    const handle = await createDevServer(devframe, { host, port, openBrowser: false, force: true })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      force: true,
+    })
     try {
       expect(handle.port).toBe(port)
     }
@@ -126,7 +139,11 @@ describe('adapters/dev', () => {
       const meta = await res.json()
       // Proxy-safe: the WS endpoint is advertised as a same-origin route
       // relative to `__connection.json`, never a baked-in host/port.
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
+      expect(meta).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        sse: { path: '__sse' },
+      })
     }
     finally {
       await handle.close()
@@ -221,7 +238,9 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: () => {},
-      cli: { ws: { route: '__sockets' } },
+      cli: {
+        ws: { route: '__sockets' },
+      },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19880, host })
@@ -229,7 +248,11 @@ describe('adapters/dev', () => {
 
     try {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__sockets' }, sse: { path: '__sse' } })
+      expect(meta).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__sockets' },
+        sse: { path: '__sse' },
+      })
 
       const ok = new WebSocket(`ws://${host}:${port}/__sockets`)
       await expect(new Promise((resolve, reject) => {
@@ -297,7 +320,9 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: () => {},
-      cli: { ws: { url: 'wss://devtools.example.com/relay/__ws' } },
+      cli: {
+        ws: { url: 'wss://devtools.example.com/relay/__ws' },
+      },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19860, host })
@@ -435,7 +460,11 @@ describe('adapters/dev', () => {
       const res = await fetch(`http://${host}:${port}/__connection.json`)
       expect(res.ok).toBe(true)
       const meta = await res.json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
+      expect(meta).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        sse: { path: '__sse' },
+      })
 
       // The SPA mount is absent: without a distDir, no static handler
       // is wired, so the basePath returns a 404 from h3 instead of an
@@ -457,7 +486,11 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
@@ -553,7 +586,11 @@ describe('adapters/dev', () => {
       description: 'Test devframe.',
       cli: { auth: false },
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
@@ -582,12 +619,21 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19430, host })
-    const handle = await createDevServer(devframe, { host, port, openBrowser: false, flags: { auth: false } })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      flags: { auth: false },
+    })
 
     try {
       const client = connectWsClient(host, port)
@@ -612,12 +658,21 @@ describe('adapters/dev', () => {
       /** Standalone would gate; a hosted caller passes `auth: false` to defer. */
       cli: { auth: true },
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19440, host })
-    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: false })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      auth: false,
+    })
 
     try {
       const client = connectWsClient(host, port)
@@ -641,14 +696,23 @@ describe('adapters/dev', () => {
       description: 'Test devframe.',
       cli: { auth: false },
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19450, host })
     // Silence the default OTP stdout banner for the test run.
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: true })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      auth: true,
+    })
 
     try {
       const client = connectWsClient(host, port)
@@ -675,12 +739,22 @@ describe('adapters/dev', () => {
       homepage: 'https://example.test',
       description: 'Test devframe.',
       setup: (ctx: DevframeNodeContext) => {
-        ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+        ctx.rpc.register({
+          name: 'test:probe',
+          type: 'query',
+          handler: () => 'ok',
+        })
       },
     })
     const host = '127.0.0.1'
     const port = await getPort({ port: 19460, host })
-    const handle = await createDevServer(devframe, { host, port, openBrowser: false, auth: true, flags: { auth: false } })
+    const handle = await createDevServer(devframe, {
+      host,
+      port,
+      openBrowser: false,
+      auth: true,
+      flags: { auth: false },
+    })
 
     try {
       const client = connectWsClient(host, port)
@@ -786,7 +860,10 @@ describe('adapters/dev', () => {
       setup: () => {},
       cli: { port: taken },
     })
-    const handle = await createDevServer(devframe, { openBrowser: false, distDir: makeTmpDist() })
+    const handle = await createDevServer(devframe, {
+      openBrowser: false,
+      distDir: makeTmpDist(),
+    })
     try {
       expect(handle.port).not.toBe(taken)
       // A page on either loopback address reaches this dev server.
@@ -814,7 +891,11 @@ describe('adapters/dev', () => {
       setup: () => {},
     })
     try {
-      await expect(createDevServer(devframe, { port: taken, openBrowser: false, distDir: makeTmpDist() }))
+      await expect(createDevServer(devframe, {
+        port: taken,
+        openBrowser: false,
+        distDir: makeTmpDist(),
+      }))
         .rejects
         .toMatchObject({ code: 'DF0052' })
     }

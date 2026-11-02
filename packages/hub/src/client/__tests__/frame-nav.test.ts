@@ -48,7 +48,10 @@ function createDocksStub() {
       states.set(entry.id, makeState(entry.id))
       return {
         update: (patch) => {
-          entries.set(entry.id, { ...entries.get(entry.id)!, ...patch } as DevframeViewIframe)
+          entries.set(entry.id, {
+            ...entries.get(entry.id)!,
+            ...patch,
+          } as DevframeViewIframe)
         },
         dispose: () => {
           entries.delete(entry.id)
@@ -113,12 +116,27 @@ function createIframeStub() {
 }
 
 function frameMsg(type: string, extra?: Record<string, unknown>) {
-  return { channel: FRAME_NAV_CHANNEL, v: FRAME_NAV_VERSION, frameId: 'nuxt', from: 'frame', type, ...extra }
+  return {
+    channel: FRAME_NAV_CHANNEL,
+    v: FRAME_NAV_VERSION,
+    frameId: 'nuxt',
+    from: 'frame',
+    type,
+    ...extra,
+  }
 }
 
 const TABS: FrameTab[] = [
-  { id: 'modules', title: 'Modules', navTarget: { path: '/modules' } },
-  { id: 'timeline', title: 'Timeline', navTarget: { path: '/timeline' } },
+  {
+    id: 'modules',
+    title: 'Modules',
+    navTarget: { path: '/modules' },
+  },
+  {
+    id: 'timeline',
+    title: 'Timeline',
+    navTarget: { path: '/timeline' },
+  },
 ]
 
 function boot(extra?: Partial<DevframeViewIframe>) {
@@ -132,7 +150,13 @@ function boot(extra?: Partial<DevframeViewIframe>) {
     docks: docksStub.docks,
     window: win.target,
   })
-  return { docksStub, win, iframe, posted, adapter }
+  return {
+    docksStub,
+    win,
+    iframe,
+    posted,
+    adapter,
+  }
 }
 
 const navPosts = (posted: Array<{ msg: any }>) => posted.filter(p => p.msg.type === 'navigate')
@@ -141,7 +165,13 @@ describe('attachFrameNavClient', () => {
   it('greets the shim with a hello on the anchor origin', () => {
     const { posted } = boot()
     expect(posted).toHaveLength(1)
-    expect(posted[0].msg).toMatchObject({ channel: FRAME_NAV_CHANNEL, v: 1, frameId: 'nuxt', from: 'host', type: 'hello' })
+    expect(posted[0].msg).toMatchObject({
+      channel: FRAME_NAV_CHANNEL,
+      v: 1,
+      frameId: 'nuxt',
+      from: 'host',
+      type: 'hello',
+    })
     expect(posted[0].origin).toBe(ORIGIN)
   })
 
@@ -150,7 +180,9 @@ describe('attachFrameNavClient', () => {
     win.emitFrame(frameMsg('ready', { tabs: TABS, current: 'modules' }))
 
     expect(adapter.ready).toBe(true)
-    expect([...docksStub.entries.keys()]).toEqual(['nuxt:modules', 'nuxt:timeline'])
+    expect([
+      ...docksStub.entries.keys(),
+    ]).toEqual(['nuxt:modules', 'nuxt:timeline'])
     // Member inherits frameId, anchor icon + groupId, carries its own navTarget.
     expect(docksStub.entries.get('nuxt:timeline')).toMatchObject({
       type: 'iframe',
@@ -172,7 +204,11 @@ describe('attachFrameNavClient', () => {
     await docksStub.select('nuxt:timeline')
     const navs = navPosts(posted)
     expect(navs).toHaveLength(1)
-    expect(navs[0].msg).toMatchObject({ type: 'navigate', tabId: 'timeline', navTarget: { path: '/timeline' } })
+    expect(navs[0].msg).toMatchObject({
+      type: 'navigate',
+      tabId: 'timeline',
+      navTarget: { path: '/timeline' },
+    })
     expect(adapter.currentTabId).toBe('timeline')
 
     // The shim's echoed `navigated` for the same tab must not re-post navigate.
@@ -196,8 +232,12 @@ describe('attachFrameNavClient', () => {
     win.emitFrame(frameMsg('ready', { tabs: TABS, current: 'timeline' }))
     expect(docksStub.selectedId).toBe('nuxt:timeline')
 
-    win.emitFrame(frameMsg('manifest', { tabs: [TABS[0]] }))
-    expect([...docksStub.entries.keys()]).toEqual(['nuxt:modules'])
+    win.emitFrame(frameMsg('manifest', {
+      tabs: [TABS[0]],
+    }))
+    expect([
+      ...docksStub.entries.keys(),
+    ]).toEqual(['nuxt:modules'])
     expect(docksStub.selectedId).toBeNull()
     expect(adapter.currentTabId).toBeNull()
   })
@@ -211,10 +251,38 @@ describe('attachFrameNavClient', () => {
 
   it('ignores malformed / mis-tagged envelopes', () => {
     const { win, adapter } = boot()
-    win.emitFrame({ channel: 'other', v: 1, frameId: 'nuxt', from: 'frame', type: 'ready', tabs: TABS })
-    win.emitFrame({ channel: FRAME_NAV_CHANNEL, v: 2, frameId: 'nuxt', from: 'frame', type: 'ready', tabs: TABS })
-    win.emitFrame({ channel: FRAME_NAV_CHANNEL, v: 1, frameId: 'other', from: 'frame', type: 'ready', tabs: TABS })
-    win.emitFrame({ channel: FRAME_NAV_CHANNEL, v: 1, frameId: 'nuxt', from: 'host', type: 'ready', tabs: TABS })
+    win.emitFrame({
+      channel: 'other',
+      v: 1,
+      frameId: 'nuxt',
+      from: 'frame',
+      type: 'ready',
+      tabs: TABS,
+    })
+    win.emitFrame({
+      channel: FRAME_NAV_CHANNEL,
+      v: 2,
+      frameId: 'nuxt',
+      from: 'frame',
+      type: 'ready',
+      tabs: TABS,
+    })
+    win.emitFrame({
+      channel: FRAME_NAV_CHANNEL,
+      v: 1,
+      frameId: 'other',
+      from: 'frame',
+      type: 'ready',
+      tabs: TABS,
+    })
+    win.emitFrame({
+      channel: FRAME_NAV_CHANNEL,
+      v: 1,
+      frameId: 'nuxt',
+      from: 'host',
+      type: 'ready',
+      tabs: TABS,
+    })
     expect(adapter.ready).toBe(false)
   })
 

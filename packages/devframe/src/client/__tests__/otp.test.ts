@@ -32,7 +32,10 @@ describe('otp url helpers', () => {
   it('consume reads then strips the OTP via history.replaceState, keeping other params', () => {
     const replaceState = vi.fn()
     vi.stubGlobal('location', { hash: '#devframe_otp=123456&x=1', href: 'http://localhost:3000/#devframe_otp=123456&x=1' })
-    vi.stubGlobal('history', { state: { a: 1 }, replaceState })
+    vi.stubGlobal('history', {
+      state: { a: 1 },
+      replaceState,
+    })
 
     expect(consumeOtpFromUrl()).toBe('123456')
     expect(replaceState).toHaveBeenCalledTimes(1)
@@ -64,7 +67,10 @@ describe('otp url helpers', () => {
 describe('authenticateWithUrlOtp', () => {
   it('exchanges the OTP via the client and resolves true on success', async () => {
     vi.stubGlobal('location', { hash: '#devframe_otp=123456', href: 'http://localhost:3000/#devframe_otp=123456' })
-    vi.stubGlobal('history', { state: null, replaceState: vi.fn() })
+    vi.stubGlobal('history', {
+      state: null,
+      replaceState: vi.fn(),
+    })
     const requestTrustWithCode = vi.fn().mockResolvedValue(true)
 
     const ok = await authenticateWithUrlOtp({ isTrusted: false, requestTrustWithCode })

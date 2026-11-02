@@ -30,8 +30,12 @@ const itPty = hasNative ? it : it.skip
 // Interactive stdin echo relies on POSIX PTY semantics that Windows ConPTY
 // doesn't reliably provide (echo timing); skip there, mirroring the terminals
 // plugin's own `itPosixPty` gate.
-const itPosixPty = (hasNative && process.platform !== 'win32') ? it : it.skip
-const itWindowsPty = (hasNative && process.platform === 'win32') ? it : it.skip
+const itPosixPty = (hasNative && process.platform !== 'win32')
+  ? it
+  : it.skip
+const itWindowsPty = (hasNative && process.platform === 'win32')
+  ? it
+  : it.skip
 
 interface FakeSink {
   write: ReturnType<typeof vi.fn>
@@ -170,7 +174,12 @@ describe('devframeTerminalHost stream lifecycle', () => {
         controller = _controller
       },
     })
-    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream }
+    const session: DevframeTerminalSession = {
+      id: 't',
+      title: 'T',
+      status: 'running',
+      stream,
+    }
     host.register(session)
     for (let i = 0; i < 1200; i++) controller!.enqueue(`line-${i}`)
     // Wait for the read loop to drain every enqueued chunk (each read is its
@@ -195,7 +204,13 @@ describe('devframeTerminalHost stream lifecycle', () => {
         controller.close()
       },
     })
-    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream, buffer }
+    const session: DevframeTerminalSession = {
+      id: 't',
+      title: 'T',
+      status: 'running',
+      stream,
+      buffer,
+    }
     host.register(session)
     try {
       await waitUntil(() => expect(sinks.get('t')?.closed).toBe(true))
@@ -220,7 +235,13 @@ describe('devframeTerminalHost stream lifecycle', () => {
         controller.close()
       },
     })
-    const session: DevframeTerminalSession = { id: 't', title: 'T', status: 'running', stream, buffer }
+    const session: DevframeTerminalSession = {
+      id: 't',
+      title: 'T',
+      status: 'running',
+      stream,
+      buffer,
+    }
     host.register(session)
     try {
       await waitUntil(() => expect(sinks.get('t')?.closed).toBe(true))
@@ -235,7 +256,10 @@ describe('devframeTerminalHost stream lifecycle', () => {
   it('rejects restarting a terminated child-process session', async () => {
     const { host, sinks } = createTerminalHost()
     const session = await host.startChildProcess(
-      { command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'] },
+      {
+        command: process.execPath,
+        args: ['-e', 'setInterval(() => {}, 1000)'],
+      },
       { id: 'child', title: 'Child' },
     )
     await session.terminate()
@@ -312,7 +336,10 @@ describe('devframeTerminalHost stream lifecycle', () => {
   it('getResult() still settles with the real exit code after terminate()', async () => {
     const { host, sinks } = createTerminalHost()
     const session = await host.startChildProcess(
-      { command: process.execPath, args: ['-e', 'setInterval(() => {}, 1000)'] },
+      {
+        command: process.execPath,
+        args: ['-e', 'setInterval(() => {}, 1000)'],
+      },
       { id: 'child', title: 'Child' },
     )
     const result = session.getResult()
@@ -425,7 +452,11 @@ describe.runIf(process.platform === 'win32')('devframeTerminalHost child-process
     // The shim resolves `child.cjs` via `%~dp0`, so it needs no cwd of its own.
     // Running out of `dir` would make Windows hold it as a working directory and
     // fail the later `rmdir` with EBUSY, so keep the shim's dir off the cwd.
-    const session = await host.startChildProcess({ command: shim, args: [], cwd: tmpdir() }, { id, title: id })
+    const session = await host.startChildProcess({
+      command: shim,
+      args: [],
+      cwd: tmpdir(),
+    }, { id, title: id })
     let pid = 0
     await waitUntil(() => {
       const match = session.buffer?.join('').match(/pid:(\d+)/)
@@ -436,7 +467,16 @@ describe.runIf(process.platform === 'win32')('devframeTerminalHost child-process
     expect(session.getChildProcess()?.pid).not.toBe(pid)
     // Windows releases the killed process's file handles asynchronously, so an
     // immediate `rm` can still hit EPERM; retry until the handles are gone.
-    return { session, pid, cleanup: () => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }) }
+    return {
+      session,
+      pid,
+      cleanup: () => rmSync(dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100,
+      }),
+    }
   }
 
   it('terminate() kills the process started by a .cmd shim', async () => {

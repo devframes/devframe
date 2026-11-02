@@ -14,5 +14,9 @@ export const KeyValueTable: JrComponent<KeyValueTableProps> = ({ props, loading 
     return h('div', { class: 'color-faint text-sm' }, 'Loading…')
   const entries = Object.entries(props.data ?? {})
   return h('div', { class: 'flex flex-col gap-1' }, entries.map(([key, value]) =>
-    h(DisplayKeyValue, { key, label: key, value: formatValue(value) })))
+    h(DisplayKeyValue, {
+      key,
+      label: key,
+      value: formatValue(value),
+    })))
 }

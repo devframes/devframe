@@ -15,7 +15,10 @@ function applyTheme(theme: string): void {
 
 const withTheme: Decorator = (story, context) => {
   applyTheme(context.globals.theme ?? 'dark')
-  return { components: { story }, template: '<div class="p4"><story /></div>' }
+  return {
+    components: { story },
+    template: '<div class="p4"><story /></div>',
+  }
 }
 
 const preview: Preview = {

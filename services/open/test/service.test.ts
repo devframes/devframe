@@ -15,7 +15,9 @@ vi.mock('devframe/utils/launch-editor', async importOriginal => ({
   ...await importOriginal<typeof import('devframe/utils/launch-editor')>(),
   launchEditor: (...args: unknown[]) => launchEditor(...args),
 }))
-vi.mock('devframe/utils/open', () => ({ open: async (...args: unknown[]) => open(...args) }))
+vi.mock('devframe/utils/open', () => ({
+  open: async (...args: unknown[]) => open(...args),
+}))
 
 const tempDirs: string[] = []
 
@@ -36,7 +38,11 @@ function createTestHost(dir: string): DevframeHost {
 async function createCtx() {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-service-open-'))
   tempDirs.push(dir)
-  const ctx = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+  const ctx = await createHostContext({
+    cwd: dir,
+    mode: 'dev',
+    host: createTestHost(dir),
+  })
   return { ctx, dir }
 }
 
@@ -51,10 +57,16 @@ describe('@devframes/service-open', () => {
     await ctx.services.ready()
     const api = await install
 
-    await invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(dir, 'src/a.ts'), line: 3, column: 7 })
+    await invoke(ctx, 'devframes:service:open:open-in-editor', {
+      path: join(dir, 'src/a.ts'),
+      line: 3,
+      column: 7,
+    })
     expect(launchEditor).toHaveBeenCalledWith(`${join(dir, 'src/a.ts')}:3:7`, undefined)
 
-    await api!.openInFinder({ path: join(dir, 'src') })
+    await api!.openInFinder({
+      path: join(dir, 'src'),
+    })
     expect(open).toHaveBeenCalledWith(join(dir, 'src'))
   })
 
@@ -63,10 +75,15 @@ describe('@devframes/service-open', () => {
     void ctx.services.install(createOpenService({ editor: 'code' }))
     await ctx.services.ready()
 
-    await invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(dir, 'a.ts') })
+    await invoke(ctx, 'devframes:service:open:open-in-editor', {
+      path: join(dir, 'a.ts'),
+    })
     expect(launchEditor).toHaveBeenLastCalledWith(join(dir, 'a.ts'), 'code')
 
-    await invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(dir, 'a.ts'), editor: 'zed' })
+    await invoke(ctx, 'devframes:service:open:open-in-editor', {
+      path: join(dir, 'a.ts'),
+      editor: 'zed',
+    })
     expect(launchEditor).toHaveBeenLastCalledWith(join(dir, 'a.ts'), 'zed')
   })
 
@@ -94,11 +111,18 @@ describe('@devframes/service-open', () => {
     const { ctx } = await createCtx()
     const extra = mkdtempSync(join(tmpdir(), 'devframe-service-open-extra-'))
     tempDirs.push(extra)
-    void ctx.services.install(createOpenService({ roots: [extra] }))
-    void ctx.services.install({ package: '@devframes/service-open', options: { editor: 'zed' } })
+    void ctx.services.install(createOpenService({
+      roots: [extra],
+    }))
+    void ctx.services.install({
+      package: '@devframes/service-open',
+      options: { editor: 'zed' },
+    })
     await ctx.services.ready()
 
-    await invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(extra, 'b.ts') })
+    await invoke(ctx, 'devframes:service:open:open-in-editor', {
+      path: join(extra, 'b.ts'),
+    })
     // Union kept the first installer's roots; later editor option won.
     expect(launchEditor).toHaveBeenCalledWith(join(extra, 'b.ts'), 'zed')
   })
@@ -115,7 +139,9 @@ describe('@devframes/service-open', () => {
     await ctx.services.ready()
     const api = await install
 
-    await expect(api!.openInFinder({ path: join(dir, 'leak.txt') })).rejects.toThrowError(/outside the workspace root/)
+    await expect(api!.openInFinder({
+      path: join(dir, 'leak.txt'),
+    })).rejects.toThrowError(/outside the workspace root/)
     expect(open).not.toHaveBeenCalled()
   })
 
@@ -128,7 +154,9 @@ describe('@devframes/service-open', () => {
     await ctx.services.ready()
     const api = await install
 
-    await api!.openInFinder({ path: join(dir, 'alias.txt') })
+    await api!.openInFinder({
+      path: join(dir, 'alias.txt'),
+    })
     expect(open).toHaveBeenCalledWith(join(dir, 'alias.txt'))
   })
 
@@ -138,7 +166,10 @@ describe('@devframes/service-open', () => {
     await ctx.services.ready()
 
     await expect(
-      invoke(ctx, 'devframes:service:open:open-in-editor', { path: join(dir, 'a.ts'), editor: 'rm -rf /' }),
+      invoke(ctx, 'devframes:service:open:open-in-editor', {
+        path: join(dir, 'a.ts'),
+        editor: 'rm -rf /',
+      }),
     ).rejects.toThrow()
     expect(launchEditor).not.toHaveBeenCalled()
   })

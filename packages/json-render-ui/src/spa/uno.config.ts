@@ -21,13 +21,25 @@ export default defineConfig({
     presetWind3(),
     presetIcons({ scale: 1.1 }),
   ],
-  transformers: [transformerDirectives(), transformerVariantGroup()],
-  preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+  transformers: [
+    transformerDirectives(),
+    transformerVariantGroup(),
+  ],
+  preflights: [
+    {
+      getCSS: () => '*,::before,::after{border-color:#8882}',
+    },
+  ],
   /**
    * `Badge` picks a `badge-color-<name>` at runtime from a fixed set, so those
    * classes need safelisting.
    */
-  safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
+  safelist: [
+    'badge-color-green',
+    'badge-color-amber',
+    'badge-color-red',
+    'badge-color-blue',
+  ],
   shortcuts: {
     'bg-panel-raised': 'bg-hover',
     'bg-panel-sunken': 'bg-code',
@@ -41,6 +53,8 @@ export default defineConfig({
     'z-drawer-content': 'z-[90]',
   },
   content: {
-    pipeline: { include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/] },
+    pipeline: {
+      include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/],
+    },
   },
 })

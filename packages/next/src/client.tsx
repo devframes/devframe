@@ -78,8 +78,15 @@ export function RpcProvider({
         offs.push(c.events.on('connection:error', sync))
       },
       (err: unknown) => {
-        if (active)
-          setState({ rpc: null, status: 'error', error: err instanceof Error ? err : new Error(String(err)) })
+        if (active) {
+          setState({
+            rpc: null,
+            status: 'error',
+            error: err instanceof Error
+              ? err
+              : new Error(String(err)),
+          })
+        }
       },
     )
 

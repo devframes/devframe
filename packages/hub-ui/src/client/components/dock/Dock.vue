@@ -108,7 +108,9 @@ const recentEntries = computed(() => {
   return resolveRecentDockEntries({
     entries: context.docks.entries,
     groups: groupedEntries.value,
-    recentIds: session.recentDockIds ?? (session.recentDockId ? [session.recentDockId] : []),
+    recentIds: session.recentDockIds ?? (session.recentDockId
+      ? [session.recentDockId]
+      : []),
     limit: settings.value.docksRecentLimit,
     settings: settings.value,
     whenContext: context.when.context,

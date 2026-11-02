@@ -23,7 +23,12 @@ interface EcosystemPackage {
 
 const props = defineProps<{ packages: EcosystemPackage[] }>()
 
-const categories: Category[] = ['All', 'Devframes', 'Hosts', 'Services']
+const categories: Category[] = [
+  'All',
+  'Devframes',
+  'Hosts',
+  'Services',
+]
 
 const route = useRoute()
 const router = useRouter()
@@ -79,7 +84,9 @@ const searchPool = computed(() => {
 })
 
 const counts = computed(() => {
-  const map = new Map<Category, number>([['All', searchPool.value.length]])
+  const map = new Map<Category, number>([
+    ['All', searchPool.value.length],
+  ])
   for (const cat of categories.slice(1))
     map.set(cat, searchPool.value.filter(pkg => pkg.category === cat).length)
   return map
@@ -91,14 +98,19 @@ const visible = computed(() => {
     : searchPool.value.filter(pkg => pkg.category === category.value)
   // Community entries first: the official ones already have their own docs pages.
   return [...pool].sort((a, b) => {
-    if (!!a.official !== !!b.official)
-      return a.official ? 1 : -1
+    if (!!a.official !== !!b.official) {
+      return a.official
+        ? 1
+        : -1
+    }
     return a.name.localeCompare(b.name)
   })
 })
 
 function href(pkg: EcosystemPackage) {
-  return pkg.url ?? (pkg.repo ? `https://github.com/${pkg.repo}` : undefined)
+  return pkg.url ?? (pkg.repo
+    ? `https://github.com/${pkg.repo}`
+    : undefined)
 }
 
 function isExternal(pkg: EcosystemPackage) {

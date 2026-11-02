@@ -42,7 +42,10 @@ function createMockRpc(
 ): MockRpcClient {
   const docksState = createSharedState({ initialValue: entries, enablePatches: false })
   const settingsState = createSharedState({
-    initialValue: { ...DEFAULT_STATE_USER_SETTINGS(), ...settings },
+    initialValue: {
+      ...DEFAULT_STATE_USER_SETTINGS(),
+      ...settings,
+    },
     enablePatches: false,
   })
   const commandsState = createSharedState({ initialValue: [] as any[], enablePatches: false })
@@ -54,8 +57,14 @@ function createMockRpc(
   // Minimal RPC surface used by the composed shells (messages/toasts, command
   // palette). `call` returns empty-but-valid shapes for the methods those call.
   const call = async (method: string) => {
-    if (method === 'devframes:plugin:messages:list')
-      return { entries: [], removedIds: [], version: 0, full: true }
+    if (method === 'devframes:plugin:messages:list') {
+      return {
+        entries: [],
+        removedIds: [],
+        version: 0,
+        full: true,
+      }
+    }
     return undefined
   }
 
@@ -127,8 +136,14 @@ export async function createMockDocksContext(
   } = options
 
   const rpc = createMockRpc(entries, settings, isTrusted)
-  const panelStore = ref<DockPanelStorage>({ ...DEFAULT_DOCK_PANEL_STORE(), ...panel })
-  const sessionStore = ref<DockSessionStorage>({ ...DEFAULT_DOCK_SESSION_STORE(), ...session })
+  const panelStore = ref<DockPanelStorage>({
+    ...DEFAULT_DOCK_PANEL_STORE(),
+    ...panel,
+  })
+  const sessionStore = ref<DockSessionStorage>({
+    ...DEFAULT_DOCK_SESSION_STORE(),
+    ...session,
+  })
 
   const context = await createDocksContext(clientType, rpc, panelStore, sessionStore)
 

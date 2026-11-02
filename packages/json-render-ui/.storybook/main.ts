@@ -15,9 +15,14 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     return mergeConfig(config, {
       resolve: { alias },
-      plugins: [vue(), UnoCSS()],
+      plugins: [
+        vue(),
+        UnoCSS(),
+      ],
       /** `@antfu/design` ships raw `.vue`; let plugin-vue compile its SFCs. */
-      optimizeDeps: { exclude: ['@antfu/design'] },
+      optimizeDeps: {
+        exclude: ['@antfu/design'],
+      },
       server: { allowedHosts: true },
     })
   },

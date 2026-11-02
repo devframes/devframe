@@ -22,7 +22,14 @@ const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /**
  * Workspace globs, mirrored from `pnpm-workspace.yaml`'s `packages:` list.
  */
-const WORKSPACE_PATTERNS = ['packages/*', 'plugins/*', 'examples/*', 'starter', 'storybook', 'docs']
+const WORKSPACE_PATTERNS = [
+  'packages/*',
+  'plugins/*',
+  'examples/*',
+  'starter',
+  'storybook',
+  'docs',
+]
 
 /**
  * Packages with a `tsconfig.json` that intentionally don't have a
@@ -76,7 +83,9 @@ if (missing.length > 0) {
 }
 
 if (staleExceptions.length > 0) {
-  console.error(`${missing.length > 0 ? '\n' : ''}The following exceptions in scripts/verify-typecheck-coverage.ts are stale; the package already has a \`typecheck\` script, so remove the entry:\n`)
+  console.error(`${missing.length > 0
+    ? '\n'
+    : ''}The following exceptions in scripts/verify-typecheck-coverage.ts are stale; the package already has a \`typecheck\` script, so remove the entry:\n`)
   for (const dir of staleExceptions) console.error(`  - ${dir}`)
 }
 

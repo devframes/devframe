@@ -97,7 +97,11 @@ export function createAuthBanner(options: CreateAuthBannerOptions = {}): AuthBan
     const rows: [label: string, value: string, color: ColorFn][] = [
       ['auth code', info.code, palette.code],
       ['or open', info.url, palette.url],
-      ['expires at', new Date(info.expireAt).toLocaleTimeString(), palette.label],
+      [
+        'expires at',
+        new Date(info.expireAt).toLocaleTimeString(),
+        palette.label,
+      ],
     ]
     if (info.requester) {
       rows.push(['ua', info.requester.ua, palette.label])
@@ -171,19 +175,30 @@ export function createInteractiveAuth(
       return
     bannerPrintedForCode = code
     const url = buildOtpAuthUrl(resolveServerUrl(), code)
-    banner({ code, url, expireAt, ...(info?.requester ? { requester: info.requester } : {}) })
+    banner({
+      code,
+      url,
+      expireAt,
+      ...(info?.requester
+        ? { requester: info.requester }
+        : {}),
+    })
   }
 
   const anonymousAuth = defineRpcFunction({
     name: 'anonymous:devframe:auth',
     type: 'action',
     jsonSerializable: true,
-    args: [s.object({
-      authToken: s.string(),
-      ua: s.string(),
-      origin: s.string(),
-    })],
-    returns: s.object({ isTrusted: s.boolean() }),
+    args: [
+      s.object({
+        authToken: s.string(),
+        ua: s.string(),
+        origin: s.string(),
+      }),
+    ],
+    returns: s.object({
+      isTrusted: s.boolean(),
+    }),
     handler(params) {
       const session = context.rpc.getCurrentRpcSession()
       if (!session)
@@ -195,7 +210,9 @@ export function createInteractiveAuth(
         session.meta.isTrusted = true
         return { isTrusted: true }
       }
-      return { isTrusted: verifyAuthToken(params.authToken, session, storage) }
+      return {
+        isTrusted: verifyAuthToken(params.authToken, session, storage),
+      }
     },
   })
 
@@ -203,12 +220,16 @@ export function createInteractiveAuth(
     name: 'anonymous:devframe:auth:exchange',
     type: 'action',
     jsonSerializable: true,
-    args: [s.object({
-      code: s.string(),
-      ua: s.string(),
-      origin: s.string(),
-    })],
-    returns: s.object({ authToken: s.nullable(s.string()) }),
+    args: [
+      s.object({
+        code: s.string(),
+        ua: s.string(),
+        origin: s.string(),
+      }),
+    ],
+    returns: s.object({
+      authToken: s.nullable(s.string()),
+    }),
     handler(params) {
       const session = context.rpc.getCurrentRpcSession()
       if (!session)
@@ -224,11 +245,13 @@ export function createInteractiveAuth(
     name: 'anonymous:devframe:auth:request-code',
     type: 'action',
     jsonSerializable: true,
-    args: [s.object({
-      ua: s.string(),
-      origin: s.string(),
-      reissue: s.optional(s.boolean()),
-    })],
+    args: [
+      s.object({
+        ua: s.string(),
+        origin: s.string(),
+        reissue: s.optional(s.boolean()),
+      }),
+    ],
     returns: s.void(),
     handler(params) {
       // `reissue` rotates the code first (the manual "re-issue" button), so
@@ -236,7 +259,12 @@ export function createInteractiveAuth(
       // the current code at most once (per-code dedupe in `printBanner`).
       if (params.reissue)
         refreshTempAuthCode()
-      printBanner({ requester: { ua: describeUA(params.ua), origin: params.origin } })
+      printBanner({
+        requester: {
+          ua: describeUA(params.ua),
+          origin: params.origin,
+        },
+      })
     },
   })
 
@@ -300,7 +328,12 @@ export function createInteractiveAuth(
   }
 
   return {
-    rpcFunctions: [anonymousAuth, anonymousAuthExchange, anonymousAuthRequestCode, revoke],
+    rpcFunctions: [
+      anonymousAuth,
+      anonymousAuthExchange,
+      anonymousAuthRequestCode,
+      revoke,
+    ],
     authorize,
     onConnect: onConnect as DevframeAuthHandler['onConnect'],
     printBanner,

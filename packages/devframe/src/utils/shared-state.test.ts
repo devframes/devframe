@@ -40,7 +40,10 @@ describe('shared-state', () => {
   describe('immutability', () => {
     it('should return immutable state from get()', () => {
       const state = createSharedState({
-        initialValue: { count: 0, items: ['a', 'b'] },
+        initialValue: {
+          count: 0,
+          items: ['a', 'b'],
+        },
       })
 
       const currentState = state.value()
@@ -55,7 +58,10 @@ describe('shared-state', () => {
 
     it('should not mutate original state when mutating returned state directly', () => {
       const state = createSharedState({
-        initialValue: { count: 0, nested: { value: 'test' } },
+        initialValue: {
+          count: 0,
+          nested: { value: 'test' },
+        },
       })
 
       const state1 = state.value()
@@ -128,7 +134,9 @@ describe('shared-state', () => {
 
     it('should maintain immutability for arrays', () => {
       const state = createSharedState({
-        initialValue: { items: [1, 2, 3] },
+        initialValue: {
+          items: [1, 2, 3],
+        },
       })
 
       const state1 = state.value()
@@ -339,7 +347,9 @@ describe('shared-state', () => {
     })
 
     it('caps syncIds and evicts oldest-first (FIFO), keeping recent de-dup', () => {
-      const state = createSharedState({ initialValue: { count: 0 } })
+      const state = createSharedState({
+        initialValue: { count: 0 },
+      })
       for (let i = 0; i < 1500; i++) {
         state.mutate((draft) => {
           draft.count = i

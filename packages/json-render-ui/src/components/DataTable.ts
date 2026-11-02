@@ -12,10 +12,15 @@ interface DataTableProps {
 }
 
 function normalizeColumns(columns: DataTableProps['columns'], rows: DataTableProps['rows']): DataTableColumn[] {
-  if (columns?.length)
-    return columns.map(c => (typeof c === 'string' ? { key: c } : c))
+  if (columns?.length) {
+    return columns.map(c => (typeof c === 'string'
+      ? { key: c }
+      : c))
+  }
   const first = rows?.[0]
-  return first ? Object.keys(first).map(key => ({ key })) : []
+  return first
+    ? Object.keys(first).map(key => ({ key }))
+    : []
 }
 
 /**
@@ -29,7 +34,9 @@ export const DataTable: JrComponent<DataTableProps> = ({ props, on, bindings, lo
   const rows = props.rows ?? []
   const columns = normalizeColumns(props.columns, rows)
   const [, setSelected] = useBoundProp<unknown>(undefined, bindings?.value)
-  const wrapperStyle = props.height != null ? { maxHeight: `${props.height}px` } : undefined
+  const wrapperStyle = props.height != null
+    ? { maxHeight: `${props.height}px` }
+    : undefined
 
   return h('div', { class: 'rounded border border-base overflow-auto bg-panel-sunken', style: wrapperStyle }, [
     h('table', { class: 'w-full text-sm border-collapse' }, [

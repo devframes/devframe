@@ -13,8 +13,12 @@ export type JrComponent<P = Record<string, unknown>> = (
 
 /** Resolve a numeric prop that may arrive as a number or numeric string. */
 export function toNumber(value: unknown, fallback: number): number {
-  const n = typeof value === 'string' ? Number(value) : value
-  return typeof n === 'number' && Number.isFinite(n) ? n : fallback
+  const n = typeof value === 'string'
+    ? Number(value)
+    : value
+  return typeof n === 'number' && Number.isFinite(n)
+    ? n
+    : fallback
 }
 
 /** Render an arbitrary value as a display string for table cells. */

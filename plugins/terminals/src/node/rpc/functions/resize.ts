@@ -6,11 +6,13 @@ export const resize = defineRpcFunction({
   name: 'devframes:plugin:terminals:resize',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({
-    id: s.string(),
-    cols: s.number(),
-    rows: s.number(),
-  })],
+  args: [
+    s.object({
+      id: s.string(),
+      cols: s.number(),
+      rows: s.number(),
+    }),
+  ],
   returns: s.void(),
   setup: ctx => ({
     handler: ({ id, cols, rows }) => {

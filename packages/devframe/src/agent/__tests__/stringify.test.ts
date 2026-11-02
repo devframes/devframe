@@ -20,16 +20,24 @@ describe('stringifyForMcp', () => {
   })
 
   it('coerces Date to ISO string via toJSON', () => {
-    expect(JSON.parse(stringifyForMcp({ when: new Date(0) }))).toEqual({
+    expect(JSON.parse(stringifyForMcp({
+      when: new Date(0),
+    }))).toEqual({
       when: '1970-01-01T00:00:00.000Z',
     })
   })
 
   it('coerces Map to a tagged entries object', () => {
-    const value = new Map<string, number>([['a', 1], ['b', 2]])
+    const value = new Map<string, number>([
+      ['a', 1],
+      ['b', 2],
+    ])
     expect(JSON.parse(stringifyForMcp(value))).toEqual({
       __type: 'Map',
-      entries: [['a', 1], ['b', 2]],
+      entries: [
+        ['a', 1],
+        ['b', 2],
+      ],
     })
   })
 
@@ -60,13 +68,17 @@ describe('stringifyForMcp', () => {
   })
 
   it('coerces anonymous functions', () => {
-    expect(JSON.parse(stringifyForMcp({ fn: () => {} }))).toEqual({
+    expect(JSON.parse(stringifyForMcp({
+      fn: () => {},
+    }))).toEqual({
       fn: '[Function: fn]',
     })
   })
 
   it('coerces Symbol to its description', () => {
-    expect(JSON.parse(stringifyForMcp({ s: Symbol('hi') }))).toEqual({
+    expect(JSON.parse(stringifyForMcp({
+      s: Symbol('hi'),
+    }))).toEqual({
       s: 'Symbol(hi)',
     })
   })
@@ -103,7 +115,9 @@ describe('formatMcpError', () => {
   })
 
   it('appends cause.message for Error causes', () => {
-    const err = new Error('outer', { cause: new Error('inner') })
+    const err = new Error('outer', {
+      cause: new Error('inner'),
+    })
     expect(formatMcpError(err)).toBe('Error: outer (cause: inner)')
   })
 

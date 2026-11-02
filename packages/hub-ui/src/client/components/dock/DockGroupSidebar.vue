@@ -85,7 +85,9 @@ const overflowGroups = computed(() => split.value.overflow)
 
 const overflowCount = computed(() => overflowGroups.value.reduce((acc, [, items]) => acc + items.length, 0))
 const hasOverflow = computed(() => overflowCount.value > 0)
-const overflowBadge = computed(() => (overflowCount.value > 9 ? '9+' : overflowCount.value.toString()))
+const overflowBadge = computed(() => (overflowCount.value > 9
+  ? '9+'
+  : overflowCount.value.toString()))
 
 // The shown member is hidden inside the show-more popover.
 const currentInOverflow = computed(() =>
@@ -100,7 +102,10 @@ function select(id: string) {
 }
 
 function showTooltip(event: PointerEvent, entry: { title: string, description?: string }) {
-  setFloatingTooltip({ content: dockTooltipContent(entry), el: event.currentTarget as HTMLElement })
+  setFloatingTooltip({
+    content: dockTooltipContent(entry),
+    el: event.currentTarget as HTMLElement,
+  })
 }
 
 function hideTooltip() {

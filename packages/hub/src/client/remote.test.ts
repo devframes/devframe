@@ -8,7 +8,10 @@ import {
 } from './remote'
 
 const connection: DevframeConnection = {
-  connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+  connectionMeta: {
+    backend: 'websocket',
+    websocket: { path: '__ws' },
+  },
   metaBaseUrl: 'http://localhost:5173/__devtools/__connection.json',
   authToken: 'secret',
 }

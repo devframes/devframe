@@ -16,7 +16,9 @@ export function getDefaultTitle(titled: DevframeTitled & { [defaultTitle]?: Loca
   const previous = titled[defaultTitle]
   // A caller can spread a displayed entry into an update. Keep its original
   // title only while the caller has left the displayed title unchanged.
-  return previous && titled.title === previous.display ? previous.original : titled.title
+  return previous && titled.title === previous.display
+    ? previous.original
+    : titled.title
 }
 
 /**
@@ -38,11 +40,20 @@ export function setupLocale(rpc: DevframeRpcClient): void {
 export function localizeTitle<T extends DevframeTitled>(titled: T, title?: string): T {
   const original = getDefaultTitle(titled)
   const display = title ?? resolveTitle({ ...titled, title: original }, locale.value)
-  return { ...titled, [defaultTitle]: { original, display }, title: display }
+  return {
+    ...titled,
+    [defaultTitle]: { original, display },
+    title: display,
+  }
 }
 
 /** `localizeTitle` for a command and its children, so palette and shortcut rows follow the language. */
 export function localizeCommand<T extends DevframeCommandEntry>(command: T): T {
   const children = command.children?.map(child => localizeCommand(child))
-  return { ...localizeTitle(command), ...(children ? { children } : {}) }
+  return {
+    ...localizeTitle(command),
+    ...(children
+      ? { children }
+      : {}),
+  }
 }

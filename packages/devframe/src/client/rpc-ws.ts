@@ -54,7 +54,9 @@ export function resolveWsUrl(
       return new URL(loc.href)
     }
   })()
-  const wsProtocol = base.protocol === 'https:' ? 'wss:' : 'ws:'
+  const wsProtocol = base.protocol === 'https:'
+    ? 'wss:'
+    : 'ws:'
 
   // Object form: the proxy-flexible default.
   if (websocket && typeof websocket === 'object') {
@@ -83,8 +85,11 @@ export function resolveWsUrl(
   if (/^wss?:\/\//i.test(str))
     return str
   // HTTP(S) URL: swap to the matching WS protocol.
-  if (/^https?:\/\//i.test(str))
-    return withProtocol(str, /^https/i.test(str) ? 'wss://' : 'ws://')
+  if (/^https?:\/\//i.test(str)) {
+    return withProtocol(str, /^https/i.test(str)
+      ? 'wss://'
+      : 'ws://')
+  }
   // Path string: resolve same-origin against the meta base.
   const target = new URL(str, base)
   target.protocol = wsProtocol

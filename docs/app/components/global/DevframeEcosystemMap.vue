@@ -166,7 +166,9 @@ const nodes: EcosystemNode[] = [
         source: 'devframe',
         emphasis: true,
         label: 'initDevframe()',
-        waypoints: [{ x: 70, y: 320 }],
+        waypoints: [
+          { x: 70, y: 320 },
+        ],
       },
       { source: 'hub', emphasis: true, label: 'initHub()' },
     ],
@@ -309,7 +311,10 @@ const nodes: EcosystemNode[] = [
   },
   {
     id: 'nuxt-devtools',
-    linksFrom: [{ source: 'vite-devtools', emphasis: true }, 'vue-devtools'],
+    linksFrom: [
+      { source: 'vite-devtools', emphasis: true },
+      'vue-devtools',
+    ],
     label: 'Nuxt DevTools',
     icon: 'i-logos-nuxt-icon',
     href: 'https://devtools.nuxt.com/guide/getting-started',
@@ -325,14 +330,21 @@ const edges: EcosystemEdge[] = nodes.flatMap((node) => {
   if (!node.linksFrom)
     return []
 
-  const links = Array.isArray(node.linksFrom) ? node.linksFrom : [node.linksFrom]
+  const links = Array.isArray(node.linksFrom)
+    ? node.linksFrom
+    : [node.linksFrom]
   return links.map(link => ({
-    ...(typeof link === 'string' ? { source: link } : link),
+    ...(typeof link === 'string'
+      ? { source: link }
+      : link),
     target: node.id,
   }))
 })
 
-const rawLayoutNodes: LayoutNode[] = nodes.map(({ position, ...node }) => ({ ...node, ...position }))
+const rawLayoutNodes: LayoutNode[] = nodes.map(({ position, ...node }) => ({
+  ...node,
+  ...position,
+}))
 const bounds = layoutBounds(rawLayoutNodes)
 const diagramWidth = bounds.width + diagramPadding.x * 2
 const diagramHeight = bounds.height + diagramPadding.y * 2
@@ -384,7 +396,12 @@ function layoutBounds(layout: LayoutNode[]) {
   const right = Math.max(...layout.map(node => node.x + node.width / 2))
   const top = Math.min(...layout.map(node => node.y - node.height / 2))
   const bottom = Math.max(...layout.map(node => node.y + node.height / 2))
-  return { left, top, width: right - left, height: bottom - top }
+  return {
+    left,
+    top,
+    width: right - left,
+    height: bottom - top,
+  }
 }
 
 function clipEdge(points: Point[], source: LayoutNode, target: LayoutNode): Point[] {
@@ -400,8 +417,12 @@ function clipEdge(points: Point[], source: LayoutNode, target: LayoutNode): Poin
 function pointOnNodeBoundary(center: Point, toward: Point, node: LayoutNode): Point {
   const dx = toward.x - center.x
   const dy = toward.y - center.y
-  const scaleX = dx === 0 ? Number.POSITIVE_INFINITY : node.width / 2 / Math.abs(dx)
-  const scaleY = dy === 0 ? Number.POSITIVE_INFINITY : node.height / 2 / Math.abs(dy)
+  const scaleX = dx === 0
+    ? Number.POSITIVE_INFINITY
+    : node.width / 2 / Math.abs(dx)
+  const scaleY = dy === 0
+    ? Number.POSITIVE_INFINITY
+    : node.height / 2 / Math.abs(dy)
   const scale = Math.min(scaleX, scaleY)
   return { x: center.x + dx * scale, y: center.y + dy * scale }
 }
@@ -425,9 +446,15 @@ function pointAlongPolyline(points: Point[], ratio: number, offset = 0): Point {
       continue
     }
 
-    const progress = segment.length === 0 ? 0 : distance / segment.length
-    const normalX = segment.length === 0 ? 0 : -segment.dy / segment.length
-    const normalY = segment.length === 0 ? 0 : segment.dx / segment.length
+    const progress = segment.length === 0
+      ? 0
+      : distance / segment.length
+    const normalX = segment.length === 0
+      ? 0
+      : -segment.dy / segment.length
+    const normalY = segment.length === 0
+      ? 0
+      : segment.dx / segment.length
     return {
       x: segment.previous.x + segment.dx * progress + normalX * offset,
       y: segment.previous.y + segment.dy * progress + normalY * offset,

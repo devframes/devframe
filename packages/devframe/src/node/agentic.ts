@@ -63,7 +63,9 @@ export async function importAgenticMcp(specifier: string = `${AGENTIC_PACKAGE}/m
     return await importRuntimeModule<AgenticMcpModule>(specifier)
   }
   catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
+    const reason = error instanceof Error
+      ? error.message
+      : String(error)
     throw diagnostics.DF0079({ reason, cause: error })
   }
 }

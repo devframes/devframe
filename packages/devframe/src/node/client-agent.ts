@@ -53,7 +53,9 @@ const states = new WeakMap<ClientAgentContext, ClientAgentState>()
  * tab ahead of its peers.
  */
 function pickTarget(candidates: Iterable<ClientAgentEntry>): ClientAgentEntry | undefined {
-  const rank = (e: ClientAgentEntry): number[] => e.info.visible ? [1, e.focusedAt, e.syncedAt] : [0, 0, e.syncedAt]
+  const rank = (e: ClientAgentEntry): number[] => e.info.visible
+    ? [1, e.focusedAt, e.syncedAt]
+    : [0, 0, e.syncedAt]
   let best: ClientAgentEntry | undefined
   for (const entry of candidates) {
     if (!best) {
@@ -70,7 +72,9 @@ function pickTarget(candidates: Iterable<ClientAgentEntry>): ClientAgentEntry | 
 }
 
 function withClientIdArg(inputSchema: unknown): unknown {
-  const base = inputSchema && typeof inputSchema === 'object' ? inputSchema as { properties?: Record<string, unknown> } : {}
+  const base = inputSchema && typeof inputSchema === 'object'
+    ? inputSchema as { properties?: Record<string, unknown> }
+    : {}
   return {
     type: 'object',
     ...base,
@@ -85,7 +89,9 @@ function withClientIdArg(inputSchema: unknown): unknown {
 }
 
 function listClients(sessions: ClientAgentSessions): ConnectedClient[] {
-  return [...sessions.values()].map(entry => ({
+  return [
+    ...sessions.values(),
+  ].map(entry => ({
     id: entry.clientId,
     ...entry.info,
     connectedAt: entry.connectedAt,
@@ -99,7 +105,9 @@ function forwardedTool(sessions: ClientAgentSessions, manifest: BrowserAgentTool
     inputSchema: withClientIdArg(manifest.inputSchema),
     handler: (args: Record<string, unknown> | undefined) => {
       const { [CLIENT_ID_ARG]: clientId, ...rest } = args ?? {}
-      const candidates = [...sessions.values()].filter(e =>
+      const candidates = [
+        ...sessions.values(),
+      ].filter(e =>
         e.tools.some(t => t.id === manifest.id)
         && (clientId === undefined || e.clientId === clientId),
       )
@@ -108,7 +116,9 @@ function forwardedTool(sessions: ClientAgentSessions, manifest: BrowserAgentTool
         throw diagnostics.DF0082({
           clientId: String(clientId),
           tool: manifest.id,
-          live: [...sessions.values()].map(e => e.clientId),
+          live: [
+            ...sessions.values(),
+          ].map(e => e.clientId),
         })
       }
       return target.session.rpc.$callRaw({
@@ -140,13 +150,18 @@ function listClientsTool(sessions: ClientAgentSessions): AgentToolInput {
               visible: { type: 'boolean' },
               focused: { type: 'boolean' },
               connectedAt: { type: 'number' },
-              tools: { type: 'array', items: { type: 'string' } },
+              tools: {
+                type: 'array',
+                items: { type: 'string' },
+              },
             },
           },
         },
       },
     },
-    handler: () => ({ clients: listClients(sessions) }),
+    handler: () => ({
+      clients: listClients(sessions),
+    }),
   }
 }
 
@@ -169,7 +184,9 @@ function getState(context: ClientAgentContext): ClientAgentState {
       }
     }
     tools.set(LIST_CLIENTS_TOOL, listClientsTool(sessions))
-    return [...tools.values()]
+    return [
+      ...tools.values(),
+    ]
   })
   state = { sessions, notifyChanged: provider.notifyChanged }
   states.set(context, state)
@@ -193,7 +210,9 @@ export function syncClientAgentTools(
     tools,
     connectedAt: previous?.connectedAt ?? now,
     syncedAt: now,
-    focusedAt: info.focused ? now : previous?.focusedAt ?? 0,
+    focusedAt: info.focused
+      ? now
+      : previous?.focusedAt ?? 0,
   })
   // Focus/visibility re-syncs leave the tool surface as it was.
   const sameTools = previous && previous.tools.length === tools.length

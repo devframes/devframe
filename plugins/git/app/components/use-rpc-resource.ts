@@ -34,7 +34,9 @@ export function useRpcResource<T>(loader: (rpc: DevframeRpcClient) => Promise<T>
       setData(await loader(rpc))
     }
     catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(e instanceof Error
+        ? e.message
+        : String(e))
     }
     finally {
       setLoading(false)
@@ -45,5 +47,11 @@ export function useRpcResource<T>(loader: (rpc: DevframeRpcClient) => Promise<T>
     void refresh()
   }, [refresh])
 
-  return { data, loading, error, refresh, setData }
+  return {
+    data,
+    loading,
+    error,
+    refresh,
+    setData,
+  }
 }

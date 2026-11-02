@@ -38,7 +38,9 @@ const FloatingPopoverComponent = defineComponent({
     const escapeTarget = ref<HTMLElement | undefined>()
 
     function refreshEscapeTarget(anchor: Element | undefined) {
-      escapeTarget.value = anchor ? resolveFixedEscapeTarget(anchor) : undefined
+      escapeTarget.value = anchor
+        ? resolveFixedEscapeTarget(anchor)
+        : undefined
     }
 
     const panelSize = reactive({ width: 0, height: 0 })
@@ -114,7 +116,9 @@ const FloatingPopoverComponent = defineComponent({
 
     /** Escapes the anchor's containing block when there is one, otherwise renders in place. */
     const withEscape = (node: VNode) =>
-      escapeTarget.value ? h(Teleport, { to: escapeTarget.value }, [node]) : node
+      escapeTarget.value
+        ? h(Teleport, { to: escapeTarget.value }, [node])
+        : node
 
     return () => {
       // Force re-render to update the position

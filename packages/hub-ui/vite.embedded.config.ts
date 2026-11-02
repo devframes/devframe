@@ -10,7 +10,9 @@ import { defineConfig } from 'vite'
  * (`.generated/css.ts`), so no CSS asset is emitted either.
  */
 export default defineConfig({
-  plugins: [Vue()],
+  plugins: [
+    Vue(),
+  ],
   define: {
     /** Bundled for a host page: strip Vue's dev-mode branches. */
     'process.env.NODE_ENV': JSON.stringify('production'),

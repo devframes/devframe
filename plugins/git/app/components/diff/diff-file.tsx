@@ -13,7 +13,9 @@ const NUMBER_CELL = 'w-10 shrink-0 select-none px-1.5 text-right tabular-nums co
 /** A line's content, split into syntax-colored segments with intra-line emphasis. */
 function LineContent({ line, tokens }: { line: RenderLine, tokens: TokenLines | null }) {
   const segments = buildSegments(tokens?.[line.tokenLine], line.content, line.wordRanges)
-  const changedBg = line.type === 'add' ? 'bg-success/25' : 'bg-error/25'
+  const changedBg = line.type === 'add'
+    ? 'bg-success/25'
+    : 'bg-error/25'
   return (
     <>
       {segments.map((segment, i) => (
@@ -31,9 +33,21 @@ function LineContent({ line, tokens }: { line: RenderLine, tokens: TokenLines | 
 
 /** One diff row: old/new line-number gutters, the +/- marker, and the code. */
 function DiffLine({ line, tokens }: { line: RenderLine, tokens: TokenLines | null }) {
-  const bg = line.type === 'add' ? 'bg-success/10' : line.type === 'del' ? 'bg-error/10' : ''
-  const marker = line.type === 'add' ? '+' : line.type === 'del' ? '−' : ' '
-  const markerColor = line.type === 'add' ? 'text-success' : line.type === 'del' ? 'text-error' : 'color-faint'
+  const bg = line.type === 'add'
+    ? 'bg-success/10'
+    : line.type === 'del'
+      ? 'bg-error/10'
+      : ''
+  const marker = line.type === 'add'
+    ? '+'
+    : line.type === 'del'
+      ? '−'
+      : ' '
+  const markerColor = line.type === 'add'
+    ? 'text-success'
+    : line.type === 'del'
+      ? 'text-error'
+      : 'color-faint'
   return (
     <div className={cn('flex', bg)}>
       <span className={NUMBER_CELL}>{line.oldNumber ?? ''}</span>
@@ -52,7 +66,13 @@ function DiffHunk({ hunk, oldTokens, newTokens }: { hunk: RenderHunk, oldTokens:
     <div>
       <div className="bg-secondary color-faint px-2 py-0.5">{hunk.header}</div>
       {hunk.lines.map((line, i) => (
-        <DiffLine key={i} line={line} tokens={line.tokenSide === 'old' ? oldTokens : newTokens} />
+        <DiffLine
+          key={i}
+          line={line}
+          tokens={line.tokenSide === 'old'
+            ? oldTokens
+            : newTokens}
+        />
       ))}
     </div>
   )

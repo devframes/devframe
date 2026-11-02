@@ -27,7 +27,9 @@ type TransportPref = (typeof TRANSPORT_PREFS)[number]
 
 function readTransportPref(): TransportPref {
   const raw = new URLSearchParams(window.location.search).get('transport')
-  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '')
+    ? raw as TransportPref
+    : 'auto'
 }
 function applyTransportPref(pref: TransportPref): void {
   const url = new URL(window.location.href)
@@ -38,7 +40,11 @@ function applyTransportPref(pref: TransportPref): void {
   window.location.href = url.href
 }
 function transportLabel(pref: TransportPref): string {
-  return pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+  return pref === 'websocket'
+    ? 'WS'
+    : pref === 'sse'
+      ? 'SSE'
+      : 'Auto'
 }
 
 interface Status {
@@ -59,7 +65,12 @@ function isIframeDock(d: DevframeDockEntry): d is IframeDock {
 // registry - the local React renderer registered at boot, or a prebuilt
 // module from the hub's renderer manifest - and a type nothing covers shows
 // the missing-renderer fallback.
-const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
+const NATIVE_TYPES = new Set([
+  'action',
+  'launcher',
+  'group',
+  '~builtin',
+])
 function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
@@ -100,48 +111,153 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   return {
     root: 'root',
     elements: {
-      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'hello', 'notes', 'env'] },
+      root: {
+        type: 'Stack',
+        props: { gap: 14 },
+        children: ['head', 'hello', 'notes', 'env'],
+      },
 
-      head: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['icon', 'title', 'badge'] },
-      icon: { type: 'Icon', props: { name: 'ph:sliders-horizontal-duotone', size: 22 }, children: [] },
-      title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
-      badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
+      head: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 8, align: 'center' },
+        children: ['icon', 'title', 'badge'],
+      },
+      icon: {
+        type: 'Icon',
+        props: { name: 'ph:sliders-horizontal-duotone', size: 22 },
+        children: [],
+      },
+      title: {
+        type: 'Text',
+        props: { text: 'Client Playground', variant: 'heading' },
+        children: [],
+      },
+      badge: {
+        type: 'Badge',
+        props: { text: 'client-only', variant: 'info' },
+        children: [],
+      },
 
       /** ── Two-way binding: type a name, see it echoed live; toggle a switch ── */
-      hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
-      helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
-      nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
-      greetRow: { type: 'Stack', props: { direction: 'row', gap: 6, align: 'center' }, children: ['greetLabel', 'greetName'] },
-      greetLabel: { type: 'Text', props: { text: 'Hello,', variant: 'body', color: 'muted' }, children: [] },
-      greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
-      compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
+      hello: {
+        type: 'Card',
+        props: { title: 'Say hello' },
+        children: ['helloBody'],
+      },
+      helloBody: {
+        type: 'Stack',
+        props: { gap: 10 },
+        children: ['nameInput', 'greetRow', 'compact'],
+      },
+      nameInput: {
+        type: 'TextInput',
+        props: {
+          label: 'Your name',
+          placeholder: 'Type your name…',
+          value: { $bindState: '/form/name' },
+        },
+        children: [],
+      },
+      greetRow: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 6, align: 'center' },
+        children: ['greetLabel', 'greetName'],
+      },
+      greetLabel: {
+        type: 'Text',
+        props: { text: 'Hello,', variant: 'body', color: 'muted' },
+        children: [],
+      },
+      greetName: {
+        type: 'Text',
+        props: {
+          text: { $state: '/form/name' },
+          variant: 'body',
+          color: 'primary',
+        },
+        children: [],
+      },
+      compact: {
+        type: 'Switch',
+        props: {
+          label: 'Compact mode',
+          value: { $bindState: '/prefs/compact' },
+        },
+        children: [],
+      },
 
       /** ── Actions mutate state → the DataTable re-renders ── */
-      notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
-      notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
-      draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
-      draftInput: { type: 'TextInput', props: { label: 'New note', placeholder: 'Write something…', value: { $bindState: '/draft' } }, children: [] },
+      notes: {
+        type: 'Card',
+        props: { title: 'Notes' },
+        children: ['notesBody'],
+      },
+      notesBody: {
+        type: 'Stack',
+        props: { gap: 10 },
+        children: ['draftRow', 'notesTable', 'clearBtn'],
+      },
+      draftRow: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 8, align: 'end' },
+        children: ['draftInput', 'addBtn'],
+      },
+      draftInput: {
+        type: 'TextInput',
+        props: {
+          label: 'New note',
+          placeholder: 'Write something…',
+          value: { $bindState: '/draft' },
+        },
+        children: [],
+      },
       addBtn: {
         type: 'Button',
         props: { label: 'Add', variant: 'primary', icon: 'ph:plus' },
         /** Built-in `pushState`: append the typed draft to /notes, then clear the input. */
-        on: { press: { action: 'pushState', params: { statePath: '/notes', value: { text: { $state: '/draft' } }, clearStatePath: '/draft' } } },
+        on: {
+          press: {
+            action: 'pushState',
+            params: {
+              statePath: '/notes',
+              value: {
+                text: { $state: '/draft' },
+              },
+              clearStatePath: '/draft',
+            },
+          },
+        },
         children: [],
       },
       notesTable: {
         type: 'DataTable',
-        props: { columns: [{ key: 'text', label: 'Note' }], rows: { $state: '/notes' }, height: 160 },
+        props: {
+          columns: [
+            { key: 'text', label: 'Note' },
+          ],
+          rows: { $state: '/notes' },
+          height: 160,
+        },
         children: [],
       },
       clearBtn: {
         type: 'Button',
         props: { label: 'Clear all', variant: 'ghost', icon: 'ph:trash' },
         /** Built-in `setState`: replace /notes with an empty array. */
-        on: { press: { action: 'setState', params: { statePath: '/notes', value: [] } } },
+        on: {
+          press: {
+            action: 'setState',
+            params: { statePath: '/notes', value: [] },
+          },
+        },
         children: [],
       },
 
-      env: { type: 'Card', props: { title: 'Environment', collapsible: true, defaultCollapsed: true }, children: ['envTable'] },
+      env: {
+        type: 'Card',
+        props: { title: 'Environment', collapsible: true, defaultCollapsed: true },
+        children: ['envTable'],
+      },
       envTable: {
         type: 'KeyValueTable',
         props: {
@@ -158,7 +274,9 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       form: { name: '' },
       prefs: { compact: false },
       draft: '',
-      notes: [{ text: 'Authored entirely in the browser' }],
+      notes: [
+        { text: 'Authored entirely in the browser' },
+      ],
     },
   }
 }
@@ -184,7 +302,9 @@ function registerClientDocks(ctx: ClientContext): () => void {
     title: 'Client Playground',
     icon: 'ph:sliders-horizontal-duotone',
     type: 'json-render',
-    view: { spec: createClientPlaygroundSpec(ctx.clientType) },
+    view: {
+      spec: createClientPlaygroundSpec(ctx.clientType),
+    },
     category: 'app',
   }, true)
   return () => {
@@ -223,7 +343,9 @@ function pollDrawer(
 /** Fetches (and caches, for the component's lifetime) a dock icon's sanitized SVG. */
 function useDockIconSvg(icon: DevframeDockEntry['icon']): string | undefined {
   const [svg, setSvg] = useState<string | undefined>(undefined)
-  const key = typeof icon === 'string' ? icon : icon?.light
+  const key = typeof icon === 'string'
+    ? icon
+    : icon?.light
 
   useEffect(() => {
     let cancelled = false
@@ -411,7 +533,9 @@ export default function Page() {
         // frontend - delete it and the dock renders through the Vue module.
         const clientHost = await createDevframeClientRuntime({
           rpc,
-          renderers: { 'json-render': createReactJsonRenderDockRenderer() },
+          renderers: {
+            'json-render': createReactJsonRenderDockRenderer(),
+          },
         })
         hostRef.current = clientHost
         const ctx = clientHost.context
@@ -436,7 +560,9 @@ export default function Page() {
         // hear a dock's `entry:activated` and drive shared-frame soft-navigation.
         const syncDocks = () => setDocks([...ctx.docks.entries])
         const syncSelected = () => setSelectedDockId(ctx.docks.selectedId)
-        const renderCommands = () => setCommands([...(commandsState.value() ?? [])] as DevframeCommandEntry[])
+        const renderCommands = () => setCommands([
+          ...(commandsState.value() ?? []),
+        ] as DevframeCommandEntry[])
         docksState.on('updated', syncDocks)
         commandsState.on('updated', renderCommands)
         syncDocks()
@@ -519,7 +645,9 @@ export default function Page() {
   }, [renderableDocks, selectedDockId])
 
   const selectedDock = renderableDocks.find(d => d.id === selectedDockId) ?? null
-  const selectedIsIframe = selectedDock ? isIframeDock(selectedDock) : false
+  const selectedIsIframe = selectedDock
+    ? isIframeDock(selectedDock)
+    : false
 
   // Keep-alive iframe pool: ensure + show the iframe for the selected dock's
   // frame, hide the rest. Creating an iframe hands it to the client host
@@ -614,7 +742,11 @@ export default function Page() {
     }
   }
 
-  const statusDot = status.kind === 'ready' ? 'bg-success' : status.kind === 'error' ? 'bg-error' : 'bg-neutral-400'
+  const statusDot = status.kind === 'ready'
+    ? 'bg-success'
+    : status.kind === 'error'
+      ? 'bg-error'
+      : 'bg-neutral-400'
   const titleClass = 'mb2 text-[0.68rem] uppercase tracking-wider color-muted'
   const rowClass = 'rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono'
 
@@ -651,7 +783,9 @@ export default function Page() {
                         else
                           void ctx?.docks.switchEntry(dock.id)
                       }}
-                      className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId ? ' op100! bg-active border-base! color-base' : ''}`}
+                      className={`relative inline-flex items-center gap-1.5 max-w-52 px-2 py-1 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active w-full! max-w-none! gap-2.5!${dock.id === selectedDockId
+                        ? ' op100! bg-active border-base! color-base'
+                        : ''}`}
                       title={resolveTitle(dock, navigator.language)}
                     >
                       <DockIcon entry={dock} />
@@ -683,7 +817,9 @@ export default function Page() {
           <h2 className={titleClass}>Transport</h2>
           <p className="m0 rounded-lg border border-base bg-base border-dashed px2.5 py1.5 text-xs font-mono op-mute">
             {transport
-              ? `Connected over ${transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
+              ? `Connected over ${transport} (${transportPref === 'auto'
+                ? 'auto-selected'
+                : 'pinned'})`
               : 'Connecting…'}
           </p>
           {/* Segmented selector (LayoutTabs variant="segment" port): a
@@ -694,7 +830,9 @@ export default function Page() {
                 key={pref}
                 type="button"
                 onClick={() => applyTransportPref(pref)}
-                className={`rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${pref === transportPref ? 'bg-base color-active shadow-sm' : 'color-muted hover:color-base'}`}
+                className={`rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${pref === transportPref
+                  ? 'bg-base color-active shadow-sm'
+                  : 'color-muted hover:color-base'}`}
               >
                 {transportLabel(pref)}
               </button>

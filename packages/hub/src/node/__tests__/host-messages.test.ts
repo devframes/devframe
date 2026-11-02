@@ -33,7 +33,9 @@ describe('devframeMessagesHost', () => {
     })
 
     await host.error('boom')
-    const levels = [...host.entries.values()].map(e => e.level)
+    const levels = [
+      ...host.entries.values(),
+    ].map(e => e.level)
     expect(levels).toEqual(['info', 'error'])
   })
 

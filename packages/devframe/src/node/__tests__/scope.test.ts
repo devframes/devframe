@@ -25,7 +25,11 @@ function createTestHost(dir: string): DevframeHost {
 async function createCtx() {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-scope-'))
   tempDirs.push(dir)
-  const ctx = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+  const ctx = await createHostContext({
+    cwd: dir,
+    mode: 'dev',
+    host: createTestHost(dir),
+  })
   return { ctx, dir }
 }
 
@@ -70,7 +74,9 @@ describe('ctx.scope()', () => {
       ctx.scope('my-plugin').rpc.register(defineRpcFunction({
         name: 'get-cwd',
         type: 'query',
-        setup: () => ({ handler: async () => 'value' }),
+        setup: () => ({
+          handler: async () => 'value',
+        }),
       }))
       expect(ctx.rpc.definitions.has('my-plugin:get-cwd')).toBe(true)
       expect(ctx.rpc.definitions.has('get-cwd')).toBe(false)
@@ -81,7 +87,9 @@ describe('ctx.scope()', () => {
       const register = () => ctx.scope('my-plugin').rpc.register(defineRpcFunction({
         name: 'my-plugin:get-cwd',
         type: 'query',
-        setup: () => ({ handler: async () => 'value' }),
+        setup: () => ({
+          handler: async () => 'value',
+        }),
       }))
       expect(register).toThrow('already-namespaced')
       expect(register).toThrow('my-plugin:get-cwd')
@@ -95,7 +103,9 @@ describe('ctx.scope()', () => {
       scoped.rpc.register(defineRpcFunction({
         name: 'add',
         type: 'query',
-        setup: () => ({ handler: async (a: number, b: number) => a + b }),
+        setup: () => ({
+          handler: async (a: number, b: number) => a + b,
+        }),
       }))
       await expect(scoped.rpc.call('add' as any, 2, 3)).resolves.toBe(5)
     })
@@ -105,7 +115,9 @@ describe('ctx.scope()', () => {
       ctx.rpc.register(defineRpcFunction({
         name: 'other-plugin:ping',
         type: 'query',
-        setup: () => ({ handler: async () => 'pong' }),
+        setup: () => ({
+          handler: async () => 'pong',
+        }),
       }))
       await expect(ctx.scope('my-plugin').rpc.call('other-plugin:ping' as any)).resolves.toBe('pong')
     })
@@ -114,7 +126,9 @@ describe('ctx.scope()', () => {
   describe('rpc.sharedState', () => {
     it('auto-namespaces the state key', async () => {
       const { ctx } = await createCtx()
-      const state = await ctx.scope('my-plugin').rpc.sharedState('messages', { initialValue: { items: [] as string[] } })
+      const state = await ctx.scope('my-plugin').rpc.sharedState('messages', {
+        initialValue: { items: [] as string[] },
+      })
       state.mutate((draft) => {
         draft.items.push('hello')
       })
@@ -186,7 +200,11 @@ describe('ctx.scope()', () => {
       // Exercise the handlers used by RPC clients without touching node settings first.
       await ctx.rpc.invokeLocal('devframe:rpc:server-state:set', key, { theme: 'dark' }, 'client')
       await sleep(250)
-      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      const restarted = await createHostContext({
+        cwd: dir,
+        mode: 'dev',
+        host: createTestHost(dir),
+      })
       expect(await restarted.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toEqual({ theme: 'dark' })
       expect(await restarted.scope('client-only').settings[scope].all()).toEqual({ theme: 'dark' })
     })
@@ -195,9 +213,19 @@ describe('ctx.scope()', () => {
       const { ctx, dir } = await createCtx()
       await ctx.scope('my-plugin').settings.project.set('theme', 'dark')
       await sleep(250)
-      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      const restarted = await createHostContext({
+        cwd: dir,
+        mode: 'dev',
+        host: createTestHost(dir),
+      })
       const key = 'devframe:settings:project:my-plugin'
-      await restarted.rpc.invokeLocal('devframe:rpc:server-state:patch', key, [{ op: 'add', path: ['zoom'], value: 2 }], 'client')
+      await restarted.rpc.invokeLocal('devframe:rpc:server-state:patch', key, [
+        {
+          op: 'add',
+          path: ['zoom'],
+          value: 2,
+        },
+      ], 'client')
       expect(await restarted.scope('my-plugin').settings.project.all()).toEqual({ theme: 'dark', zoom: 2 })
       expect(await restarted.scope('other-plugin').settings.project.all()).toEqual({})
       expect(await restarted.scope('my-plugin').settings.global.all()).toEqual({})
@@ -212,7 +240,11 @@ describe('ctx.scope()', () => {
       expect(await ctx.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toEqual({ value: 1 })
       await sleep(250)
       expect(existsSync(join(dir, 'project'))).toBe(false)
-      const restarted = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+      const restarted = await createHostContext({
+        cwd: dir,
+        mode: 'dev',
+        host: createTestHost(dir),
+      })
       expect(await restarted.rpc.invokeLocal('devframe:rpc:server-state:get', key)).toBeUndefined()
     })
 

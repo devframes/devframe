@@ -44,7 +44,10 @@ export function defineDiagnostics<
 }): DevframeDiagnostics<Codes, Reporters> {
   return defineNosticsDiagnostics({
     ...options,
-    reporters: [devframeReporter, ...(options.reporters ?? [])],
+    reporters: [
+      devframeReporter,
+      ...(options.reporters ?? []),
+    ],
   }) as DevframeDiagnostics<Codes, Reporters>
 }
 

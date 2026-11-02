@@ -13,6 +13,11 @@ export default defineConfig({
    */
   execute: async (operation) => {
     await syncStarterVersion(operation.state.newVersion)
-    await x('pnpm', ['install', '--frozen-lockfile=false'], { nodeOptions: { stdio: 'inherit', cwd: process.cwd() } })
+    await x('pnpm', ['install', '--frozen-lockfile=false'], {
+      nodeOptions: {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+      },
+    })
   },
 })

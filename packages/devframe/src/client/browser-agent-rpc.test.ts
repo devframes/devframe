@@ -25,7 +25,9 @@ describe('browser agent RPC bridge', () => {
       ) {
         return callOptional(method, clientId, tools, info)
       },
-      events: { on: () => () => {} },
+      events: {
+        on: () => () => {},
+      },
     }
 
     disposals.push(registerBrowserAgentTool({
@@ -39,13 +41,20 @@ describe('browser agent RPC bridge', () => {
     await vi.waitFor(() => expect(callOptional).toHaveBeenCalledWith(
       'devframe:agent:sync-client-tools',
       expect.any(String),
-      [{
-        id: 'todos:add',
-        description: 'Add a todo.',
-        safety: 'action',
-        inputSchema: { type: 'object' },
-      }],
-      { url: expect.any(String), title: expect.any(String), visible: expect.any(Boolean), focused: expect.any(Boolean) },
+      [
+        {
+          id: 'todos:add',
+          description: 'Add a todo.',
+          safety: 'action',
+          inputSchema: { type: 'object' },
+        },
+      ],
+      {
+        url: expect.any(String),
+        title: expect.any(String),
+        visible: expect.any(Boolean),
+        focused: expect.any(Boolean),
+      },
     ))
 
     await expect(handlers.get('devframe:agent:invoke-client-tool')!(
@@ -81,9 +90,13 @@ describe('browser agent RPC bridge', () => {
         invoke: () => undefined,
       }))
       disposals.push(setupBrowserAgentRpcBridge({
-        client: { register() {} },
+        client: {
+          register() {},
+        },
         callOptional: (...args) => callOptional(...args),
-        events: { on: () => () => {} },
+        events: {
+          on: () => () => {},
+        },
       }))
       const lastInfo = () => callOptional.mock.lastCall?.[3]
       return { callOptional, lastInfo }

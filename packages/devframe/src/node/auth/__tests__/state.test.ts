@@ -9,7 +9,9 @@ import {
 } from '../state'
 
 function makeStorage() {
-  return createSharedState({ initialValue: { trusted: {} as Record<string, any> } }) as any
+  return createSharedState({
+    initialValue: { trusted: {} as Record<string, any> },
+  }) as any
 }
 function makeSession() {
   return { meta: {} } as any
@@ -39,7 +41,9 @@ describe('exchangeTempAuthCode', () => {
   it('rotates the code after 5 failed attempts', () => {
     const storage = makeStorage()
     const code = getTempAuthCode()
-    const wrong = code === '000000' ? '111111' : '000000'
+    const wrong = code === '000000'
+      ? '111111'
+      : '000000'
     for (let i = 0; i < 5; i++)
       expect(exchangeTempAuthCode(wrong, makeSession(), INFO, storage)).toBeNull()
     // Code rotated by the lockout, so the original valid code is now dead.

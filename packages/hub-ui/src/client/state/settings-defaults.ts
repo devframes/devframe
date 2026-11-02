@@ -81,7 +81,10 @@ export function useSettings(context: DocksContext): ComputedRef<ResolvedDocksUse
   let settings = settingsByContext.get(context)
   if (!settings) {
     const stored = sharedStateToRef(context.docks.settings)
-    settings = computed(() => ({ ...HUB_UI_SETTINGS_DEFAULTS, ...stored.value }))
+    settings = computed(() => ({
+      ...HUB_UI_SETTINGS_DEFAULTS,
+      ...stored.value,
+    }))
     settingsByContext.set(context, settings)
   }
   return settings

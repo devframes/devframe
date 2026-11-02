@@ -11,7 +11,11 @@ describe('streaming-channel sink', () => {
     sink.write('b')
     sink.write('c')
 
-    expect(seen).toEqual([[1, 'a'], [2, 'b'], [3, 'c']])
+    expect(seen).toEqual([
+      [1, 'a'],
+      [2, 'b'],
+      [3, 'c'],
+    ])
     expect(sink.lastSeq).toBe(3)
   })
 
@@ -62,11 +66,26 @@ describe('streaming-channel sink', () => {
   })
 
   it.each([
-    { replayWindow: 1, retained: [5] },
-    { replayWindow: 3, retained: [3, 4, 5] },
-    { replayWindow: 0.5, retained: [5] },
-    { replayWindow: 2.5, retained: [3, 4, 5] },
-    { replayWindow: Number.POSITIVE_INFINITY, retained: [1, 2, 3, 4, 5] },
+    {
+      replayWindow: 1,
+      retained: [5],
+    },
+    {
+      replayWindow: 3,
+      retained: [3, 4, 5],
+    },
+    {
+      replayWindow: 0.5,
+      retained: [5],
+    },
+    {
+      replayWindow: 2.5,
+      retained: [3, 4, 5],
+    },
+    {
+      replayWindow: Number.POSITIVE_INFINITY,
+      retained: [1, 2, 3, 4, 5],
+    },
     { replayWindow: Number.NaN, retained: [] },
   ])('preserves replay entries and buffer identity with window $replayWindow', ({ replayWindow, retained }) => {
     const sink = createStreamSink<number>({ replayWindow })
@@ -101,7 +120,10 @@ describe('streaming-channel sink', () => {
     })
     await source.pipeTo(sink.writable)
 
-    expect(seen).toEqual([[1, 'x'], [2, 'y']])
+    expect(seen).toEqual([
+      [1, 'x'],
+      [2, 'y'],
+    ])
     expect(sink.closed).toBe(true)
   })
 

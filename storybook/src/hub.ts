@@ -138,7 +138,17 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     const session = await ctx.terminals.startChildProcess(
       {
         command: process.execPath,
-        args: [storybookBin, 'dev', '--config-dir', storybookConfigDir(meta.id), '--port', String(port), '--host', '0.0.0.0', '--no-open'],
+        args: [
+          storybookBin,
+          'dev',
+          '--config-dir',
+          storybookConfigDir(meta.id),
+          '--port',
+          String(port),
+          '--host',
+          '0.0.0.0',
+          '--no-open',
+        ],
         cwd: pluginDir(meta.id),
         env: { STORYBOOK_DISABLE_TELEMETRY: '1' },
       },
@@ -174,8 +184,15 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
     // update a child-process session's status on its own exit).
     child?.on('exit', (code) => {
       devServers.delete(meta.id)
-      if (ctx.terminals.sessions.has(sessionId))
-        ctx.terminals.update({ id: sessionId, title, status: code === 0 ? 'stopped' : 'error' })
+      if (ctx.terminals.sessions.has(sessionId)) {
+        ctx.terminals.update({
+          id: sessionId,
+          title,
+          status: code === 0
+            ? 'stopped'
+            : 'error',
+        })
+      }
     })
 
     devServers.set(meta.id, { ready, session })
@@ -213,7 +230,9 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
        * Prefer 9787 but fall back to a free port when taken; the client
        * discovers whatever was chosen via `__connection.json`.
        */
-      ws: options.port != null ? { port: options.port } : { sidecar: true },
+      ws: options.port != null
+        ? { port: options.port }
+        : { sidecar: true },
       getStorageDir(scope) {
         if (scope === 'workspace')
           return join(cwd, '.devframe')
@@ -227,7 +246,12 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
        * "Terminals" Storybook. It also mirrors the hub's `ctx.terminals`
        * sessions, so the spawned `storybook dev` processes appear inside it.
        */
-      devframes: [{ devframe: createTerminalsDevframe(), dock: { category: 'Plugins' } }],
+      devframes: [
+        {
+          devframe: createTerminalsDevframe(),
+          dock: { category: 'Plugins' },
+        },
+      ],
       configure(context) {
         // Live launcher handles, so the launch command can patch each tile's
         // status/digest/terminalSessionId as the process boots.
@@ -244,7 +268,9 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
             ? `Open the pre-built ${meta.title} Storybook`
             : `Start the ${meta.title} plugin's Storybook dev server`,
           command: launchCommandFor(meta.id),
-          buttonStart: mode === 'build' ? 'Open Storybook' : 'Start Storybook',
+          buttonStart: mode === 'build'
+            ? 'Open Storybook'
+            : 'Start Storybook',
           buttonLoading: 'Starting…',
           status: 'idle',
           ...patch,
@@ -258,7 +284,9 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
         const launchStorybook = async (meta: StorybookMeta): Promise<EnsureStorybookResult> => {
           const handle = launchers.get(meta.id)
           const patch = (p: Partial<DevframeViewLauncher['launcher']>): void =>
-            handle?.update({ launcher: launcherState(meta, p) })
+            handle?.update({
+              launcher: launcherState(meta, p),
+            })
 
           if (mode === 'build') {
             if (!existsSync(storybookStaticDir(meta.id))) {
@@ -273,13 +301,25 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
           patch({ status: 'loading', digest: 'Starting Storybook dev server…' })
           try {
             const port = await ensureDevServer(context, meta, line =>
-              patch({ status: 'loading', terminalSessionId: sessionIdFor(meta.id), digest: line }))
-            patch({ status: 'success', terminalSessionId: sessionIdFor(meta.id), digest: `Ready on port ${port}` })
+              patch({
+                status: 'loading',
+                terminalSessionId: sessionIdFor(meta.id),
+                digest: line,
+              }))
+            patch({
+              status: 'success',
+              terminalSessionId: sessionIdFor(meta.id),
+              digest: `Ready on port ${port}`,
+            })
             return { ok: true, kind: 'port', port }
           }
           catch (error) {
             const message = (error as Error).message
-            patch({ status: 'error', terminalSessionId: sessionIdFor(meta.id), error: message })
+            patch({
+              status: 'error',
+              terminalSessionId: sessionIdFor(meta.id),
+              error: message,
+            })
             return { ok: false, error: message }
           }
         }
@@ -292,7 +332,9 @@ export function storybookHub(options: StorybookHubOptions = {}): Plugin {
         for (const meta of STORYBOOKS) {
           context.commands.register({
             id: launchCommandFor(meta.id),
-            title: `${mode === 'build' ? 'Open' : 'Start'} ${meta.title} Storybook`,
+            title: `${mode === 'build'
+              ? 'Open'
+              : 'Start'} ${meta.title} Storybook`,
             icon: meta.icon,
             category: 'Storybooks',
             handler: () => launchStorybook(meta),
@@ -359,7 +401,9 @@ async function waitForPort(port: number, timeoutMs: number): Promise<void> {
 }
 
 function normalizeBase(base: string): string {
-  let out = base.startsWith('/') ? base : `/${base}`
+  let out = base.startsWith('/')
+    ? base
+    : `/${base}`
   if (!out.endsWith('/'))
     out = `${out}/`
   return out

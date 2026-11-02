@@ -51,11 +51,16 @@ function sseBridge(): Plugin {
  * {@link sseBridge} bridges the node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? BASE : './',
+  base: command === 'serve'
+    ? BASE
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
   server: { allowedHosts: true, strictPort: false },
-  plugins: [UnoCSS(), sseBridge()],
+  plugins: [
+    UnoCSS(),
+    sseBridge(),
+  ],
   build: {
     outDir: fileURLToPath(new URL('../dist/client', import.meta.url)),
     emptyOutDir: true,

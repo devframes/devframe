@@ -21,7 +21,9 @@ const DEFAULT_PORT = 9999
 export function resolveBasePath(def: DevframeDefinition, kind: DevframeDeploymentKind): string {
   if (def.basePath)
     return normalizeBasePath(def.basePath)
-  return kind === 'standalone' ? '/' : `/__${def.id}/`
+  return kind === 'standalone'
+    ? '/'
+    : `/__${def.id}/`
 }
 
 export function normalizeBasePath(base: string): string {
@@ -105,13 +107,27 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
     ? false
     : mcp.authorization ?? false
   return {
-    ...(mcp.path !== undefined ? { path: mcp.path } : {}),
-    ...(mcp.allowedOrigins !== undefined ? { allowedOrigins: mcp.allowedOrigins } : {}),
-    ...(mcp.exposeSharedState !== undefined ? { exposeSharedState: mcp.exposeSharedState } : {}),
-    ...(mcp.instructions !== undefined ? { instructions: mcp.instructions } : {}),
-    ...(mcp.resourceTemplates !== undefined ? { resourceTemplates: mcp.resourceTemplates } : {}),
-    ...(mcp.onResourcesChanged !== undefined ? { onResourcesChanged: mcp.onResourcesChanged } : {}),
-    ...(mcp.prompts !== undefined ? { prompts: mcp.prompts } : {}),
+    ...(mcp.path !== undefined
+      ? { path: mcp.path }
+      : {}),
+    ...(mcp.allowedOrigins !== undefined
+      ? { allowedOrigins: mcp.allowedOrigins }
+      : {}),
+    ...(mcp.exposeSharedState !== undefined
+      ? { exposeSharedState: mcp.exposeSharedState }
+      : {}),
+    ...(mcp.instructions !== undefined
+      ? { instructions: mcp.instructions }
+      : {}),
+    ...(mcp.resourceTemplates !== undefined
+      ? { resourceTemplates: mcp.resourceTemplates }
+      : {}),
+    ...(mcp.onResourcesChanged !== undefined
+      ? { onResourcesChanged: mcp.onResourcesChanged }
+      : {}),
+    ...(mcp.prompts !== undefined
+      ? { prompts: mcp.prompts }
+      : {}),
     authorization,
   }
 }
@@ -161,6 +177,9 @@ export function resolveMcpConnectionMeta(
     return undefined
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
   return port != null
-    ? { path: withLeadingSlash(route), port }
+    ? {
+        path: withLeadingSlash(route),
+        port,
+      }
     : { path: route }
 }

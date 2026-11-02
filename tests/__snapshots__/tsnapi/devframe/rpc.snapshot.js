@@ -31,15 +31,18 @@ export class RpcFunctionsCollectorBase {
 }
 // #endregion
 
-// #region Other
-export { createDefineWrapperWithContext }
-export { defineRpcFunction }
-export { getRpcHandler }
-export { getRpcResolvedSetupResult }
-export { strictJsonStringify }
-export { STRUCTURED_CLONE_PREFIX }
-export { validateDefinition }
-export { validateDefinitions }
-export { validateRpcArgs }
-export { validateRpcReturn }
+// #region Functions
+export function createDefineWrapperWithContext() {}
+export function defineRpcFunction(_) {}
+export async function getRpcHandler(_, _) {}
+export async function getRpcResolvedSetupResult(_, _) {}
+export function strictJsonStringify(_, _) {}
+export function validateDefinition(_) {}
+export function validateDefinitions(_) {}
+export async function validateRpcArgs(_, _, _) {}
+export async function validateRpcReturn(_, _, _) {}
+// #endregion
+
+// #region Variables
+export var STRUCTURED_CLONE_PREFIX /* const */
 // #endregion

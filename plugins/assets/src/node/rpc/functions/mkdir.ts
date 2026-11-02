@@ -9,7 +9,11 @@ export const mkdir = defineRpcFunction({
   name: 'devframes:plugin:assets:mkdir',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ path: s.string() })],
+  args: [
+    s.object({
+      path: s.string(),
+    }),
+  ],
   returns: s.void(),
   agent: {
     title: 'Create a folder',

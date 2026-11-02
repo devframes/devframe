@@ -7,11 +7,46 @@ import DockStandalone from './DockStandalone.vue'
 // Standalone renders the selected entry's view; use about:blank iframes so the
 // shell renders without a dev server.
 const blankEntries: DevframeDockEntry[] = [
-  { id: 'overview', type: 'iframe', url: 'about:blank', title: 'Overview', icon: 'ph:gauge-duotone', category: 'app' },
-  { id: 'routes', type: 'iframe', url: 'about:blank', title: 'Routes', icon: 'ph:signpost-duotone', category: 'app' },
-  { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'logos:nuxt-icon', category: 'framework', defaultChildId: 'nuxt:overview' },
-  { id: 'nuxt:overview', type: 'iframe', url: 'about:blank', title: 'Overview', icon: 'ph:gauge-duotone', groupId: 'nuxt' },
-  { id: 'nuxt:pages', type: 'iframe', url: 'about:blank', title: 'Pages', icon: 'ph:files-duotone', groupId: 'nuxt' },
+  {
+    id: 'overview',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Overview',
+    icon: 'ph:gauge-duotone',
+    category: 'app',
+  },
+  {
+    id: 'routes',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Routes',
+    icon: 'ph:signpost-duotone',
+    category: 'app',
+  },
+  {
+    id: 'nuxt',
+    type: 'group',
+    title: 'Nuxt',
+    icon: 'logos:nuxt-icon',
+    category: 'framework',
+    defaultChildId: 'nuxt:overview',
+  },
+  {
+    id: 'nuxt:overview',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Overview',
+    icon: 'ph:gauge-duotone',
+    groupId: 'nuxt',
+  },
+  {
+    id: 'nuxt:pages',
+    type: 'iframe',
+    url: 'about:blank',
+    title: 'Pages',
+    icon: 'ph:files-duotone',
+    groupId: 'nuxt',
+  },
 ] as DevframeDockEntry[]
 
 const meta = {

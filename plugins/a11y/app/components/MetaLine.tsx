@@ -13,7 +13,9 @@ export function MetaLine(props: MetaLineProps) {
   // tag rather than taking over the panel.
   const degraded = () => {
     const s = props.status?.()
-    return s === 'disconnected' || s === 'unauthorized' || s === 'error' ? s : null
+    return s === 'disconnected' || s === 'unauthorized' || s === 'error'
+      ? s
+      : null
   }
   return (
     <Show when={props.url}>

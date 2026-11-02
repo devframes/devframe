@@ -24,6 +24,10 @@ export const Icon: JrComponent<IconProps> = ({ props }) => {
       class: 'inline-flex shrink-0 items-center justify-center',
       style: { fontSize: `${size}px`, width: `${size}px`, height: `${size}px` },
     },
-    props.name ? [h(DisplayIconifyRemoteIcon, { icon: props.name })] : [],
+    props.name
+      ? [
+          h(DisplayIconifyRemoteIcon, { icon: props.name }),
+        ]
+      : [],
   )
 }

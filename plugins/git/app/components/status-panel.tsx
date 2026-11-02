@@ -84,7 +84,9 @@ export function StatusPanel() {
   }, [rpc, message, setData])
 
   const selectFile = useCallback((path: string, staged: boolean) => {
-    setSelected(prev => (prev && prev.path === path && prev.staged === staged ? null : { path, staged }))
+    setSelected(prev => (prev && prev.path === path && prev.staged === staged
+      ? null
+      : { path, staged }))
   }, [])
 
   return (
@@ -95,7 +97,9 @@ export function StatusPanel() {
       canWrite={!!canWrite}
       message={message}
       note={note}
-      selectedKey={selected ? `${selected.staged}:${selected.path}` : null}
+      selectedKey={selected
+        ? `${selected.staged}:${selected.path}`
+        : null}
       onRefresh={refresh}
       onStage={stage}
       onUnstage={unstage}

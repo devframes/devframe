@@ -33,10 +33,14 @@ const HERE = fileURLToPath(new URL('.', import.meta.url))
 const ROOT = resolve(HERE, '..')
 
 const devframe = createA11yDevframe()
-const mode = process.argv[2] === 'build' ? 'build' : 'dev'
+const mode = process.argv[2] === 'build'
+  ? 'build'
+  : 'dev'
 const basePath = devframe.basePath
 const injectDir = resolve(ROOT, 'dist/client-script')
-const panelDir = mode === 'build' ? resolve(ROOT, 'dist/static') : resolve(ROOT, 'assets-pkg/dist')
+const panelDir = mode === 'build'
+  ? resolve(ROOT, 'dist/static')
+  : resolve(ROOT, 'assets-pkg/dist')
 
 function requireBuilt(file, hint) {
   if (!existsSync(file)) {
@@ -46,7 +50,9 @@ function requireBuilt(file, hint) {
 }
 
 function banner(origin) {
-  const label = mode === 'build' ? 'static build (baked RPC dump)' : 'dev (live WebSocket RPC)'
+  const label = mode === 'build'
+    ? 'static build (baked RPC dump)'
+    : 'dev (live WebSocket RPC)'
   process.stdout.write(
     `\n  A11y Inspector demo: ${label}\n`
     + `  ▸ host app + docked panel:  ${origin}/\n`

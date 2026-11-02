@@ -60,7 +60,17 @@ it.each([false, true])('keeps concurrent sessions isolated with schema validatio
   rpc.register({
     name: 'test:session',
     type: 'query',
-    args: withSchema ? [{ '~standard': { version: 1, vendor: 'test', validate: async (value: unknown) => ({ value }) } }] : undefined,
+    args: withSchema
+      ? [
+          {
+            '~standard': {
+              version: 1,
+              vendor: 'test',
+              validate: async (value: unknown) => ({ value }),
+            },
+          },
+        ]
+      : undefined,
     setup,
   })
   const first = connect('first')
@@ -81,7 +91,9 @@ it('rejects unknown methods', async () => {
 
 it('rejects unauthorized calls before running setup', async () => {
   const { rpc, connect } = createServer(() => false)
-  const setup = vi.fn(async () => ({ handler: () => 'value' }))
+  const setup = vi.fn(async () => ({
+    handler: () => 'value',
+  }))
   rpc.register({ name: 'test:private', type: 'query', setup })
   await expect(connect('first').$call('test:private')).rejects.toThrow('not authorized')
   expect(setup).not.toHaveBeenCalled()
@@ -91,7 +103,9 @@ it('returns setup errors to the caller and allows a retry', async () => {
   const { rpc, connect } = createServer()
   const setup = vi.fn()
     .mockRejectedValueOnce(new Error('setup failed'))
-    .mockResolvedValue({ handler: () => 'ready' })
+    .mockResolvedValue({
+      handler: () => 'ready',
+    })
   rpc.register({ name: 'test:setup', type: 'query', setup })
   const client = connect('first')
   await expect(client.$call('test:setup')).rejects.toThrow('setup failed')

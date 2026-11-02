@@ -42,12 +42,19 @@ function assertSafeObjectKey(key: string): void {
  * property name the target doesn't already own (`add`, `rename`'s new key).
  */
 function defineOwnDataProperty(target: object, key: string, value: unknown): void {
-  Object.defineProperty(target, key, { configurable: true, enumerable: true, writable: true, value })
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value,
+  })
 }
 
 /** Decode a discriminated wire value into the raw JS value to write. */
 function decode(value: WriteValue): unknown {
-  return value.kind === 'undefined' ? undefined : value.value
+  return value.kind === 'undefined'
+    ? undefined
+    : value.value
 }
 
 /** A JSON-expressible Map key / Set element (string-coerced object keys aside). */
@@ -73,7 +80,9 @@ function realIndex(arr: unknown[], filtered: number, opts: WriteApplyOptions): n
 }
 
 function entryAt(map: Map<unknown, unknown>, index: number): [unknown, unknown] {
-  const entry = [...map.entries()][index]
+  const entry = [
+    ...map.entries(),
+  ][index]
   if (!entry)
     throw new WriteError('PathNotFound', `Map entry ${index} does not exist`)
   return entry
@@ -219,7 +228,9 @@ function addTo(container: object, key: WriteValue | undefined, value: unknown, o
     return
   }
   if (Array.isArray(container)) {
-    const rawIndex = key ? decode(key) : undefined
+    const rawIndex = key
+      ? decode(key)
+      : undefined
     if (rawIndex === undefined) {
       container.push(value)
       return
@@ -227,7 +238,9 @@ function addTo(container: object, key: WriteValue | undefined, value: unknown, o
     if (typeof rawIndex !== 'number' || !Number.isInteger(rawIndex))
       throw new WriteError('InvalidKey', 'an array insertion index must be an integer')
     const index = realIndex(container, rawIndex, opts)
-    container.splice(index < 0 ? container.length : index, 0, value)
+    container.splice(index < 0
+      ? container.length
+      : index, 0, value)
     return
   }
   assertMutableObject(container)
@@ -325,7 +338,12 @@ export function applyWrite(root: unknown, request: WriteRequest, options: WriteA
     return { ok: true }
   }
   catch (error) {
-    const e = error instanceof Error ? error : new Error(String(error))
-    return { ok: false, error: { name: e.name, message: e.message } }
+    const e = error instanceof Error
+      ? error
+      : new Error(String(error))
+    return {
+      ok: false,
+      error: { name: e.name, message: e.message },
+    }
   }
 }

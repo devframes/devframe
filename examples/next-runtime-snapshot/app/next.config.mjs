@@ -13,7 +13,9 @@ import { PHASE_DEVELOPMENT_SERVER } from 'next/constants.js'
 export default (phase) => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER
   return {
-    ...(isDev ? {} : { output: 'export', assetPrefix: '.', trailingSlash: true }),
+    ...(isDev
+      ? {}
+      : { output: 'export', assetPrefix: '.', trailingSlash: true }),
     images: { unoptimized: true },
     /**
      * The workspace tsconfig uses path aliases that point at devframe's

@@ -38,7 +38,11 @@ function connectPair(options: {
   const fetchImpl: typeof fetch = async (input, init) => {
     const request = new Request(input, {
       ...init,
-      ...(options.origin ? { headers: mergeOrigin(init?.headers, options.origin) } : {}),
+      ...(options.origin
+        ? {
+            headers: mergeOrigin(init?.headers, options.origin),
+          }
+        : {}),
     })
     return transport.handler(request)
   }
@@ -69,7 +73,9 @@ describe('sse transport pair', () => {
 
   it('round-trips structured-clone values (Map)', async () => {
     const { client } = connectPair()
-    const result = await client.$call('echoMap', new Map([['a', 1]]))
+    const result = await client.$call('echoMap', new Map([
+      ['a', 1],
+    ]))
     expect(result).toBeInstanceOf(Map)
     expect(result.get('a')).toBe(1)
   })
@@ -82,7 +88,9 @@ describe('sse transport pair', () => {
   it('delivers server-initiated calls over the stream', async () => {
     const received: string[] = []
     const { client, rpcGroup } = connectPair({
-      clientFunctions: { notify: value => void received.push(value) },
+      clientFunctions: {
+        notify: value => void received.push(value),
+      },
     })
     // Establish the session first so the broadcast has a live channel.
     await client.$call('hello', 'x')

@@ -34,7 +34,9 @@ const commands = [
         id: 'host:drill:child',
         source: 'client',
         title: 'Child',
-        children: [{ id: 'host:drill:grandchild', source: 'client', title: 'Grandchild' }],
+        children: [
+          { id: 'host:drill:grandchild', source: 'client', title: 'Grandchild' },
+        ],
       },
     ],
   },
@@ -43,7 +45,9 @@ const commands = [
     source: 'client',
     title: 'Hidden',
     showInPalette: false,
-    children: [{ id: 'host:hidden:child', source: 'client', title: 'Hidden child' }],
+    children: [
+      { id: 'host:hidden:child', source: 'client', title: 'Hidden child' },
+    ],
   },
 ] as DevframeCommandEntry[]
 

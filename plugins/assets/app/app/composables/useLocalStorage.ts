@@ -6,7 +6,9 @@ export function useLocalStorage<T>(key: string, initial: T): Ref<T> {
   const read = (): T => {
     try {
       const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
+      return raw
+        ? (JSON.parse(raw) as T)
+        : initial
     }
     catch {
       return initial

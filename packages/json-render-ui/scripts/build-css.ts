@@ -14,7 +14,12 @@ const moduleRequire = createRequire(import.meta.url)
 
 const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
-  globs: ['components/**/*.ts', 'renderer.ts', 'dock-renderer.ts', 'renderer-module/**/*.ts'],
+  globs: [
+    'components/**/*.ts',
+    'renderer.ts',
+    'dock-renderer.ts',
+    'renderer-module/**/*.ts',
+  ],
   config,
   primaryRampPath: fileURLToPath(new URL('../../../design/primary-ramp.css', import.meta.url)),
   userStylePath: [

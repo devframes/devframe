@@ -155,7 +155,9 @@ useDraggable(sortContainerEl, {
   },
   onEnd() {
     if (draggingId.value && hasMoved.value && dragOverId.value && draggingContainer.value) {
-      const items = [...itemsOfContainer(draggingContainer.value)]
+      const items = [
+        ...itemsOfContainer(draggingContainer.value),
+      ]
       const fromIndex = items.findIndex(item => item.id === draggingId.value)
       const toIndex = items.findIndex(item => item.id === dragOverId.value)
       if (fromIndex !== -1 && toIndex !== -1) {
@@ -230,7 +232,9 @@ function togglePin(id: string) {
 }
 
 function moveOrder(container: string, id: string, delta: number) {
-  const array = [...itemsOfContainer(container)]
+  const array = [
+    ...itemsOfContainer(container),
+  ]
   const index = array.findIndex(item => item.id === id)
   const newIndex = index + delta
   if (newIndex < 0 || newIndex >= array.length)

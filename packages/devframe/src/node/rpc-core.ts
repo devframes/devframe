@@ -63,7 +63,9 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
   // RPC functions and supplies both the resolver gate and the connect-time
   // trust hook. `authorize`/`onPeerConnect` are the lower-level escape
   // hatches for callers not using a full handler.
-  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object' ? options.auth : undefined
+  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object'
+    ? options.auth
+    : undefined
   const effectiveAuthorize = options.authorize ?? authHandler?.authorize
 
   if (authHandler) {

@@ -33,7 +33,9 @@ export const Card: JrComponent<CardProps> = ({ props, children, loading }) => {
   }
 
   return h(LayoutCard, { padding: false, class: 'bg-panel-raised!' }, () => [
-    props.title ? h('div', { class: headerClass }, props.title) : null,
+    props.title
+      ? h('div', { class: headerClass }, props.title)
+      : null,
     h('div', { class: 'p4' }, [body]),
   ])
 }

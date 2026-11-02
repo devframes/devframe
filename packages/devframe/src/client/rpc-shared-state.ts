@@ -16,7 +16,10 @@ export function createRpcSharedStateClientHost(rpc: DevframeRpcClient): RpcShare
     const initial = initialValues.get(key)
     if (initial && typeof initial === 'object' && !Array.isArray(initial)
       && typeof serverState === 'object' && !Array.isArray(serverState)) {
-      return { ...initial, ...serverState }
+      return {
+        ...initial,
+        ...serverState,
+      }
     }
     return serverState
   }

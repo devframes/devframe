@@ -87,7 +87,9 @@ const providers: Record<'jsdelivr' | 'unpkg', Required<RemoteAssetsProviderCusto
 
 function resolveProvider(assets: RemoteAssets): { provider: RemoteAssetsProviderCustom, name: string } {
   const p = assets.provider ?? 'jsdelivr'
-  return typeof p === 'string' ? { provider: providers[p], name: p } : { provider: p, name: 'custom' }
+  return typeof p === 'string'
+    ? { provider: providers[p], name: p }
+    : { provider: p, name: 'custom' }
 }
 
 // ---------------------------------------------------------------------------
@@ -122,7 +124,9 @@ function resolveInstalled(assets: RemoteAssets): string | undefined {
     diagnostics.DF0062({ package: assets.package, required: assets.version, installed })
   }
   const dir = join(dirname(pkgJsonPath), assets.path ?? 'dist')
-  return existsSync(dir) ? dir : undefined
+  return existsSync(dir)
+    ? dir
+    : undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -133,7 +137,9 @@ function contentTypeFor(filePath: string): string {
   const type = lookup(filePath)
   if (!type)
     return 'application/octet-stream'
-  return type === 'text/html' ? 'text/html; charset=utf-8' : type
+  return type === 'text/html'
+    ? 'text/html; charset=utf-8'
+    : type
 }
 
 /**
@@ -173,7 +179,9 @@ function cleanRequestPath(urlPath: string): string | null {
   const normalized = normalize(cleaned)
   if (normalized === '..' || normalized.startsWith(`..${sep}`) || normalized.startsWith('/'))
     return null
-  return normalized === '.' ? '' : normalized
+  return normalized === '.'
+    ? ''
+    : normalized
 }
 
 /** Candidate files for a request, in order: direct hit, index, `.html`, SPA fallback. */
@@ -181,7 +189,9 @@ function candidatePaths(prefix: string, cleaned: string): string[] {
   const candidates: string[] = []
   if (cleaned)
     candidates.push(prefix + cleaned)
-  candidates.push(`${prefix}${cleaned ? `${cleaned}/` : ''}index.html`)
+  candidates.push(`${prefix}${cleaned
+    ? `${cleaned}/`
+    : ''}index.html`)
   if (cleaned && !extname(cleaned))
     candidates.push(`${prefix + cleaned}.html`)
   if (!/\.[a-z0-9]+$/i.test(cleaned) && !candidates.includes(`${prefix}index.html`))
@@ -207,7 +217,9 @@ function materializeTarget(filePath: string, prefix: string, root: string): stri
   if (!suffix || isAbsolute(suffix))
     return null
   const target = resolve(root, suffix)
-  return target === root || !target.startsWith(root + sep) ? null : target
+  return target === root || !target.startsWith(root + sep)
+    ? null
+    : target
 }
 
 function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore {
@@ -241,7 +253,13 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
     catch (error) {
       if (!manifestReported) {
         manifestReported = true
-        diagnostics.DF0059({ package: normalized.package, version: normalized.version, provider: providerName, reason: errText(error), cause: error })
+        diagnostics.DF0059({
+          package: normalized.package,
+          version: normalized.version,
+          provider: providerName,
+          reason: errText(error),
+          cause: error,
+        })
       }
       return null
     }
@@ -280,7 +298,11 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
     }
     catch (error) {
       await rm(tmp, { force: true }).catch(() => {})
-      diagnostics.DF0063({ filepath: target, reason: errText(error), cause: error })
+      diagnostics.DF0063({
+        filepath: target,
+        reason: errText(error),
+        cause: error,
+      })
     }
   }
 
@@ -293,7 +315,12 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
       res = await fetchImpl(url)
     }
     catch (error) {
-      throw diagnostics.DF0060({ url, package: normalized.package, reason: errText(error), cause: error })
+      throw diagnostics.DF0060({
+        url,
+        package: normalized.package,
+        reason: errText(error),
+        cause: error,
+      })
     }
     if (res.status === 404) {
       await res.body?.cancel().catch(() => {})
@@ -350,7 +377,12 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
 
   async function materialize(targetDir: string): Promise<void> {
     const fail = (reason: string, cause?: unknown): never => {
-      throw diagnostics.DF0064({ package: normalized.package, version: normalized.version, reason, cause })
+      throw diagnostics.DF0064({
+        package: normalized.package,
+        version: normalized.version,
+        reason,
+        cause,
+      })
     }
     if (!provider.listFiles)
       fail('the configured provider has no file listing (`listFiles`)')
@@ -385,7 +417,9 @@ function createStore(assets: RemoteAssets, cacheDir: string): RemoteAssetsStore 
 }
 
 function errText(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+  return error instanceof Error
+    ? error.message
+    : String(error)
 }
 
 // ---------------------------------------------------------------------------
