@@ -72,6 +72,8 @@
   "appearance.recentDocks": "Outils récents dans la barre",
   "appearance.recentDocksHint": "Garder dans la barre les derniers outils ouverts depuis un groupe ou le menu de débordement (mode flottant uniquement).",
   "appearance.recentDocksOff": "Désactivé",
+  "appearance.expandSidebar": "Développer la barre latérale du groupe",
+  "appearance.expandSidebarHint": "Affiche le nom des outils à côté de leur icône dans la barre latérale du groupe.",
 
   "docks.intro": "Gérez la visibilité et l'ordre des panneaux. Les panneaux masqués n'apparaissent pas dans la barre.",
   "docks.resetOrder": "Réinitialiser l'ordre personnalisé",

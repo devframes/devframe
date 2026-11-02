@@ -38,6 +38,11 @@ declare module '@devframes/hub/types' {
      * off.
      */
     docksRecentLimit?: number
+    /**
+     * Widen the group sidebar so each member shows its title next to its
+     * icon, instead of an icon-only rail with hover tooltips.
+     */
+    expandGroupSidebar?: boolean
   }
 }
 

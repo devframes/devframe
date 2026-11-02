@@ -72,6 +72,8 @@
   "appearance.recentDocks": "도크 바의 최근 도구",
   "appearance.recentDocksHint": "그룹이나 오버플로 메뉴에서 마지막으로 연 도구를 도크 바에 유지합니다 (플로트 모드 전용).",
   "appearance.recentDocksOff": "끄기",
+  "appearance.expandSidebar": "그룹 사이드바 펼치기",
+  "appearance.expandSidebarHint": "그룹 사이드바에서 아이콘 옆에 도구 이름을 표시합니다.",
 
   "docks.intro": "도크 항목의 표시 여부와 순서를 관리합니다. 숨긴 항목은 도크 바에 나타나지 않습니다.",
   "docks.resetOrder": "사용자 지정 순서 초기화",

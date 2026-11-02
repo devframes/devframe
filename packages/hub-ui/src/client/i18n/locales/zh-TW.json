@@ -72,6 +72,8 @@
   "appearance.recentDocks": "停靠列中的最近工具",
   "appearance.recentDocksHint": "在停靠列中保留最近從群組或溢出選單開啟的工具（僅限浮動模式）。",
   "appearance.recentDocksOff": "關閉",
+  "appearance.expandSidebar": "展開群組側邊欄",
+  "appearance.expandSidebarHint": "在群組側邊欄中，於圖示旁顯示工具名稱。",
 
   "docks.intro": "管理工具面板項目的可見性和順序。隱藏的項目不會出現在工具列中。",
   "docks.resetOrder": "重設自訂順序",

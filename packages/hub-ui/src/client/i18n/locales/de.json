@@ -72,6 +72,8 @@
   "appearance.recentDocks": "Zuletzt verwendete Tools in der Dock-Leiste",
   "appearance.recentDocksHint": "Zuletzt aus einer Gruppe oder dem Überlaufmenü geöffnete Tools in der Dock-Leiste behalten (nur im Float-Modus).",
   "appearance.recentDocksOff": "Aus",
+  "appearance.expandSidebar": "Gruppen-Seitenleiste erweitern",
+  "appearance.expandSidebarHint": "Zeigt in der Gruppen-Seitenleiste die Namen der Tools neben ihren Symbolen.",
 
   "docks.intro": "Sichtbarkeit und Reihenfolge der Dock-Einträge verwalten. Ausgeblendete Einträge erscheinen nicht in der Dock-Leiste.",
   "docks.resetOrder": "Eigene Reihenfolge zurücksetzen",

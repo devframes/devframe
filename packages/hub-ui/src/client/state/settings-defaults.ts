@@ -9,7 +9,7 @@ import '../types'
 /** The subset of {@link DevframeDocksUserSettings} hub-ui itself contributes. */
 export type HubUiSettings = Pick<
   DevframeDocksUserSettings,
-  'showIframeAddressBar' | 'closeOnOutsideClick' | 'autoCollapseEdgeToolbar' | 'showDevframeInspector' | 'docksRecentLimit'
+  'showIframeAddressBar' | 'closeOnOutsideClick' | 'autoCollapseEdgeToolbar' | 'showDevframeInspector' | 'docksRecentLimit' | 'expandGroupSidebar'
 >
 
 /**
@@ -41,6 +41,8 @@ const HUB_UI_SETTINGS_DEFAULTS: Required<HubUiSettings> = Object.freeze({
   showDevframeInspector: false,
   /** The float bar keeps the last three docks opened from beyond it. */
   docksRecentLimit: 3,
+  /** The group sidebar stays an icon-only rail. */
+  expandGroupSidebar: false,
 })
 
 /**
