@@ -30,7 +30,16 @@ export default antfu(
    * HTML, and Vue/Svelte `<style>` blocks that have no JS parser here. Parse
    * them as plain text so the rule reads their raw content without erroring.
    */
-    files: ['**/*.css', '**/*.scss', '**/*.less', '**/*.pcss', '**/*.postcss', '**/*.html', '**/*.htm', '**/*.svelte'],
+    files: [
+      '**/*.css',
+      '**/*.scss',
+      '**/*.less',
+      '**/*.pcss',
+      '**/*.postcss',
+      '**/*.html',
+      '**/*.htm',
+      '**/*.svelte',
+    ],
     languageOptions: {
       parser: parserPlain,
     },

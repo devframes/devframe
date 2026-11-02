@@ -64,7 +64,9 @@ yields strings - the rest of the example doesn't care. For OpenAI:
 const response = await openai.chat.completions.create({
   model: 'gpt-4o-mini',
   stream: true,
-  messages: [{ role: 'user', content: prompt }],
+  messages: [
+    { role: 'user', content: prompt }
+  ],
 })
 for await (const chunk of response) {
   if (stream.signal.aborted)

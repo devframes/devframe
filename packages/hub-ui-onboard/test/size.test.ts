@@ -12,7 +12,9 @@ const DIST_BUDGET = 150 * 1024
 function totalSize(dir: string): number {
   return readdirSync(dir, { withFileTypes: true }).reduce((sum, entry) => {
     const path = join(dir, entry.name)
-    return sum + (entry.isDirectory() ? totalSize(path) : statSync(path).size)
+    return sum + (entry.isDirectory()
+      ? totalSize(path)
+      : statSync(path).size)
   }, 0)
 }
 

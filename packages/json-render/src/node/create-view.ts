@@ -105,7 +105,9 @@ function formatStandardSchemaIssues(issues: readonly StandardSchemaV1.Issue[]): 
   return issues
     .map((issue) => {
       const path = issue.path
-        ?.map(segment => typeof segment === 'object' ? String(segment.key) : String(segment))
+        ?.map(segment => typeof segment === 'object'
+          ? String(segment.key)
+          : String(segment))
         .join('.')
       return `${path || '(root)'}: ${issue.message}`
     })
@@ -131,14 +133,20 @@ function validateSpec(
   const result = schema['~standard'].validate(spec)
   if (isPromise(result))
     throw diagnostics.DF0074({ id })
-  if (result.issues)
-    throw diagnostics.DF0073({ id, issues: formatStandardSchemaIssues(result.issues) })
+  if (result.issues) {
+    throw diagnostics.DF0073({
+      id,
+      issues: formatStandardSchemaIssues(result.issues),
+    })
+  }
 }
 
 // Ensure the spec always carries a `state` object so JSON-Pointer patches
 // into `/state/...` have a container to target.
 function normalizeSpec<SpecType extends DevframeJsonRenderSpec>(spec: SpecType): SpecType {
-  return spec.state ? spec : { ...spec, state: {} }
+  return spec.state
+    ? spec
+    : { ...spec, state: {} }
 }
 
 /**
@@ -214,7 +222,10 @@ export function createJsonRenderView<SpecType extends DevframeJsonRenderSpec = D
       assertLive()
       const prefixed: SharedStatePatch[] = patches.map(p => ({
         op: p.op,
-        path: ['state', ...parsePointer(p.path)],
+        path: [
+          'state',
+          ...parsePointer(p.path),
+        ],
         value: p.value,
       }))
       state.patch(prefixed)

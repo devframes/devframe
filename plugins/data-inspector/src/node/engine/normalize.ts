@@ -64,7 +64,13 @@ interface Walker {
 
 const OPAQUE_TAGS: [abstract new (...args: never[]) => unknown, string][] = []
 // Guard: some of these globals may not exist in every runtime.
-for (const name of ['WeakMap', 'WeakSet', 'WeakRef', 'ArrayBuffer', 'SharedArrayBuffer'] as const) {
+for (const name of [
+  'WeakMap',
+  'WeakSet',
+  'WeakRef',
+  'ArrayBuffer',
+  'SharedArrayBuffer',
+] as const) {
   const ctor = (globalThis as Record<string, unknown>)[name]
   if (typeof ctor === 'function')
     OPAQUE_TAGS.push([ctor as never, name])
@@ -74,7 +80,14 @@ export function normalize(value: unknown, options: NormalizeOptions = {}): { dat
   const start = performance.now()
   const walker: Walker = {
     seen: new Map(),
-    stats: { nodes: 0, refs: 0, truncatedDepth: 0, truncatedEntries: 0, truncatedProps: 0, ms: 0 },
+    stats: {
+      nodes: 0,
+      refs: 0,
+      truncatedDepth: 0,
+      truncatedEntries: 0,
+      truncatedProps: 0,
+      ms: 0,
+    },
     opts: {
       maxDepth: options.maxDepth ?? 8,
       maxEntries: options.maxEntries ?? 200,
@@ -107,11 +120,15 @@ export function navigate(value: unknown, path: NodePath, options: Pick<Normalize
         // inherited properties, and keeps live re-navigation off the prototype chain.
         cur = cur instanceof Map
           ? cur.get(at)
-          : Object.hasOwn(cur, at) ? (cur as Record<string, unknown>)[at] : undefined
+          : Object.hasOwn(cur, at)
+            ? (cur as Record<string, unknown>)[at]
+            : undefined
         break
       case 'i': {
         const arr = cur as unknown[]
-        const source = options.excludeFunctions ? arr.filter(item => typeof item !== 'function') : arr
+        const source = options.excludeFunctions
+          ? arr.filter(item => typeof item !== 'function')
+          : arr
         cur = source[at]
         break
       }
@@ -119,10 +136,14 @@ export function navigate(value: unknown, path: NodePath, options: Pick<Normalize
         cur = [...(cur as Set<unknown>)][at]
         break
       case 'mk':
-        cur = [...(cur as Map<unknown, unknown>).entries()][at]?.[0]
+        cur = [
+          ...(cur as Map<unknown, unknown>).entries(),
+        ][at]?.[0]
         break
       case 'mv':
-        cur = [...(cur as Map<unknown, unknown>).entries()][at]?.[1]
+        cur = [
+          ...(cur as Map<unknown, unknown>).entries(),
+        ][at]?.[1]
         break
     }
   }
@@ -150,7 +171,11 @@ function walk(value: unknown, w: Walker, depth: number, path: string, segs: Node
 
   if (depth >= w.opts.maxDepth) {
     w.stats.truncatedDepth++
-    return { $truncated: 'depth', $preview: preview(obj), $path: segs }
+    return {
+      $truncated: 'depth',
+      $preview: preview(obj),
+      $path: segs,
+    }
   }
 
   w.seen.set(obj, path)
@@ -178,27 +203,60 @@ function walkPrimitive(value: unknown, w: Walker): { handled: true, value: unkno
       : s
     return { handled: true, value: out }
   }
-  if (t === 'number')
-    return { handled: true, value: Number.isFinite(value as number) ? value : String(value) }
+  if (t === 'number') {
+    return {
+      handled: true,
+      value: Number.isFinite(value as number)
+        ? value
+        : String(value),
+    }
+  }
   if (t === 'boolean')
     return { handled: true, value }
-  if (t === 'bigint')
-    return { handled: true, value: { $type: 'bigint', value: String(value) } }
-  if (t === 'symbol')
-    return { handled: true, value: { $type: 'symbol', value: String(value) } }
+  if (t === 'bigint') {
+    return {
+      handled: true,
+      value: {
+        $type: 'bigint',
+        value: String(value),
+      },
+    }
+  }
+  if (t === 'symbol') {
+    return {
+      handled: true,
+      value: {
+        $type: 'symbol',
+        value: String(value),
+      },
+    }
+  }
   if (t === 'function') {
     const fn = value as { name?: string }
-    return { handled: true, value: { $type: 'function', name: fn.name || '(anonymous)' } }
+    return {
+      handled: true,
+      value: { $type: 'function', name: fn.name || '(anonymous)' },
+    }
   }
   return { handled: false }
 }
 
 /** Tag the cheap non-recursive exotic types, or `undefined` to keep walking. */
 function walkExotic(obj: object): Record<string, unknown> | undefined {
-  if (obj instanceof Date)
-    return { $type: 'Date', value: Number.isNaN(obj.getTime()) ? 'Invalid Date' : obj.toISOString() }
-  if (obj instanceof RegExp)
-    return { $type: 'RegExp', value: String(obj) }
+  if (obj instanceof Date) {
+    return {
+      $type: 'Date',
+      value: Number.isNaN(obj.getTime())
+        ? 'Invalid Date'
+        : obj.toISOString(),
+    }
+  }
+  if (obj instanceof RegExp) {
+    return {
+      $type: 'RegExp',
+      value: String(obj),
+    }
+  }
   if (obj instanceof URL)
     return { $type: 'URL', value: obj.href }
   if (obj instanceof Error)
@@ -213,7 +271,9 @@ function walkExotic(obj: object): Record<string, unknown> | undefined {
 }
 
 function walkArray(arr: unknown[], w: Walker, depth: number, path: string, segs: NodePath): unknown[] {
-  const source = w.opts.excludeFunctions ? arr.filter(item => typeof item !== 'function') : arr
+  const source = w.opts.excludeFunctions
+    ? arr.filter(item => typeof item !== 'function')
+    : arr
   const cap = Math.min(source.length, w.opts.maxEntries)
   const out: unknown[] = Array.from({ length: cap })
   for (let i = 0; i < cap; i++)
@@ -231,7 +291,9 @@ function walkTypedArray(obj: object): Record<string, unknown> {
 }
 
 function walkMap(map: Map<unknown, unknown>, w: Walker, depth: number, path: string, segs: NodePath): unknown {
-  const entries = [...map.entries()].slice(0, w.opts.maxEntries)
+  const entries = [
+    ...map.entries(),
+  ].slice(0, w.opts.maxEntries)
   if (map.size > entries.length)
     w.stats.truncatedEntries++
   const allStringKeys = entries.every(([k]) => typeof k === 'string')
@@ -255,7 +317,11 @@ function walkSet(set: Set<unknown>, w: Walker, depth: number, path: string, segs
   const values = [...set].slice(0, w.opts.maxEntries)
   if (set.size > values.length)
     w.stats.truncatedEntries++
-  return { $type: 'Set', size: set.size, values: values.map((v, i) => walk(v, w, depth + 1, `${path}~set[${i}]`, seg(segs, ['s', i]))) }
+  return {
+    $type: 'Set',
+    size: set.size,
+    values: values.map((v, i) => walk(v, w, depth + 1, `${path}~set[${i}]`, seg(segs, ['s', i]))),
+  }
 }
 
 /** Plain object or class instance: own enumerable string-keyed props. */
@@ -287,7 +353,12 @@ function walkObjectKey(obj: object, key: string, w: Walker, depth: number, path:
     v = (obj as Record<string, unknown>)[key]
   }
   catch (error) {
-    out[key] = { $type: 'getter-error', message: error instanceof Error ? error.message : String(error) }
+    out[key] = {
+      $type: 'getter-error',
+      message: error instanceof Error
+        ? error.message
+        : String(error),
+    }
     return
   }
   if (w.opts.excludeFunctions && typeof v === 'function')
@@ -309,5 +380,7 @@ function preview(obj: object): string {
     return `Set(${obj.size})`
   const name = obj.constructor?.name ?? 'Object'
   const keys = Object.keys(obj)
-  return `${name} { ${keys.slice(0, 5).join(', ')}${keys.length > 5 ? ', …' : ''} }`
+  return `${name} { ${keys.slice(0, 5).join(', ')}${keys.length > 5
+    ? ', …'
+    : ''} }`
 }

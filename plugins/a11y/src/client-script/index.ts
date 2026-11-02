@@ -87,7 +87,9 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
   }
   function saveRoutes() {
     try {
-      sessionStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify([...routes.values()]))
+      sessionStorage.setItem(A11Y_STORAGE_KEY, JSON.stringify([
+        ...routes.values(),
+      ]))
     }
     catch {
       // Storage full or unavailable; history is best-effort, carry on.
@@ -168,14 +170,23 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
   // The page script is the authority for the aggregate; connected panels are
   // seeded on handshake and converge through patches.
   const state = await channel.sharedState.get('state', {
-    initialValue: { engine, activeRoute, scanning: false, routes: [...routes.values()] },
+    initialValue: {
+      engine,
+      activeRoute,
+      scanning: false,
+      routes: [
+        ...routes.values(),
+      ],
+    },
   })
   function publishState() {
     state.mutate((draft) => {
       draft.engine = engine
       draft.activeRoute = activeRoute
       draft.scanning = scanning
-      draft.routes = [...routes.values()]
+      draft.routes = [
+        ...routes.values(),
+      ]
     })
   }
 
@@ -192,7 +203,18 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['alt', 'role', 'aria-label', 'aria-labelledby', 'for', 'href', 'src', 'title', 'lang', 'type'],
+      attributeFilter: [
+        'alt',
+        'role',
+        'aria-label',
+        'aria-labelledby',
+        'for',
+        'href',
+        'src',
+        'title',
+        'lang',
+        'type',
+      ],
     })
   }
 
@@ -232,7 +254,9 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
       return
     // eslint-disable-next-line no-console
     console.groupCollapsed(
-      `%c a11y %c ${fresh.length} new issue${fresh.length === 1 ? '' : 's'} on ${report.route}`,
+      `%c a11y %c ${fresh.length} new issue${fresh.length === 1
+        ? ''
+        : 's'} on ${report.route}`,
       'background:#6fb07d;color:#0b0e13;border-radius:3px;padding:1px 4px;font-weight:700',
       'color:inherit',
     )
@@ -316,7 +340,12 @@ async function start(context?: A11yPageScriptContext): Promise<void> {
       ?? resolveElement(pin.target)
     if (!el)
       return null
-    return { el, impact: pin.impact, ruleId: pin.ruleId, number }
+    return {
+      el,
+      impact: pin.impact,
+      ruleId: pin.ruleId,
+      number,
+    }
   }
 
   function applyConfig(next: PageScriptConfig) {

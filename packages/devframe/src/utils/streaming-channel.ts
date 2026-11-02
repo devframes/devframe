@@ -353,7 +353,10 @@ export function createStreamReader<T>(options: CreateStreamReaderOptions = {}): 
       return {
         next(): Promise<IteratorResult<T>> {
           if (queue.length > 0) {
-            return Promise.resolve({ value: queue.shift()!, done: false })
+            return Promise.resolve({
+              value: queue.shift()!,
+              done: false,
+            })
           }
           if (done) {
             if (endError) {
@@ -386,9 +389,15 @@ function toErrorPayload(reason: unknown): StreamErrorPayload {
     return { name: 'Error', message: reason }
   }
   try {
-    return { name: 'Error', message: JSON.stringify(reason) }
+    return {
+      name: 'Error',
+      message: JSON.stringify(reason),
+    }
   }
   catch {
-    return { name: 'Error', message: String(reason) }
+    return {
+      name: 'Error',
+      message: String(reason),
+    }
   }
 }

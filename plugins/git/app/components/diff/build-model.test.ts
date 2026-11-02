@@ -34,8 +34,12 @@ describe('buildFileModel', () => {
     const [file] = parseUnifiedPatch(MODIFIED)
     const { lines } = buildFileModel(file).hunks[0]
     // "hello world" -> "hello there": only the second word changed.
-    expect(lines[1].wordRanges).toEqual([[6, 11]])
-    expect(lines[2].wordRanges).toEqual([[6, 11]])
+    expect(lines[1].wordRanges).toEqual([
+      [6, 11],
+    ])
+    expect(lines[2].wordRanges).toEqual([
+      [6, 11],
+    ])
     // Context lines carry no intra-line emphasis.
     expect(lines[0].wordRanges).toEqual([])
   })

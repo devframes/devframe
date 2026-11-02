@@ -14,7 +14,12 @@ type Story = StoryObj<typeof meta>
 
 function noop() {}
 const base = {
-  counts: { critical: 3, serious: 5, moderate: 2, minor: 8 },
+  counts: {
+    critical: 3,
+    serious: 5,
+    moderate: 2,
+    minor: 8,
+  },
   filter: null,
   onToggleFilter: noop,
   onHoverImpact: noop,
@@ -34,6 +39,12 @@ const base = {
 }
 
 export const Overview: Story = { args: base }
-export const Filtered: Story = { args: { ...base, filter: 'serious' } }
-export const WithSelection: Story = { args: { ...base, selectedCount: 4 } }
-export const AllSelected: Story = { args: { ...base, selectedCount: 7, allSelected: true } }
+export const Filtered: Story = {
+  args: { ...base, filter: 'serious' },
+}
+export const WithSelection: Story = {
+  args: { ...base, selectedCount: 4 },
+}
+export const AllSelected: Story = {
+  args: { ...base, selectedCount: 7, allSelected: true },
+}

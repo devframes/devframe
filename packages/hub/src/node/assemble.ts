@@ -25,7 +25,9 @@ const RESERVED_HUB_PATHS = [
 type ResolvedDevframeEntry = DevframeDefinition | HubDevframeEntry | null | undefined
 
 function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): HubDevframeEntry {
-  return 'devframe' in entry ? entry : { devframe: entry }
+  return 'devframe' in entry
+    ? entry
+    : { devframe: entry }
 }
 
 /**
@@ -35,7 +37,9 @@ function normalizeDevframeEntry(entry: DevframeDefinition | HubDevframeEntry): H
  */
 export function resolveDevframesInput(input: DevframesInput): Promise<HubDevframeEntry[]> {
   return Promise.all(input.map(async (entry) => {
-    const resolved = await (typeof entry === 'function' ? entry() : entry)
+    const resolved = await (typeof entry === 'function'
+      ? entry()
+      : entry)
     const slots: readonly ResolvedDevframeEntry[] = Array.isArray(resolved)
       ? resolved
       : [resolved as ResolvedDevframeEntry]
@@ -118,7 +122,12 @@ export async function mountDevframes(
     if (!/^[\w.-]+$/.test(def.id))
       throw diagnostics.DF8004({ id: def.id })
     const frameBase = withTrailingSlash(joinURL(base, def.id))
-    const run = await prepareDevframe(ctx, def, { base: frameBase, ...(dock ? { dock } : {}) })
+    const run = await prepareDevframe(ctx, def, {
+      base: frameBase,
+      ...(dock
+        ? { dock }
+        : {}),
+    })
     if (run)
       setups.push(run)
   }

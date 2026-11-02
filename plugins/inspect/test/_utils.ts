@@ -86,8 +86,16 @@ async function boot(options: BootOptions): Promise<InspectorServer> {
   })
 
   const ctx = options.hub
-    ? await createHubContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
-    : await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+    ? await createHubContext({
+        cwd: process.cwd(),
+        mode: 'dev',
+        host: h3Host,
+      })
+    : await createHostContext({
+        cwd: process.cwd(),
+        mode: 'dev',
+        host: h3Host,
+      })
   await inspectDevframe.setup(ctx)
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`

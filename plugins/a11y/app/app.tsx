@@ -18,7 +18,12 @@ const AUTOSCAN_KEY = 'devframes:plugin:a11y:autoscan'
 
 const selKey = (route: string, ruleId: string) => `${route}::${ruleId}`
 function nodePin(v: Violation, node: ViolationNode): PinTarget {
-  return { nodeId: node.id, target: node.target, impact: v.impact, ruleId: v.ruleId }
+  return {
+    nodeId: node.id,
+    target: node.target,
+    impact: v.impact,
+    ruleId: v.ruleId,
+  }
 }
 
 export function App() {
@@ -45,7 +50,9 @@ export function App() {
       return null
     }
   })()
-  const [autoScan, setAutoScan] = createSignal(storedAuto == null ? true : storedAuto === '1')
+  const [autoScan, setAutoScan] = createSignal(storedAuto == null
+    ? true
+    : storedAuto === '1')
 
   const routes = () => channel.state()?.routes ?? []
   const activeRoute = () => channel.activeRoute()
@@ -196,7 +203,9 @@ export function App() {
     },
     numberOf: (nodeId) => {
       const i = selectedPins().findIndex(p => p.nodeId === nodeId)
-      return i === -1 ? null : i + 1
+      return i === -1
+        ? null
+        : i + 1
     },
   }
 
@@ -226,15 +235,20 @@ export function App() {
   // Keep the active route's group expanded.
   createEffect(() => {
     const r = activeRoute()
-    if (r)
-      setExpandedRoutes(prev => (prev.has(r) ? prev : new Set(prev).add(r)))
+    if (r) {
+      setExpandedRoutes(prev => (prev.has(r)
+        ? prev
+        : new Set(prev).add(r)))
+    }
   })
 
   // Push the highlight set to the page script: the hovered impact's elements
   // while a summary chip is hovered, otherwise the selection.
   createEffect(() => {
     const hov = hoverImpact()
-    channel.setPins(hov ? impactPins(hov) : selectedPins())
+    channel.setPins(hov
+      ? impactPins(hov)
+      : selectedPins())
   })
 
   // defaultHighlight: select all of a route's violations the first time it's scanned.
@@ -261,8 +275,12 @@ export function App() {
     if (cfg && act.dockId !== cfg.dockId)
       return
     const params = act.params ?? {}
-    const route = typeof params.route === 'string' ? params.route : undefined
-    const ruleId = typeof params.ruleId === 'string' ? params.ruleId : undefined
+    const route = typeof params.route === 'string'
+      ? params.route
+      : undefined
+    const ruleId = typeof params.ruleId === 'string'
+      ? params.ruleId
+      : undefined
 
     // A dashboard/summary activation (or one with no target) just scrolls to top.
     if (params.tab === 'dashboard' || !route) {
@@ -282,7 +300,9 @@ export function App() {
   }, { defer: true }))
 
   function toggleFilter(impact: Impact) {
-    setFilter(prev => (prev === impact ? null : impact))
+    setFilter(prev => (prev === impact
+      ? null
+      : impact))
   }
   function toggleGroup(route: string) {
     setExpandedRoutes((prev) => {
@@ -307,9 +327,16 @@ export function App() {
   }
 
   const announce = () => {
-    if (!channel.state())
-      return channel.scanning() ? 'Scanning the page' : ''
-    return `${totalNodes()} accessibility ${totalNodes() === 1 ? 'issue' : 'issues'} found across ${routes().length} ${routes().length === 1 ? 'route' : 'routes'}`
+    if (!channel.state()) {
+      return channel.scanning()
+        ? 'Scanning the page'
+        : ''
+    }
+    return `${totalNodes()} accessibility ${totalNodes() === 1
+      ? 'issue'
+      : 'issues'} found across ${routes().length} ${routes().length === 1
+      ? 'route'
+      : 'routes'}`
   }
 
   return (
@@ -394,7 +421,9 @@ export function App() {
                     <>
                       {totalFilterable()}
                       {' '}
-                      {totalFilterable() === 1 ? 'rule' : 'rules'}
+                      {totalFilterable() === 1
+                        ? 'rule'
+                        : 'rules'}
                       {' at other severities. Clear the filter to see them.'}
                     </>
                   )}

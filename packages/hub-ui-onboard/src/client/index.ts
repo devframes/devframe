@@ -52,7 +52,9 @@ function logoFor(branding: OnboardingBranding): string | undefined {
   const logo = branding.logo
   if (!logo || typeof logo === 'string')
     return logo
-  return isDark() ? (logo.dark ?? logo.light) : logo.light
+  return isDark()
+    ? (logo.dark ?? logo.light)
+    : logo.light
 }
 
 function fillMark(el: HTMLElement, branding: OnboardingBranding): void {
@@ -138,7 +140,10 @@ function mount(initial: OnboardingStatus): void {
   }
   applyScheme()
   darkQuery.addEventListener('change', applyScheme)
-  new MutationObserver(applyScheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  new MutationObserver(applyScheme).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
 
   const description = document.createElement('p')
   description.className = 'color-muted m-0'
@@ -239,13 +244,17 @@ function mount(initial: OnboardingStatus): void {
     hide.disabled = busy
     disable.disabled = busy
     spinner.hidden = state !== 'installing'
-    pill.replaceChildren(state === 'installing' ? pillSpinner : pillMark)
+    pill.replaceChildren(state === 'installing'
+      ? pillSpinner
+      : pillMark)
     // The button itself shows the installing and installed states.
     installLabel.textContent = state === 'installing'
       ? `Installing ${productName}...`
       : state === 'installed'
         ? messages.restart
-        : state === 'error' ? messages.retry : messages.install
+        : state === 'error'
+          ? messages.retry
+          : messages.install
     note.hidden = state !== 'error'
     note.className = 'm-0 text-xs text-red-600 dark:text-red-400'
     note.textContent = state === 'error'

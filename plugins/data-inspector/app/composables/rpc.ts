@@ -105,7 +105,9 @@ export async function onDockActivation(dockId: string, apply: (sourceId: string)
       apply(sourceId)
   }
   try {
-    const slot = await client.sharedState.get(DOCKS_ACTIVE_STATE_KEY, { initialValue: { activation: null } }) as {
+    const slot = await client.sharedState.get(DOCKS_ACTIVE_STATE_KEY, {
+      initialValue: { activation: null },
+    }) as {
       value: () => { activation?: Activation | null }
       on: (event: string, cb: (v: { activation?: Activation | null }) => void) => void
     }
@@ -199,11 +201,19 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
     },
     async skeleton(sourceId, options) {
       try {
-        return { ok: true, ...skeletonOf(dataOf(sourceId), options) }
+        return {
+          ok: true,
+          ...skeletonOf(dataOf(sourceId), options),
+        }
       }
       catch (error) {
-        const e = error instanceof Error ? error : new Error(String(error))
-        return { ok: false, error: { name: e.name, message: e.message } }
+        const e = error instanceof Error
+          ? error
+          : new Error(String(error))
+        return {
+          ok: false,
+          error: { name: e.name, message: e.message },
+        }
       }
     },
     async savedList() {
@@ -237,7 +247,9 @@ function consumeAuthToken(): string | undefined {
     return undefined
   params.delete(DEVFRAME_AUTH_TOKEN_QUERY_PARAM)
   const search = params.toString()
-  history.replaceState(null, '', search ? `?${search}` : location.pathname)
+  history.replaceState(null, '', search
+    ? `?${search}`
+    : location.pathname)
   return token
 }
 
@@ -293,6 +305,8 @@ export async function connect(): Promise<void> {
   }
   catch (error) {
     connection.status = 'error'
-    connection.error = error instanceof Error ? error.message : String(error)
+    connection.error = error instanceof Error
+      ? error.message
+      : String(error)
   }
 }

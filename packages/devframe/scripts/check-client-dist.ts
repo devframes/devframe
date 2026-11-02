@@ -8,16 +8,46 @@ interface ForbiddenRule {
 }
 
 const FORBIDDEN: ForbiddenRule[] = [
-  { name: 'ws', match: id => id === 'ws' || id.startsWith('ws/') },
-  { name: 'h3', match: id => id === 'h3' || id.startsWith('h3/') },
-  { name: 'node:* builtin', match: id => id.startsWith('node:') },
-  { name: 'devframe/rpc/transports/*', match: id => id.startsWith('devframe/rpc/transports/') },
-  { name: 'devframe/node*', match: id => id === 'devframe/node' || id.startsWith('devframe/node/') },
-  { name: 'devframe/adapters/*', match: id => id.startsWith('devframe/adapters/') },
-  { name: 'devframe/recipes/*', match: id => id.startsWith('devframe/recipes/') },
-  { name: 'devframe/utils/launch-editor', match: id => id === 'devframe/utils/launch-editor' },
-  { name: 'devframe/utils/open', match: id => id === 'devframe/utils/open' },
-  { name: 'devframe/utils/serve-static', match: id => id === 'devframe/utils/serve-static' },
+  {
+    name: 'ws',
+    match: id => id === 'ws' || id.startsWith('ws/'),
+  },
+  {
+    name: 'h3',
+    match: id => id === 'h3' || id.startsWith('h3/'),
+  },
+  {
+    name: 'node:* builtin',
+    match: id => id.startsWith('node:'),
+  },
+  {
+    name: 'devframe/rpc/transports/*',
+    match: id => id.startsWith('devframe/rpc/transports/'),
+  },
+  {
+    name: 'devframe/node*',
+    match: id => id === 'devframe/node' || id.startsWith('devframe/node/'),
+  },
+  {
+    name: 'devframe/adapters/*',
+    match: id => id.startsWith('devframe/adapters/'),
+  },
+  {
+    name: 'devframe/recipes/*',
+    match: id => id.startsWith('devframe/recipes/'),
+  },
+  {
+    name: 'devframe/utils/launch-editor',
+    match: id => id === 'devframe/utils/launch-editor',
+  },
+  {
+    name: 'devframe/utils/open',
+    match: id => id === 'devframe/utils/open',
+  },
+  {
+    name: 'devframe/utils/serve-static',
+    match: id => id === 'devframe/utils/serve-static',
+  },
 ]
 
 interface ScannedSpecifiers {
@@ -47,7 +77,10 @@ async function scanSpecifiers(file: string): Promise<ScannedSpecifiers> {
     if (match?.[1])
       dynamicIds.add(match[1])
   }
-  return { static: [...staticIds], dynamic: [...dynamicIds] }
+  return {
+    static: [...staticIds],
+    dynamic: [...dynamicIds],
+  }
 }
 
 export interface CheckClientDistOptions {
@@ -86,7 +119,10 @@ export async function checkClientDist(options: CheckClientDistOptions): Promise<
     // Follow both static and dynamic relative imports to discover every chunk
     // the browser can end up loading. Dynamic specifiers themselves aren't
     // checked against FORBIDDEN, but the chunk they target is, on visit.
-    for (const id of [...scanned.static, ...scanned.dynamic]) {
+    for (const id of [
+      ...scanned.static,
+      ...scanned.dynamic,
+    ]) {
       if (id.startsWith('./') || id.startsWith('../')) {
         const next = resolve(dirname(file), id)
         await visit(next)

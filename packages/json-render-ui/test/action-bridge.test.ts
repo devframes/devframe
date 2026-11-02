@@ -11,7 +11,9 @@ describe('action bridge', () => {
   })
 
   it('does not shadow upstream built-ins', () => {
-    const bridge = createActionBridge({ call: async () => undefined })
+    const bridge = createActionBridge({
+      call: async () => undefined,
+    })
     expect(bridge.handlers.setState).toBeUndefined()
     expect(bridge.handlers.pushState).toBeUndefined()
     expect(bridge.handlers.validateForm).toBeUndefined()

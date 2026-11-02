@@ -10,7 +10,9 @@ function makeFakeRpc() {
     connectionMeta: { backend: 'websocket' },
     isTrusted: false,
     events,
-    client: { register: () => {} },
+    client: {
+      register: () => {},
+    },
     callEvent: (name: string, ...args: any[]) => {
       if (name === 'devframe:rpc:server-state:set')
         setCalls.push(args)
@@ -23,7 +25,9 @@ function makeFakeRpc() {
 describe('client shared state', () => {
   it('does not forward unchanged writes to the RPC server', async () => {
     const { rpc, events, setCalls } = makeFakeRpc()
-    const state = await createRpcSharedStateClientHost(rpc).get('k', { initialValue: { count: 1 } })
+    const state = await createRpcSharedStateClientHost(rpc).get('k', {
+      initialValue: { count: 1 },
+    })
     events.emit('rpc:is-trusted:updated', true)
 
     state.mutate((draft) => {
@@ -40,7 +44,9 @@ describe('client shared state', () => {
   it('registers the server-sync bridge once across repeated trust flips', async () => {
     const { rpc, events, setCalls } = makeFakeRpc()
     const host = createRpcSharedStateClientHost(rpc)
-    const state = await host.get('k', { initialValue: { a: 1 } })
+    const state = await host.get('k', {
+      initialValue: { a: 1 },
+    })
 
     events.emit('rpc:is-trusted:updated', true)
     events.emit('rpc:is-trusted:updated', true) // second flip must not re-register
@@ -61,12 +67,20 @@ describe('initial shared-state snapshots', () => {
     rpc.call = () => snapshot.promise
     rpc.client.register = (definition: any) => handlers.set(definition.name, definition.handler)
     const host = createRpcSharedStateClientHost(rpc)
-    return { rpc, host, snapshot, handlers, setCalls }
+    return {
+      rpc,
+      host,
+      snapshot,
+      handlers,
+      setCalls,
+    }
   }
 
   it('reads a snapshot without writing it back to the node side', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0, localDefault: true } })
+    const state = await host.get('k', {
+      initialValue: { count: 0, localDefault: true },
+    })
     snapshot.resolve({ count: 1 })
     await snapshot.promise
     expect(state.value()).toEqual({ count: 1, localDefault: true })
@@ -79,7 +93,9 @@ describe('initial shared-state snapshots', () => {
 
   it('keeps an update received while the initial snapshot is pending', async () => {
     const { host, snapshot, handlers } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     handlers.get(DEVFRAME_EVENTS.broadcast.clientStateUpdated)!('k', { count: 2 }, 'newer')
     snapshot.resolve({ count: 1 })
     await snapshot.promise
@@ -88,7 +104,9 @@ describe('initial shared-state snapshots', () => {
 
   it('keeps a local write made while the initial snapshot is pending', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     state.mutate((draft) => {
       draft.count = 2
     })
@@ -100,14 +118,19 @@ describe('initial shared-state snapshots', () => {
 
   it('keeps a local undo that restores the initial object while the snapshot is pending', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     const initialValue = state.value()
     state.mutate((draft) => {
       draft.count = 2
     })
     state.mutate(() => initialValue)
     expect(state.value()).toBe(initialValue)
-    expect(setCalls.map(([, value]) => value)).toEqual([{ count: 2 }, { count: 0 }])
+    expect(setCalls.map(([, value]) => value)).toEqual([
+      { count: 2 },
+      { count: 0 },
+    ])
 
     snapshot.resolve({ count: 1 })
     await snapshot.promise
@@ -117,7 +140,9 @@ describe('initial shared-state snapshots', () => {
 
   it('applies the initial snapshot after a mutation that leaves the value unchanged', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     state.mutate((draft) => {
       draft.count = 0
     })
@@ -129,7 +154,9 @@ describe('initial shared-state snapshots', () => {
 
   it('forwards a local write triggered by the initial snapshot', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     state.on('updated', (value) => {
       if (value.count === 1) {
         state.mutate((draft) => {
@@ -146,7 +173,9 @@ describe('initial shared-state snapshots', () => {
 
   it('ignores a snapshot after its state is deleted', async () => {
     const { host, snapshot, setCalls } = setup()
-    const state = await host.get('k', { initialValue: { count: 0 } })
+    const state = await host.get('k', {
+      initialValue: { count: 0 },
+    })
     host.delete('k')
     snapshot.resolve({ count: 1 })
     await snapshot.promise

@@ -59,12 +59,22 @@ export async function startInspectorServer(): Promise<InspectorServer> {
     },
   })
 
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: h3Host,
+  })
   await devframe.setup(ctx)
 
   app.use(`${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, resolve(distDir))
 
-  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({
+    context: ctx,
+    host,
+    port,
+    app,
+    auth: false,
+  })
   return Object.assign(server, { basePath })
 }

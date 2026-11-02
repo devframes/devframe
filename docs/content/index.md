@@ -195,10 +195,12 @@ A devframe's boundary is simply the Web Standard `Request` and `Response`. Any f
   import { devtools } from './devtools'
 
   export default defineConfig({
-    plugins: [{
-      name: 'my-tool',
-      configureServer: server => server.middlewares.use(devtools.nodeMiddleware),
-    }],
+    plugins: [
+      {
+        name: 'my-tool',
+        configureServer: server => server.middlewares.use(devtools.nodeMiddleware),
+      }
+    ],
   })
   ```
 ::

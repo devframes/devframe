@@ -74,7 +74,9 @@ export function devframeVitePlugin(d: DevframeDefinition, options: DevframeViteP
       // package when present, otherwise to a caching CDN back-proxy, under
       // the h3 host's `project` storage convention.
       const source = resolveStaticAssetsSource(distDir, join(process.cwd(), 'node_modules', `.${d.id}`, 'devframe'), d.importMetaUrl)
-      server.middlewares.use(base, serveStaticNodeMiddleware(typeof source === 'string' ? resolve(source) : source))
+      server.middlewares.use(base, serveStaticNodeMiddleware(typeof source === 'string'
+        ? resolve(source)
+        : source))
     },
   }
 }
@@ -181,14 +183,18 @@ export function devframeViteBridge(d: DevframeDefinition, options: DevframeViteB
           // HTTP server; a middleware-mode Vite (no httpServer) has no
           // upgrade to share, so ask for an auto-port side-car instead.
           ...(options.port != null
-            ? { ws: { port: options.port } }
+            ? {
+                ws: { port: options.port },
+              }
             : server.httpServer
               // `initDevframe`'s `server` option shares a real
               // `node:http` server's WS upgrade listener; Vite's dev
               // server is always one in practice (never the HTTP/2
               // variant `ViteDevServer['httpServer']` also allows for).
               ? { server: server.httpServer as NodeHttpServer }
-              : { ws: { sidecar: true } }),
+              : {
+                  ws: { sidecar: true },
+                }),
           /**
            * Gate by default: an unset `auth` defers to the handler
            * (devframe's interactive OTP unless `cli.auth` opts out) rather
@@ -203,7 +209,11 @@ export function devframeViteBridge(d: DevframeDefinition, options: DevframeViteB
         instance = created
       }
       catch (e) {
-        diagnostics.DF0033({ id: d.id, reason: String(e), cause: e as Error }, { method: 'warn' })
+        diagnostics.DF0033({
+          id: d.id,
+          reason: String(e),
+          cause: e as Error,
+        }, { method: 'warn' })
         return
       }
 
@@ -238,7 +248,9 @@ export interface DevframeViteOptions extends DevframeViteBridgeOptions {
  */
 export function devframeVite(d: DevframeDefinition, options: DevframeViteOptions = {}): DevframeVitePlugin {
   const { bridge, ...rest } = options
-  return bridge ? devframeViteBridge(d, rest) : devframeVitePlugin(d, { base: rest.base })
+  return bridge
+    ? devframeViteBridge(d, rest)
+    : devframeVitePlugin(d, { base: rest.base })
 }
 
 /**

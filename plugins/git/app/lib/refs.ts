@@ -27,13 +27,19 @@ function rank(ref: GitRef): number {
 
 /** Classify one trimmed ref string, or `null` for the noise `origin/HEAD`. */
 function classifyRef(ref: string, current?: string | null): GitRef | null {
-  if (ref.startsWith('tag: '))
-    return { kind: 'tag', name: ref.slice(5).trim() }
+  if (ref.startsWith('tag: ')) {
+    return {
+      kind: 'tag',
+      name: ref.slice(5).trim(),
+    }
+  }
 
   if (ref.includes('->')) {
     // `HEAD -> main`
     const name = ref.split('->')[1]?.trim()
-    return name ? { kind: 'branch', name, current: true } : null
+    return name
+      ? { kind: 'branch', name, current: true }
+      : null
   }
 
   if (ref === 'HEAD')
@@ -44,7 +50,11 @@ function classifyRef(ref: string, current?: string | null): GitRef | null {
     const name = ref.slice(slash + 1)
     if (name === 'HEAD')
       return null // skip the symbolic `origin/HEAD`
-    return { kind: 'remote', remote: ref.slice(0, slash), name }
+    return {
+      kind: 'remote',
+      remote: ref.slice(0, slash),
+      name,
+    }
   }
 
   return { kind: 'branch', name: ref, current: current === ref }

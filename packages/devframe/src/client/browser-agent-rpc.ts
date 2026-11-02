@@ -31,11 +31,15 @@ interface BrowserAgentRpcClient {
 
 /** Snapshot of this document as seen by a coding agent picking a tab. */
 function describeBrowserAgentClient(): BrowserAgentClientInfo {
-  const doc = typeof document === 'undefined' ? undefined : document
+  const doc = typeof document === 'undefined'
+    ? undefined
+    : document
   return {
     url: doc?.location?.href ?? '',
     title: doc?.title ?? '',
-    visible: doc ? doc.visibilityState === 'visible' : true,
+    visible: doc
+      ? doc.visibilityState === 'visible'
+      : true,
     focused: doc?.hasFocus() ?? true,
   }
 }
@@ -85,7 +89,9 @@ export function setupBrowserAgentRpcBridge(rpc: BrowserAgentRpcClient): () => vo
     if (status === 'connected')
       sync()
   })
-  const win = typeof window === 'undefined' ? undefined : window
+  const win = typeof window === 'undefined'
+    ? undefined
+    : window
   win?.addEventListener('focus', sync)
   win?.addEventListener('blur', sync)
   win?.document.addEventListener('visibilitychange', sync)

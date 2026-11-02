@@ -7,7 +7,9 @@ const props = defineProps<{
   icon: string
 }>()
 
-const maskUrl = computed(() => props.icon.startsWith('mask:') ? props.icon.slice(5).trim() : undefined)
+const maskUrl = computed(() => props.icon.startsWith('mask:')
+  ? props.icon.slice(5).trim()
+  : undefined)
 const maskStyle = computed<CSSProperties | undefined>(() => {
   if (!maskUrl.value)
     return undefined

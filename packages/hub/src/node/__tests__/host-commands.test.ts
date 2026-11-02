@@ -13,12 +13,14 @@ describe('command shortcut metadata', () => {
     host.register({
       id: 'tool:files',
       title: 'Files',
-      children: [{
-        id: 'tool:open',
-        title: 'Open',
-        allowShortcuts: false,
-        handler: (path: string) => path,
-      }],
+      children: [
+        {
+          id: 'tool:open',
+          title: 'Open',
+          allowShortcuts: false,
+          handler: (path: string) => path,
+        },
+      ],
     })
 
     expect(host.list()[0]?.children?.[0]).toMatchObject({
@@ -94,7 +96,10 @@ function createAgentContext(): { context: DevframeHubContext, agent: DevframeAge
   // A real agent host over a minimal base context, where the bridge is a lazy
   // provider, so the test exercises the actual list/getTool/invoke paths.
   const basePartial: DeepPartial<DevframeNodeContext> = {
-    rpc: { onChanged: () => () => {}, definitions: new Map() },
+    rpc: {
+      onChanged: () => () => {},
+      definitions: new Map(),
+    },
   }
   const base = basePartial as DevframeNodeContext
   const agent = new DevframeAgentHost(base)
@@ -118,7 +123,11 @@ describe('devframeCommandsHost agent bridge', () => {
           title: 'Greet',
           agent: {
             description: 'Greet someone by name.',
-            args: [v.object({ name: v.optional(v.string()) })],
+            args: [
+              v.object({
+                name: v.optional(v.string()),
+              }),
+            ],
           },
           handler: (...args: unknown[]) => {
             calls.push(args)
@@ -142,8 +151,14 @@ describe('devframeCommandsHost agent bridge', () => {
     // Each declared arg schema is advertised (and read back) under its own
     // `argN` key, so the MCP args object's `arg0` becomes the handler's first
     // positional argument.
-    await expect(agent.invoke('demo:greet', { arg0: { name: 'devframe' } })).resolves.toBe('done')
-    expect(calls).toEqual([[{ name: 'devframe' }]])
+    await expect(agent.invoke('demo:greet', {
+      arg0: { name: 'devframe' },
+    })).resolves.toBe('done')
+    expect(calls).toEqual([
+      [
+        { name: 'devframe' },
+      ],
+    ])
   })
 
   it('projects zero-arg tools for commands without an args schema', async () => {
@@ -179,7 +194,9 @@ describe('devframeCommandsHost agent bridge', () => {
     })
     expect(agent.getTool('demo:sync')!.description).toBe('Initial description.')
 
-    handle.update({ agent: { description: 'Patched description.' } })
+    handle.update({
+      agent: { description: 'Patched description.' },
+    })
     expect(agent.getTool('demo:sync')!.description).toBe('Patched description.')
 
     handle.unregister()

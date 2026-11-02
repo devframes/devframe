@@ -6,7 +6,14 @@ import { scanAssets } from '../../scanner'
 
 export const assetInfoSchema = s.object({
   path: s.string(),
-  type: s.picklist(['image', 'font', 'video', 'audio', 'text', 'other']),
+  type: s.picklist([
+    'image',
+    'font',
+    'video',
+    'audio',
+    'text',
+    'other',
+  ]),
   publicPath: s.string(),
   size: s.number(),
   mtime: s.number(),

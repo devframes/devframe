@@ -61,7 +61,9 @@ export function ViolationRow(props: ViolationRowProps) {
             <span class="ml-auto inline-flex items-center gap-1.5 text-[11px] color-faint tabular-nums">
               {v().nodes.length}
               {' '}
-              {v().nodes.length === 1 ? 'element' : 'elements'}
+              {v().nodes.length === 1
+                ? 'element'
+                : 'elements'}
               <span aria-hidden class="i-ph-caret-right text-sm color-faint transition-transform" classList={{ 'rotate-90': props.expanded }} />
             </span>
           </span>

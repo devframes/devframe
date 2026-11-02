@@ -41,9 +41,20 @@ interface MixedPanelProtocol {
 describe('Channel function definitions', () => {
   it('distinguishes event, query, and action definitions', () => {
     defineChannelFunction({ name: 'notify', type: 'event' })
-    defineChannelFunction({ name: 'load', handler: () => 'value' })
-    defineChannelFunction({ name: 'load', type: 'query', handler: () => 'value' })
-    defineChannelFunction({ name: 'save', type: 'action', handler: () => { } })
+    defineChannelFunction({
+      name: 'load',
+      handler: () => 'value',
+    })
+    defineChannelFunction({
+      name: 'load',
+      type: 'query',
+      handler: () => 'value',
+    })
+    defineChannelFunction({
+      name: 'save',
+      type: 'action',
+      handler: () => { },
+    })
   })
 
   it('requires handlers for request/response functions', () => {
@@ -59,9 +70,15 @@ describe('In-page script channel', () => {
     events: { save: {} },
     name: 'devframes:test',
     functions: {
-      echo: { handler: value => value },
-      sum: { handler: (a, b) => a + b },
-      save: { handler: () => { } },
+      echo: {
+        handler: value => value,
+      },
+      sum: {
+        handler: (a, b) => a + b,
+      },
+      save: {
+        handler: () => { },
+      },
     },
   })
 
@@ -102,7 +119,9 @@ describe('In-page script channel', () => {
         name: 'devframes:test',
         // @ts-expect-error `sum` and `save` are required.
         functions: {
-          echo: { handler: value => value },
+          echo: {
+            handler: value => value,
+          },
         },
       })
     })
@@ -112,9 +131,18 @@ describe('In-page script channel', () => {
         events: { save: {} },
         name: 'devframes:test',
         functions: {
-          echo: { type: 'query', handler: value => value },
-          sum: { type: 'action', handler: (a, b) => a + b },
-          save: { type: 'action', handler: () => {} },
+          echo: {
+            type: 'query',
+            handler: value => value,
+          },
+          sum: {
+            type: 'action',
+            handler: (a, b) => a + b,
+          },
+          save: {
+            type: 'action',
+            handler: () => {},
+          },
         },
       })
 
@@ -126,7 +154,10 @@ describe('In-page script channel', () => {
           echo: { type: 'query' },
           // @ts-expect-error Request/response functions require a handler.
           sum: { type: 'action' },
-          save: { type: 'action', handler: () => {} },
+          save: {
+            type: 'action',
+            handler: () => {},
+          },
         },
       })
     })
@@ -136,11 +167,19 @@ describe('In-page script channel', () => {
         events: { save: {} },
         name: 'devframes:test',
         functions: {
-          echo: { handler: value => value },
-          sum: { handler: (a, b) => a + b },
-          save: { handler: () => { } },
+          echo: {
+            handler: value => value,
+          },
+          sum: {
+            handler: (a, b) => a + b,
+          },
+          save: {
+            handler: () => { },
+          },
           // @ts-expect-error `notify` is implemented by panels.
-          notify: { handler: (message: string) => void message },
+          notify: {
+            handler: (message: string) => void message,
+          },
         },
       })
     })
@@ -154,8 +193,12 @@ describe('In-page script channel', () => {
             // @ts-expect-error `echo` accepts and returns a string.
             handler: (value: number) => value,
           },
-          sum: { handler: (a, b) => a + b },
-          save: { handler: () => { } },
+          sum: {
+            handler: (a, b) => a + b,
+          },
+          save: {
+            handler: () => { },
+          },
         },
       })
     })
@@ -202,7 +245,9 @@ describe('In-page script channel', () => {
       const pageScriptOnlyChannel = createPageScriptChannel<PageScriptOnlyProtocol>({
         name: 'devframes:page-script-only',
         functions: {
-          echo: { handler: value => value },
+          echo: {
+            handler: value => value,
+          },
         },
       })
 
@@ -251,7 +296,9 @@ describe('Panel channel', () => {
   const channel = connectPanelChannel<TestProtocol>({
     name: 'devframes:test',
     functions: {
-      notify: { handler: () => { } },
+      notify: {
+        handler: () => { },
+      },
     },
   })
 
@@ -288,7 +335,9 @@ describe('Panel channel', () => {
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
         functions: {
-          notify: { handler: () => {} },
+          notify: {
+            handler: () => {},
+          },
         },
       })
 
@@ -305,9 +354,13 @@ describe('Panel channel', () => {
       connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
         functions: {
-          notify: { handler: () => { } },
+          notify: {
+            handler: () => { },
+          },
           // @ts-expect-error `echo` is implemented by the in-page script.
-          echo: { handler: (value: string) => value },
+          echo: {
+            handler: (value: string) => value,
+          },
         },
       })
     })
@@ -334,7 +387,9 @@ describe('Panel channel', () => {
         name: 'devframes:page-script-only',
         functions: {
           // @ts-expect-error The protocol has no panel functions.
-          notify: { handler: () => { } },
+          notify: {
+            handler: () => { },
+          },
         },
       })
     })
@@ -394,8 +449,12 @@ describe('Panel channel', () => {
       const mixedChannel = connectPanelChannel<MixedPanelProtocol>({
         name: 'devframes:mixed-panel',
         functions: {
-          confirm: { handler: () => true },
-          notify: { handler: () => {} },
+          confirm: {
+            handler: () => true,
+          },
+          notify: {
+            handler: () => {},
+          },
         },
       })
 

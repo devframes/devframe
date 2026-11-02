@@ -7,7 +7,9 @@ import { alias } from '../../alias'
  * plugin to parse them.
  */
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+  ],
   resolve: { alias },
   test: {
     name: '@devframes/json-render-ui',

@@ -43,14 +43,24 @@ function until(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
 const noHandshake = { window: false as const, heartbeat: false as const }
 
 const defaultPageScriptFunctions: NonNullable<CreatePageScriptChannelOptions<TestProtocol>['functions']> = {
-  echo: { handler: value => value },
-  sum: { handler: (a, b) => a + b },
-  boom: { handler: () => {} },
-  strict: { handler: payload => payload },
+  echo: {
+    handler: value => value,
+  },
+  sum: {
+    handler: (a, b) => a + b,
+  },
+  boom: {
+    handler: () => {},
+  },
+  strict: {
+    handler: payload => payload,
+  },
 }
 
 const defaultPanelFunctions: NonNullable<ConnectPanelChannelOptions<TestProtocol>['functions']> = {
-  'ping-panel': { handler: value => `pong:${value}` },
+  'ping-panel': {
+    handler: value => `pong:${value}`,
+  },
 }
 
 function createLinkedPair(options?: {
@@ -63,10 +73,15 @@ function createLinkedPair(options?: {
     ...noHandshake,
     functions: {
       ...defaultPageScriptFunctions,
-      boom: { handler: () => {
-        throw new Error('exploded')
-      } },
-      strict: { jsonSerializable: true, handler: payload => payload },
+      boom: {
+        handler: () => {
+          throw new Error('exploded')
+        },
+      },
+      strict: {
+        jsonSerializable: true,
+        handler: payload => payload,
+      },
     },
     ...options?.pageScript,
   })
@@ -92,11 +107,22 @@ describe('in-page channel over bring-your-own ports', () => {
   it('validates and deserializes events before invoking handlers and listeners', async () => {
     const { s } = await import('devframe/utils/simple-schema')
     const registry = createLocalFunctionRegistry({
-      deserialize: value => typeof value === 'string' ? value.toUpperCase() : value,
+      deserialize: value => typeof value === 'string'
+        ? value.toUpperCase()
+        : value,
     })
     const handler = vi.fn(() => new Map())
     const listener = vi.fn()
-    registry.register({ name: 'note', type: 'event', args: [s.string()], returns: undefined, jsonSerializable: true, handler })
+    registry.register({
+      name: 'note',
+      type: 'event',
+      args: [
+        s.string(),
+      ],
+      returns: undefined,
+      jsonSerializable: true,
+      handler,
+    })
     registry.on('note', listener)
     const receive = registry.resolve(channelMethod('event', 'note'))!
     await expect(receive(42)).rejects.toMatchObject({ code: 'invalid-args' })
@@ -117,13 +143,26 @@ describe('in-page channel over bring-your-own ports', () => {
       name: 'test',
       ...noHandshake,
       functions: {
-        save: { type: 'action', jsonSerializable: true, handler: () => {} },
-        reset: { type: 'action', handler: async () => {
-          await new Promise(resolve => setTimeout(resolve, 10))
-          completed = true
-        } },
-        fail: { type: 'action', handler: async () => { throw new Error('save failed') } },
-        hang: { type: 'action', handler: () => new Promise(() => {}) },
+        save: {
+          type: 'action',
+          jsonSerializable: true,
+          handler: () => {},
+        },
+        reset: {
+          type: 'action',
+          handler: async () => {
+            await new Promise(resolve => setTimeout(resolve, 10))
+            completed = true
+          },
+        },
+        fail: {
+          type: 'action',
+          handler: async () => { throw new Error('save failed') },
+        },
+        hang: {
+          type: 'action',
+          handler: () => new Promise(() => {}),
+        },
       },
     })
     const { port1, port2 } = new MessageChannel()
@@ -156,7 +195,9 @@ describe('in-page channel over bring-your-own ports', () => {
     const pageScript = createPageScriptChannel<Protocol>({
       name: 'test',
       ...noHandshake,
-      functions: { save: { type: 'action', handler: pageAction } },
+      functions: {
+        save: { type: 'action', handler: pageAction },
+      },
     })
     const { port1, port2 } = new MessageChannel()
     pageScript.addPanelPort(port1)
@@ -227,11 +268,17 @@ describe('in-page channel over bring-your-own ports', () => {
     try {
       // A Map survives structured clone, so it reaches the receiving side,
       // where the jsonSerializable contract rejects it, naming the path.
-      const rejection = await panel.call('strict', { nested: new Map() }).catch(error => error) as Error
+      const rejection = await panel.call('strict', {
+        nested: new Map(),
+      }).catch(error => error) as Error
       expect(rejection.message).toContain('jsonSerializable')
       expect(rejection.message).toContain('nested')
       // Plain JSON passes.
-      await expect(panel.call('strict', { ok: [1, 'two', null] })).resolves.toEqual({ ok: [1, 'two', null] })
+      await expect(panel.call('strict', {
+        ok: [1, 'two', null],
+      })).resolves.toEqual({
+        ok: [1, 'two', null],
+      })
     }
     finally {
       dispose()
@@ -259,7 +306,9 @@ describe('in-page channel over bring-your-own ports', () => {
       functions: {
         ...defaultPageScriptFunctions,
         echo: {
-          args: [s.string()] as const,
+          args: [
+            s.string(),
+          ] as const,
           returns: s.string(),
           handler: value => value,
         },
@@ -369,7 +418,9 @@ describe('in-page channel over bring-your-own ports', () => {
       serialize: value => (value && typeof value === 'object' && '__wrapped' in (value as any))
         ? (value as any).__wrapped
         : value,
-      deserialize: value => typeof value === 'string' ? `in:${value}` : value,
+      deserialize: value => typeof value === 'string'
+        ? `in:${value}`
+        : value,
     })
     try {
       await expect(panel.call('echo', { __wrapped: 'raw' } as any)).resolves.toBe('in:raw')
@@ -426,7 +477,9 @@ describe('in-page channel shared state', () => {
     const panelCodec = codec('panel', 'page-script')
     const { pageScript, panel, dispose } = createLinkedPair({ pageScript: pageCodec, panel: panelCodec })
     try {
-      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const authority = await pageScript.sharedState.get('doc', {
+        initialValue: { count: 1 },
+      })
       const mirror = await panel.sharedState.get('doc')
       expect(mirror.value()).toEqual({ count: 1 })
       expect(pageCodec.serialize).toHaveBeenCalledWith({ count: 1 })
@@ -440,7 +493,13 @@ describe('in-page channel shared state', () => {
           })
         }
         else {
-          state.patch([{ op: 'replace', path: ['count'], value: count }])
+          state.patch([
+            {
+              op: 'replace',
+              path: ['count'],
+              value: count,
+            },
+          ])
         }
       }
 
@@ -462,8 +521,13 @@ describe('in-page channel shared state', () => {
       if (Array.isArray(value))
         return value.map(restore)
       if (value && typeof value === 'object') {
-        const restored = Object.fromEntries(Object.entries(value).map(([key, item]) => [key, restore(item)]))
-        return 'count' in restored ? { ...restored, label: 'restored' } : restored
+        const restored = Object.fromEntries(Object.entries(value).map(([key, item]) => [
+          key,
+          restore(item),
+        ]))
+        return 'count' in restored
+          ? { ...restored, label: 'restored' }
+          : restored
       }
       return value
     }
@@ -471,7 +535,9 @@ describe('in-page channel shared state', () => {
       panel: { deserialize: restore },
     })
     try {
-      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const authority = await pageScript.sharedState.get('doc', {
+        initialValue: { count: 1 },
+      })
       const mirror = await panel.sharedState.get('doc')
       expect(mirror.value()).toEqual({ count: 1, label: 'restored' })
 
@@ -487,8 +553,12 @@ describe('in-page channel shared state', () => {
   it('seeds an equal snapshot and skips unchanged writes on both endpoints', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {
-      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
-      const mirror = await panel.sharedState.get('doc', { initialValue: { count: 1 } })
+      const authority = await pageScript.sharedState.get('doc', {
+        initialValue: { count: 1 },
+      })
+      const mirror = await panel.sharedState.get('doc', {
+        initialValue: { count: 1 },
+      })
       const initialMirror = mirror.value()
       await until(() => mirror.value() !== initialMirror)
       expect(mirror.value()).toEqual({ count: 1 })
@@ -526,7 +596,9 @@ describe('in-page channel shared state', () => {
   it('replays the authority snapshot and streams patches to panels', async () => {
     const { pageScript, panel, dispose } = createLinkedPair()
     try {
-      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 1 } })
+      const authority = await pageScript.sharedState.get('doc', {
+        initialValue: { count: 1 },
+      })
       const mirror = await panel.sharedState.get('doc')
       expect(mirror.value()).toEqual({ count: 1 })
 
@@ -552,10 +624,22 @@ describe('in-page channel shared state', () => {
     })
     pageScript.addPanelPort(a.port1)
     pageScript.addPanelPort(b.port1)
-    const panelA = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: a.port2, functions: defaultPanelFunctions })
-    const panelB = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: b.port2, functions: defaultPanelFunctions })
+    const panelA = connectPanelChannel<TestProtocol>({
+      name: 'devframes:test',
+      ...noHandshake,
+      transport: a.port2,
+      functions: defaultPanelFunctions,
+    })
+    const panelB = connectPanelChannel<TestProtocol>({
+      name: 'devframes:test',
+      ...noHandshake,
+      transport: b.port2,
+      functions: defaultPanelFunctions,
+    })
     try {
-      const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 0 } })
+      const authority = await pageScript.sharedState.get('doc', {
+        initialValue: { count: 0 },
+      })
       const mirrorA = await panelA.sharedState.get('doc')
       const mirrorB = await panelB.sharedState.get('doc')
 
@@ -575,7 +659,9 @@ describe('in-page channel shared state', () => {
   it('seeds a late-joining panel with the current value', async () => {
     const { port1, port2 } = new MessageChannel()
     const pageScript = createPageScriptChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, functions: defaultPageScriptFunctions })
-    const authority = await pageScript.sharedState.get('doc', { initialValue: { count: 0 } })
+    const authority = await pageScript.sharedState.get('doc', {
+      initialValue: { count: 0 },
+    })
     authority.mutate((draft) => {
       draft.count = 41
     })
@@ -584,7 +670,12 @@ describe('in-page channel shared state', () => {
     })
 
     pageScript.addPanelPort(port1)
-    const panel = connectPanelChannel<TestProtocol>({ name: 'devframes:test', ...noHandshake, transport: port2, functions: defaultPanelFunctions })
+    const panel = connectPanelChannel<TestProtocol>({
+      name: 'devframes:test',
+      ...noHandshake,
+      transport: port2,
+      functions: defaultPanelFunctions,
+    })
     try {
       const mirror = await panel.sharedState.get('doc')
       expect(mirror.value()).toEqual({ count: 42 })
@@ -648,7 +739,12 @@ function createFakeWindow(origin: string): FakeWindow {
         listeners.splice(index, 1)
     },
     postMessage: (data, _targetOrigin, transfer) => {
-      win.__dispatch({ data, origin: win.__sender.origin, source: win.__sender.source as any, ports: (transfer ?? []) as any })
+      win.__dispatch({
+        data,
+        origin: win.__sender.origin,
+        source: win.__sender.source as any,
+        ports: (transfer ?? []) as any,
+      })
     },
     __sender: { origin, source: null },
     __dispatch: (event) => {
@@ -719,7 +815,9 @@ describe('in-page channel handshake', () => {
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       window: asWindow(panelWin),
-      targets: [asWindow(hostWin)],
+      targets: [
+        asWindow(hostWin),
+      ],
       ...fastHello,
       functions: defaultPanelFunctions,
     })
@@ -739,7 +837,9 @@ describe('in-page channel handshake', () => {
         heartbeat: false,
         functions: {
           ...defaultPageScriptFunctions,
-          echo: { handler: value => `revived:${value}` },
+          echo: {
+            handler: value => `revived:${value}`,
+          },
         },
       })
       try {
@@ -762,7 +862,9 @@ describe('in-page channel handshake', () => {
     const panel = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       window: asWindow(panelWin),
-      targets: [asWindow(hostWin)],
+      targets: [
+        asWindow(hostWin),
+      ],
       ...fastHello,
       functions: defaultPanelFunctions,
     })
@@ -860,7 +962,9 @@ describe('in-page channel handshake', () => {
     const pinnedElsewhere = connectPanelChannel<TestProtocol>({
       name: 'devframes:test',
       window: asWindow(panelWin),
-      targets: [asWindow(hostWin)],
+      targets: [
+        asWindow(hostWin),
+      ],
       instanceId: 'some-other-tab',
       ...fastHello,
       functions: defaultPanelFunctions,
@@ -871,7 +975,9 @@ describe('in-page channel handshake', () => {
       const pinnedHere = connectPanelChannel<TestProtocol>({
         name: 'devframes:test',
         window: asWindow(panelWin),
-        targets: [asWindow(hostWin)],
+        targets: [
+          asWindow(hostWin),
+        ],
         instanceId: pageScript.instanceId,
         ...fastHello,
         functions: defaultPanelFunctions,

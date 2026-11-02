@@ -22,7 +22,9 @@ export default defineConfig([
     dts: false,
     outExtensions: () => ({ js: '.mjs' }),
     entry: { bundle: 'src/index.ts' },
-    deps: { alwaysBundle: ['nanoevents'] },
+    deps: {
+      alwaysBundle: ['nanoevents'],
+    },
   },
   {
     clean: false,

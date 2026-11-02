@@ -34,7 +34,9 @@ type Story = StoryObj
 
 export const Offline: Story = {
   render: () => ({
-    setup: () => () => stage(h(ViewAssetsError, { error: error('fetch failed') })),
+    setup: () => () => stage(h(ViewAssetsError, {
+      error: error('fetch failed'),
+    })),
   }),
 }
 

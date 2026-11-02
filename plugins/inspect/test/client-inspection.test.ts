@@ -64,7 +64,9 @@ describe('loadWebMcpState', () => {
   it('reads tools live from a model context with getTools()', async () => {
     const modelContext: WebMcpModelContext = {
       registerTool: () => {},
-      getTools: async () => [{ name: 'add-todo', description: 'Add a todo.', origin: 'http://localhost' }],
+      getTools: async () => [
+        { name: 'add-todo', description: 'Add a todo.', origin: 'http://localhost' },
+      ],
       executeTool: async () => 'ok',
     }
     const state = await loadWebMcpState(createCollector(), modelContext)
@@ -75,7 +77,9 @@ describe('loadWebMcpState', () => {
   it('decodes a JSON-string inputSchema (Chromium wire shape)', async () => {
     const modelContext: WebMcpModelContext = {
       registerTool: () => {},
-      getTools: async () => [{ name: 'add-todo', inputSchema: '{"type":"object"}' }],
+      getTools: async () => [
+        { name: 'add-todo', inputSchema: '{"type":"object"}' },
+      ],
     }
     const state = await loadWebMcpState(createCollector(), modelContext)
     expect(state.tools[0]!.inputSchema).toEqual({ type: 'object' })
@@ -94,7 +98,9 @@ describe('loadWebMcpState', () => {
   })
 
   it('projects when the model context provides registration only', async () => {
-    const state = await loadWebMcpState(createCollector(), { registerTool: () => {} })
+    const state = await loadWebMcpState(createCollector(), {
+      registerTool: () => {},
+    })
     expect(state).toMatchObject({ available: true, live: false })
     expect(state.tools.map(tool => tool.name)).toEqual(['my-plugin_get-selection'])
   })
@@ -110,13 +116,19 @@ describe('executeWebMcpTool', () => {
        */
       executeTool: async (tool, args) => {
         if (typeof args !== 'string')
-          throw new Error('Failed to parse input arguments')
-        return JSON.stringify({ tool: tool.name, args: JSON.parse(args) })
+          throw new TypeError('Failed to parse input arguments')
+        return JSON.stringify({
+          tool: tool.name,
+          args: JSON.parse(args),
+        })
       },
     }
     const result = await executeWebMcpTool(modelContext, { name: 'add-todo' }, { text: 'milk' })
     expect(result.ok).toBe(true)
-    expect(result.result).toEqual({ tool: 'add-todo', args: { text: 'milk' } })
+    expect(result.result).toEqual({
+      tool: 'add-todo',
+      args: { text: 'milk' },
+    })
   })
 
   it('falls back to dictionary args for a spec-shaped model context', async () => {
@@ -131,7 +143,10 @@ describe('executeWebMcpTool', () => {
     }
     const result = await executeWebMcpTool(modelContext, { name: 'add-todo' }, { text: 'milk' })
     expect(result.ok).toBe(true)
-    expect(result.result).toEqual({ tool: 'add-todo', args: { text: 'milk' } })
+    expect(result.result).toEqual({
+      tool: 'add-todo',
+      args: { text: 'milk' },
+    })
   })
 
   it('normalizes an execution error', async () => {

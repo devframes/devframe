@@ -40,7 +40,16 @@ function fakeFrame(initialHref: string, options: { navigation?: boolean, crossOr
   let pristineReplace: (...args: any[]) => void
 
   function createWindow(): void {
-    const listeners = new Map<string, Set<Listener>>([['popstate', new Set()], ['hashchange', new Set()]])
+    const listeners = new Map<string, Set<Listener>>([
+      [
+        'popstate',
+        new Set(),
+      ],
+      [
+        'hashchange',
+        new Set(),
+      ],
+    ])
     const nav = new Set<Listener>()
     const history = {
       pushState: (...args: any[]) => {
@@ -109,7 +118,9 @@ function fakeFrame(initialHref: string, options: { navigation?: boolean, crossOr
     },
     emit: (type, next) => {
       href = next
-      for (const listener of [...winListeners.get(type)!]) listener()
+      for (const listener of [
+        ...winListeners.get(type)!,
+      ]) listener()
     },
     load: (next) => {
       createWindow()
@@ -121,7 +132,9 @@ function fakeFrame(initialHref: string, options: { navigation?: boolean, crossOr
     isDetached: () =>
       loadListeners.size === 0
       && navListeners.size === 0
-      && [...winListeners.values()].every(set => set.size === 0),
+      && [
+        ...winListeners.values(),
+      ].every(set => set.size === 0),
   }
 }
 
@@ -149,7 +162,10 @@ describe('watchFrameLocation', () => {
     expect.assertions(4)
     const options = { crossOrigin: false, navigation: true }
     const frame = fakeFrame('http://localhost/app/', options)
-    const dispose = watchFrameLocation({ iframe: frame.iframe, onChange: vi.fn() })
+    const dispose = watchFrameLocation({
+      iframe: frame.iframe,
+      onChange: vi.fn(),
+    })
 
     expect(frame.isHistoryPristine()).toBe(false)
     options.crossOrigin = true
@@ -183,7 +199,11 @@ describe('watchFrameLocation', () => {
 
   it('the wrapper still performs the navigation it wraps', () => {
     const frame = fakeFrame('http://localhost/app/')
-    watchFrameLocation({ iframe: frame.iframe, onChange: () => {}, initial: 'http://localhost/app/' })
+    watchFrameLocation({
+      iframe: frame.iframe,
+      onChange: () => {},
+      initial: 'http://localhost/app/',
+    })
     frame.pushState('http://localhost/app/moved')
     expect(frame.iframe.contentWindow!.location.href).toBe('http://localhost/app/moved')
   })

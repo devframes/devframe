@@ -22,11 +22,23 @@ const isDockPopupOpen = useIsDockPopupOpen()
 
 const dockModeOptions = computed(() => {
   const options = [
-    { value: 'float', label: t('appearance.dockFloat'), icon: 'i-ph-cards-three-duotone' },
-    { value: 'edge', label: t('appearance.dockEdge'), icon: 'i-ph-square-half-bottom-duotone' },
+    {
+      value: 'float',
+      label: t('appearance.dockFloat'),
+      icon: 'i-ph-cards-three-duotone',
+    },
+    {
+      value: 'edge',
+      label: t('appearance.dockEdge'),
+      icon: 'i-ph-square-half-bottom-duotone',
+    },
   ]
   if (isDockPopupSupported()) {
-    options.push({ value: 'popup', label: t('appearance.dockPopup'), icon: 'i-ph-arrow-square-out-duotone' })
+    options.push({
+      value: 'popup',
+      label: t('appearance.dockPopup'),
+      icon: 'i-ph-arrow-square-out-duotone',
+    })
   }
   return options
 })
@@ -34,22 +46,43 @@ const dockModeOptions = computed(() => {
 const currentDockMode = computed(() => panelStore.mode)
 
 const colorModeOptions = computed(() => [
-  { value: 'auto', label: t('appearance.colorAuto'), icon: 'i-ph-laptop-duotone' },
-  { value: 'light', label: t('appearance.colorLight'), icon: 'i-ph-sun-duotone' },
-  { value: 'dark', label: t('appearance.colorDark'), icon: 'i-ph-moon-duotone' },
+  {
+    value: 'auto',
+    label: t('appearance.colorAuto'),
+    icon: 'i-ph-laptop-duotone',
+  },
+  {
+    value: 'light',
+    label: t('appearance.colorLight'),
+    icon: 'i-ph-sun-duotone',
+  },
+  {
+    value: 'dark',
+    label: t('appearance.colorDark'),
+    icon: 'i-ph-moon-duotone',
+  },
 ] as const)
 
 // Language names stay in their own language so a visitor stranded in the
 // wrong locale can still find theirs.
 const localeOptions = computed(() => [
-  { value: 'auto', label: t('appearance.languageAuto') },
+  {
+    value: 'auto',
+    label: t('appearance.languageAuto'),
+  },
   ...Object.entries(HUB_UI_LOCALES).map(([value, label]) => ({ value, label })),
 ])
 
 // `0` turns the recent slots off; the upper bound keeps the bar short.
 const recentLimitOptions = computed(() => [
-  { value: '0', label: t('appearance.recentDocksOff') },
-  ...[1, 2, 3, 4, 5].map(count => ({ value: String(count), label: String(count) })),
+  {
+    value: '0',
+    label: t('appearance.recentDocksOff'),
+  },
+  ...[1, 2, 3, 4, 5].map(count => ({
+    value: String(count),
+    label: String(count),
+  })),
 ])
 
 function onRecentLimitChange(value: string | undefined): void {

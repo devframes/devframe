@@ -135,7 +135,9 @@ async function writeConnectionMeta(ctx: DevframeNodeContext, outDir: string): Pr
  */
 export function applySnapshotRpc(ctx: DevframeNodeContext, entries: readonly DevframeSnapshotRpcEntry[] | undefined): void {
   for (const entry of entries ?? []) {
-    const method = typeof entry === 'string' ? entry : entry.method
+    const method = typeof entry === 'string'
+      ? entry
+      : entry.method
     const def = ctx.rpc.definitions.get(method)
     if (!def) {
       diagnostics.DF0072({ method })
@@ -147,10 +149,16 @@ export function applySnapshotRpc(ctx: DevframeNodeContext, entries: readonly Dev
     }
     const inputsSpec = entry.inputs
     def.dump = async (dumpCtx: DevframeNodeContext, handler: (...args: any[]) => any) => {
-      const tuples = typeof inputsSpec === 'function' ? await inputsSpec(dumpCtx) : inputsSpec
+      const tuples = typeof inputsSpec === 'function'
+        ? await inputsSpec(dumpCtx)
+        : inputsSpec
       const records = []
-      for (const input of tuples)
-        records.push({ inputs: [...input] as any[], output: await handler(...input) })
+      for (const input of tuples) {
+        records.push({
+          inputs: [...input] as any[],
+          output: await handler(...input),
+        })
+      }
       return { records, fallback: records[0]?.output }
     }
   }

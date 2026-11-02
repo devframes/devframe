@@ -22,10 +22,18 @@ function mockOnboarding(): Plugin {
 
   const status = (): OnboardingStatus => ({
     state,
-    command: ['pnpm', 'add', '-D', '@devframes/hub', '@devframes/hub-ui'],
+    command: [
+      'pnpm',
+      'add',
+      '-D',
+      '@devframes/hub',
+      '@devframes/hub-ui',
+    ],
     branding: { productName, primaryColor: '#646cff' },
     messages: defaultMessages(productName),
-    error: state === 'error' ? { code: 'DF9001', message: 'Mock install failed.' } : undefined,
+    error: state === 'error'
+      ? { code: 'DF9001', message: 'Mock install failed.' }
+      : undefined,
   })
 
   return {
@@ -42,7 +50,9 @@ function mockOnboarding(): Plugin {
           clearTimeout(timer)
           state = (url.searchParams.get('state') ?? 'idle') as OnboardingState
           const requested = url.searchParams.get('outcome')
-          outcome = requested === 'error' || requested === 'refused' ? requested : 'installed'
+          outcome = requested === 'error' || requested === 'refused'
+            ? requested
+            : 'installed'
           return send({ state, outcome })
         }
         if (!url.pathname.startsWith('/src/client/__onboard/'))
@@ -63,7 +73,9 @@ function mockOnboarding(): Plugin {
         }
         if (route === 'disable')
           state = 'disabled'
-        send(route === 'status' ? status() : { ok: true })
+        send(route === 'status'
+          ? status()
+          : { ok: true })
       })
     },
   }
@@ -101,12 +113,17 @@ function rebuildCss(): Plugin {
         }, 100)
       })
     },
-    handleHotUpdate: ({ file }) => watched.some(path => file.startsWith(path)) ? [] : undefined,
+    handleHotUpdate: ({ file }) => watched.some(path => file.startsWith(path))
+      ? []
+      : undefined,
   }
 }
 
 export default defineConfig({
   root,
   server: { open: '/playground/' },
-  plugins: [mockOnboarding(), rebuildCss()],
+  plugins: [
+    mockOnboarding(),
+    rebuildCss(),
+  ],
 })

@@ -39,7 +39,13 @@ export default defineConfig({
    * classes can't be found by static extraction, so safelist them, alongside the
    * shadow-root surface/text tokens.
    */
-  safelist: [...shadowSurfaceSafelist, 'badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
+  safelist: [
+    ...shadowSurfaceSafelist,
+    'badge-color-green',
+    'badge-color-amber',
+    'badge-color-red',
+    'badge-color-blue',
+  ],
   shortcuts: {
     'bg-panel-raised': 'bg-hover',
     'bg-panel-sunken': 'bg-code',

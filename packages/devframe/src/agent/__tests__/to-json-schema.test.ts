@@ -27,15 +27,24 @@ describe('argsToJsonSchema', () => {
   })
 
   it('uses the schema\'s own Standard JSON Schema converter when present', () => {
-    const schema = argsToJsonSchema([withJsonSchema({ type: 'string' })])
+    const schema = argsToJsonSchema([
+      withJsonSchema({ type: 'string' }),
+    ])
     expect((schema as any).properties.arg0).toEqual({ type: 'string' })
   })
 
   it('falls back to a permissive object for validators without a native converter (valibot)', () => {
-    const schema = argsToJsonSchema([v.string(), v.number()])
+    const schema = argsToJsonSchema([
+      v.string(),
+      v.number(),
+    ])
     expect((schema as any).properties.arg0).toEqual(PERMISSIVE)
     expect((schema as any).properties.arg1).toEqual(PERMISSIVE)
-    expect(schema).toMatchObject({ type: 'object', required: ['arg0', 'arg1'], additionalProperties: false })
+    expect(schema).toMatchObject({
+      type: 'object',
+      required: ['arg0', 'arg1'],
+      additionalProperties: false,
+    })
   })
 })
 
@@ -45,13 +54,27 @@ describe('returnToJsonSchema', () => {
   })
 
   it('uses the native converter when present', () => {
-    expect(returnToJsonSchema(withJsonSchema({ type: 'object', properties: { ok: { type: 'boolean' } } })))
-      .toEqual({ type: 'object', properties: { ok: { type: 'boolean' } } })
+    expect(returnToJsonSchema(withJsonSchema({
+      type: 'object',
+      properties: {
+        ok: { type: 'boolean' },
+      },
+    })))
+      .toEqual({
+        type: 'object',
+        properties: {
+          ok: { type: 'boolean' },
+        },
+      })
   })
 
   it('yields no schema for validators without a native converter', () => {
-    expect(returnToJsonSchema(v.object({ ok: v.boolean() }))).toBeUndefined()
-    expect(returnToJsonSchema(v.array(v.object({ ok: v.boolean() })))).toBeUndefined()
+    expect(returnToJsonSchema(v.object({
+      ok: v.boolean(),
+    }))).toBeUndefined()
+    expect(returnToJsonSchema(v.array(v.object({
+      ok: v.boolean(),
+    })))).toBeUndefined()
   })
 
   it('yields no schema when the converter cannot express the schema', () => {
@@ -77,11 +100,21 @@ describe('returnToJsonSchema', () => {
         validate: (value: unknown) => ({ value }),
         jsonSchema: {
           input: () => ({ type: 'string' }),
-          output: () => ({ type: 'object', properties: { parsed: { type: 'number' } } }),
+          output: () => ({
+            type: 'object',
+            properties: {
+              parsed: { type: 'number' },
+            },
+          }),
         },
       } as StandardSchemaV1['~standard'],
     }
     expect(returnToJsonSchema(transforming))
-      .toEqual({ type: 'object', properties: { parsed: { type: 'number' } } })
+      .toEqual({
+        type: 'object',
+        properties: {
+          parsed: { type: 'number' },
+        },
+      })
   })
 })

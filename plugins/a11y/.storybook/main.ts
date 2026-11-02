@@ -17,7 +17,9 @@ const config: StorybookConfig = {
   async viteFinal(config) {
     return mergeConfig(config, {
       resolve: { alias },
-      plugins: [UnoCSS()],
+      plugins: [
+        UnoCSS(),
+      ],
       /**
        * Dev tool reached from arbitrary hostnames (LAN IPs, tunnels,
        * tailnets), e.g. when iframed by the storybook-hub example.

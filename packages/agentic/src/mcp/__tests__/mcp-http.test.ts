@@ -67,7 +67,9 @@ describe('mcp adapter (streamable http route)', () => {
   // same-machine callers, so no bearer is needed.
   function originTransport(started: StartedServer, headers: Record<string, string> = {}): StreamableHTTPClientTransport {
     return new StreamableHTTPClientTransport(new URL(`${started.origin}/__mcp`), {
-      requestInit: { headers: { origin: started.origin, ...headers } },
+      requestInit: {
+        headers: { origin: started.origin, ...headers },
+      },
     })
   }
 
@@ -77,7 +79,9 @@ describe('mcp adapter (streamable http route)', () => {
     // Negotiate the 2026-07-28 era via `server/discover`.
     const client = new Client(
       { name: 'test-client', version: '0.0.0' },
-      { versionNegotiation: { mode: 'auto' } },
+      {
+        versionNegotiation: { mode: 'auto' },
+      },
     )
     try {
       await client.connect(transport)
@@ -89,7 +93,10 @@ describe('mcp adapter (streamable http route)', () => {
       const tools = await client.listTools()
       expect(tools.tools.map(t => t.name)).toContain('greet')
 
-      const result = await client.callTool({ name: 'greet', arguments: { name: 'devframe' } })
+      const result = await client.callTool({
+        name: 'greet',
+        arguments: { name: 'devframe' },
+      })
       const content = result.content as Array<{ type: string, text: string }>
       expect(JSON.parse(content[0]!.text)).toEqual({ greeting: 'hi devframe' })
     }
@@ -114,7 +121,9 @@ describe('mcp adapter (streamable http route)', () => {
     }))
     const client = new Client(
       { name: 'test-client', version: '0.0.0' },
-      { versionNegotiation: { mode: 'auto' } },
+      {
+        versionNegotiation: { mode: 'auto' },
+      },
     )
     try {
       await client.connect(originTransport(started))
@@ -132,20 +141,46 @@ describe('mcp adapter (streamable http route)', () => {
 
   it('serves mcp.prompts through prompts/list and prompts/get', async () => {
     const started = await boot({
-      prompts: [{
-        name: 'greet',
-        arguments: [{ name: 'who', required: true }],
-        get: ({ who }) => ({ messages: [{ role: 'user', content: { type: 'text', text: `Greet ${who}.` } }] }),
-      }],
+      prompts: [
+        {
+          name: 'greet',
+          arguments: [
+            { name: 'who', required: true },
+          ],
+          get: ({ who }) => ({
+            messages: [
+              {
+                role: 'user',
+                content: { type: 'text', text: `Greet ${who}.` },
+              },
+            ],
+          }),
+        },
+      ],
     })
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     try {
       await client.connect(originTransport(started))
       const { prompts } = await client.listPrompts()
-      expect(prompts).toEqual([{ name: 'greet', arguments: [{ name: 'who', required: true }] }])
+      expect(prompts).toEqual([
+        {
+          name: 'greet',
+          arguments: [
+            { name: 'who', required: true },
+          ],
+        },
+      ])
 
-      const prompt = await client.getPrompt({ name: 'greet', arguments: { who: 'the team' } })
-      expect(prompt.messages).toEqual([{ role: 'user', content: { type: 'text', text: 'Greet the team.' } }])
+      const prompt = await client.getPrompt({
+        name: 'greet',
+        arguments: { who: 'the team' },
+      })
+      expect(prompt.messages).toEqual([
+        {
+          role: 'user',
+          content: { type: 'text', text: 'Greet the team.' },
+        },
+      ])
     }
     finally {
       await client.close()
@@ -154,25 +189,33 @@ describe('mcp adapter (streamable http route)', () => {
 
   it('serves mcp.resourceTemplates through resources/templates/list and resources/read', async () => {
     const started = await boot({
-      resourceTemplates: [{
-        uriTemplate: 'test://note/{id}',
-        name: 'note',
-        mimeType: 'text/plain',
-        list: () => [{ uri: 'test://note/1', name: 'Note 1' }],
-        read: params => ({ text: `note ${params.id}` }),
-      }],
+      resourceTemplates: [
+        {
+          uriTemplate: 'test://note/{id}',
+          name: 'note',
+          mimeType: 'text/plain',
+          list: () => [
+            { uri: 'test://note/1', name: 'Note 1' },
+          ],
+          read: params => ({ text: `note ${params.id}` }),
+        },
+      ],
     })
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     try {
       await client.connect(originTransport(started))
       const { resourceTemplates } = await client.listResourceTemplates()
-      expect(resourceTemplates).toEqual([{ uriTemplate: 'test://note/{id}', name: 'note', mimeType: 'text/plain' }])
+      expect(resourceTemplates).toEqual([
+        { uriTemplate: 'test://note/{id}', name: 'note', mimeType: 'text/plain' },
+      ])
 
       const { resources } = await client.listResources()
       expect(resources).toContainEqual({ uri: 'test://note/1', name: 'Note 1', mimeType: 'text/plain' })
 
       const read = await client.readResource({ uri: 'test://note/7' })
-      expect(read.contents).toEqual([{ uri: 'test://note/7', mimeType: 'text/plain', text: 'note 7' }])
+      expect(read.contents).toEqual([
+        { uri: 'test://note/7', mimeType: 'text/plain', text: 'note 7' },
+      ])
     }
     finally {
       await client.close()
@@ -191,7 +234,9 @@ describe('mcp adapter (streamable http route)', () => {
     // The 2026-07-28 era delivers list_changed on a `subscriptions/listen` stream.
     const client = new Client(
       { name: 'test-client', version: '0.0.0' },
-      { versionNegotiation: { mode: 'auto' } },
+      {
+        versionNegotiation: { mode: 'auto' },
+      },
     )
     const changed = vi.fn()
     client.setNotificationHandler('notifications/resources/list_changed', changed)
@@ -240,7 +285,11 @@ describe('mcp adapter (streamable http route)', () => {
         jsonrpc: '2.0',
         id: 1,
         method: 'initialize',
-        params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+        params: {
+          protocolVersion: '2025-03-26',
+          capabilities: {},
+          clientInfo: { name: 'x', version: '0' },
+        },
       }),
     })
   }
@@ -265,7 +314,9 @@ describe('mcp adapter (streamable http route)', () => {
   describe('opt-in bearer (authorization: token)', () => {
     it('accepts a request carrying the correct bearer', async () => {
       const started = await boot({ authorization: TOKEN })
-      const client = new Client({ name: 'test-client', version: '0.0.0' }, { versionNegotiation: { mode: 'auto' } })
+      const client = new Client({ name: 'test-client', version: '0.0.0' }, {
+        versionNegotiation: { mode: 'auto' },
+      })
       const transport = originTransport(started, { authorization: `Bearer ${TOKEN}` })
       try {
         await client.connect(transport)
@@ -309,21 +360,27 @@ describe('mcp adapter (streamable http route)', () => {
 
   describe('opt-in callback (authorization: fn)', () => {
     it('allows when the callback returns true', async () => {
-      const started = await boot({ authorization: req => req.headers.get('x-secret') === 'open-sesame' })
+      const started = await boot({
+        authorization: req => req.headers.get('x-secret') === 'open-sesame',
+      })
       const res = await initRequest(started, { 'origin': started.origin, 'x-secret': 'open-sesame' })
       expect(res.status).toBe(200)
       await res.body?.cancel()
     })
 
     it('denies with 401 when the callback returns false', async () => {
-      const started = await boot({ authorization: req => req.headers.get('x-secret') === 'open-sesame' })
+      const started = await boot({
+        authorization: req => req.headers.get('x-secret') === 'open-sesame',
+      })
       const res = await initRequest(started, { 'origin': started.origin, 'x-secret': 'wrong' })
       await res.body?.cancel()
       expect(res.status).toBe(401)
     })
 
     it('cannot relax the origin gate (disallowed origin still 403)', async () => {
-      const started = await boot({ authorization: () => true })
+      const started = await boot({
+        authorization: () => true,
+      })
       const res = await initRequest(started, { origin: 'http://evil.example.com' })
       await res.body?.cancel()
       expect(res.status).toBe(403)

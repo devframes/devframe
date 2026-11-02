@@ -7,7 +7,9 @@ const meta = {
   title: 'Messages/MessageItem',
   component: MessageItem,
   tags: ['autodocs'],
-  decorators: [() => ({ template: '<div class="max-w-120 p6 font-sans color-base"><story /></div>' })],
+  decorators: [
+    () => ({ template: '<div class="max-w-120 p6 font-sans color-base"><story /></div>' }),
+  ],
   parameters: {
     docs: {
       description: {
@@ -21,16 +23,29 @@ export default meta
 type Story = StoryObj
 
 export const Error: Story = {
-  render: () => ({ setup: () => () => h(MessageItem, { entry: sampleMessages[0]! }) }),
+  render: () => ({
+    setup: () => () => h(MessageItem, { entry: sampleMessages[0]! }),
+  }),
 }
 
 export const Loading: Story = {
-  render: () => ({ setup: () => () => h(MessageItem, { entry: message({ level: 'warn', message: 'Running checks…', status: 'loading', category: 'a11y' }) }) }),
+  render: () => ({
+    setup: () => () => h(MessageItem, {
+      entry: message({
+        level: 'warn',
+        message: 'Running checks…',
+        status: 'loading',
+        category: 'a11y',
+      }),
+    }),
+  }),
 }
 
 /** The compact variant used inside toasts (no timestamp / chips). */
 export const Compact: Story = {
-  render: () => ({ setup: () => () => h(MessageItem, { entry: sampleMessages[2]!, compact: true }) }),
+  render: () => ({
+    setup: () => () => h(MessageItem, { entry: sampleMessages[2]!, compact: true }),
+  }),
 }
 
 /** Every level stacked together. */

@@ -80,7 +80,11 @@ function websocketConnectionMeta(rpcHost: RpcFunctionsHostImpl, path: string | u
     if (def.jsonSerializable === true)
       jsonSerializableMethods.push(def.name)
   }
-  return { backend: 'websocket', websocket: { path }, jsonSerializableMethods }
+  return {
+    backend: 'websocket',
+    websocket: { path },
+    jsonSerializableMethods,
+  }
 }
 
 /**
@@ -128,14 +132,18 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
       throw diagnostics.DF0052({
         host: bindHost,
         port,
-        reason: error instanceof Error ? error.message : String(error),
+        reason: error instanceof Error
+          ? error.message
+          : String(error),
         cause: error,
       })
     }
   }
 
   const address = httpServer.address()
-  const resolvedPort = typeof address === 'object' && address ? address.port : port
+  const resolvedPort = typeof address === 'object' && address
+    ? address.port
+    : port
   const origin = normalizeHttpServerUrl(bindHost, resolvedPort)
   // A shared server may not be listening yet (Vite listens after plugins configure).
   let wsUrl: string | undefined
@@ -143,7 +151,9 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     const bound = httpServer.address()
     if (!bound || typeof bound === 'string')
       return
-    const scheme = httpServer instanceof TlsServer ? 'wss' : 'ws'
+    const scheme = httpServer instanceof TlsServer
+      ? 'wss'
+      : 'ws'
     wsUrl = `${scheme}://${formatHostForUrl(bindHost)}:${bound.port}${options.path ?? ''}`
     getInternalContext(context).setWsEndpoint({ url: wsUrl })
   }
@@ -244,7 +254,9 @@ async function bindNativeHttpAndWs(
     throw diagnostics.DF0052({
       host: bindHost,
       port,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error instanceof Error
+        ? error.message
+        : String(error),
       cause: error,
     })
   }
@@ -288,7 +300,11 @@ async function bindNativeHttpAndWs(
       server = Deno.serve(
         // A no-op `onListen` suppresses Deno's default "Listening on…" banner,
         // keeping the transport headless like every other tier.
-        { port, hostname: bindHost, onListen: () => {} },
+        {
+          port,
+          hostname: bindHost,
+          onListen: () => {},
+        },
         async (request, info) =>
           isWsUpgradeRequest(request, wsPath)
             ? await tier.handleUpgrade(request, info)
@@ -451,9 +467,15 @@ export function resolveInstanceRegister(
     return undefined
   return {
     id: defaults.id,
-    ...(defaults.name !== undefined ? { name: defaults.name } : {}),
-    ...(defaults.rootDir !== undefined ? { rootDir: defaults.rootDir } : {}),
-    ...(typeof option === 'object' ? { overrides: option } : {}),
+    ...(defaults.name !== undefined
+      ? { name: defaults.name }
+      : {}),
+    ...(defaults.rootDir !== undefined
+      ? { rootDir: defaults.rootDir }
+      : {}),
+    ...(typeof option === 'object'
+      ? { overrides: option }
+      : {}),
   }
 }
 
@@ -528,7 +550,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   const nativeRuntime = runtime !== 'node'
 
   const wsDisabled = options.ws === false
-  const ws: DevframeWsOptions = options.ws === false ? {} : options.ws ?? {}
+  const ws: DevframeWsOptions = options.ws === false
+    ? {}
+    : options.ws ?? {}
   const route = withoutLeadingSlash(ws.route ?? DEVFRAME_WS_ROUTE)
   /** Where an upgrade lands on the host's own origin. */
   const routePath = joinURL(base, route)
@@ -552,7 +576,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   // local RPC server to ride.
   const sseEnabled = options.sse !== false && tier !== 'external'
   const sseRoute = withoutLeadingSlash(
-    (typeof options.sse === 'object' ? options.sse.route : undefined) ?? DEVFRAME_SSE_ROUTE,
+    (typeof options.sse === 'object'
+      ? options.sse.route
+      : undefined) ?? DEVFRAME_SSE_ROUTE,
   )
   const sseRoutePath = joinURL(base, sseRoute)
   const advertisedSsePath = options.absoluteWsPath ? sseRoutePath : sseRoute
@@ -563,7 +589,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   // `__connection.json`, so the origin is known before the magic link is built.
   let derivedOrigin: string | undefined
   function explicitOrigin(): string | undefined {
-    return typeof options.origin === 'function' ? options.origin() : options.origin
+    return typeof options.origin === 'function'
+      ? options.origin()
+      : options.origin
   }
   function currentOrigin(): string | undefined {
     return explicitOrigin() || derivedOrigin
@@ -589,7 +617,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       let port = 0
       try {
         const url = new URL(origin)
-        port = Number(url.port) || (url.protocol === 'https:' ? 443 : 80)
+        port = Number(url.port) || (url.protocol === 'https:'
+          ? 443
+          : 80)
       }
       catch {}
       registration = registerDevframeInstance({
@@ -598,9 +628,15 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         origin,
         basePath: base,
         id: cfg.id,
-        ...(cfg.name !== undefined ? { name: cfg.name } : {}),
+        ...(cfg.name !== undefined
+          ? { name: cfg.name }
+          : {}),
         rootDir: cfg.rootDir ?? process.cwd(),
-        mcp: resolvedMeta.mcp ? { path: joinURL(base, resolvedMeta.mcp.path) } : null,
+        mcp: resolvedMeta.mcp
+          ? {
+              path: joinURL(base, resolvedMeta.mcp.path),
+            }
+          : null,
         startedAt: Date.now(),
         ...cfg.overrides,
       })
@@ -618,7 +654,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   function noteOrigin(candidate: string): void {
     if (derivedOrigin === undefined && !explicitOrigin()) {
       const allowed = options.allowedOrigins
-      const accepted = validateOriginCandidate(candidate, Array.isArray(allowed) ? allowed : undefined)
+      const accepted = validateOriginCandidate(candidate, Array.isArray(allowed)
+        ? allowed
+        : undefined)
       if (accepted !== undefined)
         derivedOrigin = accepted
     }
@@ -769,20 +807,29 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       allowedOrigins: options.allowedOrigins,
       destroyUnmatched: options.destroyUnmatchedUpgrades,
     })
-    return { websocketMeta: { path: advertisedPath }, wsAvailable: !wsDisabled }
+    return {
+      websocketMeta: { path: advertisedPath },
+      wsAvailable: !wsDisabled,
+    }
   }
 
   async function resolveWebsocketBinding(): Promise<TierBinding> {
     if (tier === 'sidecar') {
       started = await startSidecar(await ensureCore())
-      return { websocketMeta: { port: started.port, path: route }, wsAvailable: !wsDisabled }
+      return {
+        websocketMeta: { port: started.port, path: route },
+        wsAvailable: !wsDisabled,
+      }
     }
     if (tier === 'server')
       return startServerTier()
     if (tier === 'external')
       return { websocketMeta: ws.url!, wsAvailable: !wsDisabled }
     // unbound
-    return { websocketMeta: { path: advertisedPath }, wsAvailable: !wsDisabled }
+    return {
+      websocketMeta: { path: advertisedPath },
+      wsAvailable: !wsDisabled,
+    }
   }
 
   async function init(): Promise<void> {
@@ -790,7 +837,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     ctx = result.context
     dispose = result.dispose
 
-    resolvedAuth = tier === 'external' ? false : resolveAuth()
+    resolvedAuth = tier === 'external'
+      ? false
+      : resolveAuth()
 
     // The WebSocket binding. `ws.url`, when set alongside a local binding,
     // overrides only the *advertisement*: the tunnel pattern, where a relay
@@ -819,10 +868,20 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       diagnostics.DF0075({ runtime }, { method: 'warn' })
 
     meta = {
-      backend: (!wsDisabled && wsAvailable) ? 'websocket' : (sseEnabled ? 'sse' : 'none'),
-      ...(wsAvailable && websocketMeta !== undefined ? { websocket: websocketMeta } : {}),
-      ...(sseEnabled ? { sse: { path: advertisedSsePath } } : {}),
-      ...(result.mcp ? { mcp: result.mcp } : {}),
+      backend: (!wsDisabled && wsAvailable)
+        ? 'websocket'
+        : (sseEnabled ? 'sse' : 'none'),
+      ...(wsAvailable && websocketMeta !== undefined
+        ? { websocket: websocketMeta }
+        : {}),
+      ...(sseEnabled
+        ? {
+            sse: { path: advertisedSsePath },
+          }
+        : {}),
+      ...(result.mcp
+        ? { mcp: result.mcp }
+        : {}),
     }
 
     // Whatever `setup(ctx)` wrote to `ctx.staticConfig` during
@@ -950,7 +1009,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       const address = server.address()
       if (typeof address !== 'object' || !address)
         return
-      const host = options.host ?? (address.address === '::' || address.address === '0.0.0.0' ? 'localhost' : address.address)
+      const host = options.host ?? (address.address === '::' || address.address === '0.0.0.0'
+        ? 'localhost'
+        : address.address)
       getInternalContext(ctx).setWsEndpoint({
         url: `ws://${formatHostForUrl(host)}:${address.port}${routePath}`,
       })

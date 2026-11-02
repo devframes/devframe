@@ -28,13 +28,17 @@ type Story = StoryObj
 /** The Devframes mark (the minimized dock nub / auth screen logo). */
 export const Mark: Story = {
   name: 'BrandMark',
-  render: () => ({ setup: () => () => h('div', { class: 'w-24 h-24' }, h(BrandMark)) }),
+  render: () => ({
+    setup: () => () => h('div', { class: 'w-24 h-24' }, h(BrandMark)),
+  }),
 }
 
 /** The Devframes wordmark (recolors with the theme). */
 export const Wordmark: Story = {
   name: 'BrandWordmark',
-  render: () => ({ setup: () => () => h(BrandWordmark) }),
+  render: () => ({
+    setup: () => () => h(BrandWordmark),
+  }),
 }
 
 /**

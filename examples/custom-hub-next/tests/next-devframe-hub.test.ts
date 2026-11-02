@@ -66,7 +66,10 @@ describe('next-devframe-hub (example)', () => {
 
     const origin = 'http://127.0.0.1:3000'
     const meta = await (await hub.handler(new Request(`${origin}/__devframes/__connection.json`))).json()
-    expect(meta.websocket).toEqual({ port: wsPortOf(hub), path: '__ws' })
+    expect(meta.websocket).toEqual({
+      port: wsPortOf(hub),
+      path: '__ws',
+    })
 
     const index = await (await hub.handler(new Request(`${origin}/__devframes/__index.json`))).json()
     expect(index.base).toBe('/__devframes/')
@@ -78,7 +81,10 @@ describe('next-devframe-hub (example)', () => {
     const spa = await hub.handler(new Request(`${origin}/__devframes/next-demo-tool/`))
     expect(await spa.text()).toContain('Next Demo Tool')
     const frameMeta = await (await hub.handler(new Request(`${origin}/__devframes/next-demo-tool/__connection.json`))).json()
-    expect(frameMeta.websocket).toEqual({ port: wsPortOf(hub), path: '__ws' })
+    expect(frameMeta.websocket).toEqual({
+      port: wsPortOf(hub),
+      path: '__ws',
+    })
   })
 
   it('registers a hub-owned settings dock and the mounted plugin docks', async () => {

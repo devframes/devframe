@@ -11,5 +11,7 @@ export function resolveAgentSafety(
 ): 'read' | 'action' | 'destructive' {
   if (agent.safety)
     return agent.safety
-  return type === 'static' || type === 'query' || type == null ? 'read' : 'action'
+  return type === 'static' || type === 'query' || type == null
+    ? 'read'
+    : 'action'
 }

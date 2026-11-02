@@ -36,7 +36,11 @@ export function createResolveMetadataRpc(options: ResolveMetadataOptions = {}) {
     name: 'devframes:plugin:og:resolve-metadata',
     type: 'query',
     jsonSerializable: true,
-    args: [s.object({ url: s.optional(s.string()) })],
+    args: [
+      s.object({
+        url: s.optional(s.string()),
+      }),
+    ],
     returns: snapshotSchema,
     agent: {
       title: 'Inspect Open Graph metadata',
@@ -49,7 +53,15 @@ export function createResolveMetadataRpc(options: ResolveMetadataOptions = {}) {
         throw diagnostics.DP_OG_0005()
       const input = { url: options.defaultUrl }
       const snapshot = await handler(input)
-      return { records: [{ inputs: [input], output: snapshot }], fallback: snapshot }
+      return {
+        records: [
+          {
+            inputs: [input],
+            output: snapshot,
+          },
+        ],
+        fallback: snapshot,
+      }
     },
     setup: () => ({
       /**

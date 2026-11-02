@@ -14,7 +14,9 @@ function createMessage(id: string, autoDismiss: number | false): DevframeMessage
 }
 
 function dismissAllToasts(): void {
-  for (const toast of [...useToasts()])
+  for (const toast of [
+    ...useToasts(),
+  ])
     dismissToast(toast.id)
 }
 

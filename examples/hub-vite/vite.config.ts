@@ -39,10 +39,26 @@ const builtinDevframes = [
 const jsonRenderSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
-    root: { type: 'Card', props: { title: 'JSON Render' }, children: ['body'] },
-    body: { type: 'Stack', props: { gap: 8 }, children: ['text', 'badge'] },
-    text: { type: 'Text', props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' }, children: [] },
-    badge: { type: 'Badge', props: { text: 'renderer manifest', variant: 'info' }, children: [] },
+    root: {
+      type: 'Card',
+      props: { title: 'JSON Render' },
+      children: ['body'],
+    },
+    body: {
+      type: 'Stack',
+      props: { gap: 8 },
+      children: ['text', 'badge'],
+    },
+    text: {
+      type: 'Text',
+      props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' },
+      children: [],
+    },
+    badge: {
+      type: 'Badge',
+      props: { text: 'renderer manifest', variant: 'info' },
+      children: [],
+    },
   },
 }
 
@@ -86,14 +102,18 @@ export default defineConfig({
        * (see the shared `design/primary-ramp.css`). Passing `ui` overrides
        * the default `createUi()` the plugin would otherwise use.
        */
-      ui: createUi({ branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' } }),
+      ui: createUi({
+        branding: { primaryColor: '#646cff', productName: 'Devframes on Vite' },
+      }),
       /**
        * Serve the reference json-render frontend as a prebuilt renderer
        * module, the one-liner that makes `'json-render'` docks render in
        * the prebuilt hub UI provider. Swap it for any community implementation of
        * the same contract.
        */
-      renderers: [jsonRenderUiRenderer()],
+      renderers: [
+        jsonRenderUiRenderer(),
+      ],
       configure(ctx) {
         ctx.docks.register(jsonRenderDock)
       },

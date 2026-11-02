@@ -155,7 +155,9 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
   await writeStaticRpcDump(dump, outDir, { pretty: options.pretty })
 
   const count = ctx.frames.length
-  console.log(c.green`[devframes-hub] built ${count} devframe${count === 1 ? '' : 's'} -> ${outDir}`)
+  console.log(c.green`[devframes-hub] built ${count} devframe${count === 1
+    ? ''
+    : 's'} -> ${outDir}`)
 }
 
 /**
@@ -165,10 +167,17 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
  * meta is written from `ctx.frames`.
  */
 async function createAndMountContext(options: BuildHubOptions, base: string, cwd: string): Promise<DevframeHubContext> {
-  const h3Host = createH3DevframeHost({ origin: 'http://localhost', appName: 'devframes', workspaceRoot: cwd, mount: () => {} })
+  const h3Host = createH3DevframeHost({
+    origin: 'http://localhost',
+    appName: 'devframes',
+    workspaceRoot: cwd,
+    mount: () => {},
+  })
   const host = {
     ...h3Host,
-    ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
+    ...(options.getStorageDir
+      ? { getStorageDir: options.getStorageDir }
+      : {}),
     mountConnectionMeta: () => {},
   }
 
@@ -177,7 +186,9 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
     workspaceRoot: cwd,
     mode: 'build',
     host,
-    ...(options.rpcDeclarations ? { builtinRpcDeclarations: options.rpcDeclarations } : {}),
+    ...(options.rpcDeclarations
+      ? { builtinRpcDeclarations: options.rpcDeclarations }
+      : {}),
   })
 
   const devframes = await resolveDevframesInput(options.devframes ?? [])
@@ -230,7 +241,9 @@ async function publishRendererManifest(
   for (const registration of registrations) {
     manifest[registration.type] = {
       importFrom: joinURL(base, '__renderers', `${registration.type}.mjs`),
-      ...(registration.importName ? { importName: registration.importName } : {}),
+      ...(registration.importName
+        ? { importName: registration.importName }
+        : {}),
     }
     await fs.mkdir(resolve(outDir, '__renderers'), { recursive: true })
     await fs.copyFile(registration.file, resolve(outDir, '__renderers', `${registration.type}.mjs`))
@@ -275,7 +288,9 @@ async function writeHubIndex(
       connection: DEVFRAME_CONNECTION_META_FILENAME,
       clientImports: DEVFRAME_DOCK_IMPORTS_FILENAME,
       index: '__index.json',
-      ...(options.ui?.embedded ? { embedded: 'embedded.js' } : {}),
+      ...(options.ui?.embedded
+        ? { embedded: 'embedded.js' }
+        : {}),
     },
   }, null, 2)}\n`, 'utf-8')
 }
@@ -301,10 +316,15 @@ async function writeConnectionMetas(
   const meta: ConnectionMeta = {
     backend: 'static',
     jsonSerializableMethods,
-    ...(Object.keys(ctx.staticConfig).length > 0 ? { configs: ctx.staticConfig } : {}),
+    ...(Object.keys(ctx.staticConfig).length > 0
+      ? { configs: ctx.staticConfig }
+      : {}),
   }
   await fs.writeFile(resolve(outDir, DEVFRAME_CONNECTION_META_FILENAME), JSON.stringify(meta, null, 2), 'utf-8')
-  const frameMeta: ConnectionMeta = { ...meta, baseUrl: joinURL(base, DEVFRAME_CONNECTION_META_FILENAME) }
+  const frameMeta: ConnectionMeta = {
+    ...meta,
+    baseUrl: joinURL(base, DEVFRAME_CONNECTION_META_FILENAME),
+  }
   // A frame served its own SPA exactly when it registered a static mount at its
   // base; only those need a per-frame meta beside the copied SPA.
   const servedBases = new Set(ctx.views.buildStaticDirs.map(dir => dir.baseUrl))

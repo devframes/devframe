@@ -27,7 +27,9 @@ interface RemoteDockRecord {
 }
 
 function normaliseRemoteOptions(remote: true | RemoteDockOptions): Required<RemoteDockOptions> {
-  const opts = remote === true ? {} : remote
+  const opts = remote === true
+    ? {}
+    : remote
   return {
     transport: opts.transport ?? 'fragment',
     originLock: opts.originLock ?? true,
@@ -106,7 +108,10 @@ export class DevframeDocksHost implements DevframeDocksHostType {
         // projected into `devframe:docks` shared state, the stored entry is
         // deep-frozen by Immer, so an in-place `Object.assign` would throw.
         // A new object is writable and `update()` swaps it in.
-        this.update({ ...this.views.get(view.id)!, ...patch } as DevframeDockUserEntry)
+        this.update({
+          ...this.views.get(view.id)!,
+          ...patch,
+        } as DevframeDockUserEntry)
       },
     }
   }

@@ -42,7 +42,9 @@ function onLaunch() {
     return
   void props.context.commands.execute(
     command,
-    roots.value?.length ? { root: selectedRoot.value } : undefined,
+    roots.value?.length
+      ? { root: selectedRoot.value }
+      : undefined,
   )
 }
 

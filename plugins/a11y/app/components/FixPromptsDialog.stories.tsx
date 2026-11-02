@@ -15,8 +15,21 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const items: SelectedItem[] = [
-  { route: '/', url: 'https://example.test/', violation: makeViolation('image-alt', 'critical', 1) },
-  { route: '/forms', url: 'https://example.test/forms', violation: makeViolation('label', 'serious', 1) },
+  {
+    route: '/',
+    url: 'https://example.test/',
+    violation: makeViolation('image-alt', 'critical', 1),
+  },
+  {
+    route: '/forms',
+    url: 'https://example.test/forms',
+    violation: makeViolation('label', 'serious', 1),
+  },
 ]
 
-export const TwoViolations: Story = { args: { items, onClose: () => {} } }
+export const TwoViolations: Story = {
+  args: {
+    items,
+    onClose: () => {},
+  },
+}

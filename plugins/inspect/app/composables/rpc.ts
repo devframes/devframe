@@ -26,13 +26,27 @@ function setupHistoryHooks(client: DevframeRpcClient) {
     try {
       const res = await origCall(method, ...args)
       if (!method.includes('list-functions') && !method.includes('list-state-keys') && method !== 'devframe:rpc:server-state:get') {
-        addHistoryRecord({ type: 'call', method, args, result: res, duration: Date.now() - start, time: start })
+        addHistoryRecord({
+          type: 'call',
+          method,
+          args,
+          result: res,
+          duration: Date.now() - start,
+          time: start,
+        })
       }
       return res
     }
     catch (e) {
       if (!method.includes('list-functions') && !method.includes('list-state-keys') && method !== 'devframe:rpc:server-state:get') {
-        addHistoryRecord({ type: 'call', method, args, error: e, duration: Date.now() - start, time: start })
+        addHistoryRecord({
+          type: 'call',
+          method,
+          args,
+          error: e,
+          duration: Date.now() - start,
+          time: start,
+        })
       }
       throw e
     }
@@ -41,7 +55,13 @@ function setupHistoryHooks(client: DevframeRpcClient) {
   const origCallEvent = client.callEvent.bind(client) as (method: string, ...args: any[]) => any
   client.callEvent = (method: string, ...args: any[]) => {
     if (!method.includes('list-functions') && !method.includes('list-state-keys') && method !== 'devframe:rpc:server-state:subscribe') {
-      addHistoryRecord({ type: 'call', method, args, duration: 0, time: Date.now() })
+      addHistoryRecord({
+        type: 'call',
+        method,
+        args,
+        duration: 0,
+        time: Date.now(),
+      })
     }
     return origCallEvent(method, ...args)
   }
@@ -51,7 +71,13 @@ function setupHistoryHooks(client: DevframeRpcClient) {
   if (updatedDef && updatedDef.handler) {
     const origUpdated = updatedDef.handler
     updatedDef.handler = (key: string, fullState: any, syncId: string) => {
-      addHistoryRecord({ type: 'state', key, value: fullState, syncId, time: Date.now() })
+      addHistoryRecord({
+        type: 'state',
+        key,
+        value: fullState,
+        syncId,
+        time: Date.now(),
+      })
       return origUpdated(key, fullState, syncId)
     }
   }
@@ -60,7 +86,13 @@ function setupHistoryHooks(client: DevframeRpcClient) {
   if (patchDef && patchDef.handler) {
     const origPatch = patchDef.handler
     patchDef.handler = (key: string, patches: any, syncId: string) => {
-      addHistoryRecord({ type: 'state', key, patches, syncId, time: Date.now() })
+      addHistoryRecord({
+        type: 'state',
+        key,
+        patches,
+        syncId,
+        time: Date.now(),
+      })
       return origPatch(key, patches, syncId)
     }
   }

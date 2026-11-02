@@ -42,7 +42,9 @@ type TransportPref = (typeof TRANSPORT_PREFS)[number]
 
 function readTransportPref(): TransportPref {
   const raw = new URLSearchParams(location.search).get('transport')
-  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '') ? raw as TransportPref : 'auto'
+  return (TRANSPORT_PREFS as readonly string[]).includes(raw ?? '')
+    ? raw as TransportPref
+    : 'auto'
 }
 
 function applyTransportPref(pref: TransportPref): void {
@@ -56,8 +58,14 @@ function applyTransportPref(pref: TransportPref): void {
 
 function renderTransportToggle(current: TransportPref): void {
   el.transportToggle.innerHTML = TRANSPORT_PREFS.map((pref) => {
-    const active = pref === current ? 'bg-base color-active shadow-sm' : 'color-muted hover:color-base'
-    const label = pref === 'websocket' ? 'WS' : pref === 'sse' ? 'SSE' : 'Auto'
+    const active = pref === current
+      ? 'bg-base color-active shadow-sm'
+      : 'color-muted hover:color-base'
+    const label = pref === 'websocket'
+      ? 'WS'
+      : pref === 'sse'
+        ? 'SSE'
+        : 'Auto'
     return `<button type="button" data-transport="${pref}" class="rounded-md border-none bg-transparent px2 py0.5 text-xs font-medium cursor-pointer ${active}">${label}</button>`
   }).join('')
   for (const button of el.transportToggle.querySelectorAll<HTMLButtonElement>('[data-transport]'))
@@ -67,7 +75,11 @@ function renderTransportToggle(current: TransportPref): void {
 // ── small DOM helpers ───────────────────────────────────────────────────────
 
 function setStatus(text: string, kind?: 'ready' | 'error'): void {
-  const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
+  const dot = kind === 'ready'
+    ? 'bg-success'
+    : kind === 'error'
+      ? 'bg-error'
+      : 'bg-neutral-400'
   el.conn.innerHTML = `<span class="inline-block size-1.5 rounded-full shrink-0 ${dot} mr-1.5 align-middle"></span>${text}`
 }
 
@@ -78,7 +90,9 @@ function renderList<T>(host: HTMLElement, items: readonly T[], row: (item: T) =>
 }
 
 function iconName(icon: DevframeDockEntry['icon']): string | undefined {
-  return typeof icon === 'string' ? icon : icon?.light
+  return typeof icon === 'string'
+    ? icon
+    : icon?.light
 }
 
 // One dock-rail button: a monogram placeholder for the icon (patched with the
@@ -126,7 +140,12 @@ function isIframeDock(d: DevframeDockEntry): d is DevframeViewIframe & { url: st
 // registered locally or served by the hub's renderer manifest (e.g.
 // `json-render`) - and a type nothing covers shows the missing-renderer
 // fallback in `mountRenderer`.
-const NATIVE_TYPES = new Set(['action', 'launcher', 'group', '~builtin'])
+const NATIVE_TYPES = new Set([
+  'action',
+  'launcher',
+  'group',
+  '~builtin',
+])
 function isRenderableDock(d: DevframeDockEntry): boolean {
   return isIframeDock(d) || !NATIVE_TYPES.has(d.type)
 }
@@ -162,45 +181,156 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
   return {
     root: 'root',
     elements: {
-      root: { type: 'Stack', props: { gap: 14 }, children: ['head', 'hello', 'notes', 'env'] },
+      root: {
+        type: 'Stack',
+        props: { gap: 14 },
+        children: ['head', 'hello', 'notes', 'env'],
+      },
 
-      head: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['icon', 'title', 'badge'] },
-      icon: { type: 'Icon', props: { name: 'ph:sliders-horizontal-duotone', size: 22 }, children: [] },
-      title: { type: 'Text', props: { text: 'Client Playground', variant: 'heading' }, children: [] },
-      badge: { type: 'Badge', props: { text: 'client-only', variant: 'info' }, children: [] },
+      head: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 8, align: 'center' },
+        children: ['icon', 'title', 'badge'],
+      },
+      icon: {
+        type: 'Icon',
+        props: { name: 'ph:sliders-horizontal-duotone', size: 22 },
+        children: [],
+      },
+      title: {
+        type: 'Text',
+        props: { text: 'Client Playground', variant: 'heading' },
+        children: [],
+      },
+      badge: {
+        type: 'Badge',
+        props: { text: 'client-only', variant: 'info' },
+        children: [],
+      },
 
       /** Two-way binding: type a name, see it echoed live; toggle a switch. */
-      hello: { type: 'Card', props: { title: 'Say hello' }, children: ['helloBody'] },
-      helloBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greetRow', 'compact'] },
-      nameInput: { type: 'TextInput', props: { label: 'Your name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
-      greetRow: { type: 'Stack', props: { direction: 'row', gap: 6, align: 'center' }, children: ['greetLabel', 'greetName'] },
-      greetLabel: { type: 'Text', props: { text: 'Hello,', variant: 'body', color: 'muted' }, children: [] },
-      greetName: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'body', color: 'primary' }, children: [] },
-      compact: { type: 'Switch', props: { label: 'Compact mode', value: { $bindState: '/prefs/compact' } }, children: [] },
+      hello: {
+        type: 'Card',
+        props: { title: 'Say hello' },
+        children: ['helloBody'],
+      },
+      helloBody: {
+        type: 'Stack',
+        props: { gap: 10 },
+        children: ['nameInput', 'greetRow', 'compact'],
+      },
+      nameInput: {
+        type: 'TextInput',
+        props: {
+          label: 'Your name',
+          placeholder: 'Type your name…',
+          value: { $bindState: '/form/name' },
+        },
+        children: [],
+      },
+      greetRow: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 6, align: 'center' },
+        children: ['greetLabel', 'greetName'],
+      },
+      greetLabel: {
+        type: 'Text',
+        props: { text: 'Hello,', variant: 'body', color: 'muted' },
+        children: [],
+      },
+      greetName: {
+        type: 'Text',
+        props: {
+          text: { $state: '/form/name' },
+          variant: 'body',
+          color: 'primary',
+        },
+        children: [],
+      },
+      compact: {
+        type: 'Switch',
+        props: {
+          label: 'Compact mode',
+          value: { $bindState: '/prefs/compact' },
+        },
+        children: [],
+      },
 
       /** Actions mutate state → the DataTable re-renders. */
-      notes: { type: 'Card', props: { title: 'Notes' }, children: ['notesBody'] },
-      notesBody: { type: 'Stack', props: { gap: 10 }, children: ['draftRow', 'notesTable', 'clearBtn'] },
-      draftRow: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'end' }, children: ['draftInput', 'addBtn'] },
-      draftInput: { type: 'TextInput', props: { label: 'New note', placeholder: 'Write something…', value: { $bindState: '/draft' } }, children: [] },
+      notes: {
+        type: 'Card',
+        props: { title: 'Notes' },
+        children: ['notesBody'],
+      },
+      notesBody: {
+        type: 'Stack',
+        props: { gap: 10 },
+        children: ['draftRow', 'notesTable', 'clearBtn'],
+      },
+      draftRow: {
+        type: 'Stack',
+        props: { direction: 'row', gap: 8, align: 'end' },
+        children: ['draftInput', 'addBtn'],
+      },
+      draftInput: {
+        type: 'TextInput',
+        props: {
+          label: 'New note',
+          placeholder: 'Write something…',
+          value: { $bindState: '/draft' },
+        },
+        children: [],
+      },
       addBtn: {
         type: 'Button',
         props: { label: 'Add', variant: 'primary', icon: 'ph:plus' },
-        on: { press: { action: 'pushState', params: { statePath: '/notes', value: { text: { $state: '/draft' } }, clearStatePath: '/draft' } } },
+        on: {
+          press: {
+            action: 'pushState',
+            params: {
+              statePath: '/notes',
+              value: {
+                text: { $state: '/draft' },
+              },
+              clearStatePath: '/draft',
+            },
+          },
+        },
         children: [],
       },
-      notesTable: { type: 'DataTable', props: { columns: [{ key: 'text', label: 'Note' }], rows: { $state: '/notes' }, height: 160 }, children: [] },
+      notesTable: {
+        type: 'DataTable',
+        props: {
+          columns: [
+            { key: 'text', label: 'Note' },
+          ],
+          rows: { $state: '/notes' },
+          height: 160,
+        },
+        children: [],
+      },
       clearBtn: {
         type: 'Button',
         props: { label: 'Clear all', variant: 'ghost', icon: 'ph:trash' },
-        on: { press: { action: 'setState', params: { statePath: '/notes', value: [] } } },
+        on: {
+          press: {
+            action: 'setState',
+            params: { statePath: '/notes', value: [] },
+          },
+        },
         children: [],
       },
 
-      env: { type: 'Card', props: { title: 'Environment', collapsible: true, defaultCollapsed: true }, children: ['envTable'] },
+      env: {
+        type: 'Card',
+        props: { title: 'Environment', collapsible: true, defaultCollapsed: true },
+        children: ['envTable'],
+      },
       envTable: {
         type: 'KeyValueTable',
-        props: { data: { clientType, language: navigator.language, viewport: `${window.innerWidth}×${window.innerHeight}` } },
+        props: {
+          data: { clientType, language: navigator.language, viewport: `${window.innerWidth}×${window.innerHeight}` },
+        },
         children: [],
       },
     },
@@ -208,7 +338,9 @@ function createClientPlaygroundSpec(clientType: string): DevframeJsonRenderSpec 
       form: { name: '' },
       prefs: { compact: false },
       draft: '',
-      notes: [{ text: 'Authored entirely in the browser' }],
+      notes: [
+        { text: 'Authored entirely in the browser' },
+      ],
     },
   }
 }
@@ -331,7 +463,9 @@ async function main(): Promise<void> {
   const rpc = await connectDevframe({ baseURL: HUB_BASE, transport: transportPref, simpleAuth: false })
   await authorize(rpc)
   setStatus(`Connected · transport=${rpc.transport}`, 'ready')
-  el.transport.textContent = `Connected over ${rpc.transport} (${transportPref === 'auto' ? 'auto-selected' : 'pinned'})`
+  el.transport.textContent = `Connected over ${rpc.transport} (${transportPref === 'auto'
+    ? 'auto-selected'
+    : 'pinned'})`
 
   // Boot the framework-level client host: it assembles the shared client
   // context and imports each dock's client script into this page (e.g. the
@@ -357,7 +491,9 @@ async function main(): Promise<void> {
     title: 'Client Playground',
     icon: 'ph:sliders-horizontal-duotone',
     type: 'json-render',
-    view: { spec: createClientPlaygroundSpec(host.context.clientType) },
+    view: {
+      spec: createClientPlaygroundSpec(host.context.clientType),
+    },
     category: 'app',
   })
 
@@ -435,7 +571,9 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientRuntim
   }
 
   function showSelection(list: DevframeDockEntry[]): void {
-    const entry = docksCtx.selectedId ? list.find(d => d.id === docksCtx.selectedId) ?? null : null
+    const entry = docksCtx.selectedId
+      ? list.find(d => d.id === docksCtx.selectedId) ?? null
+      : null
 
     // A renderer dock (json-render, …) owns the panel; anything else (an
     // iframe dock, or no selection) hides the panel and disposes any mount.
@@ -450,7 +588,9 @@ function wireDockRail(host: Awaited<ReturnType<typeof createDevframeClientRuntim
       mounted = null
     }
     el.panel.hidden = true
-    const active = entry && isIframeDock(entry) ? ensureIframe(entry) : null
+    const active = entry && isIframeDock(entry)
+      ? ensureIframe(entry)
+      : null
     for (const frame of iframes.values()) frame.hidden = frame !== active
   }
 
@@ -526,7 +666,10 @@ async function wireDrawer(rpc: Awaited<ReturnType<typeof connectDevframe>>): Pro
     renderList(el.terminals, sessions, t =>
       `<li class="rounded-lg border border-base bg-base px2.5 py1.5 text-xs font-mono">${t.title} <code class="op-fade">${t.id}</code> · ${t.status}</li>`)
   }
-  await Promise.all([refreshMessages(), refreshTerminals()])
+  await Promise.all([
+    refreshMessages(),
+    refreshTerminals(),
+  ])
   setInterval(() => {
     void refreshMessages()
     void refreshTerminals()

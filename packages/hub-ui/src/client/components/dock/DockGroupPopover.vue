@@ -25,8 +25,13 @@ const currentId = computed(() => getCurrentDockId(props.context))
 
 // A row already shows its title, so only a `description` is worth a tooltip.
 function showTooltip(event: PointerEvent, member: DevframeDockEntry) {
-  if (member.description)
-    setFloatingTooltip({ content: dockTooltipContent(member), el: event.currentTarget as HTMLElement, placement: 'right' })
+  if (member.description) {
+    setFloatingTooltip({
+      content: dockTooltipContent(member),
+      el: event.currentTarget as HTMLElement,
+      placement: 'right',
+    })
+  }
 }
 
 function hideTooltip() {

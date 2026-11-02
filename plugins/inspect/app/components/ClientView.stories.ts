@@ -64,7 +64,13 @@ export const LiveModelContext: Story = {
         {
           name: 'add-todo',
           description: 'Add a new item to the todo list.',
-          inputSchema: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] },
+          inputSchema: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+            },
+            required: ['text'],
+          },
           origin: 'http://localhost:5173',
         },
       ],
@@ -97,7 +103,12 @@ export const ProjectedWithoutModelContext: Story = {
 export const Empty: Story = {
   args: {
     functions: [],
-    webmcp: { available: false, live: false, executable: false, tools: [] },
+    webmcp: {
+      available: false,
+      live: false,
+      executable: false,
+      tools: [],
+    },
     results: {},
     pending: {},
   },

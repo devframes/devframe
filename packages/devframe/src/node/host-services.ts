@@ -40,8 +40,12 @@ function isServiceDefinition(input: DevframeServiceInput): input is DevframeServ
 }
 
 function validateServiceInput(input: DevframeServiceInput): void {
-  if (!input || typeof input.package !== 'string' || input.package.length === 0)
-    throw diagnostics.DF0070({ package: String((input as any)?.package ?? input), reason: 'the input has no `package` name' })
+  if (!input || typeof input.package !== 'string' || input.package.length === 0) {
+    throw diagnostics.DF0070({
+      package: String((input as any)?.package ?? input),
+      reason: 'the input has no `package` name',
+    })
+  }
   if (isServiceDefinition(input))
     validateServiceDefinition(input)
 }
@@ -64,7 +68,9 @@ function mergeInstallerOptions(def: DevframeServiceDefinition, entries: PendingS
     .filter(options => options !== undefined)
   if (def.mergeOptions)
     return def.mergeOptions(sets)
-  return sets.length > 0 ? deepMergeOptionSets(sets) : undefined
+  return sets.length > 0
+    ? deepMergeOptionSets(sets)
+    : undefined
 }
 
 /**
@@ -249,7 +255,9 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
 
     debug('installing service %s@%s (scope %s)', def.package, def.version, def.scope)
     const scoped = this.context.scope(def.scope)
-    const api = await def.setup(scoped, options === undefined ? {} : { options })
+    const api = await def.setup(scoped, options === undefined
+      ? {}
+      : { options })
     this.installed.set(pkg, api)
     this.provide(def.package, api as DevframeServiceOf<string>)
     await this.advertise(def)
@@ -278,7 +286,9 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
       mod = await importServicePackage(pkg, resolveFroms)
     }
     catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = error instanceof Error
+        ? error.message
+        : String(error)
       if (required)
         throw diagnostics.DF0067({ package: pkg, reason, cause: error })
       debug('optional service %s not importable, skipping: %s', pkg, reason)
@@ -321,7 +331,14 @@ export class DevframeServicesHostImpl implements DevframeServicesHost {
     const state = await this.advertisementState()
     const { package: pkg, version, scope, meta } = def
     state.mutate((value) => {
-      value[pkg] = { package: pkg, version, scope, ...(meta ? { meta } : {}) }
+      value[pkg] = {
+        package: pkg,
+        version,
+        scope,
+        ...(meta
+          ? { meta }
+          : {}),
+      }
     })
   }
 }

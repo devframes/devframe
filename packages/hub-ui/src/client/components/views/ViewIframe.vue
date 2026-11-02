@@ -22,7 +22,9 @@ const props = defineProps<{
 
 const settings = useSettings(props.context)
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
-const addressBarControls = computed(() => typeof props.entry.addressBar === 'object' ? props.entry.addressBar : undefined)
+const addressBarControls = computed(() => typeof props.entry.addressBar === 'object'
+  ? props.entry.addressBar
+  : undefined)
 const showAddressBar = computed(() => settings.value.showIframeAddressBar || Boolean(props.entry.addressBar))
 
 const ADDRESS_BAR_HEIGHT = 40

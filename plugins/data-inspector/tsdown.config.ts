@@ -41,7 +41,10 @@ export default defineConfig([
   // chunks, so declarations always inline and the emitted .d.mts files are
   // byte-deterministic (a combined graph let rolldown hoist entry contents
   // into shared chunks nondeterministically, flaking the tsnapi snapshots).
-  ...Object.entries({ ...injectEntries, ...nodeEntries }).map(([name, source]) => ({
+  ...Object.entries({
+    ...injectEntries,
+    ...nodeEntries,
+  }).map(([name, source]) => ({
     clean: false,
     platform: 'neutral' as const,
     tsconfig,

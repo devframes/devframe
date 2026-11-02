@@ -10,7 +10,9 @@ const STORAGE_KEY = 'devframe-git-theme'
 function readStored(): Theme | null {
   try {
     const value = localStorage.getItem(STORAGE_KEY)
-    return value === 'light' || value === 'dark' ? value : null
+    return value === 'light' || value === 'dark'
+      ? value
+      : null
   }
   catch {
     return null
@@ -18,7 +20,9 @@ function readStored(): Theme | null {
 }
 
 function systemTheme(): Theme {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
 }
 
 /**
@@ -41,7 +45,9 @@ export function useTheme() {
 
   function toggle() {
     setTheme((current) => {
-      const next: Theme = current === 'dark' ? 'light' : 'dark'
+      const next: Theme = current === 'dark'
+        ? 'light'
+        : 'dark'
       try {
         localStorage.setItem(STORAGE_KEY, next)
       }

@@ -38,7 +38,11 @@ export async function startSnapshotServer(): Promise<SnapshotServer> {
     mount: (base, dir) => mountStaticHandler(app, base, dir),
   })
 
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: h3Host,
+  })
   await devframe.setup(ctx)
 
   const metaPath = `${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`

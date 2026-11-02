@@ -120,7 +120,12 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
         if (buffered.seq > afterSeq) {
           rpc.broadcast({
             method: DEVFRAME_EVENTS.broadcast.streamingChunk,
-            args: [channelName, id, buffered.seq, buffered.chunk],
+            args: [
+              channelName,
+              id,
+              buffered.seq,
+              buffered.chunk,
+            ],
             event: true,
             optional: true,
             filter: client => client.$meta === session.meta,
@@ -230,7 +235,9 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
          * Default to a 30-second hold when replay is enabled so late
          * subscribers can join after the producer finishes.
          */
-        closedStreamRetention: opts.closedStreamRetention ?? (replayWindow > 0 ? 30_000 : 0),
+        closedStreamRetention: opts.closedStreamRetention ?? (replayWindow > 0
+          ? 30_000
+          : 0),
       },
       streams: new Map(),
       inbound: new Map(),
@@ -323,14 +330,24 @@ export function createRpcStreamingServerHost(rpc: RpcFunctionsHost): RpcStreamin
       return reader
     }
 
-    return { name, start, pipeFrom, get, ids, openInbound }
+    return {
+      name,
+      start,
+      pipeFrom,
+      get,
+      ids,
+      openInbound,
+    }
   }
 
   function parseKey(key: string): { channelName: string, id: string } | undefined {
     const sepIdx = key.indexOf(STREAM_KEY_SEPARATOR)
     if (sepIdx < 0)
       return undefined
-    return { channelName: key.slice(0, sepIdx), id: key.slice(sepIdx + 1) }
+    return {
+      channelName: key.slice(0, sepIdx),
+      id: key.slice(sepIdx + 1),
+    }
   }
 
   // Outbound: drop this session as a subscriber, aborting the producer once

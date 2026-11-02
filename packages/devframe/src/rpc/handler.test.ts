@@ -12,7 +12,9 @@ describe('getRpcResolvedSetupResult', () => {
         calls++
         if (calls === 1)
           throw new Error('transient')
-        return { handler: () => 'ok' }
+        return {
+          handler: () => 'ok',
+        }
       },
     })
     const ctx = {}
@@ -29,7 +31,9 @@ describe('getRpcResolvedSetupResult', () => {
       type: 'query',
       setup: () => {
         calls++
-        return { handler: () => calls }
+        return {
+          handler: () => calls,
+        }
       },
     })
     const ctx = {}

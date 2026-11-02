@@ -30,7 +30,9 @@ describe('useBrandingBackground', () => {
   it('falls back to the standalone background when no iframe value is configured', () => {
     expect.assertions(1)
 
-    setBranding({ background: { standalone: 'shared' } })
+    setBranding({
+      background: { standalone: 'shared' },
+    })
 
     expect(useBrandingBackground('iframe').value).toBe('shared')
   })
@@ -47,7 +49,9 @@ describe('useBrandingBackground', () => {
     expect.assertions(1)
 
     setColorSchemePreference('dark')
-    setBranding({ background: { light: 'white', dark: '' } })
+    setBranding({
+      background: { light: 'white', dark: '' },
+    })
 
     expect(useBrandingBackground('standalone').value).toBe('')
   })

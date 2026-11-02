@@ -61,7 +61,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
     expect.assertions(1)
     const closeChannel = vi.spyOn(FakeBroadcastChannel.prototype, 'close')
     const rpc = await getDevframeRpcClient({
-      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+      connectionMeta: {
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+      },
       otpParam: false,
       simpleAuth: false,
       webmcp: false,
@@ -78,7 +81,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
     })
     const closeTransport = vi.spyOn(FakeWebSocket.prototype, 'close')
     const rpc = await getDevframeRpcClient({
-      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+      connectionMeta: {
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+      },
       otpParam: false,
       simpleAuth: false,
       webmcp: false,
@@ -88,7 +94,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
   })
 
   it('publishes the meta annotated with the absolute base it resolved from', async () => {
-    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    const served: ConnectionMeta = {
+      backend: 'websocket',
+      websocket: { path: '__ws' },
+    }
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -104,7 +113,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
   })
 
   it('falls back when a base returns a non-successful JSON response', async () => {
-    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    const served: ConnectionMeta = {
+      backend: 'websocket',
+      websocket: { path: '__ws' },
+    }
     const fetchSpy = vi.fn()
       .mockResolvedValueOnce({
         ok: false,
@@ -155,7 +167,11 @@ describe('getDevframeRpcClient: connection meta base', () => {
       baseURL: '/__foo/',
       otpParam: false,
       simpleAuth: false,
-      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' }, authToken: 'hub-token' },
+      connectionMeta: {
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        authToken: 'hub-token',
+      },
     })
 
     expect(lastWsUrl()).toContain('devframe_auth_token=hub-token')
@@ -167,7 +183,11 @@ describe('getDevframeRpcClient: connection meta base', () => {
       otpParam: false,
       simpleAuth: false,
       authToken: 'explicit-token',
-      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' }, authToken: 'hub-token' },
+      connectionMeta: {
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        authToken: 'hub-token',
+      },
     })
 
     expect(lastWsUrl()).toContain('devframe_auth_token=explicit-token')
@@ -183,7 +203,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
     await getDevframeRpcClient({
       baseURL: '/__foo/',
       otpParam: false,
-      connectionMeta: { backend: 'websocket', websocket: { path: '__ws' } },
+      connectionMeta: {
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+      },
     })
 
     // An explicit meta resolves against the client's own base.
@@ -191,7 +214,10 @@ describe('getDevframeRpcClient: connection meta base', () => {
   })
 
   it('close() closes the underlying socket', async () => {
-    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    const served: ConnectionMeta = {
+      backend: 'websocket',
+      websocket: { path: '__ws' },
+    }
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       status: 200,

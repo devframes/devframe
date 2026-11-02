@@ -93,7 +93,10 @@ function routeToParents(
     let pc = lanes.findIndex(l => l?.hash === parent)
     if (pc === -1) {
       pc = firstFree()
-      lanes[pc] = { hash: parent, color: nextColor() }
+      lanes[pc] = {
+        hash: parent,
+        color: nextColor(),
+      }
     }
     parentCols.push({ col: pc, color: lanes[pc]!.color })
   })
@@ -144,11 +147,18 @@ function buildRow(commit: GraphInput, lanes: (Lane | null)[], nextColor: () => s
 
   const topLinks: GraphLink[] = incoming.map(lane => ({
     from: lane.col,
-    to: lane.hash === hash ? col : lane.col,
+    to: lane.hash === hash
+      ? col
+      : lane.col,
     color: lane.color,
   }))
 
-  return { col, color, topLinks, bottomLinks: buildBottomLinks(incoming, hash, col, parentCols) }
+  return {
+    col,
+    color,
+    topLinks,
+    bottomLinks: buildBottomLinks(incoming, hash, col, parentCols),
+  }
 }
 
 /** Total columns spanned across every row and connector. */
@@ -170,9 +180,14 @@ export function computeGraph(commits: GraphInput[]): CommitGraph {
   const nextColor = () => GRAPH_COLORS[colorIndex++ % GRAPH_COLORS.length]
   const firstFree = () => {
     const i = lanes.indexOf(null)
-    return i === -1 ? lanes.length : i
+    return i === -1
+      ? lanes.length
+      : i
   }
 
   const rows = commits.map(commit => buildRow(commit, lanes, nextColor, firstFree))
-  return { rows, columns: countColumns(rows) }
+  return {
+    rows,
+    columns: countColumns(rows),
+  }
 }

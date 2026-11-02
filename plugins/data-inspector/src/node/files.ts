@@ -21,7 +21,12 @@ export async function loadDataFile(filepath: string): Promise<unknown> {
     text = await readFile(filepath, 'utf-8')
   }
   catch (error) {
-    throw diagnostics.DP_DATA_INSPECTOR_0003({ filepath, message: error instanceof Error ? error.message : String(error) })
+    throw diagnostics.DP_DATA_INSPECTOR_0003({
+      filepath,
+      message: error instanceof Error
+        ? error.message
+        : String(error),
+    })
   }
   try {
     if (ext === '.json')
@@ -33,7 +38,12 @@ export async function loadDataFile(filepath: string): Promise<unknown> {
       .map(line => JSON.parse(line))
   }
   catch (error) {
-    throw diagnostics.DP_DATA_INSPECTOR_0003({ filepath, message: error instanceof Error ? error.message : String(error) })
+    throw diagnostics.DP_DATA_INSPECTOR_0003({
+      filepath,
+      message: error instanceof Error
+        ? error.message
+        : String(error),
+    })
   }
 }
 

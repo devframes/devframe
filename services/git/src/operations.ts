@@ -97,13 +97,29 @@ function applyTrackedEntry(status: GitStatus, tokens: string[], index: number): 
   const [x, y] = fields[1]
   const renamed = tokens[index].startsWith('2 ')
   const path = fields.slice(renamed ? 9 : 8).join(' ')
-  const consumed = renamed ? index + 1 : index
+  const consumed = renamed
+    ? index + 1
+    : index
   const from = renamed ? tokens[consumed] : undefined
 
-  if (x !== '.')
-    status.staged.push(from ? { path, from, status: mapCode(x) } : { path, status: mapCode(x) })
-  if (y !== '.')
-    status.unstaged.push({ path, status: mapCode(y) })
+  if (x !== '.') {
+    status.staged.push(from
+      ? {
+          path,
+          from,
+          status: mapCode(x),
+        }
+      : {
+          path,
+          status: mapCode(x),
+        })
+  }
+  if (y !== '.') {
+    status.unstaged.push({
+      path,
+      status: mapCode(y),
+    })
+  }
   return consumed
 }
 
@@ -114,20 +130,34 @@ function applyTrackedEntry(status: GitStatus, tokens: string[], index: number): 
  */
 function parseStatus(root: string, raw: string): GitStatus {
   const tokens = raw.split('\0')
-  const status: GitStatus = { ...EMPTY_STATUS, isRepo: true, root, staged: [], unstaged: [], untracked: [] }
+  const status: GitStatus = {
+    ...EMPTY_STATUS,
+    isRepo: true,
+    root,
+    staged: [],
+    unstaged: [],
+    untracked: [],
+  }
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
     if (!token)
       continue
-    if (token.startsWith('# '))
+    if (token.startsWith('# ')) {
       applyBranchToken(status, token)
-    else if (token.startsWith('1 ') || token.startsWith('2 '))
+    }
+    else if (token.startsWith('1 ') || token.startsWith('2 ')) {
       i = applyTrackedEntry(status, tokens, i)
-    else if (token.startsWith('u '))
-      status.unstaged.push({ path: token.split(' ').slice(10).join(' '), status: 'unmerged' } satisfies StatusFileEntry)
-    else if (token.startsWith('? '))
+    }
+    else if (token.startsWith('u ')) {
+      status.unstaged.push({
+        path: token.split(' ').slice(10).join(' '),
+        status: 'unmerged',
+      } satisfies StatusFileEntry)
+    }
+    else if (token.startsWith('? ')) {
       status.untracked.push(token.slice(2))
+    }
   }
 
   status.clean = status.staged.length === 0
@@ -138,7 +168,17 @@ function parseStatus(root: string, raw: string): GitStatus {
 
 // --- log -------------------------------------------------------------------
 
-const LOG_FORMAT = ['%H', '%h', '%P', '%an', '%ae', '%aI', '%D', '%s', '%b'].join(UNIT) + RECORD
+const LOG_FORMAT = [
+  '%H',
+  '%h',
+  '%P',
+  '%an',
+  '%ae',
+  '%aI',
+  '%D',
+  '%s',
+  '%b',
+].join(UNIT) + RECORD
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
@@ -157,8 +197,12 @@ function parseLog(raw: string): Commit[] {
       date: Date.parse(isoDate),
       subject,
       body: (body ?? '').trim(),
-      refs: refs ? refs.split(', ').map(r => r.trim()).filter(Boolean) : [],
-      parents: parents ? parents.split(' ').filter(Boolean) : [],
+      refs: refs
+        ? refs.split(', ').map(r => r.trim()).filter(Boolean)
+        : [],
+      parents: parents
+        ? parents.split(' ').filter(Boolean)
+        : [],
     }
   })
 }
@@ -194,8 +238,12 @@ function parseTrack(track: string): { ahead: number, behind: number, gone: boole
   const ahead = track.match(/ahead (\d+)/)
   const behind = track.match(/behind (\d+)/)
   return {
-    ahead: ahead ? Number(ahead[1]) : 0,
-    behind: behind ? Number(behind[1]) : 0,
+    ahead: ahead
+      ? Number(ahead[1])
+      : 0,
+    behind: behind
+      ? Number(behind[1])
+      : 0,
     gone: false,
   }
 }
@@ -208,14 +256,31 @@ function parseNumstat(raw: string): DiffFile[] {
     const binary = add === '-' || del === '-'
     return {
       path: rest.join('\t'),
-      additions: binary ? 0 : Number(add),
-      deletions: binary ? 0 : Number(del),
+      additions: binary
+        ? 0
+        : Number(add),
+      deletions: binary
+        ? 0
+        : Number(del),
       binary,
     }
   })
 }
 
-const SHOW_FORMAT = ['%H', '%h', '%P', '%an', '%ae', '%aI', '%cn', '%ce', '%cI', '%D', '%s', '%b'].join(UNIT)
+const SHOW_FORMAT = [
+  '%H',
+  '%h',
+  '%P',
+  '%an',
+  '%ae',
+  '%aI',
+  '%cn',
+  '%ce',
+  '%cI',
+  '%D',
+  '%s',
+  '%b',
+].join(UNIT)
 
 const EMPTY_DETAIL: CommitDetail = {
   isRepo: false,
@@ -270,8 +335,12 @@ function parseCommitNumstat(raw: string, status: Map<string, FileStatusCode>): C
     const path = rest.join('\t')
     return {
       path,
-      additions: binary ? 0 : Number(add),
-      deletions: binary ? 0 : Number(del),
+      additions: binary
+        ? 0
+        : Number(add),
+      deletions: binary
+        ? 0
+        : Number(del),
       binary,
       status: status.get(path) ?? 'modified',
     }
@@ -280,7 +349,10 @@ function parseCommitNumstat(raw: string, status: Map<string, FileStatusCode>): C
 
 function clipText(raw: string, limit: number): { text: string, truncated: boolean } {
   return raw.length > limit
-    ? { text: raw.slice(0, limit), truncated: true }
+    ? {
+        text: raw.slice(0, limit),
+        truncated: true,
+      }
     : { text: raw, truncated: false }
 }
 
@@ -304,7 +376,12 @@ export function createGitOps(cwd: string): GitServiceApi {
     const root = await resolveRoot()
     if (!root)
       return { ...EMPTY_STATUS }
-    const { stdout } = await runGit(cwd, ['status', '--porcelain=v2', '--branch', '-z'])
+    const { stdout } = await runGit(cwd, [
+      'status',
+      '--porcelain=v2',
+      '--branch',
+      '-z',
+    ])
     const result = parseStatus(root, stdout)
     result.canWrite = true
     return result
@@ -314,21 +391,55 @@ export function createGitOps(cwd: string): GitServiceApi {
     if (!isSafeRevision(hash))
       return { ...EMPTY_DETAIL, isRepo: true }
 
-    const meta = await tryGit(cwd, ['show', '-s', `--format=${SHOW_FORMAT}`, '--end-of-options', hash])
+    const meta = await tryGit(cwd, [
+      'show',
+      '-s',
+      `--format=${SHOW_FORMAT}`,
+      '--end-of-options',
+      hash,
+    ])
     if (meta == null)
       return { ...EMPTY_DETAIL, isRepo: true }
 
     const [fullHash, shortHash, parents, author, email, authorDate, committer, committerEmail, committerDate, refs, subject, body] = meta.split(UNIT)
 
     // `--root` so the initial commit reports its full tree as additions.
-    const numstat = await tryGit(cwd, ['diff-tree', '--no-commit-id', '--numstat', '-r', '--root', '--end-of-options', hash])
-    const nameStatusRaw = await tryGit(cwd, ['diff-tree', '--no-commit-id', '--name-status', '-r', '--root', '--end-of-options', hash])
-    const files = numstat ? parseCommitNumstat(numstat, nameStatusRaw ? parseNameStatus(nameStatusRaw) : new Map()) : []
+    const numstat = await tryGit(cwd, [
+      'diff-tree',
+      '--no-commit-id',
+      '--numstat',
+      '-r',
+      '--root',
+      '--end-of-options',
+      hash,
+    ])
+    const nameStatusRaw = await tryGit(cwd, [
+      'diff-tree',
+      '--no-commit-id',
+      '--name-status',
+      '-r',
+      '--root',
+      '--end-of-options',
+      hash,
+    ])
+    const files = numstat
+      ? parseCommitNumstat(numstat, nameStatusRaw
+          ? parseNameStatus(nameStatusRaw)
+          : new Map())
+      : []
 
     let patch: string | null = null
     let truncated = false
     if (includePatch) {
-      const raw = await tryGit(cwd, ['diff-tree', '-p', '--no-commit-id', '-r', '--root', '--end-of-options', hash])
+      const raw = await tryGit(cwd, [
+        'diff-tree',
+        '-p',
+        '--no-commit-id',
+        '-r',
+        '--root',
+        '--end-of-options',
+        hash,
+      ])
       if (raw != null)
         ({ patch, truncated } = clipPatch(raw))
     }
@@ -346,8 +457,12 @@ export function createGitOps(cwd: string): GitServiceApi {
       commitDate: Date.parse(committerDate),
       subject,
       body: (body ?? '').trim(),
-      parents: parents ? parents.split(' ').filter(Boolean) : [],
-      refs: refs ? refs.split(', ').map(r => r.trim()).filter(Boolean) : [],
+      parents: parents
+        ? parents.split(' ').filter(Boolean)
+        : [],
+      refs: refs
+        ? refs.split(', ').map(r => r.trim()).filter(Boolean)
+        : [],
       files,
       totalAdditions: files.reduce((sum, f) => sum + f.additions, 0),
       totalDeletions: files.reduce((sum, f) => sum + f.deletions, 0),
@@ -364,13 +479,33 @@ export function createGitOps(cwd: string): GitServiceApi {
       const skip = Math.max(0, Math.trunc(args.skip ?? 0))
       const ref = args.ref?.trim() || undefined
       const root = await resolveRoot()
-      if (!root)
-        return { isRepo: false, commits: [], limit, skip, hasMore: false }
+      if (!root) {
+        return {
+          isRepo: false,
+          commits: [],
+          limit,
+          skip,
+          hasMore: false,
+        }
+      }
 
-      const command = ['log', '--topo-order', `--max-count=${limit}`, `--skip=${skip}`, `--pretty=format:${LOG_FORMAT}`]
+      const command = [
+        'log',
+        '--topo-order',
+        `--max-count=${limit}`,
+        `--skip=${skip}`,
+        `--pretty=format:${LOG_FORMAT}`,
+      ]
       if (ref) {
-        if (!isSafeRevision(ref))
-          return { isRepo: true, commits: [], limit, skip, hasMore: false }
+        if (!isSafeRevision(ref)) {
+          return {
+            isRepo: true,
+            commits: [],
+            limit,
+            skip,
+            hasMore: false,
+          }
+        }
         command.push('--end-of-options', ref)
       }
       // Pathspec after `--`: everything past it is treated as a path, never
@@ -380,8 +515,16 @@ export function createGitOps(cwd: string): GitServiceApi {
         command.push('--', ...paths)
 
       const raw = await tryGit(cwd, command)
-      const commits = raw ? parseLog(raw) : []
-      return { isRepo: true, commits, limit, skip, hasMore: commits.length === limit }
+      const commits = raw
+        ? parseLog(raw)
+        : []
+      return {
+        isRepo: true,
+        commits,
+        limit,
+        skip,
+        hasMore: commits.length === limit,
+      }
     },
 
     async show(args) {
@@ -397,7 +540,15 @@ export function createGitOps(cwd: string): GitServiceApi {
       const path = (args?.path ?? '').trim()
       const ref = args?.ref?.trim() || 'HEAD'
       const root = await resolveRoot()
-      const base: GitFile = { isRepo: !!root, found: false, ref, path, content: null, binary: false, truncated: false }
+      const base: GitFile = {
+        isRepo: !!root,
+        found: false,
+        ref,
+        path,
+        content: null,
+        binary: false,
+        truncated: false,
+      }
       if (!root || !path)
         return base
       // The spec is one `<ref>:<path>` token; guarding the ref against a
@@ -418,25 +569,52 @@ export function createGitOps(cwd: string): GitServiceApi {
       if (raw.includes('\0'))
         return { ...base, found: true, binary: true }
       const { text: content, truncated } = clipText(raw, FILE_CHAR_LIMIT)
-      return { ...base, found: true, content, truncated }
+      return {
+        ...base,
+        found: true,
+        content,
+        truncated,
+      }
     },
 
     async diff(args = {}) {
       const { path, staged = false } = args
       const root = await resolveRoot()
       if (!root) {
-        return { isRepo: false, staged, path: path ?? null, files: [], totalAdditions: 0, totalDeletions: 0, patch: null, truncated: false }
+        return {
+          isRepo: false,
+          staged,
+          path: path ?? null,
+          files: [],
+          totalAdditions: 0,
+          totalDeletions: 0,
+          patch: null,
+          truncated: false,
+        }
       }
 
-      const base = staged ? ['diff', '--cached'] : ['diff']
-      const scope = path ? ['--', path] : []
-      const numstatRaw = await tryGit(cwd, [...base, '--numstat', ...scope])
-      const files = numstatRaw ? parseNumstat(numstatRaw) : []
+      const base = staged
+        ? ['diff', '--cached']
+        : ['diff']
+      const scope = path
+        ? ['--', path]
+        : []
+      const numstatRaw = await tryGit(cwd, [
+        ...base,
+        '--numstat',
+        ...scope,
+      ])
+      const files = numstatRaw
+        ? parseNumstat(numstatRaw)
+        : []
 
       let patch: string | null = null
       let truncated = false
       if (path) {
-        const { stdout } = await runGit(cwd, [...base, ...scope])
+        const { stdout } = await runGit(cwd, [
+          ...base,
+          ...scope,
+        ])
         ;({ patch, truncated } = clipPatch(stdout))
       }
 
@@ -467,7 +645,14 @@ export function createGitOps(cwd: string): GitServiceApi {
         const isCurrent = head === '*'
         if (isCurrent)
           current = name
-        return { name, current: isCurrent, sha, upstream: upstream || null, subject: subject ?? '', ...parseTrack(track ?? '') }
+        return {
+          name,
+          current: isCurrent,
+          sha,
+          upstream: upstream || null,
+          subject: subject ?? '',
+          ...parseTrack(track ?? ''),
+        }
       })
       branches.sort((a, b) => Number(b.current) - Number(a.current))
       return { isRepo: true, current, branches }
@@ -489,7 +674,9 @@ export function createGitOps(cwd: string): GitServiceApi {
         return {
           name,
           sha: targetSha || objectSha,
-          date: Number.isNaN(parsed) ? 0 : parsed,
+          date: Number.isNaN(parsed)
+            ? 0
+            : parsed,
           subject: subject ?? '',
           annotated,
         }
@@ -517,17 +704,39 @@ export function createGitOps(cwd: string): GitServiceApi {
     async commit(args) {
       const message = (args?.message ?? '').trim()
       const root = await resolveRoot()
-      if (!root)
-        return { ok: false, hash: null, message: 'Not a git repository.', status: await status() }
-      if (!message)
-        return { ok: false, hash: null, message: 'Commit message is required.', status: await status() }
+      if (!root) {
+        return {
+          ok: false,
+          hash: null,
+          message: 'Not a git repository.',
+          status: await status(),
+        }
+      }
+      if (!message) {
+        return {
+          ok: false,
+          hash: null,
+          message: 'Commit message is required.',
+          status: await status(),
+        }
+      }
       try {
         await runGit(cwd, ['commit', '-m', message])
         const hash = await tryGit(cwd, ['rev-parse', '--short', 'HEAD'])
-        return { ok: true, hash, message: 'Committed.', status: await status() }
+        return {
+          ok: true,
+          hash,
+          message: 'Committed.',
+          status: await status(),
+        }
       }
       catch (error) {
-        return { ok: false, hash: null, message: gitErrorMessage(error), status: await status() }
+        return {
+          ok: false,
+          hash: null,
+          message: gitErrorMessage(error),
+          status: await status(),
+        }
       }
     },
   }

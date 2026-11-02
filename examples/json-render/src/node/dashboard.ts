@@ -17,7 +17,12 @@ export default defineConfig({
  * resolves from here and updates live as the server patches it.
  */
 export const dashboardState = {
-  project: { name: 'acme-app', version: '1.4.2', license: 'MIT', repository: 'github.com/acme/app' },
+  project: {
+    name: 'acme-app',
+    version: '1.4.2',
+    license: 'MIT',
+    repository: 'github.com/acme/app',
+  },
   metrics: { coverage: 82, bundle: 64 },
   modules: [
     { name: '@acme/core', size: '42 kB', status: 'ok' },
@@ -41,43 +46,168 @@ export const dashboardState = {
 export const dashboardSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
-    root: { type: 'Stack', props: { gap: 16 }, children: ['header', 'overview', 'settings', 'modules', 'config', 'tree', 'footerDivider', 'footer'] },
+    root: {
+      type: 'Stack',
+      props: { gap: 16 },
+      children: [
+        'header',
+        'overview',
+        'settings',
+        'modules',
+        'config',
+        'tree',
+        'footerDivider',
+        'footer',
+      ],
+    },
 
     /** ── Header ──────────────────────────────────────────────────────────── */
-    header: { type: 'Stack', props: { direction: 'row', gap: 10, align: 'center', justify: 'between' }, children: ['headLeft', 'headRight'] },
-    headLeft: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['logo', 'headTitle'] },
-    logo: { type: 'Icon', props: { name: 'ph:cube-duotone', size: 26 }, children: [] },
-    headTitle: { type: 'Text', props: { text: 'Acme Dashboard', variant: 'heading' }, children: [] },
-    headRight: { type: 'Stack', props: { direction: 'row', gap: 8, align: 'center' }, children: ['status', 'refreshBtn', 'deployBtn'] },
-    status: { type: 'Badge', props: { text: 'healthy', variant: 'success' }, children: [] },
+    header: {
+      type: 'Stack',
+      props: {
+        direction: 'row',
+        gap: 10,
+        align: 'center',
+        justify: 'between',
+      },
+      children: ['headLeft', 'headRight'],
+    },
+    headLeft: {
+      type: 'Stack',
+      props: { direction: 'row', gap: 8, align: 'center' },
+      children: ['logo', 'headTitle'],
+    },
+    logo: {
+      type: 'Icon',
+      props: { name: 'ph:cube-duotone', size: 26 },
+      children: [],
+    },
+    headTitle: {
+      type: 'Text',
+      props: { text: 'Acme Dashboard', variant: 'heading' },
+      children: [],
+    },
+    headRight: {
+      type: 'Stack',
+      props: { direction: 'row', gap: 8, align: 'center' },
+      children: ['status', 'refreshBtn', 'deployBtn'],
+    },
+    status: {
+      type: 'Badge',
+      props: { text: 'healthy', variant: 'success' },
+      children: [],
+    },
     refreshBtn: {
       type: 'Button',
       props: { label: 'Refresh', variant: 'ghost', icon: 'ph:arrow-clockwise' },
-      on: { press: { action: REFRESH_ACTION } },
+      on: {
+        press: { action: REFRESH_ACTION },
+      },
       children: [],
     },
     deployBtn: {
       type: 'Button',
       props: { label: 'Deploy', variant: 'primary', icon: 'ph:rocket-launch' },
-      on: { press: { action: DEPLOY_ACTION } },
+      on: {
+        press: { action: DEPLOY_ACTION },
+      },
       children: [],
     },
 
     /** ── Overview: KeyValueTable + Progress ──────────────────────────────── */
-    overview: { type: 'Card', props: { title: 'Overview' }, children: ['overviewBody'] },
-    overviewBody: { type: 'Stack', props: { gap: 14 }, children: ['meta', 'coverage', 'bundle'] },
-    meta: { type: 'KeyValueTable', props: { data: { $state: '/project' } }, children: [] },
-    coverage: { type: 'Progress', props: { label: 'Test coverage', value: { $state: '/metrics/coverage' }, max: 100 }, children: [] },
-    bundle: { type: 'Progress', props: { label: 'Bundle budget', value: { $state: '/metrics/bundle' }, max: 100 }, children: [] },
+    overview: {
+      type: 'Card',
+      props: { title: 'Overview' },
+      children: ['overviewBody'],
+    },
+    overviewBody: {
+      type: 'Stack',
+      props: { gap: 14 },
+      children: ['meta', 'coverage', 'bundle'],
+    },
+    meta: {
+      type: 'KeyValueTable',
+      props: {
+        data: { $state: '/project' },
+      },
+      children: [],
+    },
+    coverage: {
+      type: 'Progress',
+      props: {
+        label: 'Test coverage',
+        value: { $state: '/metrics/coverage' },
+        max: 100,
+      },
+      children: [],
+    },
+    bundle: {
+      type: 'Progress',
+      props: {
+        label: 'Bundle budget',
+        value: { $state: '/metrics/bundle' },
+        max: 100,
+      },
+      children: [],
+    },
 
     /** ── Settings: TextInput + Switch + Divider + Button ─────────────────── */
-    settings: { type: 'Card', props: { title: 'Settings', collapsible: true }, children: ['settingsBody'] },
-    settingsBody: { type: 'Stack', props: { gap: 10 }, children: ['nameInput', 'greeting', 'prefsDivider', 'darkSwitch', 'notifSwitch', 'saveBtn'] },
-    nameInput: { type: 'TextInput', props: { label: 'Display name', placeholder: 'Type your name…', value: { $bindState: '/form/name' } }, children: [] },
-    greeting: { type: 'Text', props: { text: { $state: '/form/name' }, variant: 'caption', color: 'primary' }, children: [] },
-    prefsDivider: { type: 'Divider', props: { label: 'preferences' }, children: [] },
-    darkSwitch: { type: 'Switch', props: { label: 'Dark mode', value: { $bindState: '/form/darkMode' } }, children: [] },
-    notifSwitch: { type: 'Switch', props: { label: 'Email notifications', value: { $bindState: '/form/notifications' } }, children: [] },
+    settings: {
+      type: 'Card',
+      props: { title: 'Settings', collapsible: true },
+      children: ['settingsBody'],
+    },
+    settingsBody: {
+      type: 'Stack',
+      props: { gap: 10 },
+      children: [
+        'nameInput',
+        'greeting',
+        'prefsDivider',
+        'darkSwitch',
+        'notifSwitch',
+        'saveBtn',
+      ],
+    },
+    nameInput: {
+      type: 'TextInput',
+      props: {
+        label: 'Display name',
+        placeholder: 'Type your name…',
+        value: { $bindState: '/form/name' },
+      },
+      children: [],
+    },
+    greeting: {
+      type: 'Text',
+      props: {
+        text: { $state: '/form/name' },
+        variant: 'caption',
+        color: 'primary',
+      },
+      children: [],
+    },
+    prefsDivider: {
+      type: 'Divider',
+      props: { label: 'preferences' },
+      children: [],
+    },
+    darkSwitch: {
+      type: 'Switch',
+      props: {
+        label: 'Dark mode',
+        value: { $bindState: '/form/darkMode' },
+      },
+      children: [],
+    },
+    notifSwitch: {
+      type: 'Switch',
+      props: {
+        label: 'Email notifications',
+        value: { $bindState: '/form/notifications' },
+      },
+      children: [],
+    },
     saveBtn: {
       type: 'Button',
       props: { label: 'Save settings', variant: 'secondary', icon: 'ph:floppy-disk' },
@@ -85,12 +215,23 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
        * Bound values are resolved into the action params before dispatch, so the
        * server receives whatever the user typed/toggled.
        */
-      on: { press: { action: SAVE_ACTION, params: { name: { $state: '/form/name' } } } },
+      on: {
+        press: {
+          action: SAVE_ACTION,
+          params: {
+            name: { $state: '/form/name' },
+          },
+        },
+      },
       children: [],
     },
 
     /** ── Modules: DataTable (loading bound to /building) ─────────────────── */
-    modules: { type: 'Card', props: { title: 'Modules' }, children: ['modulesTable'] },
+    modules: {
+      type: 'Card',
+      props: { title: 'Modules' },
+      children: ['modulesTable'],
+    },
     modulesTable: {
       type: 'DataTable',
       props: {
@@ -107,19 +248,58 @@ export const dashboardSpec: DevframeJsonRenderSpec = {
     },
 
     /** ── Config: CodeBlock ───────────────────────────────────────────────── */
-    config: { type: 'Card', props: { title: 'Config' }, children: ['code'] },
-    code: { type: 'CodeBlock', props: { filename: 'vite.config.ts', language: 'ts', code: VITE_CONFIG }, children: [] },
+    config: {
+      type: 'Card',
+      props: { title: 'Config' },
+      children: ['code'],
+    },
+    code: {
+      type: 'CodeBlock',
+      props: { filename: 'vite.config.ts', language: 'ts', code: VITE_CONFIG },
+      children: [],
+    },
 
     /** ── Dependency tree: Tree ───────────────────────────────────────────── */
-    tree: { type: 'Card', props: { title: 'Dependency tree', collapsible: true, defaultCollapsed: true }, children: ['depTree'] },
-    depTree: { type: 'Tree', props: { data: { $state: '/deps' }, defaultExpanded: true }, children: [] },
+    tree: {
+      type: 'Card',
+      props: { title: 'Dependency tree', collapsible: true, defaultCollapsed: true },
+      children: ['depTree'],
+    },
+    depTree: {
+      type: 'Tree',
+      props: {
+        data: { $state: '/deps' },
+        defaultExpanded: true,
+      },
+      children: [],
+    },
 
     /** ── Footer ──────────────────────────────────────────────────────────── */
     footerDivider: { type: 'Divider', props: {}, children: [] },
-    footer: { type: 'Stack', props: { direction: 'row', gap: 6 }, children: ['footerLabel', 'footerValue', 'footerSuffix'] },
-    footerLabel: { type: 'Text', props: { text: 'Rendered from a JSON-render spec · uptime', variant: 'caption', color: 'faint' }, children: [] },
-    footerValue: { type: 'Text', props: { text: { $state: '/uptime' }, variant: 'caption', color: 'faint' }, children: [] },
-    footerSuffix: { type: 'Text', props: { text: 's', variant: 'caption', color: 'faint' }, children: [] },
+    footer: {
+      type: 'Stack',
+      props: { direction: 'row', gap: 6 },
+      children: ['footerLabel', 'footerValue', 'footerSuffix'],
+    },
+    footerLabel: {
+      type: 'Text',
+      props: { text: 'Rendered from a JSON-render spec · uptime', variant: 'caption', color: 'faint' },
+      children: [],
+    },
+    footerValue: {
+      type: 'Text',
+      props: {
+        text: { $state: '/uptime' },
+        variant: 'caption',
+        color: 'faint',
+      },
+      children: [],
+    },
+    footerSuffix: {
+      type: 'Text',
+      props: { text: 's', variant: 'caption', color: 'faint' },
+      children: [],
+    },
   },
   state: dashboardState,
 }
@@ -158,7 +338,9 @@ export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
     type: 'query',
     jsonSerializable: true,
     handler: () => {
-      view.patchState([{ op: 'replace', path: '/building', value: true }])
+      view.patchState([
+        { op: 'replace', path: '/building', value: true },
+      ])
       setTimeout(() => {
         deployed += 1
         const modules = [
@@ -182,8 +364,11 @@ export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
     jsonSerializable: true,
     handler: (params?: { name?: string }) => {
       const name = params?.name?.trim()
-      if (name)
-        view.patchState([{ op: 'replace', path: '/project/name', value: name }])
+      if (name) {
+        view.patchState([
+          { op: 'replace', path: '/project/name', value: name },
+        ])
+      }
       return { saved: true }
     },
   }))
@@ -194,7 +379,9 @@ export function createDashboardView(ctx: DevframeNodeContext): JsonRenderView {
     let uptime = 0
     const timer = setInterval(() => {
       uptime += 1
-      view.patchState([{ op: 'replace', path: '/uptime', value: uptime }])
+      view.patchState([
+        { op: 'replace', path: '/uptime', value: uptime },
+      ])
     }, 1000)
     timer.unref?.()
   }

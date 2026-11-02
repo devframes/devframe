@@ -341,7 +341,9 @@ export async function getDevframeRpcClient(
     cacheOptions = false,
   } = options
   const events = createEventEmitter<RpcClientEvents>()
-  const bases = Array.isArray(baseURL) ? baseURL : [baseURL]
+  const bases = Array.isArray(baseURL)
+    ? baseURL
+    : [baseURL]
   let connection = await setupDevframeConnection(options)
   const { connectionMeta, metaBaseUrl, authToken } = connection
   let resolvedBaseURL = bases[0] ?? './'
@@ -350,13 +352,20 @@ export async function getDevframeRpcClient(
   }
   catch {}
 
-  const cacheManager = new RpcCacheManager({ functions: [], ...(typeof options.cacheOptions === 'object' ? options.cacheOptions : {}) })
+  const cacheManager = new RpcCacheManager({
+    functions: [],
+    ...(typeof options.cacheOptions === 'object'
+      ? options.cacheOptions
+      : {}),
+  })
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
   // No-op when the browser provides no WebMCP model context.
-  const disposeWebMcp = options.webmcp === false ? undefined : registerWebMcpTools(clientRpc)
+  const disposeWebMcp = options.webmcp === false
+    ? undefined
+    : registerWebMcpTools(clientRpc)
   let disposeBrowserAgentBridge: (() => void) | undefined
   let closed = false
   let cacheGeneration = 0
@@ -407,7 +416,9 @@ export async function getDevframeRpcClient(
   }
 
   const timeout = options.callTimeout ?? 0
-  const requestBudget = timeout > 0 ? timeout : Infinity
+  const requestBudget = timeout > 0
+    ? timeout
+    : Infinity
   let mode: DevframeRpcClientMode
   const liveModeOptions = {
     authToken,
@@ -640,7 +651,9 @@ export async function getDevframeRpcClient(
     const otpParam = options.otpParam ?? DEVFRAME_OTP_URL_PARAM
     // Always consume the URL OTP (so it's stripped) even once trusted; it only
     // exchanges when a code is present and we're not yet trusted.
-    const viaOtp = otpParam ? await authenticateWithUrlOtp(rpc, { param: otpParam }) : false
+    const viaOtp = otpParam
+      ? await authenticateWithUrlOtp(rpc, { param: otpParam })
+      : false
     if (trusted || viaOtp || rpc.isTrusted)
       return
     await runSimpleAuthPrompt()

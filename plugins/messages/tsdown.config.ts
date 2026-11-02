@@ -38,7 +38,9 @@ export default defineConfig([
      * rather than inlining Vue's reactivity type surface. This build is
      * `emitDtsOnly`, so it has no effect on the JS output.
      */
-    deps: { neverBundle: ['vue'] },
+    deps: {
+      neverBundle: ['vue'],
+    },
     dts: { emitDtsOnly: true },
     outExtensions: () => ({ dts: '.d.mts' }),
     entry: nodeEntries,

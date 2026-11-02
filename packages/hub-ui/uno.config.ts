@@ -17,7 +17,9 @@ import { createDesignConfig, shadowSurfaceSafelist } from '../../design/uno.conf
  * class only appears via a `.dark:` variant the extractor misses.
  */
 export default mergeConfigs([
-  createDesignConfig({ base: presetWind3() }),
+  createDesignConfig({
+    base: presetWind3(),
+  }),
   {
     safelist: shadowSurfaceSafelist,
     content: {

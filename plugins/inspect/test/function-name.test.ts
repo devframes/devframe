@@ -5,14 +5,29 @@ describe('parseNamespacedName', () => {
   it('splits a single `:` namespace into a colored prefix and an uncolored leaf', () => {
     const segments = parseNamespacedName('foo:bar')
     expect(segments).toEqual([
-      { text: 'foo', separator: ':', isLeaf: false, color: expect.any(String) },
-      { text: 'bar', separator: '', isLeaf: true, color: undefined },
+      {
+        text: 'foo',
+        separator: ':',
+        isLeaf: false,
+        color: expect.any(String),
+      },
+      {
+        text: 'bar',
+        separator: '',
+        isLeaf: true,
+        color: undefined,
+      },
     ])
   })
 
   it('splits deep `:` namespaces, coloring every namespace segment', () => {
     const segments = parseNamespacedName('devframes:plugin:inspect:list-functions')
-    expect(segments.map(s => s.text)).toEqual(['devframes', 'plugin', 'inspect', 'list-functions'])
+    expect(segments.map(s => s.text)).toEqual([
+      'devframes',
+      'plugin',
+      'inspect',
+      'list-functions',
+    ])
     expect(segments.map(s => s.separator)).toEqual([':', ':', ':', ''])
     expect(segments.map(s => s.isLeaf)).toEqual([false, false, false, true])
     // Every namespace gets a color; only the leaf is uncolored.
@@ -28,12 +43,23 @@ describe('parseNamespacedName', () => {
 
   it('treats a name with no separator as a single uncolored leaf', () => {
     expect(parseNamespacedName('refresh')).toEqual([
-      { text: 'refresh', separator: '', isLeaf: true, color: undefined },
+      {
+        text: 'refresh',
+        separator: '',
+        isLeaf: true,
+        color: undefined,
+      },
     ])
   })
 
   it('round-trips: concatenating text + separator reproduces the original name', () => {
-    for (const name of ['a:b', 'a/b', 'a:b/c:d', 'solo', 'x:y:z']) {
+    for (const name of [
+      'a:b',
+      'a/b',
+      'a:b/c:d',
+      'solo',
+      'x:y:z',
+    ]) {
       const rebuilt = parseNamespacedName(name)
         .map(s => s.text + s.separator)
         .join('')

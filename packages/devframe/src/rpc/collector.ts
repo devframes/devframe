@@ -74,8 +74,11 @@ export class RpcFunctionsCollectorBase<
 
   getSchema<T extends keyof LocalFunctions>(name: T): { args: RpcArgsSchema | undefined, returns: RpcReturnSchema | undefined } {
     const definition = this.definitions.get(name as string)
-    if (!definition)
-      throw diagnostics.DF0023({ name: String(name) })
+    if (!definition) {
+      throw diagnostics.DF0023({
+        name: String(name),
+      })
+    }
     return {
       args: definition.args,
       returns: definition.returns,

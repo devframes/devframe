@@ -19,14 +19,24 @@ function setup(backend = 'live', trusted = true) {
     connectionMeta: { backend },
     isTrusted: trusted,
     events: createEventEmitter<any>(),
-    client: { register: (fn: any) => handlers.set(fn.name, fn.handler) },
-    ensureTrusted: vi.fn(() => trusted ? Promise.resolve(true) : trust.promise),
+    client: {
+      register: (fn: any) => handlers.set(fn.name, fn.handler),
+    },
+    ensureTrusted: vi.fn(() => trusted
+      ? Promise.resolve(true)
+      : trust.promise),
     call: vi.fn(() => snapshot.promise),
     callEvent: vi.fn(),
   } as unknown as DevframeRpcClient
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
   const settings = createClientSettings(rpc, 'test')
-  return { rpc, settings, snapshot, trust, handlers }
+  return {
+    rpc,
+    settings,
+    snapshot,
+    trust,
+    handlers,
+  }
 }
 
 describe('client settings initialization', () => {
@@ -46,7 +56,9 @@ describe('client settings initialization', () => {
       connectionMeta: { backend: 'live' },
       isTrusted: true,
       ensureTrusted: async () => true,
-      client: { register: () => {} },
+      client: {
+        register: () => {},
+      },
       call: async (method: string, key: string) => {
         const value = await ctx.rpc.invokeLocal(method as any, key)
         snapshotReady.resolve()

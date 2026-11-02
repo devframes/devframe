@@ -22,7 +22,9 @@ const HANDSHAKE = { authToken: '', ua: 'test', origin: 'http://localhost' }
 function connectWsClient(url: string, authToken?: string) {
   return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     {} as DevframeRpcClientFunctions,
-    { channel: createWsRpcChannel({ url, authToken }) },
+    {
+      channel: createWsRpcChannel({ url, authToken }),
+    },
   )
 }
 
@@ -41,7 +43,11 @@ function defineTestDef(id: string) {
     homepage: 'https://example.test',
     description: 'Test devframe.',
     setup: (ctx: DevframeNodeContext) => {
-      ctx.rpc.register({ name: 'test:probe', type: 'query', handler: () => 'ok' })
+      ctx.rpc.register({
+        name: 'test:probe',
+        type: 'query',
+        handler: () => 'ok',
+      })
     },
   })
 }
@@ -56,7 +62,13 @@ describe('adapters/handler', () => {
   it('pinned side-car tier: SPA, meta, and WS RPC through fetch', async () => {
     const distDir = makeTmpDist()
     const wsPort = await getPort({ port: 18110, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-test'), { base: '/__handler-test/', auth: false, distDir, host: '127.0.0.1', ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-test'), {
+      base: '/__handler-test/',
+      auth: false,
+      distDir,
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -104,7 +116,11 @@ describe('adapters/handler', () => {
   it('gates by default: untrusted calls reject until the OTP exchange', async () => {
     const wsPort = await getPort({ port: 18120, host: '127.0.0.1' })
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const devtools = initDevframe(defineTestDef('handler-auth'), { base: '/__handler-auth/', host: '127.0.0.1', ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-auth'), {
+      base: '/__handler-auth/',
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -153,7 +169,12 @@ describe('adapters/handler', () => {
         res.end('host app')
       })
     })
-    devtoolsRef = initDevframe(defineTestDef('handler-shared'), { base: '/__handler-shared/', auth: false, distDir, server })
+    devtoolsRef = initDevframe(defineTestDef('handler-shared'), {
+      base: '/__handler-shared/',
+      auth: false,
+      distDir,
+      server,
+    })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -171,7 +192,11 @@ describe('adapters/handler', () => {
       expect(await index.text()).toContain('handler test')
 
       const meta = await (await fetch(`http://${host}:${port}/__handler-shared/__connection.json`)).json()
-      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
+      expect(meta).toEqual({
+        backend: 'websocket',
+        websocket: { path: '__ws' },
+        sse: { path: '__sse' },
+      })
 
       // Outside the base, next() ran and the host app answered.
       const outside = await fetch(`http://${host}:${port}/app`)
@@ -263,7 +288,10 @@ describe('adapters/handler', () => {
   })
 
   it('ws.url tier: advertises the external endpoint verbatim, owns no transport', async () => {
-    const devtools = initDevframe(defineTestDef('handler-remote'), { base: '/__handler-remote/', ws: { url: 'wss://devtools.example.com/relay/__ws' } })
+    const devtools = initDevframe(defineTestDef('handler-remote'), {
+      base: '/__handler-remote/',
+      ws: { url: 'wss://devtools.example.com/relay/__ws' },
+    })
 
     try {
       await devtools.ready
@@ -284,7 +312,12 @@ describe('adapters/handler', () => {
     const server = createServer((req, res) => {
       devtoolsRef.nodeMiddleware(req, res)
     })
-    devtoolsRef = initDevframe(defineTestDef('handler-tunnel'), { base: '/__handler-tunnel/', auth: false, server, ws: { url: 'wss://devtools.example.com/relay/__ws' } })
+    devtoolsRef = initDevframe(defineTestDef('handler-tunnel'), {
+      base: '/__handler-tunnel/',
+      auth: false,
+      server,
+      ws: { url: 'wss://devtools.example.com/relay/__ws' },
+    })
     await new Promise<void>(resolve => server.listen(port, host, resolve))
 
     try {
@@ -305,7 +338,12 @@ describe('adapters/handler', () => {
 
   it('mcp: mounts <base>__mcp and advertises it in the meta', async () => {
     const wsPort = await getPort({ port: 18140, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-mcp'), { base: '/__handler-mcp/', auth: false, mcp: true, ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-mcp'), {
+      base: '/__handler-mcp/',
+      auth: false,
+      mcp: true,
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -332,14 +370,20 @@ describe('adapters/handler', () => {
       homepage: 'https://example.test',
       description: 'Test devframe with shared state.',
       setup: async (ctx: DevframeNodeContext) => {
-        await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
-        await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+        await ctx.rpc.sharedState.get('visible:key', {
+          initialValue: { n: 1 },
+        })
+        await ctx.rpc.sharedState.get('hidden:key', {
+          initialValue: { n: 2 },
+        })
       },
     })
     const devtools = initDevframe(def, {
       base: '/__handler-mcp-state/',
       auth: false,
-      mcp: { exposeSharedState: key => key.startsWith('visible:') },
+      mcp: {
+        exposeSharedState: key => key.startsWith('visible:'),
+      },
       ws: { port: wsPort },
     })
 
@@ -352,7 +396,12 @@ describe('adapters/handler', () => {
           'accept': 'application/json, text/event-stream',
           'origin': 'http://localhost:3000',
         },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'devframe_state_read', arguments: {} } }),
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'tools/call',
+          params: { name: 'devframe_state_read', arguments: {} },
+        }),
       }))
       const raw = await res.text()
       expect(raw).toContain('visible:key')
@@ -385,7 +434,11 @@ describe('adapters/handler', () => {
           jsonrpc: '2.0',
           id: 1,
           method: 'initialize',
-          params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '0.0.0' } },
+          params: {
+            protocolVersion: '2025-06-18',
+            capabilities: {},
+            clientInfo: { name: 'test', version: '0.0.0' },
+          },
         }),
       }))
       expect(res.status).toBe(200)
@@ -420,7 +473,11 @@ describe('adapters/handler', () => {
 
   it('mcp omitted: mounts once the agent surface is non-empty', async () => {
     const wsPort = await getPort({ port: 18142, host: '127.0.0.1' })
-    const devtools = initDevframe(defineAgentTestDef('handler-mcp-auto'), { base: '/__handler-mcp-auto/', auth: false, ws: { port: wsPort } })
+    const devtools = initDevframe(defineAgentTestDef('handler-mcp-auto'), {
+      base: '/__handler-mcp-auto/',
+      auth: false,
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -437,7 +494,11 @@ describe('adapters/handler', () => {
 
   it('mcp omitted: an empty agent surface mounts nothing', async () => {
     const wsPort = await getPort({ port: 18144, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-mcp-auto-empty'), { base: '/__handler-mcp-auto-empty/', auth: false, ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-mcp-auto-empty'), {
+      base: '/__handler-mcp-auto-empty/',
+      auth: false,
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -454,7 +515,12 @@ describe('adapters/handler', () => {
 
   it('mcp: false keeps the route off despite an agent surface', async () => {
     const wsPort = await getPort({ port: 18146, host: '127.0.0.1' })
-    const devtools = initDevframe(defineAgentTestDef('handler-mcp-off'), { base: '/__handler-mcp-off/', auth: false, mcp: false, ws: { port: wsPort } })
+    const devtools = initDevframe(defineAgentTestDef('handler-mcp-off'), {
+      base: '/__handler-mcp-off/',
+      auth: false,
+      mcp: false,
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready
@@ -566,13 +632,22 @@ describe('adapters/handler', () => {
 
   it('ws.sidecar on localhost: moves off a port another server holds on the other loopback', async () => {
     const { address: primary } = await lookup('localhost')
-    const twin = isIP(primary) === 6 ? '127.0.0.1' : '::1'
+    const twin = isIP(primary) === 6
+      ? '127.0.0.1'
+      : '::1'
     const port = await getPort({ port: 18170, host: twin })
     const squatter = createServer((_req, res) => res.end('squatter'))
     await new Promise<void>(resolve => squatter.listen(port, twin, resolve))
     const devtools = initDevframe(
-      defineDevframe({ ...defineTestDef('handler-sidecar-twin'), cli: { port } }),
-      { base: '/__handler-sidecar-twin/', auth: false, ws: { sidecar: true } },
+      defineDevframe({
+        ...defineTestDef('handler-sidecar-twin'),
+        cli: { port },
+      }),
+      {
+        base: '/__handler-sidecar-twin/',
+        auth: false,
+        ws: { sidecar: true },
+      },
     )
 
     try {
@@ -591,8 +666,16 @@ describe('adapters/handler', () => {
 
   it('a configured transport refuses to take over the host upgrades', async () => {
     const wsPort = await getPort({ port: 18155, host: '127.0.0.1' })
-    const sidecar = initDevframe(defineTestDef('handler-owned'), { base: '/__handler-owned/', auth: false, host: '127.0.0.1', ws: { port: wsPort } })
-    const external = initDevframe(defineTestDef('handler-external'), { base: '/__handler-external/', ws: { url: 'wss://devtools.example.com/relay/__ws' } })
+    const sidecar = initDevframe(defineTestDef('handler-owned'), {
+      base: '/__handler-owned/',
+      auth: false,
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+    })
+    const external = initDevframe(defineTestDef('handler-external'), {
+      base: '/__handler-external/',
+      ws: { url: 'wss://devtools.example.com/relay/__ws' },
+    })
 
     try {
       await Promise.all([sidecar.ready, external.ready])
@@ -623,7 +706,12 @@ describe('adapters/handler', () => {
   ): Promise<void> {
     const wsPort = await getPort({ host: '127.0.0.1' })
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    const devtools = initDevframe(defineTestDef(id), { base: `/__${id}/`, host: '127.0.0.1', ws: { port: wsPort }, ...extra })
+    const devtools = initDevframe(defineTestDef(id), {
+      base: `/__${id}/`,
+      host: '127.0.0.1',
+      ws: { port: wsPort },
+      ...extra,
+    })
     let client: ReturnType<typeof connectWsClient> | undefined
     try {
       await devtools.ready
@@ -662,7 +750,9 @@ describe('adapters/handler', () => {
     }))
 
   it('adopts an exactly allow-listed non-loopback origin, but rejects a near-match', () =>
-    withBannerSpy('h-allow', { allowedOrigins: ['https://tools.example.com'] }, async (devtools, spy, requestBanner) => {
+    withBannerSpy('h-allow', {
+      allowedOrigins: ['https://tools.example.com'],
+    }, async (devtools, spy, requestBanner) => {
       // Prefix/suffix near-matches of the allow-list entry are never adopted;
       // the link stays on the loopback fallback.
       await hit(devtools, 'https://tools.example.com.evil.com/__h-allow')
@@ -698,7 +788,11 @@ describe('adapters/handler', () => {
 
   it('bridge mode: without a distDir only meta + WS are served', async () => {
     const wsPort = await getPort({ port: 18160, host: '127.0.0.1' })
-    const devtools = initDevframe(defineTestDef('handler-bridge'), { base: '/__handler-bridge/', auth: false, ws: { port: wsPort } })
+    const devtools = initDevframe(defineTestDef('handler-bridge'), {
+      base: '/__handler-bridge/',
+      auth: false,
+      ws: { port: wsPort },
+    })
 
     try {
       await devtools.ready

@@ -49,10 +49,12 @@ export const send = defineRpcFunction({
   name: 'send',
   type: 'action',
   jsonSerializable: true,
-  args: [v.object({
-    prompt: v.string(),
-    intervalMs: v.optional(v.number(), 35),
-  })],
+  args: [
+    v.object({
+      prompt: v.string(),
+      intervalMs: v.optional(v.number(), 35),
+    }),
+  ],
   returns: v.object({
     userId: v.string(),
     assistantId: v.string(),

@@ -20,7 +20,12 @@ export interface JsonRenderActionBridge {
 }
 
 // Built-ins handled inside upstream's ActionProvider, never bridged to RPC.
-const RESERVED = new Set(['setState', 'pushState', 'removeState', 'validateForm'])
+const RESERVED = new Set([
+  'setState',
+  'pushState',
+  'removeState',
+  'validateForm',
+])
 // Promise-probe / symbol keys must not resolve to a phantom action.
 const PROBES = new Set(['then', 'catch', 'finally'])
 

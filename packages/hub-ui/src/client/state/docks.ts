@@ -38,7 +38,9 @@ export function holdsCurrentDock(context: DocksContext, entry: DevframeDockEntry
 /** Whether the dock has its own button on the dock bar: pinned out of its group, or raised as a recent dock. */
 function hasOwnDockButton(context: DocksContext, id: string): boolean {
   const session = context.panel.session
-  const recentIds = session.recentDockIds ?? (session.recentDockId ? [session.recentDockId] : [])
+  const recentIds = session.recentDockIds ?? (session.recentDockId
+    ? [session.recentDockId]
+    : [])
   return recentIds.includes(id)
     || context.docks.groupedEntries.some(([, items]) => items.some(entry => entry.id === id))
 }

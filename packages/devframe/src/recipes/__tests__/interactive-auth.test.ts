@@ -23,7 +23,11 @@ function makeHost(storageDir: string): DevframeHost {
 
 async function createTestContext(): Promise<DevframeNodeContext> {
   const storageDir = mkdtempSync(join(tmpdir(), 'devframe-interactive-auth-'))
-  return createHostContext({ cwd: storageDir, mode: 'dev', host: makeHost(storageDir) })
+  return createHostContext({
+    cwd: storageDir,
+    mode: 'dev',
+    host: makeHost(storageDir),
+  })
 }
 
 /** Starts a fully-authenticated server with one trusted-only probe method. */
@@ -62,7 +66,9 @@ async function startAuthenticatedServer(
 function connectClient(host: string, port: number, authToken?: string) {
   return createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     {} as DevframeRpcClientFunctions,
-    { channel: createWsRpcChannel({ url: `ws://${host}:${port}`, authToken }) },
+    {
+      channel: createWsRpcChannel({ url: `ws://${host}:${port}`, authToken }),
+    },
   )
 }
 
@@ -98,7 +104,9 @@ describe('recipes/interactive-auth', () => {
   it('printBanner() only prints once per code, with the code expiry', async () => {
     const context = await createTestContext()
     const seen: AuthBannerInfo[] = []
-    const auth = createInteractiveAuth(context, { banner: info => seen.push(info) })
+    const auth = createInteractiveAuth(context, {
+      banner: info => seen.push(info),
+    })
 
     auth.printBanner()
     auth.printBanner()
@@ -218,7 +226,11 @@ describe('recipes/interactive-auth', () => {
       return {
         request: {
           url: `/?devframe_auth_token=${encodeURIComponent(token)}`,
-          headers: { get: (name: string) => (name.toLowerCase() === 'origin' ? origin ?? null : null) },
+          headers: {
+            get: (name: string) => (name.toLowerCase() === 'origin'
+              ? origin ?? null
+              : null),
+          },
         },
       }
     }

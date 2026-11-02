@@ -24,5 +24,7 @@ export default defineHandler(() => new Response(
     <script type="module" src="/__devframes/embedded.js"></script>
   </body>
 </html>`,
-  { headers: { 'content-type': 'text/html; charset=utf-8' } },
+  {
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  },
 ))

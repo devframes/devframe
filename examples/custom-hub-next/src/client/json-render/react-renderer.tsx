@@ -20,29 +20,60 @@ import { createRoot } from 'react-dom/client'
 type Jr<P = Record<string, unknown>> = (ctx: BaseComponentProps<P>) => ReactNode
 
 function toNumber(value: unknown, fallback: number): number {
-  const n = typeof value === 'string' ? Number(value) : value
-  return typeof n === 'number' && Number.isFinite(n) ? n : fallback
+  const n = typeof value === 'string'
+    ? Number(value)
+    : value
+  return typeof n === 'number' && Number.isFinite(n)
+    ? n
+    : fallback
 }
 
 function formatValue(value: unknown): string {
   if (value == null)
     return ''
-  return typeof value === 'object' ? JSON.stringify(value) : String(value)
+  return typeof value === 'object'
+    ? JSON.stringify(value)
+    : String(value)
 }
 
-const alignMap: Record<string, string> = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' }
-const justifyMap: Record<string, string> = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around' }
-const colorClass: Record<string, string> = { base: 'color-base', muted: 'color-muted', faint: 'color-faint', primary: 'color-primary', success: 'color-green', warning: 'color-amber', danger: 'color-red' }
+const alignMap: Record<string, string> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  stretch: 'stretch',
+}
+const justifyMap: Record<string, string> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  between: 'space-between',
+  around: 'space-around',
+}
+const colorClass: Record<string, string> = {
+  base: 'color-base',
+  muted: 'color-muted',
+  faint: 'color-faint',
+  primary: 'color-primary',
+  success: 'color-green',
+  warning: 'color-amber',
+  danger: 'color-red',
+}
 
 // ── components ──────────────────────────────────────────────────────────────
 
 const Stack: Jr<{ direction?: string, gap?: number, align?: string, justify?: string }> = ({ props, children }) => (
   <div style={{
     display: 'flex',
-    flexDirection: props.direction === 'row' ? 'row' : 'column',
+    flexDirection: props.direction === 'row'
+      ? 'row'
+      : 'column',
     gap: `${toNumber(props.gap, 8)}px`,
-    alignItems: props.align ? alignMap[props.align] ?? props.align : undefined,
-    justifyContent: props.justify ? justifyMap[props.justify] ?? props.justify : undefined,
+    alignItems: props.align
+      ? alignMap[props.align] ?? props.align
+      : undefined,
+    justifyContent: props.justify
+      ? justifyMap[props.justify] ?? props.justify
+      : undefined,
   }}
   >
     {children}
@@ -62,7 +93,9 @@ const Card: Jr<{ title?: string, collapsible?: boolean, defaultCollapsed?: boole
   }
   return (
     <div className="rounded-xl border border-base bg-base overflow-hidden">
-      {props.title ? <div className={header}>{props.title}</div> : null}
+      {props.title
+        ? <div className={header}>{props.title}</div>
+        : null}
       {body}
     </div>
   )
@@ -77,7 +110,14 @@ const textVariant: Record<string, { tag: keyof React.JSX.IntrinsicElements, clas
 const Text: Jr<{ text?: string, variant?: string, color?: string }> = ({ props, children }) => {
   const v = textVariant[props.variant ?? 'body'] ?? textVariant.body
   const Tag = v.tag
-  return <Tag className={`${v.class} ${props.color ? colorClass[props.color] ?? 'color-base' : 'color-base'}`}>{props.text ?? children}</Tag>
+  return (
+    <Tag className={`${v.class} ${props.color
+      ? colorClass[props.color] ?? 'color-base'
+      : 'color-base'}`}
+    >
+      {props.text ?? children}
+    </Tag>
+  )
 }
 
 const badgeClass: Record<string, string> = {
@@ -104,7 +144,9 @@ function fetchIcon(name: string): Promise<string | null> {
   if (!p) {
     const [prefix, icon] = name.split(':')
     p = fetch(`https://api.iconify.design/${prefix}/${icon}.svg?color=currentColor&width=100%`)
-      .then(r => (r.ok ? r.text() : null))
+      .then(r => (r.ok
+        ? r.text()
+        : null))
       .catch(() => null)
     iconCache.set(name, p)
   }
@@ -148,8 +190,22 @@ const Button: Jr<{ label?: string, variant?: string, icon?: string }> = ({ props
     onClick={() => on('press').emit()}
     className={`inline-flex items-center gap-1.5 rounded px2.5 py1 text-sm font-medium transition ${buttonVariant[props.variant ?? 'secondary'] ?? buttonVariant.secondary}`}
   >
-    {props.icon ? <Icon props={{ name: props.icon, size: 16 }} emit={() => {}} on={() => ({ emit: () => {}, shouldPreventDefault: false, bound: false })} /> : null}
-    {props.label ? <span>{props.label}</span> : null}
+    {props.icon
+      ? (
+          <Icon
+            props={{ name: props.icon, size: 16 }}
+            emit={() => {}}
+            on={() => ({
+              emit: () => {},
+              shouldPreventDefault: false,
+              bound: false,
+            })}
+          />
+        )
+      : null}
+    {props.label
+      ? <span>{props.label}</span>
+      : null}
   </button>
 )
 
@@ -193,7 +249,9 @@ const Switch: Jr<{ value?: boolean, label?: string }> = ({ props, on, bindings }
       >
         <span className={`inline-block h-4 w-4 rounded-full bg-base shadow transition ${checked ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
       </button>
-      {props.label ? <span>{props.label}</span> : null}
+      {props.label
+        ? <span>{props.label}</span>
+        : null}
     </label>
   )
 }
@@ -216,12 +274,19 @@ const DataTable: Jr<{ columns?: (string | Col)[], rows?: Record<string, unknown>
   const [, setSelected] = useBoundProp<unknown>(undefined, bindings?.value)
   const rows = props.rows ?? []
   const columns: Col[] = props.columns?.length
-    ? props.columns.map(c => (typeof c === 'string' ? { key: c } : c))
+    ? props.columns.map(c => (typeof c === 'string'
+        ? { key: c }
+        : c))
     : rows[0]
       ? Object.keys(rows[0]).map(key => ({ key }))
       : []
   return (
-    <div className="rounded border border-base overflow-auto" style={props.height != null ? { maxHeight: `${props.height}px` } : undefined}>
+    <div
+      className="rounded border border-base overflow-auto"
+      style={props.height != null
+        ? { maxHeight: `${props.height}px` }
+        : undefined}
+    >
       <table className="w-full text-sm border-collapse">
         <thead className="sticky top-0 bg-secondary">
           <tr>{columns.map(c => <th key={c.key} className="text-left px2 py1.5 color-muted font-medium border-b border-base">{c.label ?? c.key}</th>)}</tr>
@@ -246,12 +311,21 @@ const DataTable: Jr<{ columns?: (string | Col)[], rows?: Record<string, unknown>
 }
 
 const CodeBlock: Jr<{ code?: string, height?: number }> = ({ props }) => (
-  <pre className="rounded border border-base bg-base p2 text-sm font-mono overflow-auto color-base" style={props.height != null ? { maxHeight: `${props.height}px` } : undefined}><code>{props.code}</code></pre>
+  <pre
+    className="rounded border border-base bg-base p2 text-sm font-mono overflow-auto color-base"
+    style={props.height != null
+      ? { maxHeight: `${props.height}px` }
+      : undefined}
+  >
+    <code>{props.code}</code>
+  </pre>
 )
 
 const Progress: Jr<{ value?: number, max?: number, label?: string }> = ({ props }) => {
   const max = toNumber(props.max, 100)
-  const pct = max > 0 ? Math.min(100, Math.max(0, (toNumber(props.value, 0) / max) * 100)) : 0
+  const pct = max > 0
+    ? Math.min(100, Math.max(0, (toNumber(props.value, 0) / max) * 100))
+    : 0
   return (
     <div className="flex flex-col gap-1">
       {props.label
@@ -301,7 +375,15 @@ interface ViewRpc {
 // A spec action name is dispatched as an RPC call of the same name. The
 // built-ins the upstream provider handles itself (`setState`/`pushState`/…)
 // and promise-probe keys are never bridged.
-const RESERVED = new Set(['setState', 'pushState', 'removeState', 'validateForm', 'then', 'catch', 'finally'])
+const RESERVED = new Set([
+  'setState',
+  'pushState',
+  'removeState',
+  'validateForm',
+  'then',
+  'catch',
+  'finally',
+])
 function createActionBridge(rpc: ViewRpc): Record<string, (params?: Record<string, unknown>) => Promise<unknown>> {
   return new Proxy({} as Record<string, (params?: Record<string, unknown>) => Promise<unknown>>, {
     has: (_t, p) => typeof p === 'string' && !RESERVED.has(p),
@@ -336,12 +418,16 @@ export function createReactJsonRenderDockRenderer(): JsonRenderDockRenderer {
     // The action bridge only needs a loose `call(method, …)`; the client's
     // typed rpc narrows `method` to known keys, so widen that method here.
     const rpc: ViewRpc = { call: context.rpc.call as ViewRpc['call'] }
-    const viewId = 'stateKey' in view ? view.stateKey : entry.id
+    const viewId = 'stateKey' in view
+      ? view.stateKey
+      : entry.id
     const root = createRoot(container)
 
     if ('spec' in view) {
       root.render(<JsonRenderView spec={view.spec} rpc={rpc} viewId={viewId} />)
-      return { dispose: () => root.unmount() }
+      return {
+        dispose: () => root.unmount(),
+      }
     }
 
     const state = await context.rpc.sharedState.get<Spec>(view.stateKey)

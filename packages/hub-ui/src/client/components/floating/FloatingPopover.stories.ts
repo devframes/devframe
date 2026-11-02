@@ -70,11 +70,14 @@ export const ToggleTrigger: Story = {
       const triggerEl = ref<HTMLElement | null>(null)
       const open = ref(false)
       const item = computed(() => (open.value && triggerEl.value)
-        ? { el: triggerEl.value, content: () => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
-            h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
-            ...['Overview', 'Pages', 'Components'].map(label =>
-              h('button', { class: 'px2 py1.5 rounded text-sm text-left op80 hover:op100 hover:bg-active transition' }, label)),
-          ]) }
+        ? {
+            el: triggerEl.value,
+            content: () => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
+              h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
+              ...['Overview', 'Pages', 'Components'].map(label =>
+                h('button', { class: 'px2 py1.5 rounded text-sm text-left op80 hover:op100 hover:bg-active transition' }, label)),
+            ]),
+          }
         : null)
       return () => h('div', { class: 'flex items-center justify-center p20 min-h-80 font-sans' }, [
         h('button', {
@@ -106,11 +109,14 @@ export const EscapesTransformedAncestor: Story = {
       const triggerEl = ref<HTMLElement | null>(null)
       const open = ref(false)
       const item = computed(() => (open.value && triggerEl.value)
-        ? { el: triggerEl.value, content: () => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
-            h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
-            ...['Overview', 'Pages', 'Components'].map(label =>
-              h('button', { class: 'px2 py1.5 rounded text-sm text-left op80 hover:op100 hover:bg-active transition' }, label)),
-          ]) }
+        ? {
+            el: triggerEl.value,
+            content: () => h('div', { class: 'flex flex-col gap-0.5 min-w-40' }, [
+              h('div', { class: 'px2 pt1 pb1.5 op60 text-2.75 uppercase tracking-wide font-medium' }, 'Menu'),
+              ...['Overview', 'Pages', 'Components'].map(label =>
+                h('button', { class: 'px2 py1.5 rounded text-sm text-left op80 hover:op100 hover:bg-active transition' }, label)),
+            ]),
+          }
         : null)
       return () => h('div', { class: 'flex items-center justify-center p20 min-h-80 font-sans' }, [
         h('div', {

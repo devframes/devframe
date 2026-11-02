@@ -35,7 +35,9 @@ export default defineConfig({
       quiet: true,
       devframes: [entry],
       // Use the default hub-ui, rebrand it to match the starter's accent color.
-      ui: createUi({ branding: { primaryColor: '#10b981', productName: 'Devframe Starter' } }),
+      ui: createUi({
+        branding: { primaryColor: '#10b981', productName: 'Devframe Starter' },
+      }),
       // `auth` is left unset: gated by default (devframe's interactive
       // OTP - a 6-digit code printed to the terminal, entered once in the
       // reference UI's authorization view). `auth: false` would trust

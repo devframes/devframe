@@ -61,7 +61,9 @@ export function createDataInspectorCli() {
       const def = createDataInspectorDevframe({ exampleSource: flags.example })
       await createDevServer(def, {
         host: flags.host,
-        port: flags.port ? Number(flags.port) : undefined,
+        port: flags.port
+          ? Number(flags.port)
+          : undefined,
         flags: flags as Record<string, unknown>,
       })
     })
@@ -80,7 +82,11 @@ export function createDataInspectorCli() {
         // `agent.json` written by older versions.
         const discoveryPath = resolve(process.cwd(), DISCOVERY_FILE)
         const legacyPath = resolve(process.cwd(), 'node_modules/.data-inspector/agent.json')
-        const foundPath = existsSync(discoveryPath) ? discoveryPath : existsSync(legacyPath) ? legacyPath : undefined
+        const foundPath = existsSync(discoveryPath)
+          ? discoveryPath
+          : existsSync(legacyPath)
+            ? legacyPath
+            : undefined
         if (!foundPath) {
           console.error(`No endpoint given and no discovery file at ${discoveryPath}.`)
           console.error('Start the target with the inject endpoint (see @devframes/plugin-data-inspector/inject) or pass a ws:// endpoint.')
@@ -92,7 +98,12 @@ export function createDataInspectorCli() {
         token ??= discovery.token
       }
 
-      const port = flags.port ? Number(flags.port) : await getPort({ port: 9014, portRange: [9014, 9114] })
+      const port = flags.port
+        ? Number(flags.port)
+        : await getPort({
+            port: 9014,
+            portRange: [9014, 9114],
+          })
       const serveSpa = serveStaticNodeMiddleware(distDir)
       const server = createServer((req, res) => {
         if (req.url?.startsWith(`/${DEVFRAME_CONNECTION_META_FILENAME}`)) {
@@ -106,7 +117,9 @@ export function createDataInspectorCli() {
         })
       })
       await new Promise<void>(done => server.listen(port, flags.host, done))
-      const url = `http://${flags.host}:${port}/${token ? `?${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${token}` : ''}`
+      const url = `http://${flags.host}:${port}/${token
+        ? `?${DEVFRAME_AUTH_TOKEN_QUERY_PARAM}=${token}`
+        : ''}`
       console.log(`data-inspector attached to ${websocket}`)
       console.log(`open ${url}`)
     })
@@ -129,14 +142,21 @@ export function createDataInspectorCli() {
       const dataset: StaticDataset = { sources: [] }
       for (const meta of metas) {
         const file = meta.description // absolute path recorded by createFileDataSource
-        dataset.sources.push({ ...meta, data: file ? await loadDataFile(file) : null })
+        dataset.sources.push({
+          ...meta,
+          data: file
+            ? await loadDataFile(file)
+            : null,
+        })
       }
       await writeFile(join(outDir, 'data-inspector-static.json'), JSON.stringify(dataset))
       await writeFile(
         join(outDir, DEVFRAME_CONNECTION_META_FILENAME),
         `${JSON.stringify({ backend: 'static' })}\n`,
       )
-      console.log(`static inspector written to ${outDir} (${dataset.sources.length} source${dataset.sources.length === 1 ? '' : 's'})`)
+      console.log(`static inspector written to ${outDir} (${dataset.sources.length} source${dataset.sources.length === 1
+        ? ''
+        : 's'})`)
     })
 
   cli.help()

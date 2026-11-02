@@ -40,5 +40,7 @@ export const Text: JrComponent<TextProps> = ({ props, children }) => {
   if (props.color)
     classes.push(colorClass[props.color] ?? 'color-base')
   else classes.push('color-base')
-  return h(variant.tag, { class: classes.join(' ') }, props.text ?? (children as any))
+  return h(variant.tag, {
+    class: classes.join(' '),
+  }, props.text ?? (children as any))
 }

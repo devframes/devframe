@@ -78,9 +78,17 @@ const codeServerProfile: CodeServerProfile = {
   healthPath: '/healthz',
   matchPort: (line) => {
     const m = line.match(/HTTP server listening on https?:\/\/(?:[^:]+|\[[^\]]+\]):(\d+)/)
-    return m ? Number.parseInt(m[1], 10) : undefined
+    return m
+      ? Number.parseInt(m[1], 10)
+      : undefined
   },
-  connect: c => ({ path: '/', cookie: { name: c.cookieName, value: sha256(c.secret) } }),
+  connect: c => ({
+    path: '/',
+    cookie: {
+      name: c.cookieName,
+      value: sha256(c.secret),
+    },
+  }),
   connectReused: () => ({ path: '/' }),
 }
 
@@ -105,7 +113,9 @@ const serveWebProfile: CodeServerProfile = {
   healthPath: '/',
   matchPort: (line) => {
     const m = line.match(/available at https?:\/\/[^:]+:(\d+)/i)
-    return m ? Number.parseInt(m[1], 10) : undefined
+    return m
+      ? Number.parseInt(m[1], 10)
+      : undefined
   },
   connect: c => ({ path: `/?tkn=${encodeURIComponent(c.secret)}&folder=${encodeURIComponent(c.folder)}` }),
   connectReused: () => ({ path: '/' }),
@@ -130,11 +140,15 @@ const tunnelProfile: CodeServerProfile = {
   healthPath: null,
   matchReadyUrl: (line) => {
     const m = line.match(TUNNEL_URL_RE)
-    return m ? m[1].replace(/[)\].,]+$/, '') : undefined
+    return m
+      ? m[1].replace(/[)\].,]+$/, '')
+      : undefined
   },
   matchLogin: (line) => {
     const m = line.match(DEVICE_LOGIN_RE)
-    return m ? { url: m[1], code: m[2] } : undefined
+    return m
+      ? { url: m[1], code: m[2] }
+      : undefined
   },
   connect: c => ({ url: c.readyUrl ?? `https://vscode.dev/tunnel/${c.tunnelName}${c.folder}` }),
   connectReused: () => ({}),
@@ -150,5 +164,7 @@ export const AUTO_DETECT_ORDER: CodeServerBackend[] = ['code-server', 'ms-code-s
 
 /** Resolve the launch profile for a mode + backend. */
 export function resolveProfile(mode: CodeServerMode, backend: CodeServerBackend): CodeServerProfile {
-  return mode === 'tunnel' ? tunnelProfile : LOCAL_PROFILES[backend]
+  return mode === 'tunnel'
+    ? tunnelProfile
+    : LOCAL_PROFILES[backend]
 }

@@ -32,10 +32,12 @@ export const env = defineRpcFunction({
   name: 'env',
   type: 'query',
   jsonSerializable: true,
-  args: [v.object({
-    pattern: v.optional(v.string(), ''),
-    limit: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(500)), 50),
-  })],
+  args: [
+    v.object({
+      pattern: v.optional(v.string(), ''),
+      limit: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(500)), 50),
+    }),
+  ],
   returns: v.object({
     entries: v.array(EnvEntrySchema),
     total: v.number(),

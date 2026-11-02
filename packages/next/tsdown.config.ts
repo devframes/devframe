@@ -38,7 +38,13 @@ export default defineConfig([
     dts: true,
     outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
     deps: {
-      neverBundle: ['react', 'react-dom', 'react/jsx-runtime', 'devframe/client', /^@devframes\//],
+      neverBundle: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'devframe/client',
+        /^@devframes\//,
+      ],
     },
   },
 ])

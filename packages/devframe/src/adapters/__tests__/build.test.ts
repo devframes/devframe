@@ -32,7 +32,9 @@ describe('adapters/build', () => {
     const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
     try {
       await expect(
-        createBuild(baseDevframe({ capabilities: { build: false } }), { outDir }),
+        createBuild(baseDevframe({
+          capabilities: { build: false },
+        }), { outDir }),
       ).rejects.toThrow(/capabilities\.build: false/)
     }
     finally {
@@ -44,7 +46,9 @@ describe('adapters/build', () => {
     const outDir = mkdtempSync(join(tmpdir(), 'devframe-build-test-out-'))
     try {
       await expect(
-        createBuild(baseDevframe({ capabilities: { build: false } }), { outDir, force: true }),
+        createBuild(baseDevframe({
+          capabilities: { build: false },
+        }), { outDir, force: true }),
       ).resolves.toBeUndefined()
     }
     finally {
@@ -69,21 +73,46 @@ describe('adapters/build', () => {
     // inputs, and an async provider.
     const def = baseDevframe({
       setup: (ctx) => {
-        ctx.rpc.register({ name: 'demo:ping', type: 'query', jsonSerializable: true, handler: () => 'pong' })
+        ctx.rpc.register({
+          name: 'demo:ping',
+          type: 'query',
+          jsonSerializable: true,
+          handler: () => 'pong',
+        })
         ctx.rpc.register({
           name: 'demo:echo',
           type: 'query',
           jsonSerializable: true,
-          args: [s.object({ value: s.string() })],
-          returns: s.object({ value: s.string() }),
+          args: [
+            s.object({
+              value: s.string(),
+            }),
+          ],
+          returns: s.object({
+            value: s.string(),
+          }),
           handler: (input: { value: string }) => input,
         })
       },
       rpc: {
         snapshot: [
           'demo:ping',
-          { method: 'demo:echo', inputs: [[{ value: 'a' }]] },
-          { method: 'demo:echo', inputs: async () => [[{ value: 'b' }]] },
+          {
+            method: 'demo:echo',
+            inputs: [
+              [
+                { value: 'a' },
+              ],
+            ],
+          },
+          {
+            method: 'demo:echo',
+            inputs: async () => [
+              [
+                { value: 'b' },
+              ],
+            ],
+          },
         ],
       },
     })
@@ -108,7 +137,11 @@ describe('adapters/build', () => {
     try {
       // Does not throw; a missing target is a warning, so the build proceeds.
       await expect(
-        createBuild(baseDevframe({ rpc: { snapshot: ['does:not:exist'] } }), { outDir }),
+        createBuild(baseDevframe({
+          rpc: {
+            snapshot: ['does:not:exist'],
+          },
+        }), { outDir }),
       ).resolves.toBeUndefined()
     }
     finally {

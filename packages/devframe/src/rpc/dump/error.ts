@@ -13,8 +13,12 @@ export function serializeDumpError(error: unknown): RpcDumpRecordError {
 }
 
 function serializeWithSeen(error: unknown, seen: WeakSet<object>): RpcDumpRecordError {
-  if (!(error instanceof Error))
-    return { name: 'Error', message: String(error) }
+  if (!(error instanceof Error)) {
+    return {
+      name: 'Error',
+      message: String(error),
+    }
+  }
 
   if (seen.has(error))
     return { name: error.name, message: error.message }

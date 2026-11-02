@@ -227,7 +227,9 @@ export const diagnostics = defineDiagnostics({
     },
     DF0082: {
       why: (p: { clientId: string, tool: string, live: string[] }) =>
-        `Tool "${p.tool}" was addressed to client "${p.clientId}", but no connected browser tab has that id and the tool.${p.live.length ? ` Connected clients: ${p.live.join(', ')}.` : ' No browser tab is connected.'}`,
+        `Tool "${p.tool}" was addressed to client "${p.clientId}", but no connected browser tab has that id and the tool.${p.live.length
+          ? ` Connected clients: ${p.live.join(', ')}.`
+          : ' No browser tab is connected.'}`,
       fix: 'Re-list the connected clients (`devframe:agent:list-clients`) and retry with a live `client_id`, or omit `client_id` to target the most recently focused tab.',
     },
     DF0084: {

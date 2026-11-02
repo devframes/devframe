@@ -28,7 +28,9 @@ const ICONIFY_ID = /^(?:i-)?([\w-]+):([\w-]+)$/
  * await dockIconSvg('ph:git-branch-duotone') // → '<svg ...>...</svg>'
  */
 export async function dockIconSvg(name: string | { light: string, dark: string } | undefined): Promise<string | undefined> {
-  const id = typeof name === 'string' ? name : name?.light
+  const id = typeof name === 'string'
+    ? name
+    : name?.light
   if (!id)
     return undefined
   const match = id.match(ICONIFY_ID)

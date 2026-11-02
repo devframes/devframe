@@ -40,7 +40,12 @@ function edgeStory(position: 'top' | 'right' | 'bottom' | 'left', open = true) {
         {
           entries: categorizedEntries,
           selectedId: open ? 'overview' : null,
-          panel: { mode: 'edge', position, height: 40, width: 30 },
+          panel: {
+            mode: 'edge',
+            position,
+            height: 40,
+            width: 30,
+          },
           session: { open },
           /**
            * Pinned off so the toolbar stays expanded; `CollapsedIdle` below
@@ -49,7 +54,9 @@ function edgeStory(position: 'top' | 'right' | 'bottom' | 'left', open = true) {
           settings: { autoCollapseEdgeToolbar: false },
         },
         ctx => [
-          h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+          h(DockEdge, { context: ctx }, {
+            view: ({ entry }: any) => body(entry),
+          }),
           h(FloatingElements),
         ],
       ),
@@ -87,7 +94,9 @@ export const CollapsedIdle: Story = {
         session: { open: false },
       },
       ctx => [
-        h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+        h(DockEdge, { context: ctx }, {
+          view: ({ entry }: any) => body(entry),
+        }),
         h(FloatingElements),
       ],
     ),
@@ -116,7 +125,9 @@ export const BottomWithSettings: Story = {
         panel: { mode: 'edge', position: 'bottom', height: 40 },
       },
       ctx => [
-        h(DockEdge, { context: ctx }, { view: () => h(ViewBuiltinSettings, { context: ctx, entry: settingsEntry }) }),
+        h(DockEdge, { context: ctx }, {
+          view: () => h(ViewBuiltinSettings, { context: ctx, entry: settingsEntry }),
+        }),
         h(FloatingElements),
       ],
     ),
@@ -133,7 +144,9 @@ export const WithGroup: Story = {
         panel: { mode: 'edge', position: 'bottom', height: 45 },
       },
       ctx => [
-        h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+        h(DockEdge, { context: ctx }, {
+          view: ({ entry }: any) => body(entry),
+        }),
         h(FloatingElements),
       ],
     ),
@@ -148,7 +161,12 @@ function patternedEdgeStory(theme: 'light' | 'dark'): Story {
         {
           entries: categorizedEntries,
           selectedId: 'overview',
-          panel: { mode: 'edge', position: 'bottom', height: 40, width: 30 },
+          panel: {
+            mode: 'edge',
+            position: 'bottom',
+            height: 40,
+            width: 30,
+          },
           session: { open: true },
         },
         ctx => h('div', { class: 'relative w-screen h-screen overflow-hidden bg-secondary bg-grid-24' }, [
@@ -160,7 +178,9 @@ function patternedEdgeStory(theme: 'light' | 'dark'): Story {
             'aria-hidden': 'true',
             'class': 'pointer-events-none absolute right-[12%] bottom-[8%] h-40 w-72 rounded-3xl bg-active',
           }),
-          h(DockEdge, { context: ctx }, { view: ({ entry }: any) => body(entry) }),
+          h(DockEdge, { context: ctx }, {
+            view: ({ entry }: any) => body(entry),
+          }),
           h(FloatingElements),
         ]),
       ),

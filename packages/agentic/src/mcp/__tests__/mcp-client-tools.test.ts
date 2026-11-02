@@ -28,13 +28,27 @@ function connectTab(origin: string, client: { id: string, focused: boolean, visi
   }
   const rpc = createRpcClient<DevframeRpcServerFunctions, DevframeRpcClientFunctions>(
     clientFunctions as any,
-    { channel: createWsRpcChannel({ url: `${origin.replace('http', 'ws')}/__ws` }) },
+    {
+      channel: createWsRpcChannel({ url: `${origin.replace('http', 'ws')}/__ws` }),
+    },
   )
   const sync = (focused = client.focused) => rpc.$call(
     'devframe:agent:sync-client-tools',
     client.id,
-    [{ id: 'page:selection', description: 'Read the selection.', safety: 'read', inputSchema: { type: 'object', properties: {} } }],
-    { url: `http://app.local/${client.id}`, title: client.id, visible: client.visible ?? true, focused },
+    [
+      {
+        id: 'page:selection',
+        description: 'Read the selection.',
+        safety: 'read',
+        inputSchema: { type: 'object', properties: {} },
+      },
+    ],
+    {
+      url: `http://app.local/${client.id}`,
+      title: client.id,
+      visible: client.visible ?? true,
+      focused,
+    },
   )
   return { rpc, sync }
 }
@@ -47,15 +61,24 @@ describe('client tools over the MCP route', () => {
   })
 
   it('lists connected tabs and routes calls per tab', async () => {
-    server = await createDevServer(definition, { host: '127.0.0.1', port: 0, auth: false, mcp: true })
+    server = await createDevServer(definition, {
+      host: '127.0.0.1',
+      port: 0,
+      auth: false,
+      mcp: true,
+    })
     const a = connectTab(server.origin, { id: 'tab-a', focused: false })
     const b = connectTab(server.origin, { id: 'tab-b', focused: true })
     await a.sync()
     await b.sync()
 
-    const mcp = new Client({ name: 'test', version: '0.0.0' }, { versionNegotiation: { mode: 'auto' } })
+    const mcp = new Client({ name: 'test', version: '0.0.0' }, {
+      versionNegotiation: { mode: 'auto' },
+    })
     await mcp.connect(new StreamableHTTPClientTransport(new URL(`${server.origin}/__mcp`), {
-      requestInit: { headers: { origin: server.origin } },
+      requestInit: {
+        headers: { origin: server.origin },
+      },
     }))
     try {
       const { tools } = await mcp.listTools()
@@ -67,18 +90,33 @@ describe('client tools over the MCP route', () => {
       const listed = await mcp.callTool({ name: 'devframe_agent_list-clients', arguments: {} })
       expect(listed.structuredContent).toEqual({
         clients: [
-          expect.objectContaining({ id: 'tab-a', url: 'http://app.local/tab-a', focused: false, tools: ['page:selection'] }),
-          expect.objectContaining({ id: 'tab-b', focused: true, tools: ['page:selection'] }),
+          expect.objectContaining({
+            id: 'tab-a',
+            url: 'http://app.local/tab-a',
+            focused: false,
+            tools: ['page:selection'],
+          }),
+          expect.objectContaining({
+            id: 'tab-b',
+            focused: true,
+            tools: ['page:selection'],
+          }),
         ],
       })
 
       const unaddressed = await mcp.callTool({ name: 'page_selection', arguments: {} })
       expect(JSON.parse((unaddressed.content as any)[0].text)).toMatchObject({ tab: 'tab-b', args: {} })
 
-      const addressed = await mcp.callTool({ name: 'page_selection', arguments: { client_id: 'tab-a' } })
+      const addressed = await mcp.callTool({
+        name: 'page_selection',
+        arguments: { client_id: 'tab-a' },
+      })
       expect(JSON.parse((addressed.content as any)[0].text)).toMatchObject({ tab: 'tab-a', args: {} })
 
-      const missing = await mcp.callTool({ name: 'page_selection', arguments: { client_id: 'gone' } })
+      const missing = await mcp.callTool({
+        name: 'page_selection',
+        arguments: { client_id: 'gone' },
+      })
       expect(missing.isError).toBe(true)
       expect((missing.content as any)[0].text).toMatch(/DF0082.*tab-a, tab-b/s)
 
@@ -99,19 +137,35 @@ describe('client tools over the MCP route', () => {
     process.env.DEVFRAME_DISABLE_INSTANCE_REGISTRY = '0'
     const gateway = new Client({ name: 'test', version: '0.0.0' })
     try {
-      server = await createDevServer(definition, { host: '127.0.0.1', port: 0, auth: false, mcp: true })
+      server = await createDevServer(definition, {
+        host: '127.0.0.1',
+        port: 0,
+        auth: false,
+        mcp: true,
+      })
       await connectTab(server.origin, { id: 'tab-a', focused: true }).sync()
 
       await gateway.connect(new StdioClientTransport({
         command: process.execPath,
-        args: [fileURLToPath(new URL('../../../../devframe/bin/devframe.mjs', import.meta.url)), 'connect'],
-        env: { ...getDefaultEnvironment(), DEVFRAME_INSTANCES_DIR: instancesDir },
+        args: [
+          fileURLToPath(new URL('../../../../devframe/bin/devframe.mjs', import.meta.url)),
+          'connect',
+        ],
+        env: {
+          ...getDefaultEnvironment(),
+          DEVFRAME_INSTANCES_DIR: instancesDir,
+        },
       }))
       const listed = await gateway.callTool({ name: 'devframe_connect_list-instances', arguments: {} })
       const { instances } = JSON.parse((listed.content as any)[0].text)
       expect(instances).toHaveLength(1)
       expect(instances[0].mcp.clients).toEqual([
-        expect.objectContaining({ id: 'tab-a', url: 'http://app.local/tab-a', focused: true, tools: ['page:selection'] }),
+        expect.objectContaining({
+          id: 'tab-a',
+          url: 'http://app.local/tab-a',
+          focused: true,
+          tools: ['page:selection'],
+        }),
       ])
     }
     finally {

@@ -160,7 +160,11 @@ export function registerWebMcpTools<LocalFunctions, SetupContext>(
   }
 
   function sync(id?: string): void {
-    const names = id ? [id] : [...clientRpc.definitions.keys()]
+    const names = id
+      ? [id]
+      : [
+          ...clientRpc.definitions.keys(),
+        ]
     for (const name of names) {
       registered.get(name)?.()
       registered.delete(name)
@@ -191,12 +195,24 @@ async function executeRpcTool<SetupContext>(
     const positional = toolInputToRpcArgs(args, def.args?.length)
     const handler = await getRpcHandler(def, context)
     const result = await handler(...positional)
-    return { content: [{ type: 'text', text: stringifyResult(result) }] }
+    return {
+      content: [
+        {
+          type: 'text',
+          text: stringifyResult(result),
+        },
+      ],
+    }
   }
   catch (error) {
     return {
       isError: true,
-      content: [{ type: 'text', text: formatError(error) }],
+      content: [
+        {
+          type: 'text',
+          text: formatError(error),
+        },
+      ],
     }
   }
 }
@@ -216,6 +232,8 @@ function stringifyResult(value: unknown): string {
 function formatError(error: unknown): string {
   if (!(error instanceof Error))
     return String(error)
-  const cause = error.cause instanceof Error ? ` (cause: ${error.cause.message})` : ''
+  const cause = error.cause instanceof Error
+    ? ` (cause: ${error.cause.message})`
+    : ''
   return `${error.name}: ${error.message}${cause}`
 }

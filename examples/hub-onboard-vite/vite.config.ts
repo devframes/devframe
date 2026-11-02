@@ -42,7 +42,9 @@ function hubOnboarding(): Plugin {
         // Vite's dev server is a plain `node:http` server unless `server.https` is set.
         server: server.httpServer as Server,
         ui: createUi({ branding }),
-        devframes: [createGitDevframe()],
+        devframes: [
+          createGitDevframe(),
+        ],
       })
       return hub.handler
     },
@@ -58,12 +60,20 @@ function hubOnboarding(): Plugin {
     transformIndexHtml() {
       if (onboarding.disabled)
         return []
-      return [{ tag: 'script', attrs: { type: 'module', src: onboarding.scriptSrc }, injectTo: 'body' }]
+      return [
+        {
+          tag: 'script',
+          attrs: { type: 'module', src: onboarding.scriptSrc },
+          injectTo: 'body',
+        },
+      ]
     },
   }
 }
 
 export default defineConfig({
   server: { allowedHosts: true, strictPort: false },
-  plugins: [hubOnboarding()],
+  plugins: [
+    hubOnboarding(),
+  ],
 })

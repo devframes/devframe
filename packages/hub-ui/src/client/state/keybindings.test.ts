@@ -12,16 +12,37 @@ describe('findKeybindingConflict', () => {
       source: 'client',
       when: '!popupOpen',
       children: [
-        { id: 'float', title: 'Float Mode', source: 'client', when: '!popupOpen' },
+        {
+          id: 'float',
+          title: 'Float Mode',
+          source: 'client',
+          when: '!popupOpen',
+        },
       ],
     },
-    { id: 'hidden', title: 'Hide', source: 'client', when: 'clientType == embedded' },
-    { id: 'disabled', title: 'Disabled', source: 'client', allowShortcuts: false },
+    {
+      id: 'hidden',
+      title: 'Hide',
+      source: 'client',
+      when: 'clientType == embedded',
+    },
+    {
+      id: 'disabled',
+      title: 'Disabled',
+      source: 'client',
+      allowShortcuts: false,
+    },
   ]
 
   it.each<[string, Pick<WhenContext, 'popupOpen' | 'clientType'>]>([
-    ['float', { popupOpen: true, clientType: 'embedded' }],
-    ['hidden', { popupOpen: false, clientType: 'standalone' }],
+    [
+      'float',
+      { popupOpen: true, clientType: 'embedded' },
+    ],
+    [
+      'hidden',
+      { popupOpen: false, clientType: 'standalone' },
+    ],
   ])('warns about %s even when the current mode hides it', (id, context) => {
     const visibleRows = getShortcutRows(filterCommandsByWhen(commands, {
       ...context,
@@ -30,21 +51,48 @@ describe('findKeybindingConflict', () => {
       dockSelectedId: '',
     }))
     expect(visibleRows.some(row => row.command.id === id)).toBe(false)
-    const getKeybindings = (commandId: string) => commandId === id ? [{ key: 'Mod+Shift+J' }] : []
+    const getKeybindings = (commandId: string) => commandId === id
+      ? [
+          { key: 'Mod+Shift+J' },
+        ]
+      : []
     expect(findKeybindingConflict(commands, 'settings', 'Mod+Shift+J', getKeybindings)?.id).toBe(id)
   })
 
   it('ignores the edited command and commands that disallow shortcuts', () => {
-    const getKeybindings = (id: string) => ['settings', 'disabled'].includes(id) ? [{ key: 'Mod+J' }] : []
+    const getKeybindings = (id: string) => ['settings', 'disabled'].includes(id)
+      ? [
+          { key: 'Mod+J' },
+        ]
+      : []
     expect(findKeybindingConflict(commands, 'settings', 'Mod+J', getKeybindings)).toBeUndefined()
   })
 
   it('uses effective bindings, including cleared defaults and multiple bindings', () => {
     const commands: DevframeCommandEntry[] = [
-      { id: 'cleared', title: 'Cleared', source: 'client', keybindings: [{ key: 'Mod+J' }] },
-      { id: 'overridden', title: 'Overridden', source: 'client', keybindings: [{ key: 'Mod+K' }] },
+      {
+        id: 'cleared',
+        title: 'Cleared',
+        source: 'client',
+        keybindings: [
+          { key: 'Mod+J' },
+        ],
+      },
+      {
+        id: 'overridden',
+        title: 'Overridden',
+        source: 'client',
+        keybindings: [
+          { key: 'Mod+K' },
+        ],
+      },
     ]
-    const getKeybindings = (id: string) => id === 'overridden' ? [{ key: 'Mod+L' }, { key: 'Mod+J' }] : []
+    const getKeybindings = (id: string) => id === 'overridden'
+      ? [
+          { key: 'Mod+L' },
+          { key: 'Mod+J' },
+        ]
+      : []
     expect(findKeybindingConflict(commands, 'settings', 'Mod+J', getKeybindings)?.id).toBe('overridden')
     expect(findKeybindingConflict(commands, 'settings', 'Mod+K', getKeybindings)).toBeUndefined()
   })
@@ -53,18 +101,38 @@ describe('findKeybindingConflict', () => {
 describe('getShortcutRows', () => {
   it('omits opted-out commands while retaining their bindable descendants and palette-hidden commands', () => {
     const commands: DevframeCommandEntry[] = [
-      { id: 'open-file', title: 'Open File', source: 'server', allowShortcuts: false },
+      {
+        id: 'open-file',
+        title: 'Open File',
+        source: 'server',
+        allowShortcuts: false,
+      },
       {
         id: 'tools',
         title: 'Tools',
         source: 'client',
         allowShortcuts: false,
         children: [
-          { id: 'open-selected', title: 'Open Selected', source: 'client', allowShortcuts: true },
-          { id: 'open-path', title: 'Open Path', source: 'client', allowShortcuts: false },
+          {
+            id: 'open-selected',
+            title: 'Open Selected',
+            source: 'client',
+            allowShortcuts: true,
+          },
+          {
+            id: 'open-path',
+            title: 'Open Path',
+            source: 'client',
+            allowShortcuts: false,
+          },
         ],
       },
-      { id: 'palette', title: 'Palette', source: 'client', showInPalette: false },
+      {
+        id: 'palette',
+        title: 'Palette',
+        source: 'client',
+        showInPalette: false,
+      },
     ]
     expect(getShortcutRows(commands).map(row => ({ id: row.command.id, parentTitle: row.parentTitle, depth: row.depth }))).toEqual([
       { id: 'open-selected', parentTitle: 'Tools', depth: 1 },
@@ -202,8 +270,12 @@ describe('findCommandDeep', () => {
 describe('collectAllKeybindings', () => {
   it('collects bindings from nested commands at any depth', () => {
     const bound: Record<string, DevframeCommandKeybinding[]> = {
-      'devframes:docks:playground:two': [{ key: 'Mod+2' }],
-      'devframes:docks:tools:graph': [{ key: 'Mod+G' }],
+      'devframes:docks:playground:two': [
+        { key: 'Mod+2' },
+      ],
+      'devframes:docks:tools:graph': [
+        { key: 'Mod+G' },
+      ],
     }
 
     const result = collectAllKeybindings(
@@ -212,8 +284,14 @@ describe('collectAllKeybindings', () => {
     )
 
     expect(result).toEqual([
-      { id: 'devframes:docks:playground:two', keybinding: { key: 'Mod+2' } },
-      { id: 'devframes:docks:tools:graph', keybinding: { key: 'Mod+G' } },
+      {
+        id: 'devframes:docks:playground:two',
+        keybinding: { key: 'Mod+2' },
+      },
+      {
+        id: 'devframes:docks:tools:graph',
+        keybinding: { key: 'Mod+G' },
+      },
     ])
   })
 })
@@ -232,7 +310,12 @@ describe('filterCommandsByWhen', () => {
             title: 'Branch',
             children: [
               { id: 'kept', source: 'client', title: 'Kept' },
-              { id: 'dropped', source: 'client', title: 'Dropped', when: 'clientType == standalone' },
+              {
+                id: 'dropped',
+                source: 'client',
+                title: 'Dropped',
+                when: 'clientType == standalone',
+              },
             ],
           },
         ],
@@ -252,7 +335,9 @@ describe('filterCommandsByWhen', () => {
         source: 'client',
         title: 'Root',
         when: 'clientType == standalone',
-        children: [{ id: 'child', source: 'client', title: 'Child' }],
+        children: [
+          { id: 'child', source: 'client', title: 'Child' },
+        ],
       },
     ] as DevframeCommandEntry[]
 
@@ -263,13 +348,24 @@ describe('filterCommandsByWhen', () => {
 describe('normalizeKeyEvent', () => {
   // Chrome's native autofill dispatches `keydown` events without `key`
   it('ignores key events without a key, like Chrome autofill', () => {
-    const event = { ctrlKey: false, metaKey: false, altKey: false, shiftKey: false } as KeyboardEvent
+    const event = {
+      ctrlKey: false,
+      metaKey: false,
+      altKey: false,
+      shiftKey: false,
+    } as KeyboardEvent
     expect(() => normalizeKeyEvent(event)).not.toThrow()
     expect(normalizeKeyEvent(event)).toBe('')
   })
 
   it('normalizes a regular shortcut', () => {
-    const event = { key: 'k', ctrlKey: false, metaKey: false, altKey: false, shiftKey: true } as KeyboardEvent
+    const event = {
+      key: 'k',
+      ctrlKey: false,
+      metaKey: false,
+      altKey: false,
+      shiftKey: true,
+    } as KeyboardEvent
     expect(normalizeKeyEvent(event)).toBe('Shift+K')
   })
 })

@@ -14,12 +14,17 @@ function tempFile(name: string, content: string): string {
 describe('file data sources', () => {
   it('parses .json whole', async () => {
     const file = tempFile('stats.json', '{ "a": [1, 2] }')
-    expect(await loadDataFile(file)).toEqual({ a: [1, 2] })
+    expect(await loadDataFile(file)).toEqual({
+      a: [1, 2],
+    })
   })
 
   it('parses .jsonl as an array of records', async () => {
     const file = tempFile('trace.jsonl', '{"n":1}\n\n{"n":2}\n')
-    expect(await loadDataFile(file)).toEqual([{ n: 1 }, { n: 2 }])
+    expect(await loadDataFile(file)).toEqual([
+      { n: 1 },
+      { n: 2 },
+    ])
   })
 
   it('rejects unsupported extensions with a coded diagnostic', async () => {

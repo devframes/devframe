@@ -34,7 +34,10 @@ export async function startDenoServer(port: number): Promise<{ port: number, clo
   // Bind the same interactive-OTP handler the gated `initHub` uses to Deno's
   // own WS transport, sharing the context's auth storage and one-time code so
   // a client authorizes once regardless of which surface serves it.
-  const core = createContextRpcServer({ context, auth: createInteractiveAuth(context) })
+  const core = createContextRpcServer({
+    context,
+    auth: createInteractiveAuth(context),
+  })
   const tier = await attachDenoWsTransport(core)
   const upgradePath = `${hub.base}__ws`
   const baseNoSlash = hub.base.replace(/\/$/, '')
@@ -47,8 +50,11 @@ export async function startDenoServer(port: number): Promise<{ port: number, clo
     // __connection.json, __index.json, embedded.js, __client-imports.js.
     if (pathname === baseNoSlash || pathname.startsWith(hub.base))
       return hub.handler(request)
-    if (pathname === '/')
-      return new Response(hostPage, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+    if (pathname === '/') {
+      return new Response(hostPage, {
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      })
+    }
     return new Response('Not found', { status: 404 })
   })
 

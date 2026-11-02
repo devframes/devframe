@@ -10,9 +10,18 @@ class RequestLog {
   readonly startedAt = new Date()
   private secret = 'own-fields-are-visible'
   entries = new Map<string, { path: string, hits: number }>([
-    ['home', { path: '/', hits: 41 }],
-    ['docs', { path: '/docs', hits: 7 }],
-    ['api', { path: '/api/data', hits: 23 }],
+    [
+      'home',
+      { path: '/', hits: 41 },
+    ],
+    [
+      'docs',
+      { path: '/docs', hits: 7 },
+    ],
+    [
+      'api',
+      { path: '/api/data', hits: 23 },
+    ],
   ])
 }
 
@@ -24,8 +33,14 @@ function createPlayground(): Record<string, unknown> {
     requests: new RequestLog(),
     tags: new Set(['dev', 'local', 'example']),
     middlewares: [
-      { name: 'compression', handler: () => {} },
-      { name: 'static', handler: () => {} },
+      {
+        name: 'compression',
+        handler: () => {},
+      },
+      {
+        name: 'static',
+        handler: () => {},
+      },
     ],
     build: {
       hash: 'c3f7c4e',
@@ -58,14 +73,21 @@ function describeContext(ctx: DevframeNodeContext): Record<string, unknown> {
 
 function createExampleData(ctx?: DevframeNodeContext): Record<string, unknown> {
   const data: Record<string, unknown> = {
-    ...(ctx ? { devframe: describeContext(ctx) } : {}),
+    ...(ctx
+      ? {
+          devframe: describeContext(ctx),
+        }
+      : {}),
     os: {
       platform: os.platform(),
       arch: os.arch(),
       release: os.release(),
       hostname: os.hostname(),
       cpus: { count: os.cpus().length, model: os.cpus()[0]?.model },
-      memory: { totalMb: Math.round(os.totalmem() / 1024 / 1024), freeMb: Math.round(os.freemem() / 1024 / 1024) },
+      memory: {
+        totalMb: Math.round(os.totalmem() / 1024 / 1024),
+        freeMb: Math.round(os.freemem() / 1024 / 1024),
+      },
       homedir: os.homedir(),
       uptimeHours: Math.round(os.uptime() / 36) / 100,
     },
@@ -79,8 +101,14 @@ function createExampleData(ctx?: DevframeNodeContext): Record<string, unknown> {
   }
   // Own getters read at query time, so re-running shows the data is live.
   Object.defineProperties(data.process as object, {
-    memory: { enumerable: true, get: () => process.memoryUsage() },
-    uptimeSeconds: { enumerable: true, get: () => Math.round(process.uptime()) },
+    memory: {
+      enumerable: true,
+      get: () => process.memoryUsage(),
+    },
+    uptimeSeconds: {
+      enumerable: true,
+      get: () => Math.round(process.uptime()),
+    },
   })
   Object.defineProperty(data, 'queriedAt', {
     enumerable: true,
@@ -112,11 +140,13 @@ export function createExampleDataSource(ctx?: DevframeNodeContext): DataSourceEn
     writable: true,
     queries: [
       ...(ctx
-        ? [{
-            title: 'Registered RPC functions',
-            description: 'Everything callable on this devframe connection',
-            query: 'devframe.rpcFunctions',
-          }]
+        ? [
+            {
+              title: 'Registered RPC functions',
+              description: 'Everything callable on this devframe connection',
+              query: 'devframe.rpcFunctions',
+            },
+          ]
         : []),
       {
         title: 'OS at a glance',

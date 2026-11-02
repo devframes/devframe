@@ -106,10 +106,18 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
   const client = clientDir()
   return {
     ...(options.viewer !== false
-      ? { viewer: { distDir: join(client, 'standalone') } }
+      ? {
+          viewer: {
+            distDir: join(client, 'standalone'),
+          },
+        }
       : {}),
     ...(options.embedded !== false
-      ? { embedded: { entry: join(client, 'embedded.js') } }
+      ? {
+          embedded: {
+            entry: join(client, 'embedded.js'),
+          },
+        }
       : {}),
     /**
      * Publish the reference UI's config through the generic `ctx.staticConfig`,
@@ -119,9 +127,15 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
     setup(ctx) {
       ctx.staticConfig.ui = {
         branding: options.branding || {},
-        ...(options.embeddedVisibility ? { embeddedVisibility: options.embeddedVisibility } : {}),
-        ...(options.dockPreferences ? { dockPreferences: options.dockPreferences } : {}),
-        ...(options.locale ? { locale: options.locale } : {}),
+        ...(options.embeddedVisibility
+          ? { embeddedVisibility: options.embeddedVisibility }
+          : {}),
+        ...(options.dockPreferences
+          ? { dockPreferences: options.dockPreferences }
+          : {}),
+        ...(options.locale
+          ? { locale: options.locale }
+          : {}),
       }
     },
     /**

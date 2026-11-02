@@ -135,15 +135,26 @@ export function createMessagesReporter(
         id: SCAN_MESSAGE_ID,
         message: nodeCount === 0
           ? 'No accessibility issues found'
-          : `${nodeCount} accessibility issue${nodeCount === 1 ? '' : 's'} across ${ruleCount} rule${ruleCount === 1 ? '' : 's'}`,
+          : `${nodeCount} accessibility issue${nodeCount === 1
+            ? ''
+            : 's'} across ${ruleCount} rule${ruleCount === 1
+            ? ''
+            : 's'}`,
         description: report.url,
-        level: nodeCount === 0 ? 'success' : 'warn',
-        actions: [{
-          id: 'dashboard',
-          label: 'Open a11y dashboard',
-          kind: 'activate',
-          activate: { dockId: dockId(), params: { tab: 'dashboard' } },
-        }],
+        level: nodeCount === 0
+          ? 'success'
+          : 'warn',
+        actions: [
+          {
+            id: 'dashboard',
+            label: 'Open a11y dashboard',
+            kind: 'activate',
+            activate: {
+              dockId: dockId(),
+              params: { tab: 'dashboard' },
+            },
+          },
+        ],
         status: 'idle',
       })
 
@@ -156,7 +167,10 @@ export function createMessagesReporter(
           message: `${violation.help} (${violation.nodes.length})`,
           description: `${violation.description}\n${violation.helpUrl}`,
           level: IMPACT_LEVEL[violation.impact],
-          labels: [violation.impact, ...(violation.tags ?? [])],
+          labels: [
+            violation.impact,
+            ...(violation.tags ?? []),
+          ],
           elementPosition: first
             ? {
                 selector: first.target.join(' '),
@@ -164,15 +178,17 @@ export function createMessagesReporter(
                 description: first.failureSummary,
               }
             : undefined,
-          actions: [{
-            id: 'view',
-            label: 'View in a11y inspector',
-            kind: 'activate',
-            activate: {
-              dockId: dockId(),
-              params: { tab: 'violations', ruleId: violation.ruleId, route: report.route },
+          actions: [
+            {
+              id: 'view',
+              label: 'View in a11y inspector',
+              kind: 'activate',
+              activate: {
+                dockId: dockId(),
+                params: { tab: 'violations', ruleId: violation.ruleId, route: report.route },
+              },
             },
-          }],
+          ],
         })
       }
       for (const ruleId of reportedRules) {

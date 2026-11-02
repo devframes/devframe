@@ -42,7 +42,9 @@ const canWrite = computed(() => capabilities.value?.write ?? false)
 const readOnly = computed(() => !canWrite.value && !loading.value)
 
 const connState = computed(() => connectionState(status.value))
-const banner = computed(() => error.value ?? (uploadErrors.value.length ? uploadErrors.value.join(' · ') : null))
+const banner = computed(() => error.value ?? (uploadErrors.value.length
+  ? uploadErrors.value.join(' · ')
+  : null))
 
 // Types present in the listing, with counts, in canonical display order.
 const typeItems = computed(() => {
@@ -51,7 +53,11 @@ const typeItems = computed(() => {
     counts.set(asset.type, (counts.get(asset.type) ?? 0) + 1)
   return ASSET_TYPES
     .filter(type => counts.has(type))
-    .map(type => ({ type, count: counts.get(type)!, checked: typeState.value[type] !== false }))
+    .map(type => ({
+      type,
+      count: counts.get(type)!,
+      checked: typeState.value[type] !== false,
+    }))
 })
 
 const filtered = computed(() => {
@@ -95,7 +101,9 @@ function onFilePick(e: Event): void {
 async function handleBulkDelete(): Promise<void> {
   if (!rpc.value)
     return
-  await rpc.value.call('devframes:plugin:assets:delete', { paths: Array.from(selectedPaths.value) })
+  await rpc.value.call('devframes:plugin:assets:delete', {
+    paths: Array.from(selectedPaths.value),
+  })
   selectedPaths.value = new Set()
   bulkDeleteOpen.value = false
   await refresh()
@@ -104,7 +112,9 @@ async function handleBulkDelete(): Promise<void> {
 async function handleMkdir(): Promise<void> {
   if (!rpc.value || !newFolderName.value.trim())
     return
-  await rpc.value.call('devframes:plugin:assets:mkdir', { path: newFolderName.value.trim() })
+  await rpc.value.call('devframes:plugin:assets:mkdir', {
+    path: newFolderName.value.trim(),
+  })
   newFolderName.value = ''
   mkdirOpen.value = false
   await refresh()

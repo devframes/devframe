@@ -21,7 +21,9 @@ const invokeErrors = reactive<Record<string, string>>({})
 const filtered = computed(() => {
   const list = props.functions ?? []
   const q = search.value.trim().toLowerCase()
-  const matched = q ? list.filter(fn => fn.name.toLowerCase().includes(q)) : list
+  const matched = q
+    ? list.filter(fn => fn.name.toLowerCase().includes(q))
+    : list
   return [...matched].sort((a, b) => a.name.localeCompare(b.name))
 })
 
@@ -36,7 +38,9 @@ function invoke(fn: RpcFunctionInfo): void {
   let parsed: unknown[]
   try {
     const raw = JSON.parse(argsInput[fn.name] || '[]')
-    parsed = Array.isArray(raw) ? raw : [raw]
+    parsed = Array.isArray(raw)
+      ? raw
+      : [raw]
   }
   catch (e) {
     invokeErrors[fn.name] = `Invalid JSON arguments: ${(e as Error).message}`

@@ -8,9 +8,14 @@ const props = defineProps<{
 
 // Current instance pinned first, then newest (startedAt descending).
 const sorted = computed(() => {
-  return [...(props.instances ?? [])].sort((a, b) => {
-    if (a.isCurrent !== b.isCurrent)
-      return a.isCurrent ? -1 : 1
+  return [
+    ...(props.instances ?? []),
+  ].sort((a, b) => {
+    if (a.isCurrent !== b.isCurrent) {
+      return a.isCurrent
+        ? -1
+        : 1
+    }
     return b.startedAt - a.startedAt
   })
 })

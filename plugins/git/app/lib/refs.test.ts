@@ -9,7 +9,9 @@ describe('parseRefs', () => {
   })
 
   it('parses tags, remotes, and local branches', () => {
-    expect(parseRefs(['tag: v1.0.0'])).toEqual([{ kind: 'tag', name: 'v1.0.0' }])
+    expect(parseRefs(['tag: v1.0.0'])).toEqual([
+      { kind: 'tag', name: 'v1.0.0' },
+    ])
     expect(parseRefs(['origin/feature/x'])).toEqual([
       { kind: 'remote', remote: 'origin', name: 'feature/x' },
     ])
@@ -29,7 +31,9 @@ describe('parseRefs', () => {
   })
 
   it('treats a bare HEAD as detached', () => {
-    expect(parseRefs(['HEAD'])).toEqual([{ kind: 'head' }])
+    expect(parseRefs(['HEAD'])).toEqual([
+      { kind: 'head' },
+    ])
   })
 
   it('orders the current branch closest to the node (last)', () => {

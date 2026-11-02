@@ -30,7 +30,9 @@ export function resolvePtyCommand(
     return { command, args }
 
   const resolved = findExecutable(command, cwd, env)
-  const ext = resolved ? extname(resolved).toLowerCase() : ''
+  const ext = resolved
+    ? extname(resolved).toLowerCase()
+    : ''
   if (ext === '.exe' || ext === '.com')
     return { command, args }
 
@@ -41,7 +43,12 @@ export function resolvePtyCommand(
   // strip the line's outer quotes. Pass shims by name (`vite`), not by path.
   return {
     command: comSpec,
-    args: ['/d', '/c', escapeCmd(command, false), ...args.map(arg => escapeCmd(arg, isBatch))],
+    args: [
+      '/d',
+      '/c',
+      escapeCmd(command, false),
+      ...args.map(arg => escapeCmd(arg, isBatch)),
+    ],
   }
 }
 
@@ -58,12 +65,22 @@ function isCmd(command: string, comSpec: string): boolean {
 function findExecutable(command: string, cwd: string, env: ResolvePtyCommandOptions['env']): string | undefined {
   // Windows paths ignore case; lower-case so the lookup also works on case-sensitive filesystems.
   const extensions = (getEnv(env, 'PATHEXT') || DEFAULT_PATHEXT).toLowerCase().split(';').filter(Boolean)
-  const candidates = extname(command) ? [command, ...extensions.map(ext => command + ext)] : extensions.map(ext => command + ext)
+  const candidates = extname(command)
+    ? [
+        command,
+        ...extensions.map(ext => command + ext),
+      ]
+    : extensions.map(ext => command + ext)
 
   const searchCwd = getEnv(env, 'NoDefaultCurrentDirectoryInExePath') === undefined
   const dirs = /[\\/]/.test(command)
     ? [cwd]
-    : [...(searchCwd ? [cwd] : []), ...(getEnv(env, 'PATH') || '').split(';').filter(Boolean)]
+    : [
+        ...(searchCwd
+          ? [cwd]
+          : []),
+        ...(getEnv(env, 'PATH') || '').split(';').filter(Boolean),
+      ]
   for (const dir of dirs) {
     for (const candidate of candidates) {
       const file = resolve(dir, candidate)
@@ -84,5 +101,7 @@ function escapeCmd(arg: string, doubleEscape: boolean): string {
   if (!arg || /[ \t"\\]/.test(arg))
     return arg
   const escaped = arg.replace(CMD_META_CHARS, '^$&')
-  return doubleEscape ? escaped.replace(CMD_META_CHARS, '^$&') : escaped
+  return doubleEscape
+    ? escaped.replace(CMD_META_CHARS, '^$&')
+    : escaped
 }

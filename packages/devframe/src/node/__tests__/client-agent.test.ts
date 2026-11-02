@@ -10,27 +10,62 @@ function harness() {
     agent: {
       registerToolProvider(next: () => readonly AgentToolInput[]) {
         provider = next
-        return { notifyChanged, unregister() {} }
+        return {
+          notifyChanged,
+          unregister() {},
+        }
       },
     },
   }
-  const refetch = { id: 'pinia-colada:refetch', description: 'Refetch matching queries.', safety: 'action' as const, inputSchema: { type: 'object', properties: { arg0: { type: 'string' } } } }
+  const refetch = {
+    id: 'pinia-colada:refetch',
+    description: 'Refetch matching queries.',
+    safety: 'action' as const,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        arg0: { type: 'string' },
+      },
+    },
+  }
   let nextId = 1
   function session(id: string, info: Partial<BrowserAgentClientInfo> = {}) {
     const callRaw = vi.fn().mockResolvedValue(`from ${id}`)
     return {
-      session: { meta: { id: nextId++, subscribedStates: new Set<string>() }, rpc: { $callRaw: callRaw } },
+      session: {
+        meta: {
+          id: nextId++,
+          subscribedStates: new Set<string>(),
+        },
+        rpc: { $callRaw: callRaw },
+      },
       callRaw,
       id,
-      info: { url: `http://localhost/${id}`, title: id, visible: true, focused: false, ...info },
+      info: {
+        url: `http://localhost/${id}`,
+        title: id,
+        visible: true,
+        focused: false,
+        ...info,
+      },
     }
   }
   /** Sync `tab` with `refetch`, optionally overriding its reported focus. */
   function sync(tab: ReturnType<typeof session>, focused?: boolean) {
-    syncClientAgentTools(context, tab.session, tab.id, [refetch], focused === undefined ? tab.info : { ...tab.info, focused })
+    syncClientAgentTools(context, tab.session, tab.id, [refetch], focused === undefined
+      ? tab.info
+      : { ...tab.info, focused })
   }
   const tool = (id: string) => provider!().find(t => t.id === id)!
-  return { context, notifyChanged, session, sync, refetch, tool, tools: () => provider!() }
+  return {
+    context,
+    notifyChanged,
+    session,
+    sync,
+    refetch,
+    tool,
+    tools: () => provider!(),
+  }
 }
 
 describe('client agent tools', () => {
@@ -43,12 +78,18 @@ describe('client agent tools', () => {
     expect(tool).toMatchObject({ id: 'pinia-colada:refetch', description: 'Refetch matching queries.' })
     expect(tool.inputSchema).toMatchObject({
       type: 'object',
-      properties: { arg0: { type: 'string' }, client_id: { type: 'string' } },
+      properties: {
+        arg0: { type: 'string' },
+        client_id: { type: 'string' },
+      },
     })
     await expect(tool.handler({ arg0: 'x' })).resolves.toBe('from tab-a')
     expect(a.callRaw).toHaveBeenCalledWith({
       method: 'devframe:agent:invoke-client-tool',
-      args: ['pinia-colada:refetch', { arg0: 'x' }],
+      args: [
+        'pinia-colada:refetch',
+        { arg0: 'x' },
+      ],
     })
 
     removeClientAgentSession(h.context, a.session.meta)
@@ -66,8 +107,17 @@ describe('client agent tools', () => {
     expect(h.tools().map(t => t.id)).toEqual(['pinia-colada:refetch', LIST_CLIENTS_TOOL])
     expect(h.tool(LIST_CLIENTS_TOOL).handler({})).toEqual({
       clients: [
-        expect.objectContaining({ id: 'tab-a', url: 'http://localhost/tab-a', focused: false, tools: ['pinia-colada:refetch'] }),
-        expect.objectContaining({ id: 'tab-b', focused: true, tools: ['pinia-colada:refetch'] }),
+        expect.objectContaining({
+          id: 'tab-a',
+          url: 'http://localhost/tab-a',
+          focused: false,
+          tools: ['pinia-colada:refetch'],
+        }),
+        expect.objectContaining({
+          id: 'tab-b',
+          focused: true,
+          tools: ['pinia-colada:refetch'],
+        }),
       ],
     })
   })
@@ -82,7 +132,10 @@ describe('client agent tools', () => {
     await expect(h.tool('pinia-colada:refetch').handler({ client_id: 'tab-a', arg0: 'x' })).resolves.toBe('from tab-a')
     expect(a.callRaw).toHaveBeenCalledWith({
       method: 'devframe:agent:invoke-client-tool',
-      args: ['pinia-colada:refetch', { arg0: 'x' }],
+      args: [
+        'pinia-colada:refetch',
+        { arg0: 'x' },
+      ],
     })
     expect(b.callRaw).not.toHaveBeenCalled()
   })
@@ -183,7 +236,9 @@ describe('client agent tools', () => {
       h.sync(a, true)
       expect(h.notifyChanged).toHaveBeenCalledTimes(1)
       expect(h.tool(LIST_CLIENTS_TOOL).handler({})).toEqual({
-        clients: [expect.objectContaining({ id: 'tab-a', focused: true, connectedAt: 1000 })],
+        clients: [
+          expect.objectContaining({ id: 'tab-a', focused: true, connectedAt: 1000 }),
+        ],
       })
     }
     finally {

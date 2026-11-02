@@ -39,7 +39,11 @@ export function sanitizeSpec(spec: Spec, registry: ComponentRegistry = baseRegis
       const keys = Object.keys(element.props ?? {})
       // Browser-only render failure; keep console.* per the plan.
       console.warn(`[@devframes/json-render-ui] unsupported component "${element.type}" on element "${key}": not in the active registry. Rendering a placeholder.`)
-      elements[key] = { ...element, type: UNSUPPORTED_COMPONENT_TYPE, props: { type: element.type, keys } }
+      elements[key] = {
+        ...element,
+        type: UNSUPPORTED_COMPONENT_TYPE,
+        props: { type: element.type, keys },
+      }
       continue
     }
     const schema = basePropSchemas[element.type as keyof typeof basePropSchemas]
@@ -50,13 +54,19 @@ export function sanitizeSpec(spec: Spec, registry: ComponentRegistry = baseRegis
         const issues = result.error.issues.map(i => `${i.path.join('.') || '(root)'}: ${i.message}`).join('; ')
         // Browser-only render failure; keep console.* per the plan.
         console.warn(`[@devframes/json-render-ui] invalid props on element "${key}" (${element.type}): ${issues}`)
-        elements[key] = { ...element, type: ERROR_COMPONENT_TYPE, props: { message: `${element.type}: ${issues}` } }
+        elements[key] = {
+          ...element,
+          type: ERROR_COMPONENT_TYPE,
+          props: { message: `${element.type}: ${issues}` },
+        }
         continue
       }
     }
     elements[key] = element
   }
-  return changed ? { ...spec, elements } : spec
+  return changed
+    ? { ...spec, elements }
+    : spec
 }
 
 const surface = 'flex items-center justify-center p4 text-sm color-faint'
@@ -73,7 +83,10 @@ export const JsonRenderView = defineComponent({
   props: {
     spec: { type: Object as PropType<Spec | null>, default: null },
     rpc: { type: Object as PropType<ActionBridgeRpc>, required: true },
-    registry: { type: Object as PropType<ComponentRegistry>, default: () => baseRegistry },
+    registry: {
+      type: Object as PropType<ComponentRegistry>,
+      default: () => baseRegistry,
+    },
     viewId: { type: String, default: 'default' },
     interactive: { type: Boolean, default: true },
     loading: { type: Boolean, default: false },
@@ -84,7 +97,9 @@ export const JsonRenderView = defineComponent({
 
     // Reset the provider (reseed state) only on identity change.
     const resetKey = computed(() => props.viewId)
-    const effectiveSpec = computed(() => (props.spec ? sanitizeSpec(props.spec, props.registry) : null))
+    const effectiveSpec = computed(() => (props.spec
+      ? sanitizeSpec(props.spec, props.registry)
+      : null))
 
     return () => {
       if (props.loading)

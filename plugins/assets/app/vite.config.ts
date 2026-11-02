@@ -48,12 +48,22 @@ function assetsDevBridge(): Plugin {
  * (matching the default `baseURL`) in dev only, so they never land in dist.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? basePath : './',
+  base: command === 'serve'
+    ? basePath
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
-  publicDir: command === 'serve' ? fileURLToPath(new URL('../public', import.meta.url)) : false,
+  publicDir: command === 'serve'
+    ? fileURLToPath(new URL('../public', import.meta.url))
+    : false,
   resolve: { alias },
-  plugins: [vue(), UnoCSS(), assetsDevBridge()],
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  plugins: [
+    vue(),
+    UnoCSS(),
+    assetsDevBridge(),
+  ],
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

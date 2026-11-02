@@ -56,7 +56,9 @@ function changeTypeStatus(type: DiffChangeType): FileStatusCode {
 function DiffFileSection({ file, defaultOpen }: { file: DiffFileChange, defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
   const model = useMemo(() => buildFileModel(file), [file])
-  const label = file.prevName ? `${file.prevName} → ${file.name}` : file.name
+  const label = file.prevName
+    ? `${file.prevName} → ${file.name}`
+    : file.name
 
   return (
     <div>
@@ -90,7 +92,9 @@ function DiffFileSection({ file, defaultOpen }: { file: DiffFileChange, defaultO
 /** A file's diff rendered inline (flat layout), with its filename header. */
 function DiffFileBlock({ file }: { file: DiffFileChange }) {
   const model = useMemo(() => buildFileModel(file), [file])
-  const label = file.prevName ? `${file.prevName} → ${file.name}` : file.name
+  const label = file.prevName
+    ? `${file.prevName} → ${file.name}`
+    : file.name
   return (
     <div>
       <div className="bg-secondary flex items-center gap-1.5 px-2.5 py-1.5 font-mono text-xs">
@@ -116,7 +120,9 @@ function DiffFileBlock({ file }: { file: DiffFileChange }) {
  * inline; use `layout="collapsible"` for an expandable per-file list.
  */
 export function DiffPatchView({ patch, loading, truncated, scroll = true, layout = 'flat' }: DiffPatchViewProps) {
-  const files = useMemo(() => (patch ? parseUnifiedPatch(patch) : []), [patch])
+  const files = useMemo(() => (patch
+    ? parseUnifiedPatch(patch)
+    : []), [patch])
 
   if (loading)
     return <Skeleton className="h-40 w-full" />

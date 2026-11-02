@@ -33,9 +33,14 @@ function diffPaths(a: unknown, b: unknown, base = '', acc = new Set<string>()): 
     acc.add(base)
     return acc
   }
-  const all = new Set([...Object.keys(a as object), ...Object.keys(b as object)])
+  const all = new Set([
+    ...Object.keys(a as object),
+    ...Object.keys(b as object),
+  ])
   for (const k of all) {
-    const childBase = base ? `${base}.${k}` : k
+    const childBase = base
+      ? `${base}.${k}`
+      : k
     const inA = k in (a as object)
     const inB = k in (b as object)
     if (!inA || !inB)

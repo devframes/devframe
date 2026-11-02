@@ -11,19 +11,29 @@ function violation(ruleId: string, over: Partial<Violation> = {}): Violation {
     description: `Ensures ${ruleId}`,
     helpUrl: `https://dequeuniversity.com/rules/axe/${ruleId}`,
     tags: ['wcag2a', 'wcag111'],
-    nodes: [{
-      id: `${ruleId}-0`,
-      target: [`#${ruleId}`],
-      html: `<img id="${ruleId}">`,
-      failureSummary: 'Fix any of the following:\n  Element has no alt',
-    }],
+    nodes: [
+      {
+        id: `${ruleId}-0`,
+        target: [`#${ruleId}`],
+        html: `<img id="${ruleId}">`,
+        failureSummary: 'Fix any of the following:\n  Element has no alt',
+      },
+    ],
     ...over,
   }
 }
 
 const items: SelectedItem[] = [
-  { route: '/', url: 'https://example.test/', violation: violation('image-alt') },
-  { route: '/forms', url: 'https://example.test/forms', violation: violation('label', { impact: 'serious', bestPractice: true }) },
+  {
+    route: '/',
+    url: 'https://example.test/',
+    violation: violation('image-alt'),
+  },
+  {
+    route: '/forms',
+    url: 'https://example.test/forms',
+    violation: violation('label', { impact: 'serious', bestPractice: true }),
+  },
 ]
 
 describe('buildFixPrompt', () => {

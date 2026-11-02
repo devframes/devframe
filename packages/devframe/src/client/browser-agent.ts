@@ -47,7 +47,9 @@ export function registerBrowserAgentTool(tool: BrowserAgentTool): () => void {
 }
 
 export function listBrowserAgentTools(): BrowserAgentTool[] {
-  return [...tools.values()]
+  return [
+    ...tools.values(),
+  ]
 }
 
 export function onBrowserAgentToolsChanged(listener: () => void): () => void {

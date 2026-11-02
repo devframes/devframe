@@ -74,7 +74,12 @@ describe('ctx.install', () => {
 
     expect(ctx.docks.views.size).toBe(1)
     const entry = ctx.docks.views.get('demo')
-    expect(entry).toMatchObject({ id: 'demo', title: 'Demo', type: 'iframe', url: '/__demo/' })
+    expect(entry).toMatchObject({
+      id: 'demo',
+      title: 'Demo',
+      type: 'iframe',
+      url: '/__demo/',
+    })
     expect(setup).toHaveBeenCalledTimes(1)
   })
 
@@ -109,7 +114,11 @@ describe('ctx.install', () => {
 
   it('lets per-mount dock overrides win over the definition dock defaults', async () => {
     const ctx = createContext()
-    await ctx.install(makeDevframe({ dock: { category: 'framework', defaultOrder: 5 } }), { dock: { category: 'app' } })
+    await ctx.install(makeDevframe({
+      dock: { category: 'framework', defaultOrder: 5 },
+    }), {
+      dock: { category: 'app' },
+    })
 
     expect(ctx.docks.views.get('demo')).toMatchObject({
       category: 'app',
@@ -183,7 +192,9 @@ describe('ctx.install', () => {
     writeFileSync(scriptPath, 'export default () => {}')
 
     await ctx.install(makeDevframe({
-      dock: { clientScript: { importFrom: scriptPath } },
+      dock: {
+        clientScript: { importFrom: scriptPath },
+      },
     }))
 
     expect(ctx.host.mountStatic).toHaveBeenCalledWith('/__demo/__page-script/', dirname(scriptPath))
@@ -196,11 +207,15 @@ describe('ctx.install', () => {
     const ctx = createContext()
 
     await ctx.install(makeDevframe({
-      dock: { clientScript: { importFrom: '/@fs/abs/inject.js' } },
+      dock: {
+        clientScript: { importFrom: '/@fs/abs/inject.js' },
+      },
     }))
     await ctx.install(makeDevframe({
       id: 'bare',
-      dock: { clientScript: { importFrom: 'some-pkg/client' } },
+      dock: {
+        clientScript: { importFrom: 'some-pkg/client' },
+      },
     }))
 
     expect(ctx.host.mountStatic).not.toHaveBeenCalled()
@@ -219,8 +234,16 @@ describe('ctx.install', () => {
     writeFileSync(scriptPath, 'export default () => {}')
 
     await ctx.install(
-      makeDevframe({ dock: { clientScript: { importFrom: scriptPath } } }),
-      { dock: { clientScript: { importFrom: '/@fs/override/inject.js' } } },
+      makeDevframe({
+        dock: {
+          clientScript: { importFrom: scriptPath },
+        },
+      }),
+      {
+        dock: {
+          clientScript: { importFrom: '/@fs/override/inject.js' },
+        },
+      },
     )
 
     expect(ctx.host.mountStatic).not.toHaveBeenCalled()
@@ -237,7 +260,9 @@ describe('ctx.install', () => {
     await ctx.install(makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
     await ctx.install(makeDevframe({ setup, duplicationStrategy: 'duplicate' }))
 
-    expect([...ctx.docks.views.keys()]).toEqual(['demo', 'demo-2', 'demo-3'])
+    expect([
+      ...ctx.docks.views.keys(),
+    ]).toEqual(['demo', 'demo-2', 'demo-3'])
     expect(ctx.docks.views.get('demo-2')).toMatchObject({ type: 'iframe', url: '/__demo-2/' })
     expect(setup).toHaveBeenCalledTimes(3)
   })

@@ -15,7 +15,11 @@ function asyncPositive(): StandardSchemaV1<number, number> {
         await Promise.resolve()
         if (typeof value === 'number' && value > 0)
           return { value }
-        return { issues: [{ message: 'expected a positive number' }] }
+        return {
+          issues: [
+            { message: 'expected a positive number' },
+          ],
+        }
       },
     },
   }
@@ -28,29 +32,42 @@ describe('validateRpcArgs', () => {
 
   it('passes the original values through without rewriting them', async () => {
     // A transform would coerce to `5`; guard-only validation keeps `'hello'`.
-    const schema = [v.pipe(v.string(), v.transform(s => s.length))] as const
+    const schema = [
+      v.pipe(v.string(), v.transform(s => s.length)),
+    ] as const
     await expect(validateRpcArgs('fn', schema, ['hello'])).resolves.toEqual(['hello'])
   })
 
   it('preserves object fields beyond the schema (no key stripping)', async () => {
-    const schema = [v.object({ id: v.string() })] as const
+    const schema = [
+      v.object({
+        id: v.string(),
+      }),
+    ] as const
     const value = { id: 'x', extra: true }
     const [out] = await validateRpcArgs('fn', schema, [value])
     expect(out).toEqual({ id: 'x', extra: true })
   })
 
   it('leaves un-schema-ed trailing args in place', async () => {
-    const schema = [v.string()] as const
+    const schema = [
+      v.string(),
+    ] as const
     await expect(validateRpcArgs('fn', schema, ['a', 'passthrough'])).resolves.toEqual(['a', 'passthrough'])
   })
 
   it('throws DF0043 with the failing index', async () => {
-    const schema = [v.string(), v.number()] as const
+    const schema = [
+      v.string(),
+      v.number(),
+    ] as const
     await expect(validateRpcArgs('fn', schema, ['ok', 'nope'])).rejects.toThrow(/position 1/)
   })
 
   it('awaits async validators from any vendor', async () => {
-    const schema = [asyncPositive()] as const
+    const schema = [
+      asyncPositive(),
+    ] as const
     await expect(validateRpcArgs('fn', schema, [3])).resolves.toEqual([3])
     await expect(validateRpcArgs('fn', schema, [-1])).rejects.toThrow(/positive number/)
   })
@@ -64,7 +81,9 @@ describe('validateRpcReturn', () => {
   it('returns the original value, preserving fields beyond the schema', async () => {
     // Mirrors a real plugin (terminals) whose return schema is a subset of
     // the payload; validation must not drop the undeclared field.
-    const schema = v.object({ id: v.string() })
+    const schema = v.object({
+      id: v.string(),
+    })
     const value = { id: 'x', restartable: false }
     await expect(validateRpcReturn('fn', schema, value)).resolves.toEqual({ id: 'x', restartable: false })
   })
@@ -86,7 +105,9 @@ describe('getRpcHandler validation wrapping', () => {
   it('validates args before the handler runs', async () => {
     const fn = defineRpcFunction({
       name: 'len',
-      args: [v.string()],
+      args: [
+        v.string(),
+      ],
       returns: v.number(),
       handler: (s: string) => s.length * 2,
     })
@@ -97,7 +118,9 @@ describe('getRpcHandler validation wrapping', () => {
   it('rejects invalid arguments with DF0043', async () => {
     const fn = defineRpcFunction({
       name: 'greet',
-      args: [v.string()],
+      args: [
+        v.string(),
+      ],
       returns: v.string(),
       handler: (name: string) => `hi ${name}`,
     })
@@ -120,9 +143,13 @@ describe('getRpcHandler validation wrapping', () => {
   it('works with a setup-provided handler', async () => {
     const fn = defineRpcFunction({
       name: 'setup-fn',
-      args: [v.number()],
+      args: [
+        v.number(),
+      ],
       returns: v.number(),
-      setup: () => ({ handler: (n: number) => n + 1 }),
+      setup: () => ({
+        handler: (n: number) => n + 1,
+      }),
     })
     const handler = await getRpcHandler(fn, undefined)
     await expect(handler(1)).resolves.toBe(2)

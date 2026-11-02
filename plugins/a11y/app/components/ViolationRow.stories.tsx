@@ -8,7 +8,9 @@ const meta = {
   title: 'A11y/ViolationRow',
   component: ViolationRow,
   parameters: { layout: 'padded' },
-  decorators: [(Story: () => any) => <ul class="list-none m-0 p-0">{Story()}</ul>],
+  decorators: [
+    (Story: () => any) => <ul class="list-none m-0 p-0">{Story()}</ul>,
+  ],
 } satisfies Meta<typeof ViolationRow>
 
 export default meta
@@ -24,17 +26,37 @@ const base = {
 }
 
 export const Collapsed: Story = {
-  args: { ...base, violation: makeViolation('color-contrast', 'serious', 3), expanded: false, selected: false },
+  args: {
+    ...base,
+    violation: makeViolation('color-contrast', 'serious', 3),
+    expanded: false,
+    selected: false,
+  },
 }
 
 export const Expanded: Story = {
-  args: { ...base, violation: makeViolation('image-alt', 'critical', 2), expanded: true, selected: false },
+  args: {
+    ...base,
+    violation: makeViolation('image-alt', 'critical', 2),
+    expanded: true,
+    selected: false,
+  },
 }
 
 export const Selected: Story = {
-  args: { ...base, violation: makeViolation('image-alt', 'critical', 2), expanded: true, selected: true },
+  args: {
+    ...base,
+    violation: makeViolation('image-alt', 'critical', 2),
+    expanded: true,
+    selected: true,
+  },
 }
 
 export const BestPractice: Story = {
-  args: { ...base, violation: makeViolation('region', 'moderate', 1, true), expanded: false, selected: false },
+  args: {
+    ...base,
+    violation: makeViolation('region', 'moderate', 1, true),
+    expanded: false,
+    selected: false,
+  },
 }

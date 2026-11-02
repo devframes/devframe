@@ -70,17 +70,36 @@ async function setup(transport: 'websocket' | 'sse', cacheOptions: DevframeRpcCl
     callTimeout,
   })
   onTestFinished(() => client.close?.())
-  return { ctx, client, counts, call: client.call as (name: string, value?: unknown) => Promise<unknown> }
+  return {
+    ctx,
+    client,
+    counts,
+    call: client.call as (name: string, value?: unknown) => Promise<unknown>,
+  }
 }
 
 describe.each(['websocket', 'sse'] as const)('automatic RPC cache over %s', (transport) => {
   it('caches static and opted-in queries from the first call, by arguments', async () => {
     const { call, counts } = await setup(transport)
-    for (const name of ['static', 'query', 'uncached', 'default', 'action', 'event']) {
+    for (const name of [
+      'static',
+      'query',
+      'uncached',
+      'default',
+      'action',
+      'event',
+    ]) {
       for (const value of [1, 1, 2])
         await expect(call(`test:${name}`, value)).resolves.toBe(value)
     }
-    expect(counts).toEqual({ static: 2, query: 2, uncached: 3, default: 3, action: 3, event: 3 })
+    expect(counts).toEqual({
+      static: 2,
+      query: 2,
+      uncached: 3,
+      default: 3,
+      action: 3,
+      event: 3,
+    })
   })
 
   it('caches falsy results and keeps event calls reaching the server', async () => {
@@ -97,7 +116,10 @@ describe.each(['websocket', 'sse'] as const)('automatic RPC cache over %s', (tra
 
   it('preserves explicit function lists and custom serializers', async () => {
     const keySerializer = vi.fn(() => 'same-key')
-    const { call, counts } = await setup(transport, { functions: ['test:uncached'], keySerializer })
+    const { call, counts } = await setup(transport, {
+      functions: ['test:uncached'],
+      keySerializer,
+    })
     await expect(call('test:uncached', 1)).resolves.toBe(1)
     await expect(call('test:uncached', 2)).resolves.toBe(1)
     await call('test:query', 1)
@@ -118,7 +140,12 @@ describe.each(['websocket', 'sse'] as const)('automatic RPC cache over %s', (tra
     const handler = vi.fn()
       .mockRejectedValueOnce(new Error('retry me'))
       .mockResolvedValue('ok')
-    ctx.rpc.register(defineRpcFunction({ name: 'test:retry', type: 'query', cacheable: true, handler }))
+    ctx.rpc.register(defineRpcFunction({
+      name: 'test:retry',
+      type: 'query',
+      cacheable: true,
+      handler,
+    }))
     await expect(call('test:retry')).rejects.toThrow('retry me')
     await expect(call('test:retry')).resolves.toBe('ok')
     await expect(call('test:retry')).resolves.toBe('ok')
@@ -240,7 +267,12 @@ describe.each(['websocket', 'sse'] as const)('automatic RPC cache over %s', (tra
     await call('test:query', 1)
     const clear = vi.spyOn(client.cacheManager, 'clear')
     const handler = vi.fn(() => 'new')
-    ctx.rpc.register(defineRpcFunction({ name: 'test:late', type: 'query', cacheable: true, handler }))
+    ctx.rpc.register(defineRpcFunction({
+      name: 'test:late',
+      type: 'query',
+      cacheable: true,
+      handler,
+    }))
     await vi.waitFor(() => expect(clear).toHaveBeenCalled())
     await expect(call('test:late')).resolves.toBe('new')
     await expect(call('test:late')).resolves.toBe('new')
@@ -257,7 +289,12 @@ describe.each(['websocket', 'sse'] as const)('automatic RPC cache over %s', (tra
     const { ctx, client, call, counts } = await setup(transport)
     const pending = Promise.withResolvers<string>()
     const handler = vi.fn(() => pending.promise)
-    ctx.rpc.register(defineRpcFunction({ name: 'test:slow', type: 'query', cacheable: true, handler }))
+    ctx.rpc.register(defineRpcFunction({
+      name: 'test:slow',
+      type: 'query',
+      cacheable: true,
+      handler,
+    }))
     await call('test:query', 1)
     const slow = call('test:slow')
     await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1))

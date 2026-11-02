@@ -48,11 +48,19 @@ function codeServerDevBridge(): Plugin {
  * bridges the node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? basePath : './',
+  base: command === 'serve'
+    ? basePath
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [vue(), UnoCSS(), codeServerDevBridge()],
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  plugins: [
+    vue(),
+    UnoCSS(),
+    codeServerDevBridge(),
+  ],
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

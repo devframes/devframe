@@ -87,7 +87,10 @@ class Lru<V> {
 const inputSchema = s.object({
   code: s.string(),
   lang: s.optional(s.string()),
-  themes: s.optional(s.object({ light: s.string(), dark: s.string() })),
+  themes: s.optional(s.object({
+    light: s.string(),
+    dark: s.string(),
+  })),
 })
 
 /**
@@ -127,7 +130,13 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
         if (!lang)
           return 'text'
         const mod = await shiki()
-        return lang in mod.bundledLanguages || ['text', 'plaintext', 'txt', 'plain', 'ansi'].includes(lang)
+        return lang in mod.bundledLanguages || [
+          'text',
+          'plaintext',
+          'txt',
+          'plain',
+          'ansi',
+        ].includes(lang)
           ? lang as BundledLanguage | SpecialLanguage
           : 'text'
       }
@@ -149,11 +158,20 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
       // requires.
       const api: ShikiServiceApi = {
         highlight: input => cached('html', input, async (lang, themes) =>
-          ({ html: await (await shiki()).codeToHtml(input.code, { lang, themes: { ...themes } }) })),
+          ({ html: await (await shiki()).codeToHtml(input.code, {
+            lang,
+            themes: { ...themes },
+          }) })),
         codeToHast: input => cached('hast', input, async (lang, themes) =>
-          (await shiki()).codeToHast(input.code, { lang, themes: { ...themes } })),
+          (await shiki()).codeToHast(input.code, {
+            lang,
+            themes: { ...themes },
+          })),
         codeToTokens: input => cached('tokens', input, async (lang, themes) =>
-          (await shiki()).codeToTokens(input.code, { lang, themes: { ...themes } })),
+          (await shiki()).codeToTokens(input.code, {
+            lang,
+            themes: { ...themes },
+          })),
       }
 
       // `s.object({})` is guard-only (extra keys survive), a permissive
@@ -164,7 +182,9 @@ export function createShikiService(options?: ShikiServiceOptions): DevframeServi
         cacheable: true,
         jsonSerializable: true,
         args: [inputSchema],
-        returns: s.object({ html: s.string() }),
+        returns: s.object({
+          html: s.string(),
+        }),
         handler: (input: ShikiHighlightInput) => api.highlight(input),
       }))
       ctx.rpc.register(defineRpcFunction({

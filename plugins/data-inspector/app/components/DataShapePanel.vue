@@ -50,7 +50,10 @@ const entries = computed<OverviewEntry[]>(() => {
     return []
   return Object.entries(skeleton as Record<string, unknown>)
     .filter(([key]) => key !== '$class' && key !== '...')
-    .map(([key, value]) => ({ key, label: labelOf(value) }))
+    .map(([key, value]) => ({
+      key,
+      label: labelOf(value),
+    }))
 })
 
 /** The skeleton root when it is not a plain object (array, primitive, ...). */

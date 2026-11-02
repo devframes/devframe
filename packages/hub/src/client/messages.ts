@@ -52,7 +52,10 @@ export function createMessagesClient(rpc: DevframeRpcClient, options: MessagesCl
   }
 
   async function add(input: DevframeMessageEntryInput): Promise<DevframeMessageHandle> {
-    const entry = await call('hub:messages:add', { ...options.defaults, ...input })
+    const entry = await call('hub:messages:add', {
+      ...options.defaults,
+      ...input,
+    })
     return makeHandle(entry)
   }
 
@@ -97,7 +100,12 @@ function createLocalMessagesClient(options: MessagesClientOptions): DevframeMess
         return current.id
       },
       async update(patch) {
-        current = { ...current, ...patch, id: current.id, from: current.from }
+        current = {
+          ...current,
+          ...patch,
+          id: current.id,
+          from: current.from,
+        }
         return current
       },
       dismiss: async () => {},

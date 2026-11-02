@@ -98,14 +98,19 @@ export async function buildShadowCss(options: BuildShadowCssOptions): Promise<Bu
   const generator = await createGenerator(config)
 
   const tokens = new Set<string>()
-  for (const file of [...files, ...designFiles]) {
+  for (const file of [
+    ...files,
+    ...designFiles,
+  ]) {
     const content = await fs.readFile(file, 'utf-8')
     await generator.applyExtractors(content, file, tokens)
   }
 
   // Hand-written stylesheets may use `--at-apply`. Run each through the
   // configured transformers before merging them in the caller's order.
-  const userStylePaths = typeof userStylePath === 'string' ? [userStylePath] : (userStylePath ?? [])
+  const userStylePaths = typeof userStylePath === 'string'
+    ? [userStylePath]
+    : (userStylePath ?? [])
   const userStyles: string[] = []
   for (const userStylePath of userStylePaths) {
     const userStyle = new MagicString(await fs.readFile(userStylePath, 'utf-8').catch(() => ''))

@@ -54,12 +54,20 @@ describe('resolveClientModuleSpecifier', () => {
 
   it('prefers resolveClientModule over the template, falling through on undefined', () => {
     const options = { template: '/@id/{specifier}', metaBaseUrl }
-    expect(resolveClientModuleSpecifier('foo', { ...options, resolveClientModule: s => `/custom/${s}` }))
+    expect(resolveClientModuleSpecifier('foo', {
+      ...options,
+      resolveClientModule: s => `/custom/${s}`,
+    }))
       .toBe('/custom/foo')
-    expect(resolveClientModuleSpecifier('foo', { ...options, resolveClientModule: () => undefined }))
+    expect(resolveClientModuleSpecifier('foo', {
+      ...options,
+      resolveClientModule: () => undefined,
+    }))
       .toBe('http://localhost:5173/@id/foo')
     // URL specifiers never reach the callback.
-    expect(resolveClientModuleSpecifier('/a/url.js', { resolveClientModule: () => '/custom' }))
+    expect(resolveClientModuleSpecifier('/a/url.js', {
+      resolveClientModule: () => '/custom',
+    }))
       .toBe('/a/url.js')
   })
 })

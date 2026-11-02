@@ -124,8 +124,12 @@ export function createMcpFetchHandler(
     // prove *who* it is. A generic 401 (with the `WWW-Authenticate` challenge)
     // whether the bearer is absent, malformed, or wrong: no response reveals
     // whether a supplied token was close to correct.
-    if (!await isAuthorized(req, authorization))
-      return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } })
+    if (!await isAuthorized(req, authorization)) {
+      return new Response('Unauthorized', {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Bearer' },
+      })
+    }
 
     return handler.fetch(req)
   }

@@ -60,8 +60,11 @@ function splitFileBlocks(patch: string): string[] {
   const re = /^diff --git .*$/gm
   for (let m = re.exec(patch); m; m = re.exec(patch))
     starts.push(m.index)
-  if (starts.length === 0)
-    return patch.trim() ? [patch] : []
+  if (starts.length === 0) {
+    return patch.trim()
+      ? [patch]
+      : []
+  }
   return starts.map((start, i) => patch.slice(start, starts[i + 1] ?? patch.length))
 }
 
@@ -81,7 +84,14 @@ interface GitFileHeader {
  * fallback for pure renames and binary changes that carry no `---`/`+++`.
  */
 function parseGitHeader(block: string): GitFileHeader {
-  const header: GitFileHeader = { oldName: null, newName: null, isRename: false, isCreate: false, isDelete: false, isBinary: false }
+  const header: GitFileHeader = {
+    oldName: null,
+    newName: null,
+    isRename: false,
+    isCreate: false,
+    isDelete: false,
+    isBinary: false,
+  }
   for (const line of block.split('\n')) {
     if (line.startsWith('@@'))
       break
@@ -121,7 +131,9 @@ function parseGitHeader(block: string): GitFileHeader {
 
 /** The `@@ ... @@ <section>` headings inside a single file block, in order. */
 function sectionHeadings(block: string): string[] {
-  return [...block.matchAll(/^@@ .* @@(.*)$/gm)].map(m => m[1].trim())
+  return [
+    ...block.matchAll(/^@@ .* @@(.*)$/gm),
+  ].map(m => m[1].trim())
 }
 
 /**
@@ -136,7 +148,17 @@ function parseHunksLenient(block: string): StructuredPatchHunk[] {
   for (const line of block.split('\n')) {
     const m = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/.exec(line)
     if (m) {
-      current = { oldStart: +m[1], oldLines: m[2] ? +m[2] : 1, newStart: +m[3], newLines: m[4] ? +m[4] : 1, lines: [] }
+      current = {
+        oldStart: +m[1],
+        oldLines: m[2]
+          ? +m[2]
+          : 1,
+        newStart: +m[3],
+        newLines: m[4]
+          ? +m[4]
+          : 1,
+        lines: [],
+      }
       hunks.push(current)
       continue
     }
@@ -191,18 +213,33 @@ function parseHunkLines(hunk: StructuredPatchHunk): { lines: DiffLineChange[], a
     const content = raw.slice(1)
     if (marker === '+') {
       additions++
-      lines.push({ type: 'add', content, oldNumber: null, newNumber: newNo++ })
+      lines.push({
+        type: 'add',
+        content,
+        oldNumber: null,
+        newNumber: newNo++,
+      })
     }
     else if (marker === '-') {
       deletions++
-      lines.push({ type: 'del', content, oldNumber: oldNo++, newNumber: null })
+      lines.push({
+        type: 'del',
+        content,
+        oldNumber: oldNo++,
+        newNumber: null,
+      })
     }
     else if (marker === '\\') {
       // "\ No newline at end of file" is a marker, not a content line.
       continue
     }
     else {
-      lines.push({ type: 'context', content, oldNumber: oldNo++, newNumber: newNo++ })
+      lines.push({
+        type: 'context',
+        content,
+        oldNumber: oldNo++,
+        newNumber: newNo++,
+      })
     }
   }
   return { lines, additions, deletions }
@@ -215,8 +252,12 @@ function parseFileBlock(block: string): DiffFileChange {
   const headings = sectionHeadings(block)
   const type = resolveChangeType(meta, rawHunks.length > 0)
 
-  const name = (type === 'deleted' ? meta.oldName : meta.newName) ?? meta.oldName ?? meta.newName ?? '(unknown)'
-  const prevName = meta.isRename && meta.oldName && meta.oldName !== name ? meta.oldName : null
+  const name = (type === 'deleted'
+    ? meta.oldName
+    : meta.newName) ?? meta.oldName ?? meta.newName ?? '(unknown)'
+  const prevName = meta.isRename && meta.oldName && meta.oldName !== name
+    ? meta.oldName
+    : null
 
   let additions = 0
   let deletions = 0
@@ -226,10 +267,24 @@ function parseFileBlock(block: string): DiffFileChange {
     deletions += parsed.deletions
     const range = `@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@`
     const section = headings[i]
-    return { header: section ? `${range} ${section}` : range, lines: parsed.lines }
+    return {
+      header: section
+        ? `${range} ${section}`
+        : range,
+      lines: parsed.lines,
+    }
   })
 
-  return { name, prevName, type, binary: meta.isBinary, additions, deletions, hunks, lang: inferLang(name) }
+  return {
+    name,
+    prevName,
+    type,
+    binary: meta.isBinary,
+    additions,
+    deletions,
+    hunks,
+    lang: inferLang(name),
+  }
 }
 
 export function parseUnifiedPatch(patch: string): DiffFileChange[] {

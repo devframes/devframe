@@ -76,7 +76,13 @@ function setup(callTimeout?: number) {
     callTimeout,
   })
   const ws = FakeWebSocket.instances.at(-1)!
-  return { mode, ws, statuses, connectionErrors, rpcErrors }
+  return {
+    mode,
+    ws,
+    statuses,
+    connectionErrors,
+    rpcErrors,
+  }
 }
 
 describe('ws client connection status', () => {

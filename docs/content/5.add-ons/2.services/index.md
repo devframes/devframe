@@ -22,7 +22,13 @@ defineDevframe({
   importMetaUrl: import.meta.url, // resolution base for the declared packages
   services: [
     { package: '@devframes/service-open' },
-    { package: '@devframes/service-shiki', version: '^1', options: { langs: ['vue'] } },
+    {
+      package: '@devframes/service-shiki',
+      version: '^1',
+      options: {
+        langs: ['vue']
+      }
+    },
   ],
 })
 ```

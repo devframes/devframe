@@ -47,7 +47,9 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
     this.register(defineRpcFunction({
       name: 'devframe:rpc:cacheable-functions',
       type: 'query',
-      handler: () => [...this.definitions.values()]
+      handler: () => [
+        ...this.definitions.values(),
+      ]
         .filter(fn => fn.type === 'static' || (fn.type === 'query' && fn.cacheable === true))
         .map(fn => fn.name),
     }))
@@ -79,7 +81,9 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
     ...args: Args
   ): Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>> {
     if (!this.definitions.has(method as string)) {
-      throw diagnostics.DF0006({ name: String(method) })
+      throw diagnostics.DF0006({
+        name: String(method),
+      })
     }
 
     const handler = await this.getHandler(method)

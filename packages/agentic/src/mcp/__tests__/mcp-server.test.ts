@@ -17,7 +17,10 @@ function objectSchema(jsonSchema: Record<string, unknown>): StandardSchemaV1 {
       version: 1,
       vendor: 'test',
       validate: (value: unknown) => ({ value }),
-      jsonSchema: { input: () => jsonSchema, output: () => jsonSchema },
+      jsonSchema: {
+        input: () => jsonSchema,
+        output: () => jsonSchema,
+      },
     } as StandardSchemaV1['~standard'],
   }
 }
@@ -34,7 +37,11 @@ async function bootPair(
   exposeSharedState: boolean | ((key: string) => boolean) = true,
   { instructions, resourceTemplates, prompts }: { instructions?: string, resourceTemplates?: McpResourceTemplate[], prompts?: McpPrompt[] } = {},
 ) {
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: nullHost(),
+  })
 
   const server = buildMcpServerFromContext(ctx, {
     serverName: 'test',
@@ -110,7 +117,11 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'schema-tool',
         description: 'Takes a schema-typed arg.',
-        args: [v.object({ name: v.optional(v.string()) })],
+        args: [
+          v.object({
+            name: v.optional(v.string()),
+          }),
+        ],
         handler: args => args,
       })
 
@@ -126,9 +137,16 @@ describe('mcp adapter (in-memory)', () => {
       // handler receives the caller's payload as-is, unlike RPC-backed
       // tools (or hub commands) which coerce `arg0`/`arg1`/… into
       // positional parameters.
-      const result = await client.callTool({ name: 'schema-tool', arguments: { arg0: { name: 'devframe' } } })
+      const result = await client.callTool({
+        name: 'schema-tool',
+        arguments: {
+          arg0: { name: 'devframe' },
+        },
+      })
       const content = result.content as Array<{ type: string, text: string }>
-      expect(JSON.parse(content[0]!.text)).toEqual({ arg0: { name: 'devframe' } })
+      expect(JSON.parse(content[0]!.text)).toEqual({
+        arg0: { name: 'devframe' },
+      })
     }
     finally {
       await cleanup()
@@ -191,18 +209,27 @@ describe('mcp adapter (in-memory)', () => {
         description: 'Echo.',
         outputSchema: {
           type: 'object',
-          properties: { echoed: { type: 'object' } },
+          properties: {
+            echoed: { type: 'object' },
+          },
           required: ['echoed'],
         },
         handler: args => ({ echoed: args }),
       })
 
       await client.listTools()
-      const result = await client.callTool({ name: 'echo', arguments: { foo: 'bar' } })
+      const result = await client.callTool({
+        name: 'echo',
+        arguments: { foo: 'bar' },
+      })
       const content = result.content as Array<{ type: string, text: string }>
       expect(content[0]!.type).toBe('text')
-      expect(JSON.parse(content[0]!.text)).toEqual({ echoed: { foo: 'bar' } })
-      expect(result.structuredContent).toEqual({ echoed: { foo: 'bar' } })
+      expect(JSON.parse(content[0]!.text)).toEqual({
+        echoed: { foo: 'bar' },
+      })
+      expect(result.structuredContent).toEqual({
+        echoed: { foo: 'bar' },
+      })
     }
     finally {
       await cleanup()
@@ -244,7 +271,13 @@ describe('mcp adapter (in-memory)', () => {
         type: 'query',
         jsonSerializable: true,
         args: [],
-        returns: objectSchema({ type: 'object', properties: { markdown: { type: 'string' } }, required: ['markdown'] }),
+        returns: objectSchema({
+          type: 'object',
+          properties: {
+            markdown: { type: 'string' },
+          },
+          required: ['markdown'],
+        }),
         agent: { description: 'Take a snapshot.' },
         handler: () => withMcpContent({ markdown: 'A red pixel.' }, [
           { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
@@ -257,7 +290,9 @@ describe('mcp adapter (in-memory)', () => {
 
       const result = await client.callTool({ name: tool.name, arguments: {} })
       expect(result.isError).toBeFalsy()
-      expect(result.content).toEqual([{ type: 'image', data: PNG_BASE64, mimeType: 'image/png' }])
+      expect(result.content).toEqual([
+        { type: 'image', data: PNG_BASE64, mimeType: 'image/png' },
+      ])
       expect(result.structuredContent).toEqual({ markdown: 'A red pixel.' })
     }
     finally {
@@ -271,7 +306,9 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'broken',
         description: 'Returns a bad block.',
-        handler: () => withMcpContent({}, [{ type: 'image', data: PNG_BASE64 } as never]),
+        handler: () => withMcpContent({}, [
+          { type: 'image', data: PNG_BASE64 } as never,
+        ]),
       })
 
       const result = await client.callTool({ name: 'broken', arguments: {} })
@@ -314,9 +351,14 @@ describe('mcp adapter (in-memory)', () => {
         type: 'query',
         jsonSerializable: true,
         args: [],
-        returns: v.array(v.object({ id: v.string() })),
+        returns: v.array(v.object({
+          id: v.string(),
+        })),
         agent: { description: 'Lists things.' },
-        handler: () => [{ id: 'a' }, { id: 'b' }],
+        handler: () => [
+          { id: 'a' },
+          { id: 'b' },
+        ],
       } as never)
 
       const listed = await client.listTools()
@@ -327,7 +369,10 @@ describe('mcp adapter (in-memory)', () => {
       const result = await client.callTool({ name: tool!.name, arguments: {} })
       expect(result.isError).toBeFalsy()
       const content = result.content as Array<{ type: string, text: string }>
-      expect(JSON.parse(content[0]!.text)).toEqual([{ id: 'a' }, { id: 'b' }])
+      expect(JSON.parse(content[0]!.text)).toEqual([
+        { id: 'a' },
+        { id: 'b' },
+      ])
       expect(result.structuredContent).toBeUndefined()
     }
     finally {
@@ -341,7 +386,10 @@ describe('mcp adapter (in-memory)', () => {
       ctx.agent.registerTool({
         id: 'rich',
         description: 'Returns BigInt + Date.',
-        handler: () => ({ count: 42n, when: new Date(0) }),
+        handler: () => ({
+          count: 42n,
+          when: new Date(0),
+        }),
       })
 
       const result = await client.callTool({ name: 'rich', arguments: {} })
@@ -361,7 +409,9 @@ describe('mcp adapter (in-memory)', () => {
         id: 'crash',
         description: 'Throws.',
         handler: () => {
-          throw new TypeError('boom', { cause: new Error('inner') })
+          throw new TypeError('boom', {
+            cause: new Error('inner'),
+          })
         },
       })
 
@@ -383,7 +433,9 @@ describe('mcp adapter (in-memory)', () => {
         id: 'build-status',
         name: 'Build status',
         description: 'Current build status.',
-        read: () => ({ json: { status: 'ok' } }),
+        read: () => ({
+          json: { status: 'ok' },
+        }),
       })
 
       const listed = await client.listResources()
@@ -464,14 +516,25 @@ describe('mcp adapter (in-memory)', () => {
 
       // No key → key list.
       const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
-      expect(keys.structuredContent).toEqual({ keys: ['my-plugin:counter'] })
+      expect(keys.structuredContent).toEqual({
+        keys: ['my-plugin:counter'],
+      })
 
       // With key → the value.
-      const value = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'my-plugin:counter' } })
-      expect(value.structuredContent).toEqual({ key: 'my-plugin:counter', value: { count: 7 } })
+      const value = await client.callTool({
+        name: 'devframe_state_read',
+        arguments: { key: 'my-plugin:counter' },
+      })
+      expect(value.structuredContent).toEqual({
+        key: 'my-plugin:counter',
+        value: { count: 7 },
+      })
 
       // Unknown key → agent-actionable error.
-      const missing = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'nope' } })
+      const missing = await client.callTool({
+        name: 'devframe_state_read',
+        arguments: { key: 'nope' },
+      })
       expect(missing.isError).toBe(true)
       const content = missing.content as Array<{ text: string }>
       expect(content[0]!.text).toContain('Unknown shared-state key')
@@ -495,13 +558,22 @@ describe('mcp adapter (in-memory)', () => {
   it('respects the shared-state filter in devframe:state:read', async () => {
     const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
     try {
-      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
-      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+      await ctx.rpc.sharedState.get('visible:key', {
+        initialValue: { n: 1 },
+      })
+      await ctx.rpc.sharedState.get('hidden:key', {
+        initialValue: { n: 2 },
+      })
 
       const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
-      expect(keys.structuredContent).toEqual({ keys: ['visible:key'] })
+      expect(keys.structuredContent).toEqual({
+        keys: ['visible:key'],
+      })
 
-      const hidden = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'hidden:key' } })
+      const hidden = await client.callTool({
+        name: 'devframe_state_read',
+        arguments: { key: 'hidden:key' },
+      })
       expect(hidden.isError).toBe(true)
     }
     finally {
@@ -512,7 +584,9 @@ describe('mcp adapter (in-memory)', () => {
   it('omits state resources and rejects a direct URI read when exposure is disabled', async () => {
     const { ctx, client, cleanup } = await bootPair(false)
     try {
-      await ctx.rpc.sharedState.get('alpha:key', { initialValue: { n: 1 } })
+      await ctx.rpc.sharedState.get('alpha:key', {
+        initialValue: { n: 1 },
+      })
 
       const listed = await client.listResources()
       expect(listed.resources.some(r => r.uri.startsWith('devframe://state/'))).toBe(false)
@@ -531,8 +605,12 @@ describe('mcp adapter (in-memory)', () => {
   it('applies the filter to direct URI reads, not only discovery', async () => {
     const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
     try {
-      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
-      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+      await ctx.rpc.sharedState.get('visible:key', {
+        initialValue: { n: 1 },
+      })
+      await ctx.rpc.sharedState.get('hidden:key', {
+        initialValue: { n: 2 },
+      })
 
       const listed = await client.listResources()
       const stateUris = listed.resources.filter(r => r.uri.startsWith('devframe://state/')).map(r => r.uri)
@@ -555,18 +633,31 @@ describe('mcp adapter (in-memory)', () => {
   it('agrees between the state-read tool and the resource path for the same policy', async () => {
     const { ctx, client, cleanup } = await bootPair(key => key.startsWith('visible:'))
     try {
-      await ctx.rpc.sharedState.get('visible:key', { initialValue: { n: 1 } })
-      await ctx.rpc.sharedState.get('hidden:key', { initialValue: { n: 2 } })
+      await ctx.rpc.sharedState.get('visible:key', {
+        initialValue: { n: 1 },
+      })
+      await ctx.rpc.sharedState.get('hidden:key', {
+        initialValue: { n: 2 },
+      })
 
       // Allowed key: both paths return the same value.
-      const toolValue = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'visible:key' } })
-      expect(toolValue.structuredContent).toEqual({ key: 'visible:key', value: { n: 1 } })
+      const toolValue = await client.callTool({
+        name: 'devframe_state_read',
+        arguments: { key: 'visible:key' },
+      })
+      expect(toolValue.structuredContent).toEqual({
+        key: 'visible:key',
+        value: { n: 1 },
+      })
       const resourceValue = await client.readResource({ uri: `devframe://state/${encodeURIComponent('visible:key')}` })
       const c = resourceValue.contents[0] as { text: string }
       expect(JSON.parse(c.text)).toEqual({ n: 1 })
 
       // Denied key: both paths reject.
-      const toolHidden = await client.callTool({ name: 'devframe_state_read', arguments: { key: 'hidden:key' } })
+      const toolHidden = await client.callTool({
+        name: 'devframe_state_read',
+        arguments: { key: 'hidden:key' },
+      })
       expect(toolHidden.isError).toBe(true)
       await expect(
         client.readResource({ uri: `devframe://state/${encodeURIComponent('hidden:key')}` }),
@@ -586,14 +677,22 @@ describe('mcp adapter (in-memory)', () => {
       mimeType: 'text/plain',
       list: () => [
         { uri: 'test://file/a.ts', name: 'a.ts' },
-        { uri: 'test://file/b.json', name: 'b.json', title: 'B', description: 'The b file.', mimeType: 'application/json' },
+        {
+          uri: 'test://file/b.json',
+          name: 'b.json',
+          title: 'B',
+          description: 'The b file.',
+          mimeType: 'application/json',
+        },
       ],
       read: (params, uri) => ({ text: `${params.path} from ${uri}` }),
     }
     const issue: McpResourceTemplate = {
       uriTemplate: 'test://repo/{owner}/{repo}/issue/{id}',
       name: 'issue',
-      read: params => ({ json: { ...params } }),
+      read: params => ({
+        json: { ...params },
+      }),
     }
 
     it('keeps the resources unchanged when templates are omitted or empty', async () => {
@@ -601,8 +700,16 @@ describe('mcp adapter (in-memory)', () => {
       for (const templates of [undefined, []]) {
         const { ctx, client, cleanup } = await bootPair(true, { resourceTemplates: templates })
         try {
-          ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ json: { ok: true } }) })
-          await ctx.rpc.sharedState.get('my-plugin:counter', { initialValue: { count: 1 } })
+          ctx.agent.registerResource({
+            id: 'status',
+            name: 'Status',
+            read: () => ({
+              json: { ok: true },
+            }),
+          })
+          await ctx.rpc.sharedState.get('my-plugin:counter', {
+            initialValue: { count: 1 },
+          })
           // The client answers listResourceTemplates() itself when the
           // capability is absent, so send the raw request to check that no
           // handler exists.
@@ -618,17 +725,30 @@ describe('mcp adapter (in-memory)', () => {
       expect(lists[0]).toEqual({
         resources: [
           { uri: 'devframe://resource/status', name: 'Status', mimeType: 'application/json' },
-          { uri: 'devframe://state/my-plugin%3Acounter', name: 'my-plugin:counter', description: 'Shared state: my-plugin:counter', mimeType: 'application/json' },
+          {
+            uri: 'devframe://state/my-plugin%3Acounter',
+            name: 'my-plugin:counter',
+            description: 'Shared state: my-plugin:counter',
+            mimeType: 'application/json',
+          },
         ],
       })
     })
 
     it('lists the templates through resources/templates/list', async () => {
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [file, issue] })
+      const { client, cleanup } = await bootPair(true, {
+        resourceTemplates: [file, issue],
+      })
       try {
         const { resourceTemplates } = await client.listResourceTemplates()
         expect(resourceTemplates).toEqual([
-          { uriTemplate: 'test://file/{path}', name: 'file', title: 'Project file', description: 'One file of the project.', mimeType: 'text/plain' },
+          {
+            uriTemplate: 'test://file/{path}',
+            name: 'file',
+            title: 'Project file',
+            description: 'One file of the project.',
+            mimeType: 'text/plain',
+          },
           { uriTemplate: 'test://repo/{owner}/{repo}/issue/{id}', name: 'issue' },
         ])
       }
@@ -638,10 +758,14 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('reads a URI through the template it matches', async () => {
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [file, issue] })
+      const { client, cleanup } = await bootPair(true, {
+        resourceTemplates: [file, issue],
+      })
       try {
         const a = await client.readResource({ uri: 'test://file/a.ts' })
-        expect(a.contents).toEqual([{ uri: 'test://file/a.ts', mimeType: 'text/plain', text: 'a.ts from test://file/a.ts' }])
+        expect(a.contents).toEqual([
+          { uri: 'test://file/a.ts', mimeType: 'text/plain', text: 'a.ts from test://file/a.ts' },
+        ])
 
         const read = await client.readResource({ uri: 'test://repo/devframes/devframe/issue/42' })
         const c = read.contents[0] as { text: string, mimeType?: string }
@@ -661,9 +785,19 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('reads with the first template that matches', async () => {
-      const first: McpResourceTemplate = { uriTemplate: 'test://item/{id}', name: 'first', read: () => ({ text: 'first' }) }
-      const second: McpResourceTemplate = { uriTemplate: 'test://item/{key}', name: 'second', read: () => ({ text: 'second' }) }
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [first, second] })
+      const first: McpResourceTemplate = {
+        uriTemplate: 'test://item/{id}',
+        name: 'first',
+        read: () => ({ text: 'first' }),
+      }
+      const second: McpResourceTemplate = {
+        uriTemplate: 'test://item/{key}',
+        name: 'second',
+        read: () => ({ text: 'second' }),
+      }
+      const { client, cleanup } = await bootPair(true, {
+        resourceTemplates: [first, second],
+      })
       try {
         const read = await client.readResource({ uri: 'test://item/1' })
         expect(read.contents[0]).toMatchObject({ text: 'first' })
@@ -674,10 +808,20 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('reads registered resources before the templates', async () => {
-      const catchAll: McpResourceTemplate = { uriTemplate: 'devframe://resource/{id}', name: 'catch-all', read: () => ({ text: 'template' }) }
-      const { ctx, client, cleanup } = await bootPair(true, { resourceTemplates: [catchAll] })
+      const catchAll: McpResourceTemplate = {
+        uriTemplate: 'devframe://resource/{id}',
+        name: 'catch-all',
+        read: () => ({ text: 'template' }),
+      }
+      const { ctx, client, cleanup } = await bootPair(true, {
+        resourceTemplates: [catchAll],
+      })
       try {
-        ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ text: 'registered' }) })
+        ctx.agent.registerResource({
+          id: 'status',
+          name: 'Status',
+          read: () => ({ text: 'registered' }),
+        })
         const read = await client.readResource({ uri: 'devframe://resource/status' })
         expect(read.contents[0]).toMatchObject({ text: 'registered' })
       }
@@ -687,14 +831,26 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('adds the entries of each template list to resources/list', async () => {
-      const { ctx, client, cleanup } = await bootPair(false, { resourceTemplates: [file, issue] })
+      const { ctx, client, cleanup } = await bootPair(false, {
+        resourceTemplates: [file, issue],
+      })
       try {
-        ctx.agent.registerResource({ id: 'status', name: 'Status', read: () => ({ json: {} }) })
+        ctx.agent.registerResource({
+          id: 'status',
+          name: 'Status',
+          read: () => ({ json: {} }),
+        })
         const { resources } = await client.listResources()
         expect(resources).toEqual([
           { uri: 'devframe://resource/status', name: 'Status', mimeType: 'application/json' },
           { uri: 'test://file/a.ts', name: 'a.ts', mimeType: 'text/plain' },
-          { uri: 'test://file/b.json', name: 'b.json', title: 'B', description: 'The b file.', mimeType: 'application/json' },
+          {
+            uri: 'test://file/b.json',
+            name: 'b.json',
+            title: 'B',
+            description: 'The b file.',
+            mimeType: 'application/json',
+          },
         ])
       }
       finally {
@@ -707,11 +863,17 @@ describe('mcp adapter (in-memory)', () => {
         uriTemplate: 'test://state/{key}',
         name: 'state',
         list: ctx => ctx.rpc.sharedState.keys().map(key => ({ uri: `test://state/${encodeURIComponent(key)}`, name: key })),
-        read: async (params, _uri, ctx) => ({ json: (await ctx.rpc.sharedState.get(params.key!)).value() }),
+        read: async (params, _uri, ctx) => ({
+          json: (await ctx.rpc.sharedState.get(params.key!)).value(),
+        }),
       }
-      const { ctx, client, cleanup } = await bootPair(false, { resourceTemplates: [counter] })
+      const { ctx, client, cleanup } = await bootPair(false, {
+        resourceTemplates: [counter],
+      })
       try {
-        await ctx.rpc.sharedState.get('my-plugin:counter', { initialValue: { count: 3 } })
+        await ctx.rpc.sharedState.get('my-plugin:counter', {
+          initialValue: { count: 3 },
+        })
         const { resources } = await client.listResources()
         expect(resources.map(r => r.uri)).toEqual(['test://state/my-plugin%3Acounter'])
         const read = await client.readResource({ uri: resources[0]!.uri })
@@ -730,7 +892,9 @@ describe('mcp adapter (in-memory)', () => {
           throw new Error('disk on fire')
         },
       }
-      const { client, cleanup } = await bootPair(true, { resourceTemplates: [broken] })
+      const { client, cleanup } = await bootPair(true, {
+        resourceTemplates: [broken],
+      })
       try {
         await expect(client.readResource({ uri: 'test://broken/1' })).rejects.toThrow('disk on fire')
       }
@@ -740,35 +904,95 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('throws DF0084 for a template beyond RFC 6570 level 1', () => {
-      for (const uriTemplate of ['test://file/{+path}', 'test://search{?q}', 'test://pair/{a,b}', 'test://file/{path*}', 'test://file/{path', 'test://file/path}', 'test://pair/{a}/{a}', 'test://file/{}', 'test://pair/{a}{b}']) {
-        expect(() => compileResourceTemplates([{ uriTemplate, name: 'bad', read: () => ({}) }])).toThrow(expect.objectContaining({ code: 'DF0084' }))
+      for (const uriTemplate of [
+        'test://file/{+path}',
+        'test://search{?q}',
+        'test://pair/{a,b}',
+        'test://file/{path*}',
+        'test://file/{path',
+        'test://file/path}',
+        'test://pair/{a}/{a}',
+        'test://file/{}',
+        'test://pair/{a}{b}',
+      ]) {
+        expect(() => compileResourceTemplates([
+          {
+            uriTemplate,
+            name: 'bad',
+            read: () => ({}),
+          },
+        ])).toThrow(expect.objectContaining({ code: 'DF0084' }))
       }
-      expect(compileResourceTemplates([{ uriTemplate: 'test://fixed', name: 'fixed', read: () => ({}) }])[0]!.match('test://fixed')).toEqual({})
+      expect(compileResourceTemplates([
+        {
+          uriTemplate: 'test://fixed',
+          name: 'fixed',
+          read: () => ({}),
+        },
+      ])[0]!.match('test://fixed')).toEqual({})
     })
 
     it('matches several values in one segment, each up to the next literal', () => {
-      const [range] = compileResourceTemplates([{ uriTemplate: 'test://range/{from}-{to}.json', name: 'range', read: () => ({}) }])
+      const [range] = compileResourceTemplates([
+        {
+          uriTemplate: 'test://range/{from}-{to}.json',
+          name: 'range',
+          read: () => ({}),
+        },
+      ])
       expect(range!.match('test://range/1-2.json')).toEqual({ from: '1', to: '2' })
       expect(range!.match('test://range/1-2-3.json')).toEqual({ from: '1', to: '2-3' })
-      for (const uri of ['test://range/-2.json', 'test://range/1-.json', 'test://range/1.json', 'test://range/1-2.txt', 'test://range/1-2/3.json'])
+      for (const uri of [
+        'test://range/-2.json',
+        'test://range/1-.json',
+        'test://range/1.json',
+        'test://range/1-2.txt',
+        'test://range/1-2/3.json',
+      ])
         expect(range!.match(uri)).toBeUndefined()
     })
 
     it('does not split a value inside a percent-encoded character', () => {
-      const [pair] = compileResourceTemplates([{ uriTemplate: 'test://pair/{a}D{b}', name: 'pair', read: () => ({}) }])
+      const [pair] = compileResourceTemplates([
+        {
+          uriTemplate: 'test://pair/{a}D{b}',
+          name: 'pair',
+          read: () => ({}),
+        },
+      ])
       expect(pair!.match('test://pair/a%2DbDc')).toEqual({ a: 'a-b', b: 'c' })
       expect(pair!.match('test://pair/a%2dbDc')).toEqual({ a: 'a-b', b: 'c' })
-      const [hex] = compileResourceTemplates([{ uriTemplate: 'test://hex/{a}2D{b}', name: 'hex', read: () => ({}) }])
+      const [hex] = compileResourceTemplates([
+        {
+          uriTemplate: 'test://hex/{a}2D{b}',
+          name: 'hex',
+          read: () => ({}),
+        },
+      ])
       expect(hex!.match('test://hex/x%2D2Dy')).toEqual({ a: 'x-', b: 'y' })
     })
 
     it('keeps a value named __proto__', () => {
-      const [proto] = compileResourceTemplates([{ uriTemplate: 'test://proto/{__proto__}', name: 'proto', read: () => ({}) }])
-      expect(Object.entries(proto!.match('test://proto/x')!)).toEqual([['__proto__', 'x']])
+      const [proto] = compileResourceTemplates([
+        {
+          uriTemplate: 'test://proto/{__proto__}',
+          name: 'proto',
+          read: () => ({}),
+        },
+      ])
+      expect(Object.entries(proto!.match('test://proto/x')!)).toEqual([
+        ['__proto__', 'x'],
+      ])
     })
 
     it('rejects a long URI that matches no template without backtracking', () => {
-      const [many] = compileResourceTemplates([{ uriTemplate: 'test://many/{a}-{b}-{c}-{d}.json', name: 'many', read: () => ({}) }])
+      const [many] = compileResourceTemplates([
+        {
+          uriTemplate: 'test://many/{a}-{b}-{c}-{d}.json',
+          name: 'many',
+          read: () => ({}),
+        },
+      ])
       // Ends like a match, but the `/` near the end fails it only after every value is read.
       const uri = `test://many/${'x-'.repeat(25_000)}/.json`
       const start = performance.now()
@@ -788,16 +1012,32 @@ describe('mcp adapter (in-memory)', () => {
       ],
       get: ({ file, focus }) => ({
         description: `Review ${file}`,
-        messages: [{ role: 'user', content: { type: 'text', text: `Review ${file}${focus ? ` for ${focus}` : ''}.` } }],
+        messages: [
+          {
+            role: 'user',
+            content: { type: 'text', text: `Review ${file}${focus
+              ? ` for ${focus}`
+              : ''}.` },
+          },
+        ],
       }),
     }
     const hello: McpPrompt = {
       name: 'hello',
-      get: async () => ({ messages: [{ role: 'user', content: { type: 'text', text: 'Hello.' } }] }),
+      get: async () => ({
+        messages: [
+          {
+            role: 'user',
+            content: { type: 'text', text: 'Hello.' },
+          },
+        ],
+      }),
     }
 
     it('declares the prompts capability only when prompts are set', async () => {
-      const withPrompts = await bootPair(true, { prompts: [hello] })
+      const withPrompts = await bootPair(true, {
+        prompts: [hello],
+      })
       const without = await bootPair(true)
       try {
         expect(withPrompts.client.getServerCapabilities()?.prompts).toEqual({ listChanged: false })
@@ -810,7 +1050,9 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('lists each prompt with its arguments', async () => {
-      const { client, cleanup } = await bootPair(true, { prompts: [review, hello] })
+      const { client, cleanup } = await bootPair(true, {
+        prompts: [review, hello],
+      })
       try {
         const { prompts } = await client.listPrompts()
         expect(prompts).toEqual([
@@ -832,14 +1074,29 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('builds the messages from the arguments, sync or async', async () => {
-      const { client, cleanup } = await bootPair(true, { prompts: [review, hello] })
+      const { client, cleanup } = await bootPair(true, {
+        prompts: [review, hello],
+      })
       try {
-        expect(await client.getPrompt({ name: 'review', arguments: { file: 'src/main.ts', focus: 'errors' } })).toEqual({
+        expect(await client.getPrompt({
+          name: 'review',
+          arguments: { file: 'src/main.ts', focus: 'errors' },
+        })).toEqual({
           description: 'Review src/main.ts',
-          messages: [{ role: 'user', content: { type: 'text', text: 'Review src/main.ts for errors.' } }],
+          messages: [
+            {
+              role: 'user',
+              content: { type: 'text', text: 'Review src/main.ts for errors.' },
+            },
+          ],
         })
         expect(await client.getPrompt({ name: 'hello' })).toEqual({
-          messages: [{ role: 'user', content: { type: 'text', text: 'Hello.' } }],
+          messages: [
+            {
+              role: 'user',
+              content: { type: 'text', text: 'Hello.' },
+            },
+          ],
         })
       }
       finally {
@@ -849,11 +1106,18 @@ describe('mcp adapter (in-memory)', () => {
 
     it('answers invalid params for an unknown prompt or a missing required argument', async () => {
       const get = vi.fn(review.get)
-      const { client, cleanup } = await bootPair(true, { prompts: [{ ...review, get }] })
+      const { client, cleanup } = await bootPair(true, {
+        prompts: [
+          { ...review, get },
+        ],
+      })
       try {
         await expect(client.getPrompt({ name: 'nope' })).rejects.toThrow('unknown prompt "nope"')
         await expect(client.getPrompt({ name: 'review' })).rejects.toThrow('needs the argument(s): file')
-        await expect(client.getPrompt({ name: 'review', arguments: { file: '' } })).rejects.toThrow('needs the argument(s): file')
+        await expect(client.getPrompt({
+          name: 'review',
+          arguments: { file: '' },
+        })).rejects.toThrow('needs the argument(s): file')
         expect(get).not.toHaveBeenCalled()
       }
       finally {
@@ -864,13 +1128,28 @@ describe('mcp adapter (in-memory)', () => {
     it('checks a required argument named like an Object.prototype key', async () => {
       const proto: McpPrompt = {
         name: 'proto',
-        arguments: [{ name: 'constructor', required: true }, { name: 'toString', required: true }],
-        get: args => ({ messages: [{ role: 'user', content: { type: 'text', text: `${args.constructor} ${args.toString}` } }] }),
+        arguments: [
+          { name: 'constructor', required: true },
+          { name: 'toString', required: true },
+        ],
+        get: args => ({
+          messages: [
+            {
+              role: 'user',
+              content: { type: 'text', text: `${args.constructor} ${args.toString}` },
+            },
+          ],
+        }),
       }
-      const { client, cleanup } = await bootPair(true, { prompts: [proto] })
+      const { client, cleanup } = await bootPair(true, {
+        prompts: [proto],
+      })
       try {
         await expect(client.getPrompt({ name: 'proto' })).rejects.toThrow('needs the argument(s): constructor, toString')
-        const prompt = await client.getPrompt({ name: 'proto', arguments: { constructor: 'a', toString: 'b' } })
+        const prompt = await client.getPrompt({
+          name: 'proto',
+          arguments: { constructor: 'a', toString: 'b' },
+        })
         expect(prompt.messages[0]!.content).toEqual({ type: 'text', text: 'a b' })
       }
       finally {
@@ -885,7 +1164,9 @@ describe('mcp adapter (in-memory)', () => {
           throw new Error('no ideas left')
         },
       }
-      const { client, cleanup } = await bootPair(true, { prompts: [broken] })
+      const { client, cleanup } = await bootPair(true, {
+        prompts: [broken],
+      })
       try {
         await expect(client.getPrompt({ name: 'broken' })).rejects.toThrow('no ideas left')
       }
@@ -895,14 +1176,23 @@ describe('mcp adapter (in-memory)', () => {
     })
 
     it('throws DF0085 for a repeated prompt name', () => {
-      expect(() => compilePrompts([hello, { ...hello }])).toThrow(expect.objectContaining({ code: 'DF0085' }))
-      expect([...compilePrompts([review, hello]).keys()]).toEqual(['review', 'hello'])
+      expect(() => compilePrompts([
+        hello,
+        { ...hello },
+      ])).toThrow(expect.objectContaining({ code: 'DF0085' }))
+      expect([
+        ...compilePrompts([review, hello]).keys(),
+      ]).toEqual(['review', 'hello'])
     })
   })
 
   describe('onResourcesChanged', () => {
     it('sends resources list_changed on each notify, and unsubscribes on teardown', async () => {
-      const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+      const ctx = await createHostContext({
+        cwd: process.cwd(),
+        mode: 'dev',
+        host: nullHost(),
+      })
       const server = buildMcpServerFromContext(ctx, { serverName: 'test', serverVersion: '0.0.0-test', exposeSharedState: true })
       let notify: (() => void) | undefined
       const unsubscribe = vi.fn()

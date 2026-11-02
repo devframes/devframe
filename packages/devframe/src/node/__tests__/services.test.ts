@@ -10,7 +10,9 @@ import { DevframeServicesHostImpl } from '../host-services'
 describe('devframeServicesHost', () => {
   it('provides and gets a service', () => {
     const services = new DevframeServicesHostImpl()
-    const impl = { register: () => {} }
+    const impl = {
+      register: () => {},
+    }
     services.provide('my-plugin:thing', impl)
     expect(services.get('my-plugin:thing')).toBe(impl)
     expect(services.has('my-plugin:thing')).toBe(true)
@@ -85,7 +87,11 @@ function createTestHost(dir: string): DevframeHost {
 async function createCtx() {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-services-'))
   tempDirs.push(dir)
-  const ctx = await createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+  const ctx = await createHostContext({
+    cwd: dir,
+    mode: 'dev',
+    host: createTestHost(dir),
+  })
   return { ctx, dir }
 }
 
@@ -125,11 +131,17 @@ describe('wire services (install / ready)', () => {
   it('queues installs and constructs once at ready() with merged options', async () => {
     const { ctx } = await createCtx()
     const setup = vi.fn((_ctx: unknown, info: { options?: any }) => ({ options: info.options }))
-    const def = defineTestService({ setup, options: { a: 1, b: 1 } })
+    const def = defineTestService({
+      setup,
+      options: { a: 1, b: 1 },
+    })
 
     const first = ctx.services.install(def)
     // A second install of the same package contributes its options to the merge.
-    const second = ctx.services.install({ package: '@test/svc', options: { b: 2, c: 3 } })
+    const second = ctx.services.install({
+      package: '@test/svc',
+      options: { b: 2, c: 3 },
+    })
 
     // The service's own setup runs at ready(), not before.
     expect(setup).not.toHaveBeenCalled()
@@ -137,41 +149,85 @@ describe('wire services (install / ready)', () => {
 
     expect(setup).toHaveBeenCalledTimes(1)
     // Deep merge in declaration order; later scalars win.
-    await expect(first).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
-    await expect(second).resolves.toEqual({ options: { a: 1, b: 2, c: 3 } })
+    await expect(first).resolves.toEqual({
+      options: { a: 1, b: 2, c: 3 },
+    })
+    await expect(second).resolves.toEqual({
+      options: { a: 1, b: 2, c: 3 },
+    })
     // The node API is provided under the package name.
-    expect(ctx.services.get('@test/svc')).toEqual({ options: { a: 1, b: 2, c: 3 } })
+    expect(ctx.services.get('@test/svc')).toEqual({
+      options: { a: 1, b: 2, c: 3 },
+    })
   })
 
   it('deep-merges option sets: arrays union, nested objects recurse', async () => {
     const { ctx } = await createCtx()
-    void ctx.services.install(defineTestService({ options: { roots: ['a'], nested: { x: 1 } } }))
-    void ctx.services.install({ package: '@test/svc', options: { roots: ['b', 'a'], nested: { y: 2 } } })
+    void ctx.services.install(defineTestService({
+      options: {
+        roots: ['a'],
+        nested: { x: 1 },
+      },
+    }))
+    void ctx.services.install({
+      package: '@test/svc',
+      options: {
+        roots: ['b', 'a'],
+        nested: { y: 2 },
+      },
+    })
     await ctx.services.ready()
     expect(ctx.services.get('@test/svc')).toEqual({
-      options: { roots: ['a', 'b'], nested: { x: 1, y: 2 } },
+      options: {
+        roots: ['a', 'b'],
+        nested: { x: 1, y: 2 },
+      },
     })
   })
 
   it('uses the definition mergeOptions when declared', async () => {
     const { ctx } = await createCtx()
     const def = defineTestService({
-      options: { langs: ['ts'] },
-      mergeOptions: sets => ({ langs: sets.flatMap((s: any) => s.langs) }),
+      options: {
+        langs: ['ts'],
+      },
+      mergeOptions: sets => ({
+        langs: sets.flatMap((s: any) => s.langs),
+      }),
     })
     void ctx.services.install(def)
-    void ctx.services.install({ package: '@test/svc', options: { langs: ['vue'] } })
+    void ctx.services.install({
+      package: '@test/svc',
+      options: {
+        langs: ['vue'],
+      },
+    })
     await ctx.services.ready()
-    expect(ctx.services.get('@test/svc')).toEqual({ options: { langs: ['ts', 'vue'] } })
+    expect(ctx.services.get('@test/svc')).toEqual({
+      options: {
+        langs: ['ts', 'vue'],
+      },
+    })
   })
 
   it('advertises installed services on the devframe:services shared state', async () => {
     const { ctx } = await createCtx()
-    void ctx.services.install(defineTestService({ meta: { features: ['x'] } }))
+    void ctx.services.install(defineTestService({
+      meta: {
+        features: ['x'],
+      },
+    }))
     await ctx.services.ready()
     const state = await ctx.rpc.sharedState.get<DevframeServicesState>(DEVFRAME_SERVICES_STATE_KEY)
     expect(state.value()).toEqual({
-      '@test/svc': { package: '@test/svc', version: '1.2.3', scope: 'test:svc', meta: { features: ['x'] } },
+      '@test/svc': {
+        package: '@test/svc',
+        version: '1.2.3',
+        scope: 'test:svc',
+        meta: {
+          features: ['x'],
+        },
+      },
     })
   })
 
@@ -185,7 +241,10 @@ describe('wire services (install / ready)', () => {
     const { ctx } = await createCtx()
     void ctx.services.install(defineTestService({
       setup: (scoped) => {
-        scoped.rpc.register({ name: 'hello', handler: () => 'hi' })
+        scoped.rpc.register({
+          name: 'hello',
+          handler: () => 'hi',
+        })
         return {}
       },
     }))
@@ -196,11 +255,17 @@ describe('wire services (install / ready)', () => {
   it('post-ready installs construct immediately; duplicates warn and return the first API', async () => {
     const { ctx } = await createCtx()
     await ctx.services.ready()
-    const api = await ctx.services.install(defineTestService({ options: { a: 1 } }))
-    expect(api).toEqual({ options: { a: 1 } })
+    const api = await ctx.services.install(defineTestService({
+      options: { a: 1 },
+    }))
+    expect(api).toEqual({
+      options: { a: 1 },
+    })
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const again = await ctx.services.install(defineTestService({ options: { a: 2 } }))
+    const again = await ctx.services.install(defineTestService({
+      options: { a: 2 },
+    }))
     expect(again).toBe(api)
     expect(warn.mock.calls.flat().join('\n')).toContain('DF0066')
   })
@@ -216,7 +281,10 @@ describe('wire services (install / ready)', () => {
     const declare = () => defineTestService({
       setup: (scoped) => {
         setupRuns++
-        scoped.rpc.register({ name: 'ping', handler: () => 'pong' })
+        scoped.rpc.register({
+          name: 'ping',
+          handler: () => 'pong',
+        })
         return { ok: true }
       },
     })
@@ -269,11 +337,20 @@ describe('wire services (install / ready)', () => {
     const { ctx, dir } = await createCtx()
     writeFakeServicePackage(dir, '@test/imported-svc', '2.0.0')
     const install = ctx.services.install(
-      { package: '@test/imported-svc', version: '^2', options: { x: 1 } },
-      { resolveFrom: join(dir, '_resolver.js') },
+      {
+        package: '@test/imported-svc',
+        version: '^2',
+        options: { x: 1 },
+      },
+      {
+        resolveFrom: join(dir, '_resolver.js'),
+      },
     )
     await ctx.services.ready()
-    await expect(install).resolves.toEqual({ imported: true, options: { x: 1 } })
+    await expect(install).resolves.toEqual({
+      imported: true,
+      options: { x: 1 },
+    })
     const state = await ctx.rpc.sharedState.get<DevframeServicesState>(DEVFRAME_SERVICES_STATE_KEY)
     expect(state.value()['@test/imported-svc']).toEqual({
       package: '@test/imported-svc',
@@ -303,6 +380,11 @@ describe('wire services (install / ready)', () => {
   it('rejects invalid inputs with DF0070', async () => {
     const { ctx } = await createCtx()
     expect(() => ctx.services.install({} as never)).toThrowError(/has no `package` name/)
-    expect(() => ctx.services.install({ package: '@test/x', scope: '', version: '1.0.0', setup: () => ({}) })).toThrowError(/no RPC `scope` namespace/)
+    expect(() => ctx.services.install({
+      package: '@test/x',
+      scope: '',
+      version: '1.0.0',
+      setup: () => ({}),
+    })).toThrowError(/no RPC `scope` namespace/)
   })
 })

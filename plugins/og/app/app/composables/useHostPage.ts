@@ -16,7 +16,9 @@ function readHostWindow(): Window | null {
     return null
   try {
     const hubBase = new URL('..', location.href).pathname
-    return window.parent.location.pathname.startsWith(hubBase) ? null : window.parent
+    return window.parent.location.pathname.startsWith(hubBase)
+      ? null
+      : window.parent
   }
   catch {
     // A cross-origin parent throws on `location` access.

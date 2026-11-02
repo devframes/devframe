@@ -24,8 +24,12 @@ export const query = defineRpcFunction({
       options?: { maxDepth?: number, maxEntries?: number } & FilterOptions,
     ): Promise<QueryOutcome> => {
       const source = getDataSource(sourceId)
-      if (!source)
-        return { ok: false, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
+      if (!source) {
+        return {
+          ok: false,
+          error: { name: 'UnknownSource', message: `No data source "${sourceId}"` },
+        }
+      }
       return runQuery(await resolveSourceData(source), joraQuery, options)
     },
   }),

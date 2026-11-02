@@ -91,7 +91,11 @@ describe('createDevframeNextHandler', () => {
       jsonrpc: '2.0',
       id: 1,
       method: 'initialize',
-      params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'x', version: '0' } },
+      params: {
+        protocolVersion: '2025-03-26',
+        capabilities: {},
+        clientInfo: { name: 'x', version: '0' },
+      },
     })
     const init = await handler.fetch(new Request(`${origin}/__test-next/__mcp`, {
       method: 'POST',

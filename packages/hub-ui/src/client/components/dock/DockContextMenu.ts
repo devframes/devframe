@@ -136,7 +136,9 @@ export function openDockContextMenu(options: {
   const isPinned = context.docks.settings.value().docksPinned.includes(entry.id)
   const items: DockMenuItem[] = [
     {
-      label: isPinned ? t('docks.unpin') : t('docks.pin'),
+      label: isPinned
+        ? t('docks.unpin')
+        : t('docks.pin'),
       icon: isPinned ? 'i-ph-push-pin-slash-duotone' : 'i-ph-push-pin-duotone',
       action: () => togglePinDock(context, entry),
       visible: canPin(context, entry),
@@ -154,7 +156,9 @@ export function openDockContextMenu(options: {
       visible: canRefresh(entry),
     },
     {
-      label: isEdgeMode ? t('command.floatMode') : t('command.edgeMode'),
+      label: isEdgeMode
+        ? t('command.floatMode')
+        : t('command.edgeMode'),
       icon: isEdgeMode ? 'i-ph-arrows-out-duotone' : 'i-ph-square-half-bottom-duotone',
       action: () => {
         if (isEdgeMode) {

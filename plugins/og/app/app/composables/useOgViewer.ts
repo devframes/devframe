@@ -49,7 +49,9 @@ export function useOgViewer() {
       if (request === latestRequest) {
         // Drop the last result, so the panel does not show it as the current page.
         snapshot.value = null
-        error.value = cause instanceof Error ? cause.message : String(cause)
+        error.value = cause instanceof Error
+          ? cause.message
+          : String(cause)
       }
     }
     finally {
@@ -67,7 +69,9 @@ export function useOgViewer() {
 
   /** Read the current page path again, for a router the browser cannot report. */
   function refresh(): Promise<void> {
-    return inspect(host ? formatAddress(host.href(), host.origin) : target.value)
+    return inspect(host
+      ? formatAddress(host.href(), host.origin)
+      : target.value)
   }
 
   return {

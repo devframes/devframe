@@ -45,7 +45,10 @@ export function setupDataInspector(ctx: DevframeNodeContext, options: SetupDataI
   })
 
   onDataSourceDataChanged((sourceId) => {
-    void ctx.rpc.broadcast({ method: DATA_CHANGED_EVENT, args: [sourceId] } as never)
+    void ctx.rpc.broadcast({
+      method: DATA_CHANGED_EVENT,
+      args: [sourceId],
+    } as never)
   })
 }
 

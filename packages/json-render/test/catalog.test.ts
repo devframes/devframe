@@ -42,7 +42,10 @@ describe('per-component prop validation', () => {
   })
 
   it('accepts Select.native alongside the rest of its props', () => {
-    expect(basePropSchemas.Select.safeParse({ options: ['a', 'b'], native: true }).success).toBe(true)
+    expect(basePropSchemas.Select.safeParse({
+      options: ['a', 'b'],
+      native: true,
+    }).success).toBe(true)
   })
 
   it('rejects an out-of-set enum value', () => {
@@ -51,8 +54,12 @@ describe('per-component prop validation', () => {
   })
 
   it('tolerates dynamic `$bindState` expressions where a scalar is expected', () => {
-    expect(basePropSchemas.TextInput.safeParse({ value: { $bindState: '/name' } }).success).toBe(true)
-    expect(basePropSchemas.Switch.safeParse({ value: { $state: '/enabled' } }).success).toBe(true)
+    expect(basePropSchemas.TextInput.safeParse({
+      value: { $bindState: '/name' },
+    }).success).toBe(true)
+    expect(basePropSchemas.Switch.safeParse({
+      value: { $state: '/enabled' },
+    }).success).toBe(true)
   })
 })
 

@@ -54,7 +54,12 @@ describe('createHubContext dock activation', () => {
     })
     expect(broadcast).toHaveBeenCalledWith({
       method: 'devframe:docks:activate',
-      args: [{ dockId: 'devframes_plugin_terminals', params: { sessionId: 'sess-1' } }],
+      args: [
+        {
+          dockId: 'devframes_plugin_terminals',
+          params: { sessionId: 'sess-1' },
+        },
+      ],
     })
     broadcast.mockRestore()
   })
@@ -88,14 +93,18 @@ describe('createHubContext remote dock republishing', () => {
 
     const docksState = await context.rpc.sharedState.get<DevframeDockEntry[]>('devframe:docks')
     const beforeBind = docksState.value()[0]
-    expect(beforeBind?.type === 'iframe' ? beforeBind.url : undefined).toBe('https://remote.test/app')
+    expect(beforeBind?.type === 'iframe'
+      ? beforeBind.url
+      : undefined).toBe('https://remote.test/app')
 
     getInternalContext(context).setWsEndpoint({ url: 'ws://localhost:4173' })
     // The refresh is debounced (0ms in `mode: 'build'`, still a macrotask).
     await new Promise(resolve => setTimeout(resolve, 20))
 
     const afterBind = docksState.value()[0]
-    const afterUrl = afterBind?.type === 'iframe' ? afterBind.url : ''
+    const afterUrl = afterBind?.type === 'iframe'
+      ? afterBind.url
+      : ''
     expect(afterUrl).not.toBe('https://remote.test/app')
     expect(afterUrl).toContain('https://remote.test/app')
 

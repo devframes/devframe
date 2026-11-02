@@ -85,7 +85,12 @@ async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess |
   }
   catch (error) {
     diagnostics.DP_TERMINALS_0004(
-      { command: options.command, reason: error instanceof Error ? error.message : String(error) },
+      {
+        command: options.command,
+        reason: error instanceof Error
+          ? error.message
+          : String(error),
+      },
       { method: 'warn' },
     )
     return undefined
@@ -120,7 +125,9 @@ async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess |
     },
     onData: (cb) => {
       proc.onData((data) => {
-        cb(typeof data === 'string' ? data : data.toString('utf8'))
+        cb(typeof data === 'string'
+          ? data
+          : data.toString('utf8'))
       })
     },
     onExit: cb => proc.onExit(e => cb(e.exitCode ?? 0)),
@@ -129,7 +136,9 @@ async function spawnPty(options: SpawnBackendOptions): Promise<TerminalProcess |
         // On Windows the backend may fall back to the TERM name rather than
         // the foreground process, so don't surface that as a session label.
         const name = proc.process
-        return name && name !== PTY_TERM_NAME ? name : undefined
+        return name && name !== PTY_TERM_NAME
+          ? name
+          : undefined
       }
       catch {
         return undefined
@@ -155,7 +164,9 @@ function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   let pendingCr = false
   const normalizeNewlines = (data: string): string => {
     const out = data.replace(/\r?\n/g, (match, offset: number) =>
-      match === '\n' && !(offset === 0 && pendingCr) ? '\r\n' : match)
+      match === '\n' && !(offset === 0 && pendingCr)
+        ? '\r\n'
+        : match)
     pendingCr = out.endsWith('\r')
     return out
   }
@@ -174,7 +185,11 @@ function spawnPipe(options: SpawnBackendOptions): TerminalProcess {
   const child = spawnChild(options.command, options.args, {
     cwd: options.cwd,
     env: options.env,
-    stdio: [options.input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
+    stdio: [
+      options.input ? 'pipe' : 'ignore',
+      'pipe',
+      'pipe',
+    ],
     windowsHide: true,
   })
 

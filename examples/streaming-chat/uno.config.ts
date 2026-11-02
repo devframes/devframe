@@ -8,6 +8,10 @@ import { designConfig } from '../../design/uno.config'
 export default mergeConfigs([
   designConfig,
   {
-    content: { pipeline: { include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/] } },
+    content: {
+      pipeline: {
+        include: [/\.(?:[cm]?[jt]sx?|html)($|\?)/],
+      },
+    },
   },
 ])

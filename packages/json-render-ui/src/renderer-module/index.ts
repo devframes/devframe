@@ -61,8 +61,14 @@ const jsonRenderDockRenderer: JsonRenderDockRenderer = async ({ entry, container
   }
   syncScheme()
   const observer = new MutationObserver(syncScheme)
-  observer.observe(container, { attributes: true, attributeFilter: ['class'] })
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  observer.observe(container, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
   colorSchemeRoot.append(root)
   shadow.append(colorSchemeRoot)
 

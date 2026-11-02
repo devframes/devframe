@@ -101,10 +101,14 @@ const HUB_STATUS: Record<TerminalStatus, HubTerminalEntry['status']> = {
  * (see the safelist in `uno.config.ts`); masks load their image URL directly.
  */
 function toIconClass(icon?: HubTerminalEntry['icon']): string | undefined {
-  const raw = typeof icon === 'string' ? icon : icon?.light
+  const raw = typeof icon === 'string'
+    ? icon
+    : icon?.light
   if (!raw)
     return undefined
-  return raw.startsWith('mask:') || raw.startsWith('i-') ? raw : `i-${raw.replace(':', '-')}`
+  return raw.startsWith('mask:') || raw.startsWith('i-')
+    ? raw
+    : `i-${raw.replace(':', '-')}`
 }
 
 function defaultShell(): string {
@@ -203,7 +207,9 @@ export class TerminalManager {
         id: session.id,
         title: session.title,
         mode: session.interactive ? 'interactive' : 'readonly',
-        status: session.status === 'stopped' ? 'exited' : session.status,
+        status: session.status === 'stopped'
+          ? 'exited'
+          : session.status,
         backend: session.interactive ? 'pty' : 'pipe',
         command: '',
         args: [],
@@ -216,7 +222,10 @@ export class TerminalManager {
         restartable: session.restartable,
       })
     }
-    return [...own, ...foreign]
+    return [
+      ...own,
+      ...foreign,
+    ]
   }
 
   getPresets(): TerminalPreset[] {
@@ -252,7 +261,10 @@ export class TerminalManager {
         args: req.args ?? preset.args ?? [],
         cwd: req.cwd ?? preset.cwd ?? this.defaultCwd,
         mode: req.mode ?? preset.mode ?? 'readonly',
-        env: this.buildEnv({ ...preset.env, ...req.env }),
+        env: this.buildEnv({
+          ...preset.env,
+          ...req.env,
+        }),
         title: req.title ?? preset.title,
         cols,
         rows,
@@ -339,7 +351,9 @@ export class TerminalManager {
       )
     }
     catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = error instanceof Error
+        ? error.message
+        : String(error)
       diagnostics.DP_TERMINALS_0004({ command: spawn.command, reason }, { method: 'warn' })
       session.info.status = 'error'
       session.info.pid = undefined
@@ -386,7 +400,9 @@ export class TerminalManager {
       // Stop parsing, but keep the last reported title/cwd on the session.
       session.osc?.dispose()
       session.osc = undefined
-      session.info.status = code === 0 ? 'exited' : 'error'
+      session.info.status = code === 0
+        ? 'exited'
+        : 'error'
       session.info.exitCode = code
       session.info.pid = undefined
       session.info.processName = undefined
@@ -574,7 +590,9 @@ export class TerminalManager {
       const entry: HubTerminalEntry = {
         id: info.id,
         title: info.customTitle || info.termTitle || info.processName || info.title,
-        description: `${info.mode} · ${info.backend}${info.pid ? ` · pid ${info.pid}` : ''}`,
+        description: `${info.mode} · ${info.backend}${info.pid
+          ? ` · pid ${info.pid}`
+          : ''}`,
         status: HUB_STATUS[info.status] ?? 'stopped',
         icon: 'ph:terminal-window-duotone',
       }

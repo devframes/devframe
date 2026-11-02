@@ -28,8 +28,16 @@ function makeFrame(id: string, options: { distDir?: string, clientScript?: strin
     packageName: `@test/${id}`,
     homepage: '',
     description: '',
-    ...(options.distDir ? { clientAssets: options.distDir } : {}),
-    ...(options.clientScript ? { dock: { clientScript: { importFrom: options.clientScript } } } : {}),
+    ...(options.distDir
+      ? { clientAssets: options.distDir }
+      : {}),
+    ...(options.clientScript
+      ? {
+          dock: {
+            clientScript: { importFrom: options.clientScript },
+          },
+        }
+      : {}),
     setup(ctx: DevframeNodeContext) {
       ctx.rpc.register({
         name: `${id}:probe`,
@@ -51,8 +59,13 @@ describe('buildHub', () => {
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
       devframes: [
-        makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>'), clientScript: pageScript }),
-        makeFrame('beta', { distDir: makeDist('<h1>beta</h1>') }),
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+          clientScript: pageScript,
+        }),
+        makeFrame('beta', {
+          distDir: makeDist('<h1>beta</h1>'),
+        }),
       ],
     })
 
@@ -87,7 +100,9 @@ describe('buildHub', () => {
   it('skips a devframe declaring capabilities.build: false', async () => {
     const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
     const live: DevframeDefinition = {
-      ...makeFrame('live', { distDir: makeDist('<h1>live</h1>') }),
+      ...makeFrame('live', {
+        distDir: makeDist('<h1>live</h1>'),
+      }),
       capabilities: { build: false },
     }
 
@@ -95,7 +110,12 @@ describe('buildHub', () => {
       outDir,
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), live],
+      devframes: [
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+        }),
+        live,
+      ],
     })
 
     // Nothing of the skipped devframe lands in the output: no SPA, no frame
@@ -121,7 +141,11 @@ describe('buildHub', () => {
       outDir,
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') })],
+      devframes: [
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+        }),
+      ],
     })
     writeFileSync(appFile, 'app', 'utf-8')
 
@@ -130,7 +154,11 @@ describe('buildHub', () => {
       base: '/__hub/',
       clean: false,
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('beta', { distDir: makeDist('<h1>beta</h1>') })],
+      devframes: [
+        makeFrame('beta', {
+          distDir: makeDist('<h1>beta</h1>'),
+        }),
+      ],
     })
 
     // The pre-existing sibling file survives, and the re-bake lands beside it.
@@ -144,9 +172,21 @@ describe('buildHub', () => {
 
     // A host assembling the context itself: create + mount via `ctx.install`,
     // then hand the already-mounted context to `buildHub`.
-    const host = createH3DevframeHost({ origin: 'http://localhost', appName: 'devframes', workspaceRoot: cwd, mount: () => {} })
-    const ctx = await createHubContext({ cwd, workspaceRoot: cwd, mode: 'build', host })
-    await ctx.install(makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), { base: '/__hub/alpha/' })
+    const host = createH3DevframeHost({
+      origin: 'http://localhost',
+      appName: 'devframes',
+      workspaceRoot: cwd,
+      mount: () => {},
+    })
+    const ctx = await createHubContext({
+      cwd,
+      workspaceRoot: cwd,
+      mode: 'build',
+      host,
+    })
+    await ctx.install(makeFrame('alpha', {
+      distDir: makeDist('<h1>alpha</h1>'),
+    }), { base: '/__hub/alpha/' })
 
     expect(ctx.frames.map(frame => frame.id)).toEqual(['alpha'])
 
@@ -172,7 +212,9 @@ describe('buildHub', () => {
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
       async configure(ctx) {
-        await ctx.install(makeFrame('gamma', { distDir: makeDist('<h1>gamma</h1>') }), { base: '/gamma/' })
+        await ctx.install(makeFrame('gamma', {
+          distDir: makeDist('<h1>gamma</h1>'),
+        }), { base: '/gamma/' })
       },
     })
 

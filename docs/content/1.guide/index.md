@@ -94,7 +94,10 @@ import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 const hub = initHub({
   base: DEVFRAMES_HUB_BASE,
-  devframes: [createDataInspectorDevframe(), createTerminalsDevframe()],
+  devframes: [
+    createDataInspectorDevframe(),
+    createTerminalsDevframe()
+  ],
   ui: createUi(),
 })
 

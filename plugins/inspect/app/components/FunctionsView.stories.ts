@@ -107,7 +107,9 @@ export const WithResultsAndPending: Story = {
     results: {
       'devframes:plugin:inspect:list-functions': {
         ok: true,
-        result: [{ name: 'dummy' }],
+        result: [
+          { name: 'dummy' },
+        ],
         durationMs: 42,
       },
       'devframes:plugin:inspect:invoke': {

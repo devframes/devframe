@@ -14,13 +14,17 @@ const NON_DIALABLE_HOSTS = new Set([
 
 /** Map a bind host to a host a client can actually connect to. */
 export function toDialableHost(host: string): string {
-  return NON_DIALABLE_HOSTS.has(host) ? 'localhost' : host
+  return NON_DIALABLE_HOSTS.has(host)
+    ? 'localhost'
+    : host
 }
 
 /** Format a bind host for use in a URL authority (dialable, IPv6-bracketed). */
 export function formatHostForUrl(host: string): string {
   const dialable = toDialableHost(host)
-  return isIP(dialable) === 6 ? `[${dialable}]` : dialable
+  return isIP(dialable) === 6
+    ? `[${dialable}]`
+    : dialable
 }
 
 export function normalizeHttpServerUrl(host: string, port: number | string): string {

@@ -61,7 +61,9 @@ export function createRpcSharedStateServerHost(
     if (existing)
       return existing
     const state = resolveState?.(key)
-    return state ? addState(key, state) : undefined
+    return state
+      ? addState(key, state)
+      : undefined
   }
 
   const host: RpcSharedStateHost = {
@@ -140,7 +142,9 @@ export function createRpcSharedStateServerHost(
         initialValue: value,
       })
       // Publish the snapshot even when get() just created the state with this value.
-      state.patch([{ op: 'replace', path: [], value }], syncId)
+      state.patch([
+        { op: 'replace', path: [], value },
+      ], syncId)
     },
   })
 

@@ -91,7 +91,9 @@ async function main(): Promise<void> {
           h('button', {
             'key': entry.stateKey,
             'type': 'button',
-            'data-state': active.value === entry.stateKey ? 'active' : 'inactive',
+            'data-state': active.value === entry.stateKey
+              ? 'active'
+              : 'inactive',
             'class': [
               'rounded px3 py1 transition-colors',
               active.value === entry.stateKey
@@ -123,7 +125,9 @@ async function main(): Promise<void> {
                   h('div', { class: 'i-ph:layout-duotone color-primary text-lg' }),
                   h('span', 'JSON Render'),
                 ]),
-                h('div', { class: 'ml-auto' }, [renderTabs(list)]),
+                h('div', { class: 'ml-auto' }, [
+                  renderTabs(list),
+                ]),
               ])
             : null,
           h('div', { class: 'p6' }, [

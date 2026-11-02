@@ -19,17 +19,72 @@ const frameworkOptions: Array<{
   image?: string
   label: string
 }> = [
-  { id: 'nuxt', icon: 'i-logos-nuxt-icon', label: 'Nuxt', description: 'Highlight capabilities for Nuxt DevTools' },
-  { id: 'vue', icon: 'i-logos-vue', label: 'Vue', description: 'Highlight capabilities for Vue DevTools' },
-  { id: 'next', icon: 'i-logos-nextjs-icon', label: 'Next.js', description: 'Highlight capabilities for Next.js DevTools' },
-  { id: 'react', icon: 'i-logos-react', label: 'React', description: 'Highlight capabilities for React DevTools' },
-  { id: 'hono', icon: 'i-logos-hono', label: 'Hono', description: 'Highlight capabilities for Hono DevTools' },
-  { id: 'nitro', icon: 'i-unjs-nitro', label: 'Nitro', description: 'Highlight capabilities for Nitro DevTools' },
-  { id: 'svelte', icon: 'i-logos-svelte-icon', label: 'Svelte', description: 'Highlight capabilities for Svelte DevTools' },
-  { id: 'solid', icon: 'i-logos-solidjs-icon', label: 'Solid', description: 'Highlight capabilities for Solid DevTools' },
-  { id: 'astro', icon: 'i-logos-astro-icon', label: 'Astro', description: 'Highlight capabilities for Astro DevTools' },
-  { id: 'rsbuild', image: '/images/devframe/rsbuild.svg', label: 'Rsbuild', description: 'Highlight capabilities for Rsbuild DevTools' },
-  { id: 'your', icon: 'i-twemoji-winking-face', label: 'Your DevTools?', description: 'Show every capability for your own DevTools' },
+  {
+    id: 'nuxt',
+    icon: 'i-logos-nuxt-icon',
+    label: 'Nuxt',
+    description: 'Highlight capabilities for Nuxt DevTools',
+  },
+  {
+    id: 'vue',
+    icon: 'i-logos-vue',
+    label: 'Vue',
+    description: 'Highlight capabilities for Vue DevTools',
+  },
+  {
+    id: 'next',
+    icon: 'i-logos-nextjs-icon',
+    label: 'Next.js',
+    description: 'Highlight capabilities for Next.js DevTools',
+  },
+  {
+    id: 'react',
+    icon: 'i-logos-react',
+    label: 'React',
+    description: 'Highlight capabilities for React DevTools',
+  },
+  {
+    id: 'hono',
+    icon: 'i-logos-hono',
+    label: 'Hono',
+    description: 'Highlight capabilities for Hono DevTools',
+  },
+  {
+    id: 'nitro',
+    icon: 'i-unjs-nitro',
+    label: 'Nitro',
+    description: 'Highlight capabilities for Nitro DevTools',
+  },
+  {
+    id: 'svelte',
+    icon: 'i-logos-svelte-icon',
+    label: 'Svelte',
+    description: 'Highlight capabilities for Svelte DevTools',
+  },
+  {
+    id: 'solid',
+    icon: 'i-logos-solidjs-icon',
+    label: 'Solid',
+    description: 'Highlight capabilities for Solid DevTools',
+  },
+  {
+    id: 'astro',
+    icon: 'i-logos-astro-icon',
+    label: 'Astro',
+    description: 'Highlight capabilities for Astro DevTools',
+  },
+  {
+    id: 'rsbuild',
+    image: '/images/devframe/rsbuild.svg',
+    label: 'Rsbuild',
+    description: 'Highlight capabilities for Rsbuild DevTools',
+  },
+  {
+    id: 'your',
+    icon: 'i-twemoji-winking-face',
+    label: 'Your DevTools?',
+    description: 'Show every capability for your own DevTools',
+  },
 ]
 
 const moduleGroups: Array<{
@@ -55,11 +110,34 @@ const moduleGroups: Array<{
     modules: [
       { image: '/images/devframe/vitest.svg', name: 'Vitest', theme: 'green' },
       { image: '/images/devframe/oxc.svg', name: 'Oxlint', theme: 'blue' },
-      { frameworks: 'nuxt vue astro svelte react solid', icon: 'i-ph-cube-duotone', name: 'Bundle analyzer', logoImage: '/images/devframe/vite.svg', theme: 'purple' },
-      { frameworks: 'nuxt vue astro svelte react solid', icon: 'i-ph-magnifying-glass-duotone', name: 'Plugin analyzer', logoImage: '/images/devframe/vite.svg', theme: 'purple' },
-      { frameworks: 'nuxt vue astro svelte react solid', icon: 'i-ph-sliders-horizontal-duotone', name: 'Vite config', logoImage: '/images/devframe/vite.svg', theme: 'purple' },
+      {
+        frameworks: 'nuxt vue astro svelte react solid',
+        icon: 'i-ph-cube-duotone',
+        name: 'Bundle analyzer',
+        logoImage: '/images/devframe/vite.svg',
+        theme: 'purple',
+      },
+      {
+        frameworks: 'nuxt vue astro svelte react solid',
+        icon: 'i-ph-magnifying-glass-duotone',
+        name: 'Plugin analyzer',
+        logoImage: '/images/devframe/vite.svg',
+        theme: 'purple',
+      },
+      {
+        frameworks: 'nuxt vue astro svelte react solid',
+        icon: 'i-ph-sliders-horizontal-duotone',
+        name: 'Vite config',
+        logoImage: '/images/devframe/vite.svg',
+        theme: 'purple',
+      },
       { image: '/images/devframe/rolldown.svg', name: 'Rolldown', theme: 'orange' },
-      { frameworks: 'rsbuild nuxt', image: '/images/devframe/rsdoctor.svg', name: 'Rsdoctor', theme: 'blue' },
+      {
+        frameworks: 'rsbuild nuxt',
+        image: '/images/devframe/rsdoctor.svg',
+        name: 'Rsdoctor',
+        theme: 'blue',
+      },
       { frameworks: 'next', icon: 'i-logos-turbopack-icon', name: 'Turbopack' },
     ],
   },
@@ -67,22 +145,111 @@ const moduleGroups: Array<{
     id: 'frameworks',
     name: 'Framework-specific',
     modules: [
-      { frameworks: 'nuxt vue astro', icon: 'i-carbon-assembly-cluster', name: 'Components', logo: 'i-logos-vue', theme: 'green' },
-      { frameworks: 'nuxt vue astro', icon: 'i-carbon-network-4', name: 'Reactivity', logo: 'i-logos-vue', theme: 'green' },
-      { frameworks: 'nuxt vue astro', icon: 'i-ph-signpost-duotone', name: 'Router', logo: 'i-logos-vue', theme: 'green' },
-      { frameworks: 'nuxt vue astro', icon: 'i-icon-park-outline-pineapple', name: 'Pinia', logo: 'i-logos-vue', theme: 'green' },
-      { frameworks: 'nuxt', icon: 'i-ph-shapes-duotone', name: 'Nuxt modules', logo: 'i-logos-nuxt-icon', theme: 'teal' },
-      { frameworks: 'nuxt', icon: 'i-carbon-function', name: 'Auto imports', logo: 'i-logos-nuxt-icon', theme: 'teal' },
-      { frameworks: 'nuxt', icon: 'i-carbon-volume-file-storage', name: 'File router', logo: 'i-logos-nuxt-icon', theme: 'teal' },
-      { frameworks: 'nuxt nitro', icon: 'i-carbon-network-public', name: 'Server API', logo: 'i-unjs-nitro', theme: 'pink' },
+      {
+        frameworks: 'nuxt vue astro',
+        icon: 'i-carbon-assembly-cluster',
+        name: 'Components',
+        logo: 'i-logos-vue',
+        theme: 'green',
+      },
+      {
+        frameworks: 'nuxt vue astro',
+        icon: 'i-carbon-network-4',
+        name: 'Reactivity',
+        logo: 'i-logos-vue',
+        theme: 'green',
+      },
+      {
+        frameworks: 'nuxt vue astro',
+        icon: 'i-ph-signpost-duotone',
+        name: 'Router',
+        logo: 'i-logos-vue',
+        theme: 'green',
+      },
+      {
+        frameworks: 'nuxt vue astro',
+        icon: 'i-icon-park-outline-pineapple',
+        name: 'Pinia',
+        logo: 'i-logos-vue',
+        theme: 'green',
+      },
+      {
+        frameworks: 'nuxt',
+        icon: 'i-ph-shapes-duotone',
+        name: 'Nuxt modules',
+        logo: 'i-logos-nuxt-icon',
+        theme: 'teal',
+      },
+      {
+        frameworks: 'nuxt',
+        icon: 'i-carbon-function',
+        name: 'Auto imports',
+        logo: 'i-logos-nuxt-icon',
+        theme: 'teal',
+      },
+      {
+        frameworks: 'nuxt',
+        icon: 'i-carbon-volume-file-storage',
+        name: 'File router',
+        logo: 'i-logos-nuxt-icon',
+        theme: 'teal',
+      },
+      {
+        frameworks: 'nuxt nitro',
+        icon: 'i-carbon-network-public',
+        name: 'Server API',
+        logo: 'i-unjs-nitro',
+        theme: 'pink',
+      },
       { frameworks: 'next', icon: 'i-logos-nextjs-icon', name: 'Next.js DevTools' },
-      { frameworks: 'react astro next', icon: 'i-logos-react', name: 'React DevTools', theme: 'blue' },
-      { frameworks: 'react astro next', icon: 'i-carbon-data-set', name: 'State management', logo: 'i-logos-react', theme: 'blue' },
-      { frameworks: 'react astro next', icon: 'i-ph-signpost-duotone', name: 'Router', logo: 'i-logos-react', theme: 'blue' },
-      { frameworks: 'svelte astro', icon: 'i-ph-signpost-duotone', name: 'File router', logo: 'i-logos-svelte-icon', theme: 'red' },
-      { frameworks: 'svelte astro', icon: 'i-carbon-assembly-cluster', name: 'Components', logo: 'i-logos-svelte-icon', theme: 'red' },
-      { frameworks: 'solid astro', icon: 'i-carbon-network-4', name: 'Reactivity', logo: 'i-logos-solidjs-icon', theme: 'blue' },
-      { frameworks: 'astro', icon: 'i-carbon-page-scroll', name: 'Content', logo: 'i-logos-astro-icon', theme: 'orange' },
+      {
+        frameworks: 'react astro next',
+        icon: 'i-logos-react',
+        name: 'React DevTools',
+        theme: 'blue',
+      },
+      {
+        frameworks: 'react astro next',
+        icon: 'i-carbon-data-set',
+        name: 'State management',
+        logo: 'i-logos-react',
+        theme: 'blue',
+      },
+      {
+        frameworks: 'react astro next',
+        icon: 'i-ph-signpost-duotone',
+        name: 'Router',
+        logo: 'i-logos-react',
+        theme: 'blue',
+      },
+      {
+        frameworks: 'svelte astro',
+        icon: 'i-ph-signpost-duotone',
+        name: 'File router',
+        logo: 'i-logos-svelte-icon',
+        theme: 'red',
+      },
+      {
+        frameworks: 'svelte astro',
+        icon: 'i-carbon-assembly-cluster',
+        name: 'Components',
+        logo: 'i-logos-svelte-icon',
+        theme: 'red',
+      },
+      {
+        frameworks: 'solid astro',
+        icon: 'i-carbon-network-4',
+        name: 'Reactivity',
+        logo: 'i-logos-solidjs-icon',
+        theme: 'blue',
+      },
+      {
+        frameworks: 'astro',
+        icon: 'i-carbon-page-scroll',
+        name: 'Content',
+        logo: 'i-logos-astro-icon',
+        theme: 'orange',
+      },
     ],
   },
   {
@@ -110,7 +277,9 @@ const focusedModule = ref<ModuleItem>()
 const activeModule = computed(() => hoveredModule.value ?? focusedModule.value)
 
 function toggleFramework(framework: Framework) {
-  selectedFramework.value = selectedFramework.value === framework ? undefined : framework
+  selectedFramework.value = selectedFramework.value === framework
+    ? undefined
+    : framework
 }
 
 function moduleSupportsFramework(module: ModuleItem, framework: Framework) {

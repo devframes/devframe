@@ -13,8 +13,11 @@ export interface MessagesState {
 function shouldToast(entry: DevframeMessageEntry, prev: DevframeMessageEntry | undefined, isInitialFetch: boolean): boolean {
   if (!entry.notify)
     return false
-  if (!prev)
-    return isInitialFetch ? entry.status === 'loading' : true
+  if (!prev) {
+    return isInitialFetch
+      ? entry.status === 'loading'
+      : true
+  }
   return JSON.stringify(entry) !== JSON.stringify(prev)
 }
 
@@ -48,7 +51,9 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     let removedIds = result.removedIds
     if (result.full) {
       const retainedIds = new Set(result.entries.map(entry => entry.id))
-      removedIds = [...entryMap.keys()].filter(id => !retainedIds.has(id))
+      removedIds = [
+        ...entryMap.keys(),
+      ].filter(id => !retainedIds.has(id))
     }
     for (const id of removedIds) {
       entryMap.delete(id)

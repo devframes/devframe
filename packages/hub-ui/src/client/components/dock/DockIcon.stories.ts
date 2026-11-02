@@ -9,7 +9,9 @@ const meta = {
    * Render at a legible size, since DockIcon fills its box. Use the template-based
    * `<story/>` decorator (the stable Storybook Vue API).
    */
-  decorators: [() => ({ template: '<div class="w-8 h-8"><story /></div>' })],
+  decorators: [
+    () => ({ template: '<div class="w-8 h-8"><story /></div>' }),
+  ],
   argTypes: {
     icon: { control: false },
   },
@@ -33,7 +35,9 @@ export const Logo: Story = {
  * active theme is shown (toggle the theme toolbar to compare).
  */
 export const LightDark: Story = {
-  args: { icon: { light: 'ph:sun-duotone', dark: 'ph:moon-duotone' } },
+  args: {
+    icon: { light: 'ph:sun-duotone', dark: 'ph:moon-duotone' },
+  },
 }
 
 /** The bundled Devframes brand mark, referenced by the sentinel `builtin:` id. */

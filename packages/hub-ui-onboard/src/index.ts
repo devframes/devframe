@@ -31,7 +31,9 @@ function normalizeBase(base: string): string {
 function clientFile(): string {
   const here = fileURLToPath(new URL('.', import.meta.url))
   const sibling = join(here, 'client/embedded.js')
-  return existsSync(sibling) ? sibling : join(here, '../dist/client/embedded.js')
+  return existsSync(sibling)
+    ? sibling
+    : join(here, '../dist/client/embedded.js')
 }
 
 export function defaultMessages(productName: string): OnboardingMessages {
@@ -50,7 +52,10 @@ export function defaultMessages(productName: string): OnboardingMessages {
 }
 
 function json(body: unknown, status = 200): Response {
-  return Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
+  return Response.json(body, {
+    status,
+    headers: { 'Cache-Control': 'no-store' },
+  })
 }
 
 /**
@@ -82,13 +87,17 @@ async function toRequest(req: IncomingMessage): Promise<Request> {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
   const headers = new Headers()
   for (const [name, value] of Object.entries(req.headers)) {
-    for (const item of Array.isArray(value) ? value : [value]) {
+    for (const item of Array.isArray(value)
+      ? value
+      : [value]) {
       if (item !== undefined)
         headers.append(name, item)
     }
   }
   const method = req.method ?? 'GET'
-  const body = method === 'GET' || method === 'HEAD' ? undefined : Buffer.concat(await req.toArray())
+  const body = method === 'GET' || method === 'HEAD'
+    ? undefined
+    : Buffer.concat(await req.toArray())
   return new Request(url, { method, headers, body })
 }
 
@@ -121,18 +130,25 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   const stateFile = join(options.stateDir ?? join(cwd, 'node_modules/.devframe'), STATE_FILE)
   const plan = { cwd, packages: options.packages, dev: options.dev ?? true }
   const branding = options.branding ?? {}
-  const messages = { ...defaultMessages(branding.productName?.trim() || 'Devframes'), ...options.messages }
+  const messages = {
+    ...defaultMessages(branding.productName?.trim() || 'Devframes'),
+    ...options.messages,
+  }
 
   const disabled = readDisabled(stateFile)
   const installed = !disabled && packagesInstalled(plan)
-  let state: OnboardingState = disabled ? 'disabled' : installed ? 'installed' : 'idle'
+  let state: OnboardingState = disabled
+    ? 'disabled'
+    : installed ? 'installed' : 'idle'
   let error: OnboardingStatus['error']
   let delegate: OnboardingHandler | undefined
   let command: Promise<ResolvedCommand> | undefined
   const getCommand = () => command ??= resolveInstallCommand(plan)
 
   function fail(cause: unknown, fallback: () => Diagnostic): void {
-    const diagnostic = cause instanceof Diagnostic ? cause : fallback()
+    const diagnostic = cause instanceof Diagnostic
+      ? cause
+      : fallback()
     error = { code: diagnostic.code, message: diagnostic.message }
     state = 'error'
   }
@@ -141,11 +157,18 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   async function activate(): Promise<void> {
     try {
       const next = await options.onInstalled?.()
-      delegate = typeof next === 'function' ? next : undefined
+      delegate = typeof next === 'function'
+        ? next
+        : undefined
       state = delegate ? 'ready' : 'installed'
     }
     catch (cause) {
-      fail(cause, () => diagnostics.DF9003({ reason: cause instanceof Error ? cause.message : String(cause), cause }))
+      fail(cause, () => diagnostics.DF9003({
+        reason: cause instanceof Error
+          ? cause.message
+          : String(cause),
+        cause,
+      }))
     }
   }
 
@@ -215,7 +238,13 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   }
 
   async function status(): Promise<OnboardingStatus> {
-    return { state, command: await commandLine(), branding, messages, error }
+    return {
+      state,
+      command: await commandLine(),
+      branding,
+      messages,
+      error,
+    }
   }
 
   const handler: OnboardingHandler = async (request) => {
@@ -238,7 +267,9 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
     if (route === 'POST __onboard/install' || route === 'POST __onboard/disable') {
       if (!isSameOrigin(request))
         return new Response(null, { status: 403 })
-      return route.endsWith('disable') ? disable() : startInstall(request)
+      return route.endsWith('disable')
+        ? disable()
+        : startInstall(request)
     }
     return new Response(null, { status: 404 })
   }
@@ -253,7 +284,9 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
       toRequest(req)
         .then(request => handler(request))
         .then(response => sendResponse(res, response))
-        .catch(cause => next ? next(cause) : res.destroy(cause))
+        .catch(cause => next
+          ? next(cause)
+          : res.destroy(cause))
     },
     disabled,
     installed,

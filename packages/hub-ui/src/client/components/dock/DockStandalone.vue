@@ -32,7 +32,10 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
 
 /** Select from the visible dock rail through normal activation, including client scripts and group routing. */
 watch(
-  [() => context.docks.groupedEntries, isRpcTrusted],
+  [
+    () => context.docks.groupedEntries,
+    isRpcTrusted,
+  ],
   ([groups, trusted]) => {
     if (!trusted || context.docks.selectedId)
       return
