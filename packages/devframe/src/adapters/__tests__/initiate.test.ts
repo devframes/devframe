@@ -236,6 +236,48 @@ describe('adapters/handler', () => {
     }
   })
 
+  it('nodeMiddleware at base `/` hands unmatched paths back to the host', async () => {
+    const host = '127.0.0.1'
+    const port = await getPort({ port: 18135, host })
+
+    let devtoolsRef!: ReturnType<typeof initDevframe>
+    const server = createServer((req, res) => {
+      devtoolsRef.nodeMiddleware(req, res, () => {
+        res.statusCode = 200
+        res.setHeader('content-type', 'text/html')
+        res.end(`host app ${req.url}`)
+      })
+    })
+    // No distDir: the host app owns the pages, the devframe only its routes.
+    devtoolsRef = initDevframe(defineTestDef('handler-root'), { base: '/', auth: false, distDir: false, server })
+    await new Promise<void>(resolve => server.listen(port, host, resolve))
+
+    try {
+      await devtoolsRef.ready
+
+      // Every path sits inside base `/`, but the devframe has no route for
+      // these, so next() ran and the host app answered.
+      for (const path of ['/', '/main.tsx', '/nested/page?x=1']) {
+        const res = await fetch(`http://${host}:${port}${path}`)
+        expect(res.status).toBe(200)
+        expect(await res.text()).toBe(`host app ${path}`)
+      }
+
+      // The devframe's own routes still answer.
+      const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
+      expect(meta).toEqual({ backend: 'websocket', websocket: { path: '__ws' }, sse: { path: '__sse' } })
+
+      // Without a `next`, a miss is still the devframe's own 404.
+      const bare = await devtoolsRef.handler(new Request(`http://${host}:${port}/main.tsx`))
+      expect(bare.status).toBe(404)
+    }
+    finally {
+      await devtoolsRef.close()
+      server.close()
+      server.closeAllConnections()
+    }
+  })
+
   it('shared-server tier: a TLS host server advertises wss://', async () => {
     const host = '127.0.0.1'
     const server = createSecureServer({ allowHTTP1: true })

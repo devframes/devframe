@@ -17,7 +17,7 @@ import process from 'node:process'
 import { Server as TlsServer } from 'node:tls'
 import { validateOriginCandidate } from 'devframe/utils/origin'
 import { joinURL, withLeadingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'devframe/utils/url'
-import { defineHandler, H3 as H3App, toNodeHandler } from 'h3'
+import { defineHandler, fromNodeHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
@@ -663,6 +663,35 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     maybeRegister()
   }
 
+  /**
+   * The host stack's `next` for each in-flight `nodeMiddleware` request at
+   * base `/`, read by the fall-through middleware mounted at the end of
+   * `init()`.
+   */
+  const hostFallthrough = new WeakMap<object, () => void>()
+
+  /**
+   * A devframe at `/` shares the origin root with its host, so it can't claim
+   * every path the way it owns a `/__<id>/` base. A `nodeMiddleware` request
+   * that no route answers goes to the host's `next` instead of h3's 404, so
+   * the host app (e.g. Vite with the bridge) keeps serving its own pages.
+   */
+  function mountHostFallthrough(): void {
+    if (base !== '/')
+      return
+    app.use((event, next) => {
+      if (event.context.matchedRoute)
+        return next()
+      const nodeReq = event.runtime?.node?.req
+      const hostNext = nodeReq && hostFallthrough.get(nodeReq)
+      if (!hostNext)
+        return next()
+      hostFallthrough.delete(nodeReq)
+      // Resolves once the host stack has sent its own response.
+      return fromNodeHandler((_req, _res, _next) => hostNext())(event)
+    })
+  }
+
   let started: StartedServer | undefined
   let transport: WsRpcTransport | undefined
   let dispose: (() => Promise<void>) | undefined
@@ -894,6 +923,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
 
     await options.mount?.(ctx, meta, api)
 
+    // Last in the chain, after every route the instance mounts.
+    mountHostFallthrough()
+
     // A pinned origin means the registry record needn't wait for a first
     // request.
     maybeRegister()
@@ -970,6 +1002,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
           const { toNodeHandler } = await import('h3/node')
           nodeHandler = toNodeHandler(app)
         }
+        if (next && base === '/')
+          hostFallthrough.set(req, () => next())
         return nodeHandler(req, res)
       })
       .catch((err: unknown) => {
