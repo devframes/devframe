@@ -2,6 +2,7 @@ import type { Preset } from 'unocss'
 import { fileURLToPath } from 'node:url'
 import { presetAnthonyDesign, resolvePrimary } from '@antfu/design/unocss'
 import {
+  cssIdRE,
   defineConfig,
   presetIcons,
   presetWind4,
@@ -54,6 +55,14 @@ export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
      */
     content: {
       filesystem: [fileURLToPath(new URL('./design.ts', import.meta.url))],
+      /**
+       * Restates UnoCSS's default pipeline exclude. Without it, `mergeConfigs`
+       * leaves `exclude: []`, and UnoCSS 66.11 then treats every module as
+       * excluded, so no utilities are extracted from app sources.
+       */
+      pipeline: {
+        exclude: [cssIdRE],
+      },
     },
     /**
      * Wind leaves bare `border`/`border-b` at currentColor; restore the subtle
