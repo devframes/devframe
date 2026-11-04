@@ -2,7 +2,7 @@
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
-import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
+import { useEventListener, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { t } from '../../i18n'
@@ -10,6 +10,7 @@ import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockIds, 
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
+import { useSafeArea } from '../../utils/useSafeArea'
 import BrandMark from '../icons/BrandMark.vue'
 import {
   dockLayoutCssVars,
@@ -39,10 +40,12 @@ const layout = computed(() => resolveDockLayout(props.layout))
 
 const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')
 
-const safeArea = useScreenSafeArea()
+const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
+
+const safeArea = useSafeArea(anchorEl)
 
 function toNumber(value: string) {
-  const num = +value
+  const num = Number.parseFloat(value)
   if (Number.isNaN(num))
     return 0
   return num
@@ -61,7 +64,6 @@ const panelMargins = computed(() => resolveViewportMargins(
 ))
 
 const dockEl = useTemplateRef<HTMLDivElement>('dockEl')
-const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
 
 const recalculateCounter = ref(0)
 const isHovering = ref(false)
