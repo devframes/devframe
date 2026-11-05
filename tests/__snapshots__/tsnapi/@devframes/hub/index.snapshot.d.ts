@@ -216,7 +216,7 @@ export interface DevframeMessagesHost extends DevframeMessagesLevelShortcuts {
   update: (_: string, _: Partial<DevframeMessageEntryInput>) => Promise<DevframeMessageEntry | undefined>;
   remove: (_: string) => Promise<void>;
   clear: () => Promise<void>;
-  listSince: (_?: number | null) => DevframeMessagesListDelta;
+  listSince: (_?: number | null, _?: string | null) => DevframeMessagesListDelta;
 }
 export interface DevframeMessagesLevelShortcuts {
   info: (_: string, _?: DevframeMessageShortcutInput) => Promise<DevframeMessageHandle>;
@@ -229,6 +229,7 @@ export interface DevframeMessagesListDelta {
   entries: DevframeMessageEntry[];
   removedIds: string[];
   version: number;
+  instanceId?: string;
   full: boolean;
 }
 export interface DevframePtyExecuteOptions {

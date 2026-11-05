@@ -31,6 +31,7 @@ export function useMessages(rpc: DevframeRpcClient): Reactive<MessagesState> {
 
   const entryMap = new Map<string, DevframeMessageEntry>()
   let lastVersion: number | null = null
+  let lastInstanceId: string | null = null
 
   // Serialize refreshes so a broadcast landing mid-fetch can't interleave
   // cursor updates; the cursor keeps each pass cheap.
@@ -41,7 +42,7 @@ export function useMessages(rpc: DevframeRpcClient): Reactive<MessagesState> {
       // no-args snapshot; live servers return the full list either way.
       const result = (lastVersion == null
         ? await rpc.call('devframes:plugin:messages:list')
-        : await rpc.call('devframes:plugin:messages:list', lastVersion)) as DevframeMessagesListDelta
+        : await rpc.call('devframes:plugin:messages:list', lastVersion, lastInstanceId)) as DevframeMessagesListDelta
       if (result.full)
         entryMap.clear()
       // Apply removals before upserts, since an id can be evicted and re-added
@@ -52,6 +53,7 @@ export function useMessages(rpc: DevframeRpcClient): Reactive<MessagesState> {
         entryMap.set(entry.id, entry)
       state!.entries = Array.from(entryMap.values())
       lastVersion = result.version
+      lastInstanceId = result.instanceId ?? null
     }).catch(() => {
       // Transport hiccup; the next broadcast or trust flip retries.
     })

@@ -36,6 +36,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
   const entryMap = new Map<string, DevframeMessageEntry>()
   let isInitialFetch = true
   let lastVersion: number | null = null
+  let lastInstanceId: string | null = null
 
   async function updateMessages() {
     // The feed is served by `@devframes/plugin-messages` (the hub itself ships
@@ -44,6 +45,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     const result = await context.rpc.call(
       'devframes:plugin:messages:list' as any,
       lastVersion,
+      lastInstanceId,
     ) as DevframeMessagesListDelta
     let newCount = 0
 
@@ -74,6 +76,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     state.entries = Array.from(entryMap.values())
     state.unreadCount += newCount
     lastVersion = result.version
+    lastInstanceId = result.instanceId ?? null
     isInitialFetch = false
   }
 

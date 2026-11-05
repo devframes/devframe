@@ -69,6 +69,7 @@ export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
     time: number;
   }>;
   private _autoDeleteTimers;
+  private readonly _instanceId;
   private _clock;
   private _removalsTrimmedAt;
   private _tick;
@@ -83,7 +84,7 @@ export declare class DevframeMessagesHost implements DevframeMessagesHost$1 {
   success(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
   debug(_: string, _?: DevframeMessageShortcutInput): Promise<DevframeMessageHandle>;
   clear(): Promise<void>;
-  listSince(_?: number | null): DevframeMessagesListDelta;
+  listSince(_?: number | null, _?: string | null): DevframeMessagesListDelta;
   private _createHandle;
 }
 export declare class DevframeTerminalsHost implements DevframeTerminalsHost$1 {

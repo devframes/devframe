@@ -187,7 +187,7 @@ export interface DevframeMessagesClient extends DevframeMessagesLevelShortcuts {
 /**
  * A snapshot or delta of the message list, as returned by
  * {@link DevframeMessagesHost.listSince}. Consumers apply `removedIds`
- * first, then upsert `entries`, and pass `version` back as `since` on the
+ * first, then upsert `entries`, and pass `version` and `instanceId` back on the
  * next call.
  */
 export interface DevframeMessagesListDelta {
@@ -197,6 +197,8 @@ export interface DevframeMessagesListDelta {
   removedIds: string[]
   /** The version cursor; pass back as `since` on the next call */
   version: number
+  /** Instance that issued the cursor, when supplied by the messages host. */
+  instanceId?: string
   /**
    * When `true`, `entries` is the complete snapshot and any locally cached
    * list must be reset before applying it.
@@ -232,11 +234,12 @@ export interface DevframeMessagesHost extends DevframeMessagesLevelShortcuts {
   clear: () => Promise<void>
   /**
    * Read the message list incrementally. Pass the `version` from the
-   * previous result as `since` to receive only the entries modified and the
-   * ids removed after that point; pass `null`/`undefined` for the initial
+   * previous result as `since`, together with its `instanceId`, to receive
+   * only the entries modified and the ids removed after that point; pass `null`/`undefined` for the initial
    * full snapshot. When the host can no longer compute a reliable delta for
    * the given cursor (trimmed removal history, or a cursor from another host
    * incarnation), the result carries `full: true` with the complete list.
+   * Calls without an instance ID also receive a full snapshot.
    */
-  listSince: (since?: number | null) => DevframeMessagesListDelta
+  listSince: (since?: number | null, instanceId?: string | null) => DevframeMessagesListDelta
 }

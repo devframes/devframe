@@ -68,10 +68,24 @@ describe('messages dev-server (hub context)', () => {
     await server.ctx.messages.add({ id: 'later', level: 'warn', message: 'later' })
     await server.ctx.messages.remove('from-server')
 
-    const delta = await rpc.$call('devframes:plugin:messages:list', full.version) as DevframeMessagesListDelta
+    const delta = await rpc.$call('devframes:plugin:messages:list', full.version, full.instanceId) as DevframeMessagesListDelta
     expect(delta.full).toBe(false)
     expect(delta.entries.map(e => e.id)).toEqual(['later'])
     expect(delta.removedIds).toContain('from-server')
+  })
+
+  it('returns full snapshots for foreign and legacy cursors over RPC', async () => {
+    const rpc = connect(server)
+    const full = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
+    for (const args of [
+      [full.version],
+      [full.version, 'previous-instance'],
+    ]) {
+      const result = await rpc.$call('devframes:plugin:messages:list', ...args) as DevframeMessagesListDelta
+      expect(result.full).toBe(true)
+      expect(result.entries).toEqual(full.entries)
+      expect(result.instanceId).toBe(full.instanceId)
+    }
   })
 
   it('add stamps browser origin; update patches; clear empties', async () => {
