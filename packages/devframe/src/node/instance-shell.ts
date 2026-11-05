@@ -807,11 +807,10 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     throw lastError
   }
 
-  // Shared-server tier: bind the WS upgrade on the host's own server, or
-  // (when a native runtime can't re-host that foreign `node:http` server) fall
-  // back to a WS-less `StartedServer` and let SSE carry the transport.
+  // Shared HTTP servers retain a handle and RPC group even when WS is
+  // disabled or a native runtime cannot bind upgrades on the supplied server.
   async function startServerTier(): Promise<TierBinding> {
-    if (nativeRuntime && !ws.url) {
+    if (wsDisabled || (nativeRuntime && !ws.url)) {
       const core = await ensureCore()
       started = {
         origin: currentOrigin() ?? '',
@@ -850,7 +849,7 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         wsAvailable: !wsDisabled,
       }
     }
-    if (tier === 'server')
+    if (tier === 'server' || (tier === 'disabled' && options.server))
       return startServerTier()
     if (tier === 'external')
       return { websocketMeta: ws.url!, wsAvailable: !wsDisabled }

@@ -219,8 +219,7 @@ export async function createDevServer(
   }
 
   const internals = getInstanceInternals(devframe)
-  // Every dev-server configuration binds a local transport (`server` is
-  // always passed), so the bound-transport handle is always present.
+  // The supplied HTTP server has a handle even when WS is disabled.
   const transport = internals.started!
 
   await options.onReady?.({ origin, port, app })
@@ -232,7 +231,10 @@ export async function createDevServer(
     app,
     ws: transport.ws,
     rpcGroup: transport.rpcGroup,
-    connectionMeta: transport.connectionMeta,
+    connectionMeta: () => ({
+      ...transport.connectionMeta(),
+      ...devframe.connectionMeta(),
+    }),
     async close() {
       // Instance teardown removes the registry record, detaches the WS
       // transport (and closes any dedicated-port socket server), and disposes
