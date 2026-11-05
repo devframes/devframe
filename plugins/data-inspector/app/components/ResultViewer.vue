@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import type { NodePath, QueryStats } from '@devframes/plugin-data-inspector/engine'
+import type { QueryObservation } from '../composables/query-observation'
 import ActionIconButton from '@antfu/design/components/Action/ActionIconButton.vue'
 import DisplayBadge from '@antfu/design/components/Display/DisplayBadge.vue'
 import DisplayBytes from '@antfu/design/components/Display/DisplayBytes.vue'
 import DisplayDate from '@antfu/design/components/Display/DisplayDate.vue'
 import DisplayDuration from '@antfu/design/components/Display/DisplayDuration.vue'
-import { computed, shallowRef, watch } from 'vue'
+import FormTextarea from '@antfu/design/components/Form/FormTextarea.vue'
+import OverlayModal from '@antfu/design/components/Overlay/OverlayModal.vue'
+import { computed, onUnmounted, shallowRef, watch } from 'vue'
 import { useDiscoveryViewer } from '../composables/discovery'
 import { prepareForDisplay } from '../composables/display-transform'
+import { observationMarkdown } from '../composables/query-observation'
 import { colorScheme } from '../composables/scheme'
 import EditPanel from './EditPanel.vue'
 
 const props = defineProps<{
+  observation: QueryObservation | null
+  observationNotices: string[]
   result: unknown
   hasResult: boolean
   stats: (QueryStats & { rpcMs: number }) | null
@@ -72,16 +78,38 @@ const lockTooltip = computed(() => {
   return ''
 })
 
-const copied = shallowRef(false)
+const copied = shallowRef<'json' | 'markdown' | null>(null)
+const copying = shallowRef(false)
+const manualCopyOpen = shallowRef(false)
+const manualCopyText = shallowRef('')
+const copyError = shallowRef('')
 let copiedTimer: ReturnType<typeof setTimeout> | undefined
-function copyResult(): void {
+onUnmounted(() => clearTimeout(copiedTimer))
+
+async function copyResult(format: 'json' | 'markdown'): Promise<void> {
+  if (!props.hasResult || !props.observation || copying.value)
+    return
+  // Serialize at the click, before a refresh can replace the observation.
+  const text = format === 'markdown'
+    ? observationMarkdown(props.observation, props.observationNotices)
+    : JSON.stringify(props.observation.result, null, 2) ?? 'null'
+  copying.value = true
+  copied.value = null
+  copyError.value = ''
+  clearTimeout(copiedTimer)
   try {
-    void navigator.clipboard.writeText(JSON.stringify(props.result, null, 2))
-    copied.value = true
-    clearTimeout(copiedTimer)
-    copiedTimer = setTimeout(() => (copied.value = false), 1200)
+    await navigator.clipboard.writeText(text)
+    copied.value = format
+    copiedTimer = setTimeout(() => (copied.value = null), 1200)
   }
-  catch {}
+  catch {
+    copyError.value = 'Clipboard write failed. Select and copy the complete text below.'
+    manualCopyText.value = text
+    manualCopyOpen.value = true
+  }
+  finally {
+    copying.value = false
+  }
 }
 </script>
 
@@ -138,13 +166,22 @@ function copyResult(): void {
         @click="viewer.setExpanded(1)"
       />
       <ActionIconButton
-        v-if="hasResult"
         class="text-sm"
-        :icon="copied ? 'i-ph:check' : 'i-ph:copy-duotone'"
+        :disabled="!hasResult || copying"
+        :icon="copied === 'json' ? 'i-ph:check' : 'i-ph:copy-duotone'"
         label="Copy result as JSON"
         tooltip="Copy the result as JSON"
-        @click="copyResult"
+        @click="copyResult('json')"
       />
+      <ActionIconButton
+        class="text-sm"
+        :disabled="!hasResult || copying"
+        :icon="copied === 'markdown' ? 'i-ph:check' : 'i-ph:file-text-duotone'"
+        label="Copy result with context"
+        tooltip="Copy result with context"
+        @click="copyResult('markdown')"
+      />
+      <span class="sr-only" role="status">{{ copied ? 'Copied to clipboard' : '' }}</span>
       <ActionIconButton
         class="text-sm"
         :icon="running ? 'i-ph:arrows-clockwise animate-spin' : 'i-ph:arrows-clockwise'"
@@ -155,6 +192,14 @@ function copyResult(): void {
       />
     </div>
 
+    <div v-if="hasResult && observationNotices.length" class="px-3 py-2 text-xs color-muted border-b border-base" role="status">
+      <p v-for="notice in observationNotices" :key="notice">
+        {{ notice }}
+      </p>
+    </div>
+    <OverlayModal v-model:open="manualCopyOpen" title="Copy manually" :description="copyError">
+      <FormTextarea v-model="manualCopyText" readonly :rows="14" class="font-mono text-xs" aria-label="Complete copy text" @focus="($event.target as HTMLTextAreaElement).select()" />
+    </OverlayModal>
     <div
       v-if="error"
       class="mx-3 mt-2 px-3 py-2 font-mono text-xs whitespace-pre-wrap rounded-lg border border-red-600/40 bg-red-500:8 color-red-700 dark:(border-red-400/40 color-red-300)"
@@ -173,7 +218,7 @@ function copyResult(): void {
     <div v-if="!hasResult" class="flex-1 grid place-items-center select-none">
       <div class="flex flex-col items-center gap-2 color-faint">
         <span class="i-ph:tree-structure-duotone text-3xl" />
-        <span class="text-sm">Results render here, start typing a query</span>
+        <span class="text-sm">Run a successful query to view and copy its result</span>
       </div>
     </div>
   </div>

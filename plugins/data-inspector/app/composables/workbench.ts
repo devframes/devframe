@@ -8,6 +8,7 @@ import type { DataSourceMeta, FilterOptions, NodePath, QueryOutcome, QueryStats,
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
 import type { InjectionKey } from 'vue'
+import type { QueryObservation } from './query-observation'
 import jora from 'jora'
 import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
 import { backend, connection } from './rpc'
@@ -178,6 +179,22 @@ export function useWorkbench() {
   const statsStale = ref(false)
   const result = shallowRef<unknown>()
   const hasResult = ref(false)
+  const observation = shallowRef<QueryObservation | null>(null)
+  const observationNotices = computed(() => {
+    const saved = observation.value
+    if (!saved)
+      return []
+    const notices: string[] = []
+    if (saved.query !== (query.value.trim() || '$') || FILTER_KEYS.some(key => saved.filters[key] !== settings[key]))
+      notices.push('Query conditions changed. This result uses the earlier conditions shown in the copy.')
+    if (running.value)
+      notices.push('A new query is pending. This is the previous successful result.')
+    if (serverError.value)
+      notices.push('The latest query failed. This is an earlier successful result.')
+    if (syntax.value.kind !== 'ok')
+      notices.push('The current query has incomplete or invalid syntax and was not executed.')
+    return notices
+  })
   /** When the last successful query landed, driving the "ran … ago" label. */
   const lastRunAt = ref<number | null>(null)
 
@@ -270,12 +287,17 @@ export function useWorkbench() {
       syntax.value = { kind: 'ok' }
     }
 
+    const request = {
+      source: { id: sourceId.value, title: activeSource.value?.title ?? sourceId.value },
+      query: text,
+      filters: { ...settings },
+    }
     const seq = ++runSeq
     running.value = true
     const started = performance.now()
     let outcome: QueryOutcome
     try {
-      outcome = await backend().query(sourceId.value, text, { ...settings })
+      outcome = await backend().query(request.source.id, request.query, request.filters)
     }
     catch (error) {
       if (seq === runSeq) {
@@ -305,6 +327,12 @@ export function useWorkbench() {
     result.value = outcome.result
     hasResult.value = true
     lastRunAt.value = Date.now()
+    observation.value = {
+      ...request,
+      receivedAt: lastRunAt.value,
+      result: outcome.result,
+      normalize: { ...outcome.stats.normalize },
+    }
   }
 
   function scheduleRun(): void {
@@ -500,6 +528,17 @@ export function useWorkbench() {
     scheduleRun()
   })
   watch(sourceId, () => {
+    ++runSeq
+    running.value = false
+    result.value = undefined
+    hasResult.value = false
+    observation.value = null
+    lastRunAt.value = null
+    stats.value = null
+    statsStale.value = false
+    serverError.value = null
+  }, { flush: 'sync' })
+  watch(sourceId, () => {
     suggestions.value = []
     restoreDraft()
     syncUrl()
@@ -569,6 +608,8 @@ export function useWorkbench() {
     statsStale,
     result,
     hasResult,
+    observation,
+    observationNotices,
     lastRunAt,
     suggestions,
     skeleton,
