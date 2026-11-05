@@ -89,6 +89,8 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
         <Pane class="min-w-0">
           <ResultViewer
             :result="wb.result.value"
+            :observation="wb.observation.value"
+            :observation-notices="wb.observationNotices.value"
             :has-result="wb.hasResult.value"
             :stats="wb.stats.value"
             :stats-stale="wb.statsStale.value"
