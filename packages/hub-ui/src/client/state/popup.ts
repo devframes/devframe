@@ -1,4 +1,5 @@
 import type { DocksContext } from '@devframes/hub/client'
+import { CLIENT_CONTEXT_KEY } from '@devframes/hub/client'
 import { createEventEmitter } from 'devframe/utils/events'
 import { shallowRef, watch } from 'vue'
 import { applyDocumentHead, applyPrimaryColor, useBranding } from './branding'
@@ -124,6 +125,9 @@ async function mountStandaloneApp(context: DocksContext, popup: Window) {
   // endpoint; fall back to the raw client meta.
   ;(popup as Window & { [DEVFRAME_CONNECTION_META_KEY]?: unknown })[DEVFRAME_CONNECTION_META_KEY]
     = (globalThis as Record<string, unknown>)[DEVFRAME_CONNECTION_META_KEY] ?? context.rpc.connectionMeta
+
+  // Let iframe bootstraps recognize the Hub before its views mount.
+  ;(popup as Window & { [CLIENT_CONTEXT_KEY]?: DocksContext })[CLIENT_CONTEXT_KEY] = context
 
   const appRoot = popup.document.createElement('div')
   appRoot.id = 'devframes-popup-root'
