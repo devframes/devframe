@@ -7,7 +7,7 @@ import type { StaticAssetsSource } from '../types/remote-assets'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
 import { open } from 'devframe/utils/open'
-import { withBase } from 'devframe/utils/url'
+import { joinURL, withBase } from 'devframe/utils/url'
 import { H3, toNodeHandler } from 'h3'
 import { diagnostics } from '../node/diagnostics'
 import { isAddressInUse, listenWithLoopbackTwin } from '../node/listen'
@@ -231,9 +231,15 @@ export async function createDevServer(
     app,
     ws: transport.ws,
     rpcGroup: transport.rpcGroup,
-    connectionMeta: () => ({
-      ...devframe.connectionMeta(),
-    }),
+    connectionMeta() {
+      const meta = structuredClone(devframe.connectionMeta())
+      // A caller can pass the handle to a viewer outside the devframe mount.
+      for (const endpoint of [meta.websocket, meta.sse]) {
+        if (typeof endpoint === 'object' && endpoint.host == null && endpoint.port == null && endpoint.path != null)
+          endpoint.path = joinURL(basePath, endpoint.path)
+      }
+      return meta
+    },
     async close() {
       // Instance teardown removes the registry record, detaches the WS
       // transport (and closes any dedicated-port socket server), and disposes

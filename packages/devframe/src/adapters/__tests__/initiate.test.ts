@@ -6,7 +6,7 @@ import { createSecureServer } from 'node:http2'
 import { isIP } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { defineDevframe } from 'devframe'
+import { defineDevframe, defineRpcFunction } from 'devframe'
 import { createRpcClient } from 'devframe/rpc/client'
 import { createWsRpcChannel } from 'devframe/rpc/transports/ws-client'
 import { getPort } from 'get-port-please'
@@ -86,12 +86,12 @@ describe('adapters/handler', () => {
       expect(await index.text()).toContain('handler test')
 
       const ctx = await devtools.context
-      ctx.rpc.register({
+      ctx.rpc.register(defineRpcFunction({
         name: 'test:late-json',
         type: 'query',
         jsonSerializable: true,
         handler: () => 'ok',
-      })
+      }))
       const metaRes = await devtools.handler(new Request('http://localhost:3000/__handler-test/__connection.json'))
       expect(metaRes.status).toBe(200)
       expect(await metaRes.json()).toEqual({

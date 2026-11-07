@@ -69,7 +69,7 @@ describe('dev server transport handle', () => {
         expect(handle.rpcGroup).toBeDefined()
         expect(handle.connectionMeta()).toMatchObject({
           backend: 'sse',
-          sse: { path: '__sse' },
+          sse: { path: '/__sse' },
         })
         await vi.waitFor(() => expect(readDevframeInstances({ instancesDir: registryDir })).toHaveLength(1))
         await checkRpcCalls(handle, '/', 'sse')
@@ -96,7 +96,24 @@ describe('dev server transport handle', () => {
     const handle = await createDevServer(definition, { ...options, basePath, sse })
     try {
       const httpMeta = await fetch(`${handle.origin}${basePath}__connection.json`).then(response => response.json())
-      expect(handle.connectionMeta()).toMatchObject(httpMeta)
+      const sseRoute = typeof sse === 'object'
+        ? sse.route
+        : '__sse'
+      expect(httpMeta).toMatchObject({
+        websocket: { path: '__ws' },
+        sse: { path: sseRoute },
+      })
+      const snapshot = handle.connectionMeta()
+      expect(snapshot).toEqual({
+        ...httpMeta,
+        websocket: { path: `${basePath}__ws` },
+        sse: { path: `${basePath}${sseRoute}` },
+      })
+      expect(typeof snapshot.websocket).toBe('object')
+      if (typeof snapshot.websocket === 'object')
+        snapshot.websocket.path = '/viewer/__ws'
+      expect(handle.connectionMeta().websocket).toEqual({ path: `${basePath}__ws` })
+      expect(await fetch(`${handle.origin}${basePath}__connection.json`).then(response => response.json())).toEqual(httpMeta)
       expect(handle.connectionMeta().jsonSerializableMethods).toContain('test:json')
       expect(resolveClientTransport('auto', handle.connectionMeta())).toBe('websocket')
       await checkRpcCalls(handle, basePath, 'sse')
@@ -148,7 +165,9 @@ async function checkRpcCalls(handle: Awaited<ReturnType<typeof createDevServer>>
   const client = await getDevframeRpcClient({
     connection: {
       connectionMeta,
-      metaBaseUrl,
+      metaBaseUrl: source === 'http'
+        ? metaBaseUrl
+        : handle.origin,
     },
     transport,
     otpParam: false,
