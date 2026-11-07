@@ -9,6 +9,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readDevframeInstances } from '../../node/instance-registry'
 import { createDevServer } from '../dev'
 
+const jsonHandler = vi.fn((value: unknown) => value)
+
 const definition = defineDevframe({
   id: 'dev-transports-test',
   name: 'Dev transports test',
@@ -20,13 +22,13 @@ const definition = defineDevframe({
     ctx.rpc.register(defineRpcFunction({
       name: 'test:probe',
       type: 'query',
-      handler: () => 'connected',
+      handler: (value: unknown) => value,
     }))
     ctx.rpc.register(defineRpcFunction({
       name: 'test:json',
       type: 'query',
       jsonSerializable: true,
-      handler: (value: unknown) => value,
+      handler: jsonHandler,
     }))
   },
 })
@@ -70,7 +72,8 @@ describe('dev server transport handle', () => {
           sse: { path: '__sse' },
         })
         await vi.waitFor(() => expect(readDevframeInstances({ instancesDir: registryDir })).toHaveLength(1))
-        await callThroughHandle(handle, '/', 'sse')
+        await checkRpcCalls(handle, '/', 'sse')
+        await checkRpcCalls(handle, '/', 'sse', 'http')
       }
       finally {
         await handle.close()
@@ -96,8 +99,9 @@ describe('dev server transport handle', () => {
       expect(handle.connectionMeta()).toMatchObject(httpMeta)
       expect(handle.connectionMeta().jsonSerializableMethods).toContain('test:json')
       expect(resolveClientTransport('auto', handle.connectionMeta())).toBe('websocket')
-      await callThroughHandle(handle, basePath, 'sse')
-      await callThroughHandle(handle, basePath, 'websocket')
+      await checkRpcCalls(handle, basePath, 'sse')
+      await checkRpcCalls(handle, basePath, 'websocket')
+      await checkRpcCalls(handle, basePath, 'websocket', 'http')
     }
     finally {
       await handle.close()
@@ -109,7 +113,7 @@ describe('dev server transport handle', () => {
     const handle = await createDevServer(definition, { ...options, sse: false })
     try {
       expect(handle.connectionMeta().sse).toBeUndefined()
-      await callThroughHandle(handle, '/', 'websocket')
+      await checkRpcCalls(handle, '/', 'websocket')
     }
     finally {
       await handle.close()
@@ -124,6 +128,7 @@ describe('dev server transport handle', () => {
       expect(handle.connectionMeta()).toMatchObject({ backend: 'none' })
       expect(handle.connectionMeta().websocket).toBeUndefined()
       expect(handle.connectionMeta().sse).toBeUndefined()
+      expect(handle.connectionMeta()).not.toHaveProperty('jsonSerializableMethods')
       expect((await fetch(`${handle.origin}/__connection.json`)).status).toBe(200)
     }
     finally {
@@ -133,13 +138,17 @@ describe('dev server transport handle', () => {
   })
 })
 
-async function callThroughHandle(handle: Awaited<ReturnType<typeof createDevServer>>, basePath: string, transport: 'sse' | 'websocket') {
+async function checkRpcCalls(handle: Awaited<ReturnType<typeof createDevServer>>, basePath: string, transport: 'sse' | 'websocket', source: 'handle' | 'http' = 'handle') {
   vi.stubGlobal('location', new URL(`${handle.origin}${basePath}`))
   vi.stubGlobal('navigator', { userAgent: 'vitest' })
+  const metaBaseUrl = `${handle.origin}${basePath}__connection.json`
+  const connectionMeta = source === 'http'
+    ? await fetch(metaBaseUrl).then(response => response.json())
+    : handle.connectionMeta()
   const client = await getDevframeRpcClient({
     connection: {
-      connectionMeta: handle.connectionMeta(),
-      metaBaseUrl: `${handle.origin}${basePath}__connection.json`,
+      connectionMeta,
+      metaBaseUrl,
     },
     transport,
     otpParam: false,
@@ -148,14 +157,15 @@ async function callThroughHandle(handle: Awaited<ReturnType<typeof createDevServ
   try {
     await client.ensureTrusted(2000)
     expect(client.transport).toBe(transport)
-    await expect((client.call as any)('test:probe')).resolves.toBe('connected')
+    const map = new Map([
+      ['key', 42],
+    ])
+    await expect((client.call as any)('test:probe', map)).resolves.toEqual(map)
     expect(handle.rpcGroup.clients.length).toBeGreaterThan(0)
-    if (handle.connectionMeta().jsonSerializableMethods?.includes('test:json')) {
-      await expect((client.call as any)('test:json', { value: 42 })).resolves.toEqual({ value: 42 })
-      await expect((client.call as any)('test:json', new Map([
-        ['key', 42],
-      ]))).rejects.toThrow()
-    }
+    jsonHandler.mockClear()
+    await expect((client.call as any)('test:json', { value: 42 })).resolves.toEqual({ value: 42 })
+    await expect((client.call as any)('test:json', map)).rejects.toThrow(/Map/)
+    expect(jsonHandler).toHaveBeenCalledTimes(1)
   }
   finally {
     client.close?.()

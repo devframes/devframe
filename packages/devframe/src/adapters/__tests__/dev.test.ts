@@ -141,6 +141,7 @@ describe('adapters/dev', () => {
       // relative to `__connection.json`, never a baked-in host/port.
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -250,6 +251,7 @@ describe('adapters/dev', () => {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__sockets' },
         sse: { path: '__sse' },
       })
@@ -290,6 +292,7 @@ describe('adapters/dev', () => {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { port: wsPort, path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -334,6 +337,7 @@ describe('adapters/dev', () => {
       // endpoint stays same-origin and rides the tunnel like the meta itself.
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: 'wss://devtools.example.com/relay/__ws',
         sse: { path: '__sse' },
       })
@@ -462,6 +466,7 @@ describe('adapters/dev', () => {
       const meta = await res.json()
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })

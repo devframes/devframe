@@ -9,7 +9,6 @@ import type { Duplex } from 'node:stream'
 import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../types'
 import type { DevframeSseOptions, DevframeWsOptions } from '../types/devframe'
 import type { DevframeAuthHandler } from './auth'
-import type { RpcFunctionsHostImpl } from './host-functions'
 import type { DevframeInstanceRecord, DevframeInstanceRegistration } from './instance-registry'
 import type { ContextRpcServer } from './rpc-core'
 import { createServer } from 'node:http'
@@ -74,16 +73,20 @@ interface TierBinding {
   wsAvailable: boolean
 }
 
-function websocketConnectionMeta(rpcHost: RpcFunctionsHostImpl, path: string | undefined): ConnectionMeta {
+function getJsonSerializableMethods(rpc: DevframeNodeContext['rpc']): string[] {
   const jsonSerializableMethods: string[] = []
-  for (const def of rpcHost.definitions.values()) {
+  for (const def of rpc.definitions.values()) {
     if (def.jsonSerializable === true)
       jsonSerializableMethods.push(def.name)
   }
+  return jsonSerializableMethods
+}
+
+function websocketConnectionMeta(rpc: DevframeNodeContext['rpc'], path: string | undefined): ConnectionMeta {
   return {
     backend: 'websocket',
     websocket: { path },
-    jsonSerializableMethods,
+    jsonSerializableMethods: getJsonSerializableMethods(rpc),
   }
 }
 
@@ -101,7 +104,6 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
   const app = new H3App()
   const ownsHttpServer = !options.server
   const httpServer = options.server ?? createServer(toNodeHandler(app))
-  const rpcHost = context.rpc as RpcFunctionsHostImpl
   const websocket = options.websocket !== false
 
   let ws: NodeAdapter | undefined
@@ -170,7 +172,7 @@ async function bindHttpAndWs(options: BindHttpAndWsOptions): Promise<StartedServ
     app,
     ws,
     rpcGroup: core.rpcGroup,
-    connectionMeta: () => websocketConnectionMeta(rpcHost, options.path),
+    connectionMeta: () => websocketConnectionMeta(context.rpc, options.path),
     async close() {
       httpServer.off('listening', publishWsEndpoint)
       await closeWs()
@@ -246,7 +248,6 @@ async function bindNativeHttpAndWs(
   const { context, port, core } = options
   const bindHost = options.host
   const app = new H3App()
-  const rpcHost = context.rpc as RpcFunctionsHostImpl
   const wsPath = options.path
 
   const fail = async (closeWs: () => Promise<void>, error: unknown): Promise<never> => {
@@ -331,7 +332,7 @@ async function bindNativeHttpAndWs(
     app,
     ws: undefined,
     rpcGroup: core.rpcGroup,
-    connectionMeta: () => websocketConnectionMeta(rpcHost, options.path),
+    connectionMeta: () => websocketConnectionMeta(context.rpc, options.path),
     async close() {
       // Stop the native server before the WS tier: closing the socket while a
       // peer is mid-disconnect (a client that just sent its close frame)
@@ -860,6 +861,17 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     }
   }
 
+  function addLocalMethodHints(meta: ConnectionMeta): void {
+    if (tier === 'external' || meta.backend === 'none')
+      return
+    // Routes retain this descriptor. Read the registry on discovery so it
+    // includes methods registered after startup.
+    Object.defineProperty(meta, 'jsonSerializableMethods', {
+      enumerable: true,
+      get: () => getJsonSerializableMethods(ctx.rpc),
+    })
+  }
+
   async function init(): Promise<void> {
     const result = await options.init(api)
     ctx = result.context
@@ -911,6 +923,8 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
         ? { mcp: result.mcp }
         : {}),
     }
+
+    addLocalMethodHints(meta)
 
     // Whatever `setup(ctx)` wrote to `ctx.staticConfig` during
     // `options.init(api)` (e.g. a hub aggregating each installed devframe's

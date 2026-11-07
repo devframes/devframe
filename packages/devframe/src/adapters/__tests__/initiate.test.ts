@@ -75,6 +75,7 @@ describe('adapters/handler', () => {
       // The advertised meta carries the side-car port with the unified route.
       expect(devtools.connectionMeta()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { port: wsPort, path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -84,10 +85,18 @@ describe('adapters/handler', () => {
       expect(index.status).toBe(200)
       expect(await index.text()).toContain('handler test')
 
+      const ctx = await devtools.context
+      ctx.rpc.register({
+        name: 'test:late-json',
+        type: 'query',
+        jsonSerializable: true,
+        handler: () => 'ok',
+      })
       const metaRes = await devtools.handler(new Request('http://localhost:3000/__handler-test/__connection.json'))
       expect(metaRes.status).toBe(200)
       expect(await metaRes.json()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.arrayContaining(['test:late-json']),
         websocket: { port: wsPort, path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -183,6 +192,7 @@ describe('adapters/handler', () => {
       // resolved against __connection.json's own URL.
       expect(devtoolsRef.connectionMeta()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -194,6 +204,7 @@ describe('adapters/handler', () => {
       const meta = await (await fetch(`http://${host}:${port}/__handler-shared/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -272,6 +283,7 @@ describe('adapters/handler', () => {
       const meta = await (await fetch(`http://${host}:${port}/__connection.json`)).json()
       expect(meta).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })
@@ -346,6 +358,7 @@ describe('adapters/handler', () => {
 
     try {
       await devtools.ready
+      expect(devtools.connectionMeta()).not.toHaveProperty('jsonSerializableMethods')
       expect(devtools.connectionMeta()).toEqual({
         backend: 'websocket',
         websocket: 'wss://devtools.example.com/relay/__ws',
@@ -599,6 +612,7 @@ describe('adapters/handler', () => {
       // Advertised as a same-origin route, with no port of its own.
       expect(devtools.connectionMeta()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '__ws' },
         sse: { path: '__sse' },
       })

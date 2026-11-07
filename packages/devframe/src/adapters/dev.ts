@@ -232,7 +232,6 @@ export async function createDevServer(
     ws: transport.ws,
     rpcGroup: transport.rpcGroup,
     connectionMeta: () => ({
-      ...transport.connectionMeta(),
       ...devframe.connectionMeta(),
     }),
     async close() {
