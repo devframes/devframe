@@ -54,6 +54,7 @@ describe('next-devframe-hub (example)', () => {
 
     expect(hub.connectionMeta()).toEqual({
       backend: 'websocket',
+      jsonSerializableMethods: expect.arrayContaining(['devframes:plugin:assets:list']),
       websocket: { port, path: '__ws' },
       sse: { path: '/__devframes/__sse' },
       mcp: { path: '__mcp' },
