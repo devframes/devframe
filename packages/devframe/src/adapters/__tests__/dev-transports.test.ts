@@ -126,6 +126,72 @@ describe('dev server transport handle', () => {
     await expectPortReleased(handle.port)
   })
 
+  it('initializes MCP from both descriptors under a nested mount', async () => {
+    const basePath = '/nested/tool/'
+    const handle = await createDevServer(definition, {
+      ...options,
+      basePath,
+      mcp: { path: 'tools/mcp' },
+    })
+    try {
+      const discovery = new URL(`${basePath}__connection.json`, handle.origin)
+      const httpMeta = await fetch(discovery).then(response => response.json())
+      expect(httpMeta.mcp.path).toBe('tools/mcp')
+
+      const addresses = [
+        new URL(httpMeta.mcp.path, discovery),
+        new URL(handle.connectionMeta().mcp!.path, handle.origin),
+      ]
+      for (const address of addresses) {
+        const response = await fetch(address, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json, text/event-stream',
+            'origin': handle.origin,
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+              protocolVersion: '2025-06-18',
+              capabilities: {},
+              clientInfo: { name: 'test', version: '0.0.0' },
+            },
+          }),
+        })
+        expect(response.status).toBe(200)
+        expect(await response.text()).toContain('"serverInfo"')
+      }
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it('returns static configuration in the same JSON form as HTTP discovery', async () => {
+    const url = new URL('https://example.test/help')
+    const handle = await createDevServer(defineDevframe({
+      ...definition,
+      setup(ctx) {
+        Object.assign(ctx.staticConfig, {
+          help: { url },
+        })
+      },
+    }), options)
+    try {
+      const discovery = await fetch(new URL('/__connection.json', handle.origin)).then(response => response.json())
+      expect(discovery.configs).toEqual({
+        help: { url: url.href },
+      })
+      expect(handle.connectionMeta().configs).toEqual(discovery.configs)
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
   it('preserves WebSocket-only operation', async () => {
     const handle = await createDevServer(definition, { ...options, sse: false })
     try {

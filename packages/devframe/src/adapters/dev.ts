@@ -2,6 +2,7 @@ import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/trans
 import type { Server } from 'node:http'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
+import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
@@ -232,12 +233,15 @@ export async function createDevServer(
     ws: transport.ws,
     rpcGroup: transport.rpcGroup,
     connectionMeta() {
-      const meta = structuredClone(devframe.connectionMeta())
-      // A caller can pass the handle to a viewer outside the devframe mount.
+      // Match the JSON form published by HTTP discovery, including custom toJSON methods.
+      const meta: ConnectionMeta = JSON.parse(JSON.stringify(devframe.connectionMeta()))
+      // Callers resolve these paths against the handle origin.
       for (const endpoint of [meta.websocket, meta.sse]) {
         if (typeof endpoint === 'object' && endpoint.host == null && endpoint.port == null && endpoint.path != null)
           endpoint.path = joinURL(basePath, endpoint.path)
       }
+      if (meta.mcp && meta.mcp.port == null)
+        meta.mcp.path = joinURL(basePath, meta.mcp.path)
       return meta
     },
     async close() {
