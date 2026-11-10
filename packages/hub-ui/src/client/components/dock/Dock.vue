@@ -2,7 +2,7 @@
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
-import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
+import { useEventListener, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { t } from '../../i18n'
@@ -10,6 +10,7 @@ import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockIds, 
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
+import { useSafeArea } from '../../utils/useSafeArea'
 import BrandMark from '../icons/BrandMark.vue'
 import {
   dockLayoutCssVars,
@@ -39,29 +40,15 @@ const layout = computed(() => resolveDockLayout(props.layout))
 
 const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')
 
-const safeArea = useScreenSafeArea()
+const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
 
-function toNumber(value: string) {
-  const num = +value
-  if (Number.isNaN(num))
-    return 0
-  return num
-}
+const safeArea = useSafeArea(anchorEl)
 
 // Effective spacing from the viewport edge: device safe-area insets plus the
 // configured viewport margin. Passed down to the panel so both stay in sync.
-const panelMargins = computed(() => resolveViewportMargins(
-  {
-    left: toNumber(safeArea.left.value),
-    top: toNumber(safeArea.top.value),
-    right: toNumber(safeArea.right.value),
-    bottom: toNumber(safeArea.bottom.value),
-  },
-  layout.value,
-))
+const panelMargins = computed(() => resolveViewportMargins(safeArea.value, layout.value))
 
 const dockEl = useTemplateRef<HTMLDivElement>('dockEl')
-const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
 
 const recalculateCounter = ref(0)
 const isHovering = ref(false)
