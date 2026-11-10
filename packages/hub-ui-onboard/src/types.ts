@@ -58,7 +58,7 @@ export interface CreateOnboardingOptions {
   /**
    * Stop the install when it runs longer than this many milliseconds, and
    * show an error that asks the user to run the command in a terminal.
-   * Default: `600_000` (10 minutes).
+   * Default: `300_000` (5 minutes).
    */
   installTimeout?: number
   branding?: OnboardingBranding

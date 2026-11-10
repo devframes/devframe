@@ -17,7 +17,7 @@ import { confirmInTerminal } from './terminal-confirm'
 export type * from './types'
 
 const STATE_FILE = 'hub-ui-onboard.json'
-const DEFAULT_INSTALL_TIMEOUT = 10 * 60 * 1000
+const DEFAULT_INSTALL_TIMEOUT = 5 * 60 * 1000
 
 /** `devframes` → `/devframes/`, same rule as `normalizeHubBase` in `@devframes/hub`. */
 function normalizeBase(base: string): string {
