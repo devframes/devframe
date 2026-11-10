@@ -3,7 +3,7 @@
   "framework": "nuxtjs",
   "buildCommand": "pnpm run docs:build",
   "installCommand": "pnpm install --frozen-lockfile",
-  "ignoreCommand": "! printf '%s\\n' \"$VERCEL_GIT_COMMIT_MESSAGE\" | head -n1 | grep -qE '^(docs(\\(.+\\))?!?:|chore: release v)'",
+  "ignoreCommand": "if printf '%s\\n' \"$VERCEL_GIT_COMMIT_MESSAGE\" | head -n1 | grep -q '^chore: release v'; then exit 1; fi; git diff --quiet HEAD^ HEAD -- ':/docs' ':/pnpm-workspace.yaml' ':/pnpm-lock.yaml'",
   "redirects": [
     { "source": "/chat", "destination": "https://discord.com/invite/bnH3KPzfpr", "permanent": false },
     { "source": "/guide/terms", "destination": "/references/terms", "permanent": true },
