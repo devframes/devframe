@@ -17,6 +17,7 @@ import { confirmInTerminal } from './terminal-confirm'
 export type * from './types'
 
 const STATE_FILE = 'hub-ui-onboard.json'
+const DEFAULT_INSTALL_TIMEOUT = 10 * 60 * 1000
 
 /** `devframes` → `/devframes/`, same rule as `normalizeHubBase` in `@devframes/hub`. */
 function normalizeBase(base: string): string {
@@ -128,7 +129,12 @@ export function createOnboarding(options: CreateOnboardingOptions): Onboarding {
   const base = normalizeBase(options.base ?? '/__devframes/')
   const cwd = options.cwd ?? process.cwd()
   const stateFile = join(options.stateDir ?? join(cwd, 'node_modules/.devframe'), STATE_FILE)
-  const plan = { cwd, packages: options.packages, dev: options.dev ?? true }
+  const plan = {
+    cwd,
+    packages: options.packages,
+    dev: options.dev ?? true,
+    timeout: options.installTimeout ?? DEFAULT_INSTALL_TIMEOUT,
+  }
   const branding = options.branding ?? {}
   const messages = {
     ...defaultMessages(branding.productName?.trim() || 'Devframes'),

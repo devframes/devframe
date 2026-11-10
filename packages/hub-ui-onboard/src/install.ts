@@ -10,6 +10,8 @@ export interface InstallPlan {
   cwd: string
   packages: string[]
   dev: boolean
+  /** Stop the install after this many milliseconds. */
+  timeout: number
 }
 
 /** The `add` command for the project's package manager, `npm` when none is detected. */
@@ -28,19 +30,33 @@ export async function resolveInstallCommand(plan: InstallPlan): Promise<Resolved
 
 /**
  * Run the install and make sure that each named package landed in
- * `<cwd>/node_modules`. Throws a `DF9001` / `DF9002` diagnostic on failure.
+ * `<cwd>/node_modules`. Throws a `DF9001` / `DF9002` / `DF9009` diagnostic on failure.
  */
 export async function runInstall(plan: InstallPlan, command: ResolvedCommand): Promise<void> {
-  const result = await exec(command.command, command.args, {
+  const commandLine = [command.command, ...command.args].join(' ')
+  const child = exec(command.command, command.args, {
     // `CI` keeps every package manager non-interactive: nobody can answer a prompt here.
     nodeOptions: {
       cwd: plan.cwd,
       env: { ...process.env, CI: '1' },
     },
   })
+  // A hung package manager never exits. Stop it and fail at once: a child
+  // process can keep the output pipes open after the kill.
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timedOut = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      child.kill()
+      reject(diagnostics.DF9009({
+        command: commandLine,
+        seconds: Math.round(plan.timeout / 1000),
+      }))
+    }, plan.timeout)
+  })
+  const result = await Promise.race([child, timedOut]).finally(() => clearTimeout(timer))
   if (result.exitCode !== 0) {
     throw diagnostics.DF9001({
-      command: [command.command, ...command.args].join(' '),
+      command: commandLine,
       exitCode: result.exitCode,
       stderr: result.stderr.trim().slice(-2048),
     })

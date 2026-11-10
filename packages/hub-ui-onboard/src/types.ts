@@ -55,6 +55,12 @@ export interface CreateOnboardingOptions {
   stateDir?: string
   /** Install as a devDependency. Default: `true`. */
   dev?: boolean
+  /**
+   * Stop the install when it runs longer than this many milliseconds, and
+   * show an error that asks the user to run the command in a terminal.
+   * Default: `600_000` (10 minutes).
+   */
+  installTimeout?: number
   branding?: OnboardingBranding
   messages?: Partial<OnboardingMessages>
   /**

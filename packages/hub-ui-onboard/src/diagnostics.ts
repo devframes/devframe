@@ -49,5 +49,9 @@ export const diagnostics = defineDiagnostics({
       why: (p: { command: string, minutes: number }) => `Nobody allowed \`${p.command}\` within ${p.minutes} minutes. The install was refused.`,
       fix: 'Click Install again and answer in the terminal that runs the dev server. If the answer does not arrive, another program reads that terminal: pass an `onConfirm` function to `createOnboarding()`.',
     },
+    DF9009: {
+      why: (p: { command: string, seconds: number }) => `\`${p.command}\` did not finish within ${p.seconds} seconds, so it was stopped.`,
+      fix: 'Run the command in a terminal to see where the package manager stops, then click Install again. If the install is only slow, raise `installTimeout`.',
+    },
   },
 })
