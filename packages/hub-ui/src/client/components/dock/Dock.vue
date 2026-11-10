@@ -44,24 +44,9 @@ const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
 
 const safeArea = useSafeArea(anchorEl)
 
-function toNumber(value: string) {
-  const num = Number.parseFloat(value)
-  if (Number.isNaN(num))
-    return 0
-  return num
-}
-
 // Effective spacing from the viewport edge: device safe-area insets plus the
 // configured viewport margin. Passed down to the panel so both stay in sync.
-const panelMargins = computed(() => resolveViewportMargins(
-  {
-    left: toNumber(safeArea.left.value),
-    top: toNumber(safeArea.top.value),
-    right: toNumber(safeArea.right.value),
-    bottom: toNumber(safeArea.bottom.value),
-  },
-  layout.value,
-))
+const panelMargins = computed(() => resolveViewportMargins(safeArea.value, layout.value))
 
 const dockEl = useTemplateRef<HTMLDivElement>('dockEl')
 
