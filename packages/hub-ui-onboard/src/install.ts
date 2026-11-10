@@ -1,4 +1,5 @@
 import type { ResolvedCommand } from 'package-manager-detector'
+import type { Result } from 'tinyexec'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -46,11 +47,10 @@ export async function runInstall(plan: InstallPlan, command: ResolvedCommand): P
   let timer: ReturnType<typeof setTimeout> | undefined
   const timedOut = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
-      child.kill()
-      reject(diagnostics.DF9009({
+      void killTree(child).then(() => reject(diagnostics.DF9009({
         command: commandLine,
         seconds: Math.round(plan.timeout / 1000),
-      }))
+      })))
     }, plan.timeout)
   })
   const result = await Promise.race([child, timedOut]).finally(() => clearTimeout(timer))
@@ -65,6 +65,26 @@ export async function runInstall(plan: InstallPlan, command: ResolvedCommand): P
     if (!isInstalled(plan.cwd, name))
       throw diagnostics.DF9002({ name, cwd: plan.cwd })
   }
+}
+
+/**
+ * Kill the install with everything it started. On Windows, tinyexec runs a
+ * package manager's `.cmd` shim through `cmd.exe`, and a kill does not reach
+ * child processes, so `taskkill /T /F` ends the whole tree.
+ */
+async function killTree(child: Result): Promise<void> {
+  const pid = child.process?.pid
+  if (process.platform === 'win32' && pid !== undefined) {
+    const result = await exec('taskkill', [
+      '/pid',
+      String(pid),
+      '/T',
+      '/F',
+    ]).then(r => r, () => undefined)
+    if (result?.exitCode === 0)
+      return
+  }
+  child.kill()
 }
 
 /**
