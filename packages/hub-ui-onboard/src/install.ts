@@ -43,17 +43,25 @@ export async function runInstall(plan: InstallPlan, command: ResolvedCommand): P
     },
   })
   // A hung package manager never exits. Stop it and fail at once: a child
-  // process can keep the output pipes open after the kill.
+  // process can keep the output pipes open after the kill. The kill can also
+  // end the install with an exit code first, so the timeout error wins.
   let timer: ReturnType<typeof setTimeout> | undefined
-  const timedOut = new Promise<never>((_, reject) => {
+  let killed: Promise<void> | undefined
+  const timedOut = new Promise<undefined>((resolve) => {
     timer = setTimeout(() => {
-      void killTree(child).then(() => reject(diagnostics.DF9009({
-        command: commandLine,
-        seconds: Math.round(plan.timeout / 1000),
-      })))
+      killed = killTree(child)
+      void killed.then(() => resolve(undefined))
     }, plan.timeout)
   })
   const result = await Promise.race([child, timedOut]).finally(() => clearTimeout(timer))
+  // `result` is `undefined` only when the timeout won the race.
+  if (killed || !result) {
+    await killed
+    throw diagnostics.DF9009({
+      command: commandLine,
+      seconds: Math.round(plan.timeout / 1000),
+    })
+  }
   if (result.exitCode !== 0) {
     throw diagnostics.DF9001({
       command: commandLine,
