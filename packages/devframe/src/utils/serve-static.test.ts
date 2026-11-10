@@ -28,7 +28,10 @@ async function startH3(dir: string, options?: ServeStaticOptions): Promise<Fixtu
   return {
     dir,
     baseUrl: `http://127.0.0.1:${port}`,
-    close: () => new Promise<void>(r => server.close(() => r())),
+    close: () => new Promise<void>((r) => {
+      server.closeAllConnections()
+      server.close(() => r())
+    }),
   }
 }
 
@@ -49,7 +52,10 @@ async function startMw(
   return {
     dir,
     baseUrl: `http://127.0.0.1:${port}`,
-    close: () => new Promise<void>(r => server.close(() => r())),
+    close: () => new Promise<void>((r) => {
+      server.closeAllConnections()
+      server.close(() => r())
+    }),
   }
 }
 
