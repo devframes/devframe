@@ -592,7 +592,6 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 
 // #region Types
 export type AgentToolProvider = () => readonly AgentToolInput[];
-export type DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[] = []> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
@@ -646,4 +645,8 @@ export declare function withMcpContent<T extends object>(_: T, _: readonly McpCo
 
 // #region Variables
 export declare const defineRpcFunction: <NAME extends string, TYPE extends RpcFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(definition: RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeNodeContext>) => RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeNodeContext>;
+// #endregion
+
+// #region Other
+export { DevframeDefineDiagnosticsOptions }
 // #endregion
