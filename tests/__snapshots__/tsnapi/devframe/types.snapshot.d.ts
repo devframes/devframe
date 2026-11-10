@@ -592,7 +592,6 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 
 // #region Types
 export type AgentToolProvider = () => readonly AgentToolInput[];
-export type DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[] = []> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
@@ -637,4 +636,8 @@ export type ScopedServerFunctions<NS extends string> = { [K in keyof DevframeRpc
 export type ScopedSharedStates<NS extends string> = { [K in keyof DevframeRpcSharedStates as K extends `${NS}:${infer R}` ? R : never]: DevframeRpcSharedStates[K]; };
 export type SettingsForNamespace<NS extends string> = NS extends keyof DevframeSettingsRegistry ? DevframeSettingsRegistry[NS] extends Record<string, any> ? DevframeSettingsRegistry[NS] : Record<string, any> : Record<string, any>;
 export type StaticAssetsSource = string | RemoteAssets;
+// #endregion
+
+// #region Other
+export { DevframeDefineDiagnosticsOptions }
 // #endregion
