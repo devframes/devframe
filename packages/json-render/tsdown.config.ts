@@ -5,6 +5,7 @@ export default defineConfig({
     'index': 'src/index.ts',
     'core': 'src/core.ts',
     'hub': 'src/hub.ts',
+    'view': 'src/node/create-view.ts',
     'node/index': 'src/node/index.ts',
   },
   outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),

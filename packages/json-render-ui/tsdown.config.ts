@@ -14,7 +14,7 @@ import { defineConfig } from 'tsdown'
  * emitted `.d.mts` references the packages instead of inlining their whole
  * type graph.
  */
-export default defineConfig({
+export default defineConfig([{
   entry: {
     /**
      * Node-safe entry: the prebuilt SPA path + a devframe wiring helper.
@@ -46,4 +46,11 @@ export default defineConfig({
       '@devframes/json-render/core',
     ],
   },
-})
+}, {
+  entry: { renderer: 'src/renderer-module/index.ts' },
+  clean: false,
+  tsconfig: '../../tsconfig.base.json',
+  dts: { emitDtsOnly: true },
+  outExtensions: () => ({ dts: '.d.mts' }),
+  deps: { neverBundle: ['@devframes/json-render/hub'] },
+}])
