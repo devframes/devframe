@@ -5,7 +5,7 @@
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
       "skillPath": "skills/agent-browser/SKILL.md",
-      "computedHash": "6c6b0d33259db0427408443cf0cc2e5674538e628ad3fde51e6ae252cf647215",
+      "computedHash": "79add54dd6de82a262a88c94744d7decde000159c1d7f67c78eb9d4e523d54bb",
       "via": "@antfu/skills"
     },
     "antfu": {
