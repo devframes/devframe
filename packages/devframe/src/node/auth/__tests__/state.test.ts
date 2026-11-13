@@ -1,6 +1,10 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { randomDigits, randomToken, timingSafeEqual } from 'devframe/utils/crypto-token'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createStorage } from '../../storage'
 import {
   exchangeTempAuthCode,
   getTempAuthCode,
@@ -17,6 +21,13 @@ function makeSession() {
   return { meta: {} } as any
 }
 const INFO = { ua: 'test-ua', origin: 'http://localhost' }
+const INHERITED_NAMES = [
+  'constructor',
+  '__proto__',
+  'toString',
+  'hasOwnProperty',
+  'valueOf',
+]
 
 beforeEach(() => {
   refreshTempAuthCode()
@@ -75,6 +86,39 @@ describe('verifyAuthToken', () => {
     expect(verifyAuthToken(token, session, storage)).toBe(true)
     expect(session.meta.isTrusted).toBe(true)
     expect(verifyAuthToken('not-a-real-token', makeSession(), storage)).toBe(false)
+  })
+
+  it.each(INHERITED_NAMES)('rejects the inherited property name %s', (name) => {
+    const storage = makeStorage()
+    exchangeTempAuthCode(getTempAuthCode(), makeSession(), INFO, storage)
+    const session = makeSession()
+    expect(verifyAuthToken(name, session, storage)).toBe(false)
+    expect(session.meta.isTrusted).toBeUndefined()
+    expect(session.meta.clientAuthToken).toBeUndefined()
+  })
+
+  it('verifies tokens loaded from a persisted auth.json and rejects inherited names', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'devframe-auth-state-'))
+    const filepath = join(dir, 'auth.json')
+    const token = randomToken()
+    writeFileSync(filepath, JSON.stringify({
+      trusted: {
+        [token]: {
+          authToken: token,
+          ua: 'ua',
+          origin: INFO.origin,
+          timestamp: 0,
+        },
+      },
+    }))
+    const storage = createStorage<any>({
+      filepath,
+      initialValue: { trusted: {} },
+    })
+
+    expect(verifyAuthToken(token, makeSession(), storage)).toBe(true)
+    for (const name of INHERITED_NAMES)
+      expect(verifyAuthToken(name, makeSession(), storage)).toBe(false)
   })
 })
 

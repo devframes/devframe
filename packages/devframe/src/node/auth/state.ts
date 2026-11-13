@@ -120,7 +120,8 @@ export function verifyAuthToken(
   session: DevframeNodeRpcSession,
   storage: SharedState<InternalAnonymousAuthStorage>,
 ): boolean {
-  if (!token || !storage.value().trusted[token])
+  const trusted = storage.value().trusted
+  if (!token || !Object.hasOwn(trusted, token) || !trusted[token])
     return false
 
   session.meta.clientAuthToken = token
