@@ -4,8 +4,8 @@ import { getMessagesHost } from './_define'
 
 /**
  * Read the message list incrementally. Pass the `version` from the previous
- * result as `since` to receive only what changed; omit it for the initial
- * full snapshot. Apply `removedIds` before upserting `entries`.
+ * result as `since`, together with its `instanceId`, to receive only what
+ * changed. Omit both for the initial full snapshot. Apply `removedIds` before upserting `entries`.
  *
  * `snapshot: true` bakes the full list into static builds, so the panel
  * renders the last captured feed without a live server.
@@ -20,7 +20,7 @@ export const messagesList = defineRpcFunction({
     description: 'List the hub message feed: diagnostics, notifications, and tool output entries with level, category, labels, and positions.',
   },
   setup: ctx => ({
-    handler: async (since?: number | null): Promise<DevframeMessagesListDelta> => {
+    handler: async (since?: number | null, instanceId?: string | null): Promise<DevframeMessagesListDelta> => {
       const host = getMessagesHost(ctx)
       if (!host) {
         return {
@@ -30,7 +30,7 @@ export const messagesList = defineRpcFunction({
           full: true,
         }
       }
-      return host.listSince(since)
+      return host.listSince(since, instanceId)
     },
   }),
 })

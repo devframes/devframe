@@ -38,7 +38,9 @@ async function fixture() {
   await Promise.resolve()
   async function publish(next: DevframeMessagesListDelta) {
     delta = next
+    const previousCalls = call.mock.calls.length
     refresh()
+    await vi.waitUntil(() => call.mock.calls.length > previousCalls)
     await Promise.resolve()
   }
   const message: DevframeMessageEntry = {
@@ -58,6 +60,7 @@ async function fixture() {
   })
   return {
     state,
+    call,
     toasts: useToasts(),
     publish,
     message,
@@ -95,4 +98,35 @@ it('keeps surviving toasts and unread counts when receiving a full snapshot', as
   expect(state.entries).toHaveLength(1)
   expect(toasts).toHaveLength(1)
   expect(state.unreadCount).toBe(1)
+})
+
+it('passes the instance ID with the next cursor and replaces stale messages', async () => {
+  const { state, call, publish, message } = await fixture()
+  await publish({
+    entries: [message],
+    removedIds: [],
+    version: 1,
+    instanceId: 'old',
+    full: true,
+  })
+  await publish({
+    entries: [
+      { ...message, id: 'new' },
+    ],
+    removedIds: [],
+    version: 1,
+    instanceId: 'new',
+    full: true,
+  })
+  expect(call).toHaveBeenLastCalledWith('devframes:plugin:messages:list', 1, 'old')
+  expect(state.entries.map(entry => entry.id)).toEqual(['new'])
+  await publish({
+    entries: [],
+    removedIds: ['new'],
+    version: 2,
+    instanceId: 'new',
+    full: false,
+  })
+  expect(call).toHaveBeenLastCalledWith('devframes:plugin:messages:list', 1, 'new')
+  expect(state.entries).toEqual([])
 })
