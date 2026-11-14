@@ -115,7 +115,7 @@ const serverEntries = {
  * dist/ before the server build appends.
  * 2. Runtime server/node build (`dts: false`). `clean: false` appends to
  * the client output.
- * 3. Combined dts build (`emitDtsOnly: true`). All entries live in a
+ * 3. Combined dts build (`dtsOnly: true`). All entries live in a
  * single rolldown graph so shared modules, notably
  * `src/types/rpc-augments.ts`, produce exactly one declaration site.
  * This is what lets consumer `declare module 'devframe'` augmentations
@@ -174,8 +174,8 @@ export default defineConfig([
     platform: 'neutral',
     tsconfig,
     deps,
-    dts: { emitDtsOnly: true },
-    outExtensions: () => ({ dts: '.d.mts' }),
+    dts: { dtsOnly: true },
+    outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
     entry: {
       ...clientEntries,
       ...serverEntries,

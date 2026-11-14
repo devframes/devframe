@@ -28,6 +28,10 @@
   --app-scrollbar-radius: 1px;
   --app-scrollbar-thumb: #8884;
   --app-scrollbar-thumb-hover: #8885;
+  --devframes-safe-area-top: env(safe-area-inset-top, 0px);
+  --devframes-safe-area-right: env(safe-area-inset-right, 0px);
+  --devframes-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --devframes-safe-area-left: env(safe-area-inset-left, 0px);
 }
 
 ::-webkit-scrollbar {

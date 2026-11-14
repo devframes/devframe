@@ -88,6 +88,9 @@ export type DevframeRpcTransportKind = 'websocket' | 'sse';
 export declare function attachWsRpcTransport<ClientFunctions extends object, ServerFunctions extends object>(_: BirpcGroup<ClientFunctions, ServerFunctions, false>, _?: WsRpcTransportOptions): WsRpcTransport;
 export declare function createWsOriginRegistry(_?: CreateWsOriginRegistryOptions): WsOriginRegistry;
 export declare function createWsRpcPeerHooks<ClientFunctions extends object, ServerFunctions extends object>(_: BirpcGroup<ClientFunctions, ServerFunctions, false>, _?: Pick<WsRpcTransportOptions, 'onConnected' | 'onDisconnected' | 'definitions' | 'serialize' | 'deserialize'>): Partial<Hooks>;
-export declare function isAllowedOrigin(_: string | undefined, _: readonly string[]): boolean;
-export declare function isLoopbackHostname(_: string): boolean;
+// #endregion
+
+// #region Other
+export { isAllowedOrigin }
+export { isLoopbackHostname }
 // #endregion

@@ -8,6 +8,7 @@ export interface CreateOnboardingOptions {
   cwd?: string;
   stateDir?: string;
   dev?: boolean;
+  installTimeout?: number;
   branding?: OnboardingBranding;
   messages?: Partial<OnboardingMessages>;
   onInstalled?: () => void | OnboardingHandler | Promise<void | OnboardingHandler>;
