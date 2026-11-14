@@ -17,7 +17,7 @@ const nodeEntries = {
 /**
  * Two configs mirror the other plugins:
  * 1. node runtime build (`dts: false`, `clean: true`);
- * 2. combined dts (`emitDtsOnly`): one rolldown graph so the
+ * 2. combined dts (`dtsOnly`): one rolldown graph so the
  * `declare module 'devframe'` RPC augmentation resolves once.
  */
 export default defineConfig([
@@ -36,13 +36,13 @@ export default defineConfig([
      * The RPC list types reference `@devframes/hub` message types; keep Vue
      * external so the dts bundler references `import('vue').Reactive<...>`
      * rather than inlining Vue's reactivity type surface. This build is
-     * `emitDtsOnly`, so it has no effect on the JS output.
+     * `dtsOnly`, so it has no effect on the JS output.
      */
     deps: {
       neverBundle: ['vue'],
     },
-    dts: { emitDtsOnly: true },
-    outExtensions: () => ({ dts: '.d.mts' }),
+    dts: { dtsOnly: true },
+    outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
     entry: nodeEntries,
   },
 ])
