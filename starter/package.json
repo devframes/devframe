@@ -1,7 +1,7 @@
 {
   "name": "devframe-starter",
   "type": "module",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "private": true,
   "packageManager": "pnpm@12.21.0",
   "description": "Self-contained starter for a single devframe integration: a vanilla-TS Vite client, single + hub playgrounds, and unit + e2e tests.",
@@ -37,10 +37,10 @@
     "release": "bumpp"
   },
   "dependencies": {
-    "@devframes/hub": "^1.3.4",
-    "@devframes/hub-ui": "^1.3.4",
-    "@devframes/vite": "^1.3.4",
-    "devframe": "^1.3.4"
+    "@devframes/hub": "^1.3.5",
+    "@devframes/hub-ui": "^1.3.5",
+    "@devframes/vite": "^1.3.5",
+    "devframe": "^1.3.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^10.0.0",
