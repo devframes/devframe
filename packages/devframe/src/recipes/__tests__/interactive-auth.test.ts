@@ -13,6 +13,14 @@ import { createHostContext } from '../../node/context'
 import { getInternalContext } from '../../node/hub-internals/context'
 import { createInteractiveAuth } from '../interactive-auth'
 
+const INHERITED_NAMES = [
+  'constructor',
+  '__proto__',
+  'toString',
+  'hasOwnProperty',
+  'valueOf',
+]
+
 function makeHost(storageDir: string): DevframeHost {
   return {
     mountStatic: () => {},
@@ -280,6 +288,34 @@ describe('recipes/interactive-auth', () => {
       auth.onConnect(fakePeer('deadbeef', 'http://localhost:5173'), unknown)
       expect(unknown.meta.isTrusted).toBeUndefined()
     })
+
+    it.each(INHERITED_NAMES)('does not trust the inherited property name %s as a bearer token', async (name) => {
+      const context = await createTestContext()
+      const auth = createInteractiveAuth(context)
+
+      const session = { meta: {} } as any
+      auth.onConnect(fakePeer(name, 'http://localhost:5173'), session)
+      expect(session.meta.isTrusted).toBeUndefined()
+      expect(session.meta.clientAuthToken).toBeUndefined()
+    })
+  })
+
+  it('does not trust inherited property names over the WS query param or the auth RPC', async () => {
+    const { server, host, port } = await startAuthenticatedServer()
+
+    try {
+      for (const name of INHERITED_NAMES) {
+        const client = connectClient(host, port, name)
+        await expect(client.$call('test:trusted-only' as any)).rejects.toThrow()
+        const result = await client.$call('anonymous:devframe:auth', { authToken: name, ua: 'test', origin: 'http://localhost' })
+        expect(result).toEqual({ isTrusted: false })
+        await expect(client.$call('test:trusted-only' as any)).rejects.toThrow()
+        client.$close()
+      }
+    }
+    finally {
+      await server.close()
+    }
   })
 
   it('self-revoke: devframe:auth:revoke drops the caller to untrusted and invalidates the token', async () => {
