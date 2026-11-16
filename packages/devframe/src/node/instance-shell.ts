@@ -73,6 +73,13 @@ interface TierBinding {
   wsAvailable: boolean
 }
 
+// A relative URL for the mount root must resolve against the discovery document.
+function relativeDiscoveryPath(route: string): string {
+  return route === '/'
+    ? './'
+    : route
+}
+
 function getJsonSerializableMethods(rpc: DevframeNodeContext['rpc']): string[] {
   const jsonSerializableMethods: string[] = []
   for (const def of rpc.definitions.values()) {
@@ -558,7 +565,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   /** Where an upgrade lands on the host's own origin. */
   const routePath = joinURL(base, route)
   /** What `__connection.json` advertises for a same-origin socket. */
-  const advertisedPath = options.absoluteWsPath ? routePath : route
+  const advertisedPath = options.absoluteWsPath
+    ? routePath
+    : relativeDiscoveryPath(route)
   const sidecarRequested = ws.port != null || ws.sidecar === true
   const tier: InstanceWsTier = wsDisabled
     ? 'disabled'
@@ -582,7 +591,9 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
       : undefined) ?? DEVFRAME_SSE_ROUTE,
   )
   const sseRoutePath = joinURL(base, sseRoute)
-  const advertisedSsePath = options.absoluteWsPath ? sseRoutePath : sseRoute
+  const advertisedSsePath = options.absoluteWsPath
+    ? sseRoutePath
+    : relativeDiscoveryPath(sseRoute)
 
   // The public origin is often unknowable at creation (the host app owns the
   // listener), so derive it from the first request, unless the caller pinned

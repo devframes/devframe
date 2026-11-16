@@ -126,17 +126,48 @@ describe('dev server transport handle', () => {
     await expectPortReleased(handle.port)
   })
 
-  it('initializes MCP from both descriptors under a nested mount', async () => {
+  it.each(['/', ''])('connects both transports at the mount root with route %j', async (route) => {
     const basePath = '/nested/tool/'
     const handle = await createDevServer(definition, {
       ...options,
       basePath,
-      mcp: { path: 'tools/mcp' },
+      ws: { route },
+      sse: { route },
+    })
+    try {
+      const discovery = await fetch(new URL(`${basePath}__connection.json`, handle.origin)).then(response => response.json())
+      expect(discovery).toMatchObject({
+        websocket: { path: './' },
+        sse: { path: './' },
+      })
+      expect(handle.connectionMeta()).toMatchObject({
+        websocket: { path: basePath },
+        sse: { path: basePath },
+      })
+      for (const transport of ['websocket', 'sse'] as const) {
+        await checkRpcCalls(handle, basePath, transport, 'http')
+        await checkRpcCalls(handle, basePath, transport)
+      }
+    }
+    finally {
+      await handle.close()
+    }
+  })
+
+  it.each([
+    { path: 'tools/mcp', advertised: 'tools/mcp' },
+    { path: '/', advertised: './' },
+  ])('initializes MCP at $path from both descriptors under a nested mount', async ({ path, advertised }) => {
+    const basePath = '/nested/tool/'
+    const handle = await createDevServer(definition, {
+      ...options,
+      basePath,
+      mcp: { path },
     })
     try {
       const discovery = new URL(`${basePath}__connection.json`, handle.origin)
       const httpMeta = await fetch(discovery).then(response => response.json())
-      expect(httpMeta.mcp.path).toBe('tools/mcp')
+      expect(httpMeta.mcp.path).toBe(advertised)
 
       const addresses = [
         new URL(httpMeta.mcp.path, discovery),

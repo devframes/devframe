@@ -400,7 +400,11 @@ async function mountMcpRoute(
     allowedOrigins: config.allowedOrigins,
   })
   return {
-    meta: { path: route },
+    meta: {
+      path: route === '/'
+        ? './'
+        : route,
+    },
     dispose: mounted.dispose,
   }
 }
