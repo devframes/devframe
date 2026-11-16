@@ -215,21 +215,21 @@
       "source": "@x18n/cli",
       "sourceType": "node_modules",
       "skillPath": "skills/x18n/SKILL.md",
-      "version": "0.1.13",
-      "computedHash": "aa307161585c29886eca66729163bd6d149d791c938682f6dfdb5cf39f1ff417"
+      "version": "0.1.14",
+      "computedHash": "b7057898a00086d710a5faee68390265b2eef41e98d72d07a82aaaac79bbaebc"
     },
     "x18n-check": {
       "source": "@x18n/cli",
       "sourceType": "node_modules",
       "skillPath": "skills/x18n-check/SKILL.md",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "computedHash": "6997bfde11250e4e2523b4e219cdc1bde1cefd34affc091f28ec91b97db887b9"
     },
     "x18n-setup": {
       "source": "@x18n/cli",
       "sourceType": "node_modules",
       "skillPath": "skills/x18n-setup/SKILL.md",
-      "version": "0.1.13",
+      "version": "0.1.14",
       "computedHash": "ae01274a39a28e5857de944102c816f13e510752d2780b9d0c4409fad441f368"
     }
   }
