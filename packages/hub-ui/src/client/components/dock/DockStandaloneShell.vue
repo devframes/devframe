@@ -1,0 +1,109 @@
+<script setup lang="ts">
+import type { DocksContext } from '@devframes/hub/client'
+import { computed, useTemplateRef, watch } from 'vue'
+import { t } from '../../i18n'
+import { getEntryGroup } from '../../state/dock-settings'
+import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
+import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
+import CommandPalette from '../command-palette/CommandPalette.vue'
+import Confirm from '../display/Confirm.vue'
+import ToastOverlay from '../display/ToastOverlay.vue'
+import FloatingElements from '../floating/FloatingElements.vue'
+import BrandMark from '../icons/BrandMark.vue'
+import ViewBuiltinClientAuthNotice from '../views-builtin/ViewBuiltinClientAuthNotice.vue'
+import ViewEntry from '../views/ViewEntry.vue'
+import ColorSchemeRoot from './ColorSchemeRoot.vue'
+import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
+import DockGroupSidebar from './DockGroupSidebar.vue'
+
+const props = defineProps<{
+  context: DocksContext
+}>()
+
+const context = props.context
+const viewsContainer = useTemplateRef<HTMLElement>('viewsContainer')
+const panes = useIframePanes(viewsContainer, context.panel, () => getEntryPaneKey(context.docks.selected))
+
+const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
+  if (!isTrusted) {
+    context.docks.switchEntry(null)
+  }
+})
+
+/** Select from the visible dock rail through normal activation, including client scripts and group routing. */
+watch(
+  [
+    () => context.docks.groupedEntries,
+    isRpcTrusted,
+  ],
+  ([groups, trusted]) => {
+    if (!trusted || context.docks.selectedId)
+      return
+    const entry = groups.flatMap(([, entries]) => entries)
+      .find(entry => entry.type !== 'action' && entry.type !== '~builtin')
+    if (entry)
+      void context.docks.switchEntry(entry.id)
+  },
+  { immediate: true },
+)
+
+const groupedEntries = computed(() => context.docks.groupedEntries)
+const activeGroup = computed(() => getEntryGroup(context.docks.entries, context.docks.selected))
+
+function switchEntry(id: string | undefined) {
+  if (id) {
+    context.docks.switchEntry(id)
+  }
+}
+</script>
+
+<template>
+  <ColorSchemeRoot>
+    <main v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
+      <ViewBuiltinClientAuthNotice :context="context" />
+    </main>
+    <div v-else class="h-screen w-screen of-clip grid cols-[max-content_1fr]">
+      <nav :aria-label="t('settings.docks')" class="border-r border-base flex flex-col min-h-0">
+        <div class="p2 border-b border-base flex">
+          <BrandMark class="w-7 h-7 ma" />
+        </div>
+        <div class="transition duration-200 p2 of-y-auto">
+          <DockEntriesWithCategories
+            :context="context"
+            :groups="groupedEntries"
+            :is-vertical="false"
+            :selected="context.docks.selected"
+            :dim-inactive="false"
+            @select="(e) => switchEntry(e?.id)"
+          >
+            <template #separator>
+              <div class="border-base border-b w-full my-2" />
+            </template>
+          </DockEntriesWithCategories>
+        </div>
+      </nav>
+      <main class="min-h-0 flex">
+        <DockGroupSidebar
+          v-if="activeGroup"
+          :context
+          :group="activeGroup"
+          :selected-id="context.docks.selected?.id ?? null"
+        />
+        <div class="relative flex-1 min-w-0 min-h-0 of-clip">
+          <ViewEntry
+            v-if="context.docks.selected && panes"
+            :key="context.docks.selected.id"
+            :entry="context.docks.selected"
+            :context
+            :panes="panes"
+          />
+          <div id="devframes-views-container" ref="viewsContainer" class="pointer-events-auto" />
+        </div>
+      </main>
+    </div>
+    <FloatingElements />
+    <CommandPalette :context />
+    <ToastOverlay :context />
+    <Confirm />
+  </ColorSchemeRoot>
+</template>
