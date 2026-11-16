@@ -74,18 +74,24 @@ describe('messages dev-server (hub context)', () => {
     expect(delta.removedIds).toContain('from-server')
   })
 
-  it('returns full snapshots for foreign and unrecognized numeric cursors over RPC', async () => {
+  it('returns a removal to a legacy panel after its no-argument snapshot', async () => {
     const rpc = connect(server)
-    const full = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
-    for (const args of [
-      [full.version],
-      [full.version, 'previous-instance'],
-    ]) {
-      const result = await rpc.$call('devframes:plugin:messages:list', ...args) as DevframeMessagesListDelta
-      expect(result.full).toBe(true)
-      expect(result.entries).toEqual(full.entries)
-      expect(result.instanceId).toBe(full.instanceId)
-    }
+    const id = 'legacy-panel'
+    await server.ctx.messages.info('original', { id })
+    const snapshot = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
+    await server.ctx.messages.remove(id)
+    await server.ctx.messages.info('replacement', { id })
+
+    const delta = await rpc.$call('devframes:plugin:messages:list', snapshot.version) as DevframeMessagesListDelta
+    expect(delta.full).toBe(false)
+    expect(delta.removedIds).toEqual([id])
+    expect(delta.entries).toMatchObject([
+      { id, message: 'replacement' },
+    ])
+
+    const foreign = await rpc.$call('devframes:plugin:messages:list', snapshot.version, 'previous-instance') as DevframeMessagesListDelta
+    expect(foreign.full).toBe(true)
+    expect(foreign.instanceId).toBe(snapshot.instanceId)
   })
 
   it('keeps the removal when a legacy reader sees an ID reused on its connection', async () => {

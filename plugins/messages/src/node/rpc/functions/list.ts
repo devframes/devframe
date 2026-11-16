@@ -42,9 +42,9 @@ export const messagesList = defineRpcFunction({
           ? initial.instanceId
           : instanceId
         const result = host.listSince(since, knownInstance)
-        // A legacy reader starts with null, or presents an unknown number
-        // on a fresh connection. Keep its snapshot cursor for overlapping reads.
-        if (peer && instanceId === undefined && since !== undefined && result.full && (!initial || initial.instanceId !== result.instanceId))
+        // Keep the first snapshot cursor on this connection so overlapping
+        // numeric reads can still see removals since that snapshot.
+        if (peer && instanceId === undefined && result.full && (!initial || initial.instanceId !== result.instanceId))
           cursors.set(peer, { version: result.version, instanceId: result.instanceId })
         return result
       },
