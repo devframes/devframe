@@ -103,7 +103,7 @@ function switchEntry(id: string | undefined) {
     </div>
     <FloatingElements />
     <CommandPalette :context />
-    <ToastOverlay :context />
+    <ToastOverlay :context="props.context" />
     <Confirm />
   </ColorSchemeRoot>
 </template>

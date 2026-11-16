@@ -1,25 +1,24 @@
 <script setup lang="ts">
 import type { DevframeMessageAction } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import type { createToastStore } from '../../state/toasts'
+import { computed } from 'vue'
 import { MESSAGES_DOCK_ID } from '../../constants'
-import { selectMessage, useMessages } from '../../state/messages'
-import { dismissToast, useToasts } from '../../state/toasts'
+import { useMessages } from '../../state/messages'
 import MessageItem from '../message/MessageItem.vue'
 
 const props = defineProps<{
   context?: DocksContext
+  toastStore?: ReturnType<typeof createToastStore>
 }>()
 
-// Initialize messages state early so the RPC handler is registered
-// and toasts are triggered even before the messages panel is opened
-if (props.context)
-  useMessages(props.context)
-
-const toasts = useToasts()
+const messages = computed(() => props.context && useMessages(props.context))
+const toasts = computed(() => messages.value?.toasts ?? props.toastStore)
 
 function openMessages(toastId: string) {
-  dismissToast(toastId)
-  selectMessage(toastId)
+  toasts.value?.dismiss(toastId)
+  if (messages.value)
+    messages.value.pendingSelectId = toastId
   // Open the messages panel provided by `@devframes/plugin-messages`
   // (its dock id is the plugin's devframe id).
   props.context?.docks.switchEntry(MESSAGES_DOCK_ID)
@@ -42,7 +41,7 @@ function dispatchAction(action: DevframeMessageAction) {
 
 <template>
   <div
-    v-if="toasts.length > 0"
+    v-if="toasts?.items.length"
     class="fixed bottom-4 right-4 z-dock-toast flex flex-col gap-2 pointer-events-auto w-72"
   >
     <TransitionGroup
@@ -52,7 +51,7 @@ function dispatchAction(action: DevframeMessageAction) {
       leave-to-class="opacity-0 translate-x-4"
     >
       <div
-        v-for="toast of toasts"
+        v-for="toast of toasts.items"
         :key="toast.id"
         class="bg-toast-glass border color-base border-base shadow-xl cursor-pointer transition-colors rounded"
         @click="openMessages(toast.id)"
@@ -69,7 +68,7 @@ function dispatchAction(action: DevframeMessageAction) {
             </button>
             <button
               class="flex-none op30 hover:op100 p-0.5 rounded hover:bg-active transition"
-              @click.stop="dismissToast(toast.id)"
+              @click.stop="toasts.dismiss(toast.id)"
             >
               <div class="i-ph-x w-3 h-3" />
             </button>
