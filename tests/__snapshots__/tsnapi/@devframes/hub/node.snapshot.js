@@ -42,6 +42,7 @@ export class DevframeMessagesHost {
   lastModified
   removals
   _autoDeleteTimers
+  _instanceId
   _clock
   _removalsTrimmedAt
   _tick() {}
@@ -56,7 +57,7 @@ export class DevframeMessagesHost {
   success(_, _) {}
   debug(_, _) {}
   async clear() {}
-  listSince(_) {}
+  listSince(_, _) {}
   _createHandle(_) {}
 }
 export class DevframeTerminalsHost {

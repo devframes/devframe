@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { h, onMounted } from 'vue'
 import { MESSAGES_DOCK_ID } from '../../constants'
-import { addToast } from '../../state/toasts'
+import { createToastStore } from '../../state/toasts'
 import { message } from '../../stories/fixtures'
 import ToastOverlay from './ToastOverlay.vue'
 
@@ -28,28 +28,29 @@ type Story = StoryObj<typeof meta>
 export const Stack: Story = {
   render: () => ({
     setup() {
+      const toastStore = createToastStore()
       onMounted(() => {
-        addToast(message({
+        toastStore.add(message({
           level: 'error',
           message: 'Build failed',
           description: '2 errors in 1 file',
           notify: true,
           autoDismiss: 10 ** 7,
         }))
-        addToast(message({
+        toastStore.add(message({
           level: 'warn',
           message: 'Slow HMR update (820ms)',
           notify: true,
           autoDismiss: 10 ** 7,
         }))
-        addToast(message({
+        toastStore.add(message({
           level: 'success',
           message: 'Server ready on :5173',
           notify: true,
           autoDismiss: 10 ** 7,
         }))
       })
-      return () => h(ToastOverlay)
+      return () => h(ToastOverlay, { toastStore })
     },
   }),
 }
@@ -58,8 +59,9 @@ export const Stack: Story = {
 export const WithAction: Story = {
   render: () => ({
     setup() {
+      const toastStore = createToastStore()
       onMounted(() => {
-        addToast(message({
+        toastStore.add(message({
           level: 'warn',
           message: 'New a11y violation detected',
           notify: true,
@@ -74,7 +76,7 @@ export const WithAction: Story = {
           ],
         }))
       })
-      return () => h(ToastOverlay)
+      return () => h(ToastOverlay, { toastStore })
     },
   }),
 }
