@@ -74,7 +74,7 @@ describe('messages dev-server (hub context)', () => {
     expect(delta.removedIds).toContain('from-server')
   })
 
-  it('returns full snapshots for foreign and legacy cursors over RPC', async () => {
+  it('returns full snapshots for foreign and unrecognized numeric cursors over RPC', async () => {
     const rpc = connect(server)
     const full = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
     for (const args of [
@@ -86,6 +86,27 @@ describe('messages dev-server (hub context)', () => {
       expect(result.entries).toEqual(full.entries)
       expect(result.instanceId).toBe(full.instanceId)
     }
+  })
+
+  it('keeps the removal when a legacy reader sees an ID reused on its connection', async () => {
+    const rpc = connect(server)
+    await server.ctx.messages.info('old toast', { id: 'reused', notify: true })
+    const snapshot = await rpc.$call('devframes:plugin:messages:list', null) as DevframeMessagesListDelta
+    const fresh = connect(server)
+    const unknown = await fresh.$call('devframes:plugin:messages:list', snapshot.version) as DevframeMessagesListDelta
+    expect(unknown.full).toBe(true)
+    await server.ctx.messages.info('another entry', { id: 'other' })
+    await rpc.$call('devframes:plugin:messages:list', snapshot.version)
+    await server.ctx.messages.remove('reused')
+    await server.ctx.messages.info('replacement', { id: 'reused', notify: false })
+
+    const delta = await rpc.$call('devframes:plugin:messages:list', snapshot.version) as DevframeMessagesListDelta
+    expect(delta.full).toBe(false)
+    expect(delta.removedIds).toEqual(['reused'])
+    expect(delta.entries.map(entry => entry.id)).toEqual(['other', 'reused'])
+    expect(delta.entries[1]).toMatchObject({ message: 'replacement', notify: false })
+    const resumed = await fresh.$call('devframes:plugin:messages:list', unknown.version) as DevframeMessagesListDelta
+    expect(resumed).toEqual(delta)
   })
 
   it('add stamps browser origin; update patches; clear empties', async () => {
