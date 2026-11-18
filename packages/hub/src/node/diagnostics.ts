@@ -34,6 +34,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { urlBase: string, base: string }) => `A static hub build writes each mount either under its base ("${p.base}") or as an absolute-path sibling of it, but "${p.urlBase}" is neither.`,
       fix: 'buildHub maps a mount under the hub base into its `outDir`, and any other mount to the deploy root (`outDir`\'s parent) by its absolute path. Give the mount an absolute base (starting with `/`) so it resolves to one of those.',
     },
+    DF8007: {
+      why: (p: { base: string, deployBase: string }) => `buildHub's base ("${p.base}") is not under its deployBase ("${p.deployBase}"), so the hub itself would be served outside the deploy root.`,
+      fix: 'Pass the hub mount base with the deploy prefix included, e.g. `base: "/ci-build-123456/__devtools/"` with `deployBase: "/ci-build-123456/"`.',
+    },
     DF8100: {
       why: (p: { id: string }) => `Dock with id "${p.id}" is already registered`,
       fix: 'Use the `force` parameter to overwrite an existing registration.',
