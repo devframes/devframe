@@ -109,6 +109,9 @@ export async function createDocksContext(
   const selectedDockId = computed<string | null>({
     get: () => sessionStore.value.selectedDockId,
     set: (id) => {
+      // Drop the old dock's route before observers persist the new selection.
+      if (sessionStore.value.selectedDockId !== id)
+        sessionStore.value.selectedDockRoute = null
       sessionStore.value.selectedDockId = id
     },
   })
@@ -755,7 +758,20 @@ export async function createDocksContext(
     if (bootRoute != null && id === restoreIntent.selectedDockId) {
       const route = bootRoute
       bootRoute = null
-      return route
+      const entry = entries.value.find(entry => entry.id === id)
+      if (entry?.type !== 'iframe')
+        return null
+      try {
+        const base = new URL(entry.url, globalThis.location?.href)
+        const url = new URL(route, globalThis.location?.href)
+        const path = base.pathname.replace(/\/$/, '')
+        return url.origin === base.origin && (url.pathname === path || url.pathname.startsWith(`${path}/`))
+          ? route
+          : null
+      }
+      catch {
+        return null
+      }
     }
     return null
   }
