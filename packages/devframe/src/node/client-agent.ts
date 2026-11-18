@@ -214,9 +214,11 @@ export function syncClientAgentTools(
       ? now
       : previous?.focusedAt ?? 0,
   })
-  // Focus/visibility re-syncs leave the tool surface as it was.
-  const sameTools = previous && previous.tools.length === tools.length
-    && previous.tools.every((tool, i) => tool.id === tools[i]!.id)
+  // Focus/visibility re-syncs leave the tool surface as it was. Compare the
+  // whole manifest: a changed description or schema under the same id must
+  // still notify. Manifests are plain JSON from the wire.
+  const sameTools = previous
+    && JSON.stringify(previous.tools) === JSON.stringify(tools)
   if (!sameTools)
     state.notifyChanged()
 }
