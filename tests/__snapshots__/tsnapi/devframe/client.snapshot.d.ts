@@ -154,14 +154,20 @@ export interface WebMcpRegisteredTool {
 }
 export interface WebMcpToolDescriptor {
   name: string;
+  title?: string;
   description: string;
   inputSchema?: unknown;
   annotations?: {
     title?: string;
     readOnlyHint?: boolean;
+    consequentialHint?: boolean;
+    untrustedContentHint?: boolean;
+    debugging?: boolean;
     destructiveHint?: boolean;
   };
-  execute: (_: Record<string, unknown>) => Promise<WebMcpToolResult>;
+  execute: (_: Record<string, unknown>, _?: {
+    signal?: AbortSignal;
+  }) => Promise<WebMcpToolResult>;
 }
 export interface WebMcpToolResult {
   content: {

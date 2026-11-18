@@ -73,7 +73,13 @@ describe('registerWebMcpTools', () => {
       additionalProperties: false,
     })
     // `query` (default type) infers read-only.
-    expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false })
+    expect(tool.title).toBe('my-plugin:greet')
+    expect(tool.annotations).toMatchObject({
+      readOnlyHint: true,
+      consequentialHint: false,
+      debugging: true,
+      destructiveHint: false,
+    })
 
     dispose()
     expect(tools.size).toBe(0)
@@ -119,6 +125,49 @@ describe('registerWebMcpTools', () => {
     const result = await tools.get('boom')!.execute({})
     expect(result.isError).toBe(true)
     expect(result.content[0]!.text).toBe('Error: nope')
+  })
+
+  it('marks destructive tools as consequential', () => {
+    const collector = createCollector()
+    collector.register({
+      name: 'wipe',
+      type: 'action',
+      jsonSerializable: true,
+      agent: { description: 'Wipe the cache.', safety: 'destructive' },
+      handler: () => 'done',
+    })
+
+    const { modelContext, tools } = createFakeModelContext()
+    registerWebMcpTools(collector, { modelContext })
+
+    expect(tools.get('wipe')!.annotations).toMatchObject({
+      readOnlyHint: false,
+      consequentialHint: true,
+      destructiveHint: true,
+    })
+  })
+
+  it('rejects with the abort reason when the call is aborted', async () => {
+    const collector = createCollector()
+    collector.register({
+      name: 'slow',
+      type: 'action',
+      jsonSerializable: true,
+      agent: { description: 'Never settles.' },
+      handler: () => new Promise(() => {}),
+    })
+
+    const { modelContext, tools } = createFakeModelContext()
+    registerWebMcpTools(collector, { modelContext })
+
+    const controller = new AbortController()
+    const pending = tools.get('slow')!.execute({}, { signal: controller.signal })
+    const reason = new Error('cancelled')
+    controller.abort(reason)
+    await expect(pending).rejects.toBe(reason)
+
+    // An already aborted signal rejects before the handler runs.
+    await expect(tools.get('slow')!.execute({}, { signal: controller.signal })).rejects.toBe(reason)
   })
 
   it('follows later register/update calls until disposed', async () => {
