@@ -245,4 +245,16 @@ describe('client agent tools', () => {
       vi.useRealTimers()
     }
   })
+
+  it('republishes the tool list when a manifest changes under the same id', () => {
+    const h = harness()
+    const a = h.session('tab-a')
+    h.sync(a)
+    expect(h.notifyChanged).toHaveBeenCalledTimes(1)
+
+    const changed = { ...h.refetch, description: 'Refetch queries by key.' }
+    syncClientAgentTools(h.context, a.session, a.id, [changed], a.info)
+    expect(h.notifyChanged).toHaveBeenCalledTimes(2)
+    expect(h.tool(changed.id).description).toBe('Refetch queries by key.')
+  })
 })

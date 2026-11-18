@@ -2,7 +2,7 @@
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
-import { useEventListener, whenever } from '@vueuse/core'
+import { useEventListener, useFocusWithin, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { t } from '../../i18n'
@@ -49,6 +49,7 @@ const safeArea = useSafeArea(anchorEl)
 const panelMargins = computed(() => resolveViewportMargins(safeArea.value, layout.value))
 
 const dockEl = useTemplateRef<HTMLDivElement>('dockEl')
+const { focused: isFocused } = useFocusWithin(dockEl)
 
 const recalculateCounter = ref(0)
 const isHovering = ref(false)
@@ -219,6 +220,8 @@ const docksGroupPanel = useDocksGroupPanel()
 const isMinimized = computed(() => {
   if (context.panel.store.inactiveTimeout < 0)
     return false
+  if (isFocused.value)
+    return false
   if (docksGroupPanel.value)
     return false
   // Keep an active tool's button in sight while it hides the panel.
@@ -307,7 +310,8 @@ onMounted(() => {
         @pointerdown="onPointerDown"
       >
         <div
-          class="w-3 h-3 absolute left-1/2 top-1/2 translate-x--1/2 translate-y--1/2 transition-opacity duration-300"
+          aria-hidden="true"
+          class="pointer-events-none w-3 h-3 absolute left-1/2 top-1/2 translate-x--1/2 translate-y--1/2 transition-opacity duration-300"
           :class="[
             isMinimized ? 'op100' : 'op0',
             context.panel.isVertical ? 'rotate-270' : 'rotate-0',
@@ -318,6 +322,8 @@ onMounted(() => {
         </div>
         <div
           v-if="!isRpcTrusted"
+          :inert="!!isMinimized"
+          :aria-hidden="!!isMinimized"
           class="transition duration-300 delay-200 ma"
           :class="isMinimized ? 'opacity-0 pointer-events-none ws-nowrap text-sm text-orange of-hidden' : 'opacity-100'"
         >
@@ -338,6 +344,8 @@ onMounted(() => {
         </div>
         <div
           v-if="isRpcTrusted"
+          :inert="!!isMinimized"
+          :aria-hidden="!!isMinimized"
           :class="isMinimized ? 'opacity-0 pointer-events-none' : 'opacity-100'"
           class="transition duration-200 flex items-center w-full h-full justify-center px1 overflow-hidden"
         >

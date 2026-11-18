@@ -228,4 +228,73 @@ describe('buildHub', () => {
     const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
     expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['gamma'])
   })
+
+  it('rejects a hub base outside `deployBase`', async () => {
+    await expect(buildHub({
+      outDir: join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub'),
+      base: '/__hub/',
+      deployBase: '/sub/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+    })).rejects.toThrow(/not under its deployBase/)
+  })
+
+  it('rebases the deploy-root layout under `deployBase`', async () => {
+    const deployRoot = mkdtempSync(join(tmpdir(), 'hub-build-out-'))
+    const outDir = join(deployRoot, '__devtools')
+    const panel = makeDist('<script type="module" src="/__panel/app.js"></script>')
+    writeFileSync(join(panel, 'app.js'), 'export const base = "/__panel/"\n', 'utf-8')
+
+    await buildHub({
+      outDir,
+      base: '/ci-build-123456/__devtools/',
+      deployBase: '/ci-build-123456/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+      async configure(ctx) {
+        await ctx.install(makeFrame('alpha', {
+          distDir: makeDist('<script type="module" src="/__alpha/app.js"></script>'),
+        }), { base: '/__alpha/' })
+        ctx.views.hostStatic('/__panel/', panel)
+        ctx.docks.register({
+          id: 'panel',
+          title: 'Panel',
+          icon: '/__panel/icon.svg',
+          type: 'iframe',
+          url: '/__panel/',
+        })
+      },
+    })
+
+    // The deploy root layout is unchanged on disk: siblings sit beside the hub.
+    expect(existsSync(join(outDir, '__connection.json'))).toBe(true)
+    expect(existsSync(join(deployRoot, '__alpha/index.html'))).toBe(true)
+    expect(existsSync(join(deployRoot, '__panel/app.js'))).toBe(true)
+
+    // Discovery and per-frame meta spell the served URLs.
+    const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
+    expect(index.base).toBe('/ci-build-123456/__devtools/')
+    expect(index.frames).toEqual([
+      { id: 'alpha', base: '/ci-build-123456/__alpha/', title: 'Frame alpha' },
+    ])
+    const frameMeta = JSON.parse(readFileSync(join(deployRoot, '__alpha/__connection.json'), 'utf-8'))
+    expect(frameMeta.baseUrl).toBe('/ci-build-123456/__devtools/__connection.json')
+
+    // The baked RPC dump carries the served dock URL, not the root-absolute one.
+    const manifest = JSON.parse(readFileSync(join(outDir, '__rpc-dump/index.json'), 'utf-8'))
+    const stateEntry = manifest['devframe:rpc:server-state:get']
+    const records = (Object.values(stateEntry.records) as string[])
+      .map(path => readFileSync(join(outDir, path), 'utf-8'))
+    const docksRecord = records.find(text => text.includes(HUB_EVENTS.sharedState.docks))!
+    expect(docksRecord).toContain('/ci-build-123456/__alpha/')
+    expect(docksRecord).toContain('/ci-build-123456/__panel/')
+    expect(docksRecord).not.toContain('"/__alpha/"')
+    expect(docksRecord).not.toContain('"/__panel/"')
+
+    // Root-absolute asset references inside copied SPAs follow the new location.
+    expect(readFileSync(join(deployRoot, '__alpha/index.html'), 'utf-8'))
+      .toContain('/ci-build-123456/__alpha/app.js')
+    expect(readFileSync(join(deployRoot, '__panel/index.html'), 'utf-8'))
+      .toContain('/ci-build-123456/__panel/app.js')
+    expect(readFileSync(join(deployRoot, '__panel/app.js'), 'utf-8'))
+      .toContain('/ci-build-123456/__panel/')
+  })
 })

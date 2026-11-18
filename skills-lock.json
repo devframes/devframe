@@ -5,7 +5,7 @@
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
       "skillPath": "skills/agent-browser/SKILL.md",
-      "computedHash": "c3d8b82b1b229c3697cf5f21b5202375a7e6aea21c7059ab30f0bc6972664a98",
+      "computedHash": "a0dfac7503f69bcf529b2660fc79964064c4f179eb65695904ddc45fc0d99d20",
       "via": "@antfu/skills"
     },
     "antfu": {
@@ -19,7 +19,7 @@
       "source": "antfu/skills",
       "sourceType": "github",
       "skillPath": "skills/antfu-create-pr/SKILL.md",
-      "computedHash": "1286bbd459327bafccb27f8d08ff3d69b67e50f86faf0958ebe6bb81688b0a7d",
+      "computedHash": "494a3fe8253dc8510aaf526aef6d6a7474a6060975073838de7377ac76bbd7d6",
       "via": "@antfu/skills"
     },
     "antfu-design": {
@@ -124,7 +124,7 @@
       "source": "onmax/nuxt-skills",
       "sourceType": "github",
       "skillPath": "skills/nuxt-modules/SKILL.md",
-      "computedHash": "0b279b68cd787a3167c824085f5d5ba71e0119ba1c5e45b1e23ee284a410ca8f",
+      "computedHash": "3a7875fa212789bbcf8b75a55bb505e37666ba602589d02c21b46c77305c65cf",
       "via": "@antfu/skills"
     },
     "research": {
@@ -166,7 +166,7 @@
       "source": "cursor/plugins",
       "sourceType": "github",
       "skillPath": "pstack/skills/unslop/SKILL.md",
-      "computedHash": "204151f4d5cb9adf24f81e4b4f4142b91077d332e71c78511ce7a6a6083660da",
+      "computedHash": "4bbcb6719a8f0f6f7fb46752e1c360791d7758a837708e300a06fc7d6907938c",
       "via": "@antfu/skills"
     },
     "vue-best-practices": {
