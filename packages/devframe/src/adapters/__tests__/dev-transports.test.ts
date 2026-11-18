@@ -7,7 +7,7 @@ import { defineDevframe, defineRpcFunction } from 'devframe'
 import { getDevframeRpcClient, resolveClientTransport } from 'devframe/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { readDevframeInstances } from '../../node/instance-registry'
-import { createDevServer } from '../dev'
+import { createDevServer, resolveMcpConnectionMeta } from '../dev'
 
 const jsonHandler = vi.fn((value: unknown) => value)
 
@@ -157,6 +157,7 @@ describe('dev server transport handle', () => {
   it.each([
     { path: 'tools/mcp', advertised: 'tools/mcp' },
     { path: '/', advertised: './' },
+    { path: '', advertised: './' },
   ])('initializes MCP at $path from both descriptors under a nested mount', async ({ path, advertised }) => {
     const basePath = '/nested/tool/'
     const handle = await createDevServer(definition, {
@@ -168,6 +169,7 @@ describe('dev server transport handle', () => {
       const discovery = new URL(`${basePath}__connection.json`, handle.origin)
       const httpMeta = await fetch(discovery).then(response => response.json())
       expect(httpMeta.mcp.path).toBe(advertised)
+      expect(resolveMcpConnectionMeta({ path })).toEqual(httpMeta.mcp)
 
       const addresses = [
         new URL(httpMeta.mcp.path, discovery),
@@ -199,6 +201,11 @@ describe('dev server transport handle', () => {
     finally {
       await handle.close()
     }
+  })
+
+  it('roots MCP paths at the sidecar origin when a port is set', () => {
+    expect(resolveMcpConnectionMeta({ path: '/' }, 4001)).toEqual({ path: '/', port: 4001 })
+    expect(resolveMcpConnectionMeta({ path: 'tools/mcp' }, 4001)).toEqual({ path: '/tools/mcp', port: 4001 })
   })
 
   it('returns static configuration in the same JSON form as HTTP discovery', async () => {

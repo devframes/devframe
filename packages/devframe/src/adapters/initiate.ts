@@ -22,6 +22,7 @@ import { createHostContext } from '../node/context'
 import { diagnostics } from '../node/diagnostics'
 import { createH3DevframeHost } from '../node/host-h3'
 import { createInstanceShell, resolveInstanceRegister } from '../node/instance-shell'
+import { relativeDiscoveryPath } from '../node/utils'
 import { loadAutoMcpAdapter, normalizeBasePath, resolveMcpConfig } from './_shared'
 import { resolveDevServerPort } from './dev'
 
@@ -401,9 +402,7 @@ async function mountMcpRoute(
   })
   return {
     meta: {
-      path: route === '/'
-        ? './'
-        : route,
+      path: relativeDiscoveryPath(route),
     },
     dispose: mounted.dispose,
   }

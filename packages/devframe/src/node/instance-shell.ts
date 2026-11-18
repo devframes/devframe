@@ -23,7 +23,7 @@ import { diagnostics } from './diagnostics'
 import { getInternalContext } from './hub-internals/context'
 import { listenWithLoopbackTwin } from './listen'
 import { detectServerRuntime } from './runtime'
-import { formatHostForUrl, normalizeHttpServerUrl } from './utils'
+import { formatHostForUrl, normalizeHttpServerUrl, relativeDiscoveryPath } from './utils'
 
 /**
  * The live handle for a bound HTTP + WebSocket RPC server: what the
@@ -71,13 +71,6 @@ interface BindHttpAndWsOptions {
 interface TierBinding {
   websocketMeta?: ConnectionMeta['websocket']
   wsAvailable: boolean
-}
-
-// A relative URL for the mount root must resolve against the discovery document.
-function relativeDiscoveryPath(route: string): string {
-  return route === '/'
-    ? './'
-    : route
 }
 
 function getJsonSerializableMethods(rpc: DevframeNodeContext['rpc']): string[] {
