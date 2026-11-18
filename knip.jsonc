@@ -35,7 +35,8 @@
       // `skills/devframe/templates/*.ts` are the devframe-authoring skill's
       // copy-and-run reference snippets (`skills/devframe/SKILL.md`) - each
       // one a standalone, runnable example, not imported by anything else.
-      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts"],
+      // The floating dock fixture is loaded by its HTML script tag.
+      "entry": ["design/*.ts", "skills/devframe/templates/*.ts", "scripts/smoke-bun.ts", "tests/e2e/_support/floating-dock/main.ts"],
       // `@x18n/cli` is run by hand (`pnpm x18n`) and no script calls it yet.
       "ignoreDependencies": ["@x18n/cli"]
     },
