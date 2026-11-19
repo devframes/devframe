@@ -45,7 +45,9 @@ function resolveTagValue(name: string, value: string, baseUrl: string): string {
     return value
   try {
     const resolved = new URL(value, baseUrl)
-    return resolved.protocol === 'http:' || resolved.protocol === 'https:' ? resolved.href : ''
+    return resolved.protocol === 'http:' || resolved.protocol === 'https:'
+      ? resolved.href
+      : ''
   }
   catch {
     return ''
@@ -61,7 +63,9 @@ export function parseOgMetadata(html: string, url: string): OgHeadTag[] {
 
   let baseUrl = url
   const baseHref = findElement(head, 'base')
-  const baseValue = baseHref ? getAttribute(baseHref, 'href') : ''
+  const baseValue = baseHref
+    ? getAttribute(baseHref, 'href')
+    : ''
   if (baseValue) {
     try {
       baseUrl = new URL(baseValue, url).href
@@ -108,7 +112,9 @@ export function parseOgMetadata(html: string, url: string): OgHeadTag[] {
 }
 
 function normalizeUrl(input: string): string {
-  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(input) ? input : `http://${input}`
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(input)
+    ? input
+    : `http://${input}`
   try {
     const url = new URL(candidate)
     if (url.protocol !== 'http:' && url.protocol !== 'https:')
@@ -181,7 +187,9 @@ export async function fetchOgMetadata(
   catch (error) {
     throw diagnostics.DP_OG_0002({
       url: requestedUrl,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error instanceof Error
+        ? error.message
+        : String(error),
       cause: error,
     })
   }
@@ -201,7 +209,9 @@ export async function fetchOgMetadata(
       throw error
     throw diagnostics.DP_OG_0002({
       url: requestedUrl,
-      reason: error instanceof Error ? error.message : String(error),
+      reason: error instanceof Error
+        ? error.message
+        : String(error),
       cause: error,
     })
   }

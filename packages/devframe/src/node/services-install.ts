@@ -74,7 +74,9 @@ export async function importServicePackage(
   pkg: string,
   resolveFroms: readonly (string | null | undefined)[],
 ): Promise<unknown> {
-  const candidates = [...new Set(resolveFroms.filter((x): x is string => typeof x === 'string' && x.length > 0))]
+  const candidates = [
+    ...new Set(resolveFroms.filter((x): x is string => typeof x === 'string' && x.length > 0)),
+  ]
   let lastError: unknown = new Error(`no resolution base available for "${pkg}"`)
   for (const from of candidates) {
     let resolved: string
@@ -109,7 +111,14 @@ function parseVersion(input: string): ParsedVersion | undefined {
     return undefined
   while (parts.length < 3)
     parts.push(0)
-  return { parts, ...(prerelease.length ? { prerelease: prerelease.join('-') } : {}) }
+  return {
+    parts,
+    ...(prerelease.length
+      ? {
+          prerelease: prerelease.join('-'),
+        }
+      : {}),
+  }
 }
 
 function compareVersions(a: ParsedVersion, b: ParsedVersion): number {
@@ -123,8 +132,13 @@ function compareVersions(a: ParsedVersion, b: ParsedVersion): number {
     return -1
   if (!a.prerelease && b.prerelease)
     return 1
-  if (a.prerelease && b.prerelease)
-    return a.prerelease < b.prerelease ? -1 : a.prerelease > b.prerelease ? 1 : 0
+  if (a.prerelease && b.prerelease) {
+    return a.prerelease < b.prerelease
+      ? -1
+      : a.prerelease > b.prerelease
+        ? 1
+        : 0
+  }
   return 0
 }
 
@@ -142,7 +156,9 @@ function satisfiesCaret(version: ParsedVersion, base: ParsedVersion): boolean {
     return false
   // Left-most non-zero element is fixed (npm caret semantics).
   const fixedIndex = base.parts.findIndex(part => part !== 0)
-  const lockUpTo = fixedIndex === -1 ? base.parts.length - 1 : fixedIndex
+  const lockUpTo = fixedIndex === -1
+    ? base.parts.length - 1
+    : fixedIndex
   return partsMatchUpTo(version, base, lockUpTo)
 }
 
@@ -150,7 +166,9 @@ function satisfiesTilde(version: ParsedVersion, base: ParsedVersion, segments: s
   if (compareVersions(version, base) < 0)
     return false
   // Same major (and same minor when the range specifies one).
-  return partsMatchUpTo(version, base, segments.length >= 2 ? 1 : 0)
+  return partsMatchUpTo(version, base, segments.length >= 2
+    ? 1
+    : 0)
 }
 
 function satisfiesExactOrPrefix(version: ParsedVersion, base: ParsedVersion, segments: string[]): boolean {
@@ -159,7 +177,9 @@ function satisfiesExactOrPrefix(version: ParsedVersion, base: ParsedVersion, seg
     if (i < segments.length && (version.parts[i] ?? 0) !== (base.parts[i] ?? 0))
       return false
   }
-  return segments.length >= 3 ? compareVersions(version, base) === 0 : true
+  return segments.length >= 3
+    ? compareVersions(version, base) === 0
+    : true
 }
 
 function satisfiesComparator(version: ParsedVersion, comparator: string): boolean {
@@ -223,12 +243,21 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 /** Deep-merge two values with the service option-set rules (see below). */
 function deepMergeTwo(a: unknown, b: unknown): unknown {
   // Arrays union-dedupe, so multiple installers' `roots` / `langs` accumulate.
-  if (Array.isArray(a) && Array.isArray(b))
-    return [...new Set([...a, ...b])]
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return [
+      ...new Set([
+        ...a,
+        ...b,
+      ]),
+    ]
+  }
   if (isPlainObject(a) && isPlainObject(b)) {
     const out: Record<string, unknown> = { ...a }
-    for (const key of Object.keys(b))
-      out[key] = key in a ? deepMergeTwo(a[key], b[key]) : b[key]
+    for (const key of Object.keys(b)) {
+      out[key] = key in a
+        ? deepMergeTwo(a[key], b[key])
+        : b[key]
+    }
     return out
   }
   // Scalars / mismatched shapes: later set wins (e.g. `themes` per key).

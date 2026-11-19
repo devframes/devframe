@@ -21,7 +21,9 @@ function collectPositionalArgs(input: unknown, argumentCount: number | undefined
       positional.push(record[`arg${positional.length}`])
     return positional
   }
-  return Object.keys(record).length === 0 ? [] : undefined
+  return Object.keys(record).length === 0
+    ? []
+    : undefined
 }
 
 /** Convert tool input for an RPC, preserving an untyped payload as arg 0. */

@@ -8,6 +8,7 @@ import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub
 import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
 import { t } from '../../i18n'
+import { localizeTitle } from '../../state/locale'
 import { useSettings } from '../../state/settings-defaults'
 import ViewAssetsError from './ViewAssetsError.vue'
 import ViewIframeLoading from './ViewIframeLoading.vue'
@@ -21,7 +22,9 @@ const props = defineProps<{
 
 const settings = useSettings(props.context)
 const isEdgeMode = computed(() => props.context.panel.store.mode === 'edge')
-const addressBarControls = computed(() => typeof props.entry.addressBar === 'object' ? props.entry.addressBar : undefined)
+const addressBarControls = computed(() => typeof props.entry.addressBar === 'object'
+  ? props.entry.addressBar
+  : undefined)
 const showAddressBar = computed(() => settings.value.showIframeAddressBar || Boolean(props.entry.addressBar))
 
 const ADDRESS_BAR_HEIGHT = 40
@@ -233,6 +236,9 @@ onMounted(() => {
     style: { boxShadow: 'none', outline: 'none' },
   })
   const iframe = pane.iframe
+  watchEffect(() => {
+    iframe.title = localizeTitle(props.entry).title
+  })
 
   // Follow the frame wherever it goes: a document load, but also an SPA
   // router's `pushState`/`replaceState` and back/forward, none of which fire

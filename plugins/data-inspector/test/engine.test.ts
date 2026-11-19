@@ -5,7 +5,17 @@ import { skeletonOf } from '../src/node/engine/skeleton'
 
 class Store {
   name = 'sessions'
-  entries = new Map<string, { hits: number }>([['a', { hits: 3 }], ['b', { hits: 7 }]])
+  entries = new Map<string, { hits: number }>([
+    [
+      'a',
+      { hits: 3 },
+    ],
+    [
+      'b',
+      { hits: 7 },
+    ],
+  ])
+
   get upper(): string {
     return this.name.toUpperCase()
   }
@@ -47,7 +57,12 @@ describe('normalize', () => {
   })
 
   it('honors filter options', () => {
-    const input = { keep: 1, _private: 2, $meta: 3, fn: () => {} }
+    const input = {
+      keep: 1,
+      _private: 2,
+      $meta: 3,
+      fn: () => {},
+    }
     const { data } = normalize(input, {
       excludeFunctions: true,
       excludeUnderscoreProps: true,
@@ -64,7 +79,10 @@ describe('depth truncation + lazy expand', () => {
       level0: {
         level1: {
           level2: {
-            level3: { leaf: 'found', more: [1, 2, 3] },
+            level3: {
+              leaf: 'found',
+              more: [1, 2, 3],
+            },
           },
         },
       },
@@ -76,37 +94,80 @@ describe('depth truncation + lazy expand', () => {
     expect(stats.truncatedDepth).toBeGreaterThan(0)
     const marker = data.level0.level1
     expect(marker.$truncated).toBe('depth')
-    expect(marker.$path).toEqual([['k', 'level0'], ['k', 'level1']])
+    expect(marker.$path).toEqual([
+      ['k', 'level0'],
+      ['k', 'level1'],
+    ])
   })
 
   it('navigate() re-descends a live graph along a node path', () => {
     const g = deep()
-    expect(navigate(g, [['k', 'level0'], ['k', 'level1'], ['k', 'level2']])).toBe(g.level0.level1.level2)
-    expect(navigate(g, [['k', 'nope']])).toBeUndefined()
+    expect(navigate(g, [
+      ['k', 'level0'],
+      ['k', 'level1'],
+      ['k', 'level2'],
+    ])).toBe(g.level0.level1.level2)
+    expect(navigate(g, [
+      ['k', 'nope'],
+    ])).toBeUndefined()
   })
 
   it('navigate() re-applies excludeFunctions to array indices', () => {
-    const g = { list: [() => {}, { keep: 1 }, () => {}, { keep: 2 }] }
+    const g = {
+      list: [
+        () => {},
+        { keep: 1 },
+        () => {},
+        { keep: 2 },
+      ],
+    }
     // With functions filtered out, display index 1 is the { keep: 2 } object.
-    expect(navigate(g, [['k', 'list'], ['i', 1]], { excludeFunctions: true })).toEqual({ keep: 2 })
+    expect(navigate(g, [
+      ['k', 'list'],
+      ['i', 1],
+    ], { excludeFunctions: true })).toEqual({ keep: 2 })
     // Without filtering, display index 1 is the first plain object.
-    expect(navigate(g, [['k', 'list'], ['i', 1]])).toEqual({ keep: 1 })
+    expect(navigate(g, [
+      ['k', 'list'],
+      ['i', 1],
+    ])).toEqual({ keep: 1 })
   })
 
   it('navigate() handles Set and non-string-keyed Map steps', () => {
     const key = { id: 1 }
-    const g = { tags: new Set(['a', 'b']), map: new Map<unknown, unknown>([[key, 'v']]) }
-    expect(navigate(g, [['k', 'tags'], ['s', 1]])).toBe('b')
-    expect(navigate(g, [['k', 'map'], ['mk', 0]])).toBe(key)
-    expect(navigate(g, [['k', 'map'], ['mv', 0]])).toBe('v')
+    const g = {
+      tags: new Set(['a', 'b']),
+      map: new Map<unknown, unknown>([
+        [key, 'v'],
+      ]),
+    }
+    expect(navigate(g, [
+      ['k', 'tags'],
+      ['s', 1],
+    ])).toBe('b')
+    expect(navigate(g, [
+      ['k', 'map'],
+      ['mk', 0],
+    ])).toBe(key)
+    expect(navigate(g, [
+      ['k', 'map'],
+      ['mv', 0],
+    ])).toBe('v')
   })
 
   it('runQueryAtPath re-runs and returns a fresh slice of the subtree', async () => {
-    const out = await runQueryAtPath(deep(), '$', [['k', 'level0'], ['k', 'level1']], { maxDepth: 3 })
+    const out = await runQueryAtPath(deep(), '$', [
+      ['k', 'level0'],
+      ['k', 'level1'],
+    ], { maxDepth: 3 })
     expect(out.ok).toBe(true)
     if (out.ok) {
       // The subtree normalizes from level2 with a fresh budget, reaching the leaf.
-      expect(out.result).toMatchObject({ level2: { level3: { leaf: 'found' } } })
+      expect(out.result).toMatchObject({
+        level2: {
+          level3: { leaf: 'found' },
+        },
+      })
     }
   })
 
@@ -118,9 +179,15 @@ describe('depth truncation + lazy expand', () => {
 describe('runQuery (live)', () => {
   it('queries live Maps and Sets through the bridge methods', async () => {
     const out = await runQuery(liveGraph(), 'store.entries.mapEntries().key')
-    expect(out).toMatchObject({ ok: true, result: ['a', 'b'] })
+    expect(out).toMatchObject({
+      ok: true,
+      result: ['a', 'b'],
+    })
     const set = await runQuery(liveGraph(), 'tags.fromSet()')
-    expect(set).toMatchObject({ ok: true, result: ['alpha', 'beta'] })
+    expect(set).toMatchObject({
+      ok: true,
+      result: ['alpha', 'beta'],
+    })
   })
 
   it('reports payload size and timings', async () => {
@@ -140,15 +207,23 @@ describe('runQuery (static portability)', () => {
     // `store.entries` is now a `{ $type: 'Map', value }` tag; the bridge
     // methods duck-type it so live-authored queries stay portable.
     const out = await runQuery(data, 'store.entries.mapEntries().key')
-    expect(out).toMatchObject({ ok: true, result: ['a', 'b'] })
+    expect(out).toMatchObject({
+      ok: true,
+      result: ['a', 'b'],
+    })
     const set = await runQuery(data, 'tags.fromSet()')
-    expect(set).toMatchObject({ ok: true, result: ['alpha', 'beta'] })
+    expect(set).toMatchObject({
+      ok: true,
+      result: ['alpha', 'beta'],
+    })
   })
 })
 
 describe('suggest', () => {
   it('returns flattened, prefix-ranged completion items', async () => {
-    const out = await suggest({ foo: { bar: 1, baz: 2 } }, 'foo.', 4)
+    const out = await suggest({
+      foo: { bar: 1, baz: 2 },
+    }, 'foo.', 4)
     expect(out.ok).toBe(true)
     expect(out.suggestions.map(s => s.value)).toEqual(['bar', 'baz'])
     expect(out.suggestions[0]).toMatchObject({ from: 4, to: 4, current: '' })

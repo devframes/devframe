@@ -3,22 +3,34 @@ import { strictJsonStringify } from './serialization'
 
 describe('strictJsonStringify', () => {
   it('matches JSON.stringify for plain JSON values', () => {
-    const value = { a: 1, b: 'two', c: [true, null, 3.14] }
+    const value = {
+      a: 1,
+      b: 'two',
+      c: [true, null, 3.14],
+    }
     expect(strictJsonStringify(value)).toBe(JSON.stringify(value))
   })
 
   it('rejects Map', () => {
-    expect(() => strictJsonStringify({ a: new Map([['k', 1]]) }, 'fn'))
+    expect(() => strictJsonStringify({
+      a: new Map([
+        ['k', 1],
+      ]),
+    }, 'fn'))
       .toThrowError(/jsonSerializable: true.*is a Map/)
   })
 
   it('rejects Set', () => {
-    expect(() => strictJsonStringify({ a: new Set([1, 2]) }, 'fn'))
+    expect(() => strictJsonStringify({
+      a: new Set([1, 2]),
+    }, 'fn'))
       .toThrowError(/is a Set/)
   })
 
   it('rejects Date', () => {
-    expect(() => strictJsonStringify({ when: new Date() }, 'fn'))
+    expect(() => strictJsonStringify({
+      when: new Date(),
+    }, 'fn'))
       .toThrowError(/is a Date/)
   })
 
@@ -31,12 +43,16 @@ describe('strictJsonStringify', () => {
     class Thing {
       x = 1
     }
-    expect(() => strictJsonStringify({ t: new Thing() }, 'fn'))
+    expect(() => strictJsonStringify({
+      t: new Thing(),
+    }, 'fn'))
       .toThrowError(/is a Thing/)
   })
 
   it('rejects undefined inside an array (lossy → null in JSON)', () => {
-    expect(() => strictJsonStringify({ items: [1, undefined, 3] }, 'fn'))
+    expect(() => strictJsonStringify({
+      items: [1, undefined, 3],
+    }, 'fn'))
       .toThrowError(/is a undefined/)
   })
 
@@ -56,7 +72,9 @@ describe('strictJsonStringify', () => {
   })
 
   it('mentions the function name in the diagnostic', () => {
-    expect(() => strictJsonStringify({ a: new Map() }, 'plugin:my-fn'))
+    expect(() => strictJsonStringify({
+      a: new Map(),
+    }, 'plugin:my-fn'))
       .toThrowError(/plugin:my-fn/)
   })
 
@@ -74,7 +92,12 @@ describe('strictJsonStringify', () => {
       return orig(value, wrappedReplacer as any)
     })
     try {
-      strictJsonStringify({ a: 1, b: { c: [2, 3] } })
+      strictJsonStringify({
+        a: 1,
+        b: {
+          c: [2, 3],
+        },
+      })
     }
     finally {
       spy.mockRestore()

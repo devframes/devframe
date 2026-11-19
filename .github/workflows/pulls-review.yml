@@ -1,0 +1,19 @@
+name: pulls.review
+
+on:
+  # The analysis reads the diff through the API and never checks out PR code,
+  # so `pull_request_target` is safe and lets fork PRs get a comment too.
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: antfu/pulls.review@main
+        with:
+          api-key: ${{ secrets.VERCEL_AI_GATEWAY_API_KEY }}

@@ -45,7 +45,9 @@ describe('registerWebMcpTools', () => {
       name: 'my-plugin:greet',
       jsonSerializable: true,
       agent: { description: 'Greet someone by name.' },
-      args: [withJsonSchema({ type: 'string' })],
+      args: [
+        withJsonSchema({ type: 'string' }),
+      ],
       returns: withJsonSchema({ type: 'string' }),
       handler: (name: string) => `Hello ${name}`,
     })
@@ -57,17 +59,27 @@ describe('registerWebMcpTools', () => {
     const { modelContext, tools } = createFakeModelContext()
     const dispose = registerWebMcpTools(collector, { modelContext })
 
-    expect([...tools.keys()]).toEqual(['my-plugin_greet'])
+    expect([
+      ...tools.keys(),
+    ]).toEqual(['my-plugin_greet'])
     const tool = tools.get('my-plugin_greet')!
     expect(tool.description).toBe('Greet someone by name.')
     expect(tool.inputSchema).toEqual({
       type: 'object',
-      properties: { arg0: { type: 'string' } },
+      properties: {
+        arg0: { type: 'string' },
+      },
       required: ['arg0'],
       additionalProperties: false,
     })
     // `query` (default type) infers read-only.
-    expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false })
+    expect(tool.title).toBe('my-plugin:greet')
+    expect(tool.annotations).toMatchObject({
+      readOnlyHint: true,
+      consequentialHint: false,
+      debugging: true,
+      destructiveHint: false,
+    })
 
     dispose()
     expect(tools.size).toBe(0)
@@ -79,7 +91,10 @@ describe('registerWebMcpTools', () => {
       name: 'add',
       jsonSerializable: true,
       agent: { description: 'Add two numbers.' },
-      args: [withJsonSchema({ type: 'number' }), withJsonSchema({ type: 'number' })],
+      args: [
+        withJsonSchema({ type: 'number' }),
+        withJsonSchema({ type: 'number' }),
+      ],
       returns: withJsonSchema({ type: 'object' }),
       handler: (a: number, b: number) => ({ sum: a + b }),
     })
@@ -110,6 +125,49 @@ describe('registerWebMcpTools', () => {
     const result = await tools.get('boom')!.execute({})
     expect(result.isError).toBe(true)
     expect(result.content[0]!.text).toBe('Error: nope')
+  })
+
+  it('marks destructive tools as consequential', () => {
+    const collector = createCollector()
+    collector.register({
+      name: 'wipe',
+      type: 'action',
+      jsonSerializable: true,
+      agent: { description: 'Wipe the cache.', safety: 'destructive' },
+      handler: () => 'done',
+    })
+
+    const { modelContext, tools } = createFakeModelContext()
+    registerWebMcpTools(collector, { modelContext })
+
+    expect(tools.get('wipe')!.annotations).toMatchObject({
+      readOnlyHint: false,
+      consequentialHint: true,
+      destructiveHint: true,
+    })
+  })
+
+  it('rejects with the abort reason when the call is aborted', async () => {
+    const collector = createCollector()
+    collector.register({
+      name: 'slow',
+      type: 'action',
+      jsonSerializable: true,
+      agent: { description: 'Never settles.' },
+      handler: () => new Promise(() => {}),
+    })
+
+    const { modelContext, tools } = createFakeModelContext()
+    registerWebMcpTools(collector, { modelContext })
+
+    const controller = new AbortController()
+    const pending = tools.get('slow')!.execute({}, { signal: controller.signal })
+    const reason = new Error('cancelled')
+    controller.abort(reason)
+    await expect(pending).rejects.toBe(reason)
+
+    // An already aborted signal rejects before the handler runs.
+    await expect(tools.get('slow')!.execute({}, { signal: controller.signal })).rejects.toBe(reason)
   })
 
   it('follows later register/update calls until disposed', async () => {
@@ -196,7 +254,9 @@ describe('registerWebMcpTools', () => {
       handler: () => 'never',
     })
     const dispose = registerWebMcpTools(collector, {
-      modelContext: { registerTool: () => Promise.reject(new Error('NotAllowedError')) },
+      modelContext: {
+        registerTool: () => Promise.reject(new Error('NotAllowedError')),
+      },
     })
     await new Promise(resolve => setTimeout(resolve, 0))
     dispose()
@@ -251,7 +311,10 @@ describe('getDevframeRpcClient: WebMCP wiring', () => {
       href: 'http://localhost:5173/__foo/index.html',
       origin: 'http://localhost:5173',
     })
-    const served: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+    const served: ConnectionMeta = {
+      backend: 'websocket',
+      websocket: { path: '__ws' },
+    }
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -278,7 +341,9 @@ describe('getDevframeRpcClient: WebMCP wiring', () => {
       agent: { description: 'Return the selected node.' },
       handler: () => 'node-1',
     })
-    expect([...tools.keys()]).toEqual(['my-plugin_get-selection'])
+    expect([
+      ...tools.keys(),
+    ]).toEqual(['my-plugin_get-selection'])
 
     rpc.close?.()
     expect(tools.size).toBe(0)

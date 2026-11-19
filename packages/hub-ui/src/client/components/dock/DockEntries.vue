@@ -2,8 +2,9 @@
 import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { evaluateWhen } from 'devframe/utils/when'
-import { toRefs } from 'vue'
-import { getGroupMembers, resolveGroupDefaultChild } from '../../state/dock-settings'
+import { computed, toRefs } from 'vue'
+import { getEntryGroup, getGroupMembers, resolveGroupDefaultChild } from '../../state/dock-settings'
+import { getCurrentDockId } from '../../state/docks'
 import { useSettings } from '../../state/settings-defaults'
 import DockEntry from './DockEntry.vue'
 import DockGroupButton from './DockGroupButton.vue'
@@ -23,6 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const { selected, isVertical, entries } = toRefs(props)
+const currentId = computed(() => getCurrentDockId(props.context))
 
 const settings = useSettings(props.context)
 
@@ -46,6 +48,11 @@ function isDockVisible(dock: DevframeDockEntry): boolean {
   if (dock.visibility && !evaluateWhen(dock.visibility, props.context.when.context))
     return false
   return true
+}
+
+// Selected, or a toggle action that is on (it never takes the selection).
+function isDockActive(dock: DevframeDockEntry): boolean {
+  return selected.value?.id === dock.id || !!props.context.docks.getStateById(dock.id)?.isActive
 }
 
 function toggleDockEntry(dock: DevframeDockEntry) {
@@ -73,11 +80,13 @@ function toggleDockEntry(dock: DevframeDockEntry) {
         :context="context"
         :dock
         :is-action="dock.type === 'action'"
-        :is-selected="selected?.id === dock.id"
-        :is-dimmed="dimInactive && selected ? (selected.id !== dock.id) : false"
+        :is-selected="isDockActive(dock)"
+        :current="currentId === dock.id ? 'page' : undefined"
+        :is-dimmed="dimInactive && selected ? !isDockActive(dock) : false"
         :is-vertical="isVertical"
         :badge="dock.badge"
         :badge-variant="dock.badgeVariant"
+        :group="getEntryGroup(context.docks.entries, dock)"
         @click="toggleDockEntry(dock)"
       />
     </template>

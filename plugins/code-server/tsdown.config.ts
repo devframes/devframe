@@ -46,8 +46,8 @@ export default defineConfig([
     platform: 'neutral',
     tsconfig,
     deps,
-    dts: { emitDtsOnly: true },
-    outExtensions: () => ({ dts: '.d.mts' }),
+    dts: { dtsOnly: true },
+    outExtensions: () => ({ js: '.mjs', dts: '.d.mts' }),
     entry: nodeEntries,
   },
 ])

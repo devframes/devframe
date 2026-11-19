@@ -12,7 +12,11 @@ function nullHost(): DevframeHost {
 
 describe('agent introspection RPCs', () => {
   it('registers devframe:agent:list-tools and returns the tool manifest', async () => {
-    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    const ctx = await createHostContext({
+      cwd: process.cwd(),
+      mode: 'dev',
+      host: nullHost(),
+    })
 
     ctx.agent.registerTool({
       id: 'hello',
@@ -30,7 +34,11 @@ describe('agent introspection RPCs', () => {
   })
 
   it('routes devframe:agent:invoke-tool through the agent host', async () => {
-    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    const ctx = await createHostContext({
+      cwd: process.cwd(),
+      mode: 'dev',
+      host: nullHost(),
+    })
 
     let received: unknown
     ctx.agent.registerTool({
@@ -48,7 +56,11 @@ describe('agent introspection RPCs', () => {
   })
 
   it('registers list-resources + read-resource', async () => {
-    const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: nullHost() })
+    const ctx = await createHostContext({
+      cwd: process.cwd(),
+      mode: 'dev',
+      host: nullHost(),
+    })
 
     ctx.agent.registerResource({
       id: 'build-summary',

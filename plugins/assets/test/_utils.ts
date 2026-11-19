@@ -48,7 +48,11 @@ export async function startAssetsServer(
     mount: (base, distDir) => mountStaticHandler(app, base, distDir),
   })
 
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: h3Host,
+  })
   // Mirror the adapters: queue the definition's declared wire services,
   // ready them, THEN run setup (services ready before setup).
   for (const input of definition.services ?? [])
@@ -56,7 +60,13 @@ export async function startAssetsServer(
   await ctx.services.ready()
   await definition.setup(ctx)
 
-  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({
+    context: ctx,
+    host,
+    port,
+    app,
+    auth: false,
+  })
 
   // The live file watcher started by `setupAssets` otherwise keeps the
   // process alive past the test run.

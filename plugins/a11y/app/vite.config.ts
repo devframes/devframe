@@ -43,10 +43,16 @@ function a11yDevBridge(): Plugin {
  * node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? resolveBasePath(createA11yDevframe(), 'hosted') : './',
+  base: command === 'serve'
+    ? resolveBasePath(createA11yDevframe(), 'hosted')
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [solid(), UnoCSS(), a11yDevBridge()],
+  plugins: [
+    solid(),
+    UnoCSS(),
+    a11yDevBridge(),
+  ],
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

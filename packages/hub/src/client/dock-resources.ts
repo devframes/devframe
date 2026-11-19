@@ -58,8 +58,11 @@ export function resolveDockUrl(url: string, connection: DevframeConnection): str
     return resolved
 
   const value = url.trim()
-  if (!value || URL_SCHEME_RE.test(value) || value.startsWith('//'))
-    return /^localhost:\d/i.test(value) ? `http://${value}` : value
+  if (!value || URL_SCHEME_RE.test(value) || value.startsWith('//')) {
+    return /^localhost:\d/i.test(value)
+      ? `http://${value}`
+      : value
+  }
 
   try {
     return new URL(`http://${value}`).href

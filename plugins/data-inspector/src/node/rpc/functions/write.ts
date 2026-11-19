@@ -23,10 +23,18 @@ export const write = defineRpcFunction({
       options?: WriteApplyOptions,
     ): Promise<WriteOutcome> => {
       const source = getDataSource(sourceId)
-      if (!source)
-        return { ok: false, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
-      if (!isWritableEntry(source))
-        return { ok: false, error: { name: 'ReadonlySource', message: `Data source "${sourceId}" is not writable` } }
+      if (!source) {
+        return {
+          ok: false,
+          error: { name: 'UnknownSource', message: `No data source "${sourceId}"` },
+        }
+      }
+      if (!isWritableEntry(source)) {
+        return {
+          ok: false,
+          error: { name: 'ReadonlySource', message: `Data source "${sourceId}" is not writable` },
+        }
+      }
       const outcome = applyWrite(await resolveSourceData(source), request, options)
       if (outcome.ok)
         notifyDataSourceChanged(sourceId)

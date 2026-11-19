@@ -138,7 +138,7 @@ export interface DevframeTracingRecorder extends Required<DevframeTracingSource>
  * {@link DevframeTraceRecord}s, and advertises both over RPC.
  *
  * On a runtime without `tracingChannel` every method is a no-op;
- * `record()` reports `DF0081` once.
+ * `record()` reports `DF0086` once.
  */
 export interface DevframeTracingHost {
   /**

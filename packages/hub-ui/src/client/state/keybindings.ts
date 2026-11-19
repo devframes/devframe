@@ -30,7 +30,7 @@ export function normalizeKeyEvent(e: KeyboardEvent): string {
     parts.push('Shift')
 
   // Normalize key name
-  let key = e.key
+  let key = e.key ?? ''
   if (key.length === 1)
     key = key.toUpperCase()
 
@@ -109,6 +109,43 @@ export function findCommandDeep(
     return 'stop'
   })
   return found
+}
+
+export interface ShortcutRow {
+  command: DevframeCommandEntry
+  parentTitle?: string
+  depth: number
+}
+
+/** List bindable commands at every depth, retaining each command's ancestry. */
+export function getShortcutRows(commands: DevframeCommandEntry[]): ShortcutRow[] {
+  const rows: ShortcutRow[] = []
+  walkCommands(commands, (cmd, ancestors) => {
+    if (cmd.allowShortcuts === false)
+      return
+    const parentTitle = ancestors.at(-1)?.title
+    rows.push({
+      command: cmd,
+      ...(parentTitle
+        ? { parentTitle }
+        : {}),
+      depth: ancestors.length,
+    })
+  })
+  return rows
+}
+
+/** Check all bindable commands, including those hidden in the current mode. */
+export function findKeybindingConflict(
+  commands: DevframeCommandEntry[],
+  commandId: string,
+  key: string,
+  getKeybindings: (id: string) => DevframeCommandKeybinding[],
+): DevframeCommandEntry | undefined {
+  return getShortcutRows(commands).find(({ command }) =>
+    command.id !== commandId
+    && getKeybindings(command.id).some(binding => binding.key === key),
+  )?.command
 }
 
 /**

@@ -39,10 +39,16 @@ function filesInspectorDevBridge(): Plugin {
  * bridges the node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? resolveBasePath(devframe, 'hosted') : './',
+  base: command === 'serve'
+    ? resolveBasePath(devframe, 'hosted')
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [UnoCSS(), preact(), filesInspectorDevBridge()],
+  plugins: [
+    UnoCSS(),
+    preact(),
+    filesInspectorDevBridge(),
+  ],
   build: {
     outDir: fileURLToPath(new URL('../dist/client', import.meta.url)),
     emptyOutDir: true,

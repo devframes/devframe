@@ -25,7 +25,9 @@ export const stubChannel: A11yChannel = {
 export const stubSelection: SelectionApi = {
   isSelected: (_route, ruleId) => ruleId === 'image-alt',
   toggle: noop,
-  numberOf: nodeId => (nodeId.startsWith('image-alt') ? Number(nodeId.split('-').pop()) + 1 : null),
+  numberOf: nodeId => (nodeId.startsWith('image-alt')
+    ? Number(nodeId.split('-').pop()) + 1
+    : null),
 }
 
 export function makeViolation(ruleId: string, impact: Violation['impact'], nodes = 1, bestPractice = false): Violation {
@@ -47,18 +49,30 @@ export function makeViolation(ruleId: string, impact: Violation['impact'], nodes
 }
 
 export function makeReport(route: string, violations: Violation[]): ScanReport {
-  return { route, url: `https://example.test${route}`, scannedAt: 1, engine: '4.10.0', violations, counts: emptyCounts() }
+  return {
+    route,
+    url: `https://example.test${route}`,
+    scannedAt: 1,
+    engine: '4.10.0',
+    violations,
+    counts: emptyCounts(),
+  }
 }
 
 export const sampleGroups: RouteGroupModel[] = [
   {
     report: makeReport('/', []),
     active: true,
-    violations: [makeViolation('image-alt', 'critical', 2), makeViolation('color-contrast', 'serious', 3)],
+    violations: [
+      makeViolation('image-alt', 'critical', 2),
+      makeViolation('color-contrast', 'serious', 3),
+    ],
   },
   {
     report: makeReport('/about', []),
     active: false,
-    violations: [makeViolation('region', 'moderate', 1, true)],
+    violations: [
+      makeViolation('region', 'moderate', 1, true),
+    ],
   },
 ]

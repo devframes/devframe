@@ -14,7 +14,9 @@ registerDataSource({
   title: 'My plugin state',
   description: 'The live state store',
   data: () => store, // value or (async) factory; `static: true` memoizes
-  queries: [{ title: 'Active entries', query: 'entries.mapEntries()' }],
+  queries: [
+    { title: 'Active entries', query: 'entries.mapEntries()' }
+  ],
 })
 ```
 
@@ -22,7 +24,11 @@ Devframes that prefer zero package dependency consume the same store through the
 
 ```ts
 ctx.services.whenAvailable('devframes:plugin:data-inspector:sources', (sources) => {
-  sources.register({ id: 'my-plugin:state', title: 'My state', data: () => store })
+  sources.register({
+    id: 'my-plugin:state',
+    title: 'My state',
+    data: () => store
+  })
 })
 ```
 
@@ -75,7 +81,13 @@ import { exposeDataInspector } from '@devframes/plugin-data-inspector/inject'
 
 // pass sources inline, or register them separately beforehand
 await exposeDataInspector({
-  sources: [{ id: 'app:store', title: 'App store', data: () => store }],
+  sources: [
+    {
+      id: 'app:store',
+      title: 'App store',
+      data: () => store
+    }
+  ],
 })
 ```
 

@@ -29,9 +29,25 @@ export const Stack: Story = {
   render: () => ({
     setup() {
       onMounted(() => {
-        addToast(message({ level: 'error', message: 'Build failed', description: '2 errors in 1 file', notify: true, autoDismiss: 10 ** 7 }))
-        addToast(message({ level: 'warn', message: 'Slow HMR update (820ms)', notify: true, autoDismiss: 10 ** 7 }))
-        addToast(message({ level: 'success', message: 'Server ready on :5173', notify: true, autoDismiss: 10 ** 7 }))
+        addToast(message({
+          level: 'error',
+          message: 'Build failed',
+          description: '2 errors in 1 file',
+          notify: true,
+          autoDismiss: 10 ** 7,
+        }))
+        addToast(message({
+          level: 'warn',
+          message: 'Slow HMR update (820ms)',
+          notify: true,
+          autoDismiss: 10 ** 7,
+        }))
+        addToast(message({
+          level: 'success',
+          message: 'Server ready on :5173',
+          notify: true,
+          autoDismiss: 10 ** 7,
+        }))
       })
       return () => h(ToastOverlay)
     },
@@ -49,7 +65,12 @@ export const WithAction: Story = {
           notify: true,
           autoDismiss: 10 ** 7,
           actions: [
-            { id: 'view', label: 'View', kind: 'activate', activate: { dockId: MESSAGES_DOCK_ID } },
+            {
+              id: 'view',
+              label: 'View',
+              kind: 'activate',
+              activate: { dockId: MESSAGES_DOCK_ID },
+            },
           ],
         }))
       })

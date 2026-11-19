@@ -32,7 +32,9 @@ function isMac(): boolean {
 
 /** The reveal shortcut label, `Shift+Alt+D` (`⇧⌥D` on macOS). */
 function revealShortcutLabel(): string {
-  return isMac() ? '⇧⌥D' : 'Shift+Alt+D'
+  return isMac()
+    ? '⇧⌥D'
+    : 'Shift+Alt+D'
 }
 
 function printHint(label: string): void {

@@ -16,13 +16,21 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? [['github'], ['html']] : 'list',
+  reporter: process.env.CI
+    ? [
+        ['github'],
+        ['html'],
+      ]
+    : 'list',
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     trace: 'on-first-retry',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
   webServer: {
     command: 'pnpm run play:single',

@@ -10,22 +10,30 @@ const PROTOCOL_RE = /^[\w+.-]{2,}:\/\//
 
 /** `input` with a leading `/` added when missing. */
 export function withLeadingSlash(input: string): string {
-  return input.startsWith('/') ? input : `/${input}`
+  return input.startsWith('/')
+    ? input
+    : `/${input}`
 }
 
 /** `input` with a leading `/` removed; a bare `/` stays `/`. */
 export function withoutLeadingSlash(input: string): string {
-  return (input.startsWith('/') ? input.slice(1) : input) || '/'
+  return (input.startsWith('/')
+    ? input.slice(1)
+    : input) || '/'
 }
 
 /** `input` with a trailing `/` added when missing. */
 export function withTrailingSlash(input: string): string {
-  return input.endsWith('/') ? input : `${input}/`
+  return input.endsWith('/')
+    ? input
+    : `${input}/`
 }
 
 /** `input` with a trailing `/` removed; a bare `/` stays `/`. */
 export function withoutTrailingSlash(input: string): string {
-  return (input.endsWith('/') ? input.slice(0, -1) : input) || '/'
+  return (input.endsWith('/')
+    ? input.slice(0, -1)
+    : input) || '/'
 }
 
 /** Collapses runs of `/` in every path portion, preserving `://`. */
@@ -46,7 +54,9 @@ export function joinURL(base: string, ...segments: string[]): string {
   for (const segment of segments) {
     if (!segment || segment === '/')
       continue
-    url = url ? withTrailingSlash(url) + segment.replace(/^\.?\//, '') : segment
+    url = url
+      ? withTrailingSlash(url) + segment.replace(/^\.?\//, '')
+      : segment
   }
   return url
 }
@@ -59,11 +69,15 @@ export function withBase(input: string, base: string): string {
   if (!base || base === '/' || PROTOCOL_RE.test(input))
     return input
   const prefix = withoutTrailingSlash(base)
-  return input.startsWith(prefix) ? input : joinURL(prefix, input)
+  return input.startsWith(prefix)
+    ? input
+    : joinURL(prefix, input)
 }
 
 /** Replaces (or adds) the protocol of `input`: `withProtocol(url, 'ws://')`. */
 export function withProtocol(input: string, protocol: string): string {
   const match = input.match(PROTOCOL_RE)
-  return protocol + (match ? input.slice(match[0].length) : input)
+  return protocol + (match
+    ? input.slice(match[0].length)
+    : input)
 }

@@ -6,6 +6,7 @@ import type { FloatingPopoverProps } from '../../state/floating-tooltip'
 import { watchDebounced } from '@vueuse/core'
 import { computed, h, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import { t } from '../../i18n'
+import { getCurrentDockId, holdsCurrentDock } from '../../state/docks'
 import { setDocksOverflowPanel, useDocksOverflowPanel } from '../../state/floating-tooltip'
 import DockEntriesWithCategories from './DockEntriesWithCategories.vue'
 import DockEntry from './DockEntry.vue'
@@ -31,6 +32,12 @@ const overflowBadge = computed(() => {
   return count.toString()
 })
 
+// The shown dock, or the group that holds it, is in the overflow.
+const holdsCurrent = computed(() => {
+  const currentId = getCurrentDockId(props.context)
+  return props.groups.some(([, items]) => items.some(entry => holdsCurrentDock(props.context, entry, currentId)))
+})
+
 const isOverflowPanelVisible = ref(false)
 const docksOverflowPanel = useDocksOverflowPanel()
 
@@ -45,8 +52,12 @@ function showOverflowPanel() {
       // Float mode keeps its existing sizing when no placement is supplied.
       style: props.placement
         ? {
-            maxWidth: `min(220px, calc(100vw - ${props.placement === 'left' || props.placement === 'right' ? 80 : 36}px))`,
-            maxHeight: `calc(100vh - ${props.placement === 'top' || props.placement === 'bottom' ? 80 : 36}px)`,
+            maxWidth: `min(220px, calc(100vw - ${props.placement === 'left' || props.placement === 'right'
+              ? 80
+              : 36}px))`,
+            maxHeight: `calc(100vh - ${props.placement === 'top' || props.placement === 'bottom'
+              ? 80
+              : 36}px)`,
             overflow: 'auto',
           }
         : undefined,
@@ -110,6 +121,7 @@ onBeforeUnmount(() => {
       :is-vertical="isVertical"
       :is-selected="false"
       :is-dimmed="false"
+      :current="holdsCurrent ? 'true' : undefined"
       @click="toggleOverflowPanel"
     />
   </div>

@@ -1,5 +1,5 @@
 import type { VNode } from 'vue'
-import { shallowRef } from 'vue'
+import { h, shallowRef } from 'vue'
 
 export interface FloatingPopoverProps {
   el: HTMLElement
@@ -12,6 +12,26 @@ const tooltip = shallowRef<FloatingPopoverProps | null>(null)
 const docksOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const docksSidebarOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const dockContextMenu = shallowRef<FloatingPopoverProps | null>(null)
+
+/**
+ * A dock entry's tooltip: its title, with its `description` below when set.
+ * When `group` is set, the title is prefixed with the group title, so a dock
+ * shown outside its group button still tells which group it comes from.
+ */
+export function dockTooltipContent(
+  entry: { title: string, description?: string },
+  group?: { title: string },
+): FloatingPopoverProps['content'] {
+  const title = group
+    ? `${group.title} › ${entry.title}`
+    : entry.title
+  if (!entry.description)
+    return title
+  return () => h('div', { class: 'flex flex-col gap-0.5 max-w-64' }, [
+    h('span', title),
+    h('span', { class: 'text-xs color-muted' }, entry.description),
+  ])
+}
 
 export function setFloatingTooltip(info: FloatingPopoverProps | null) {
   tooltip.value = info

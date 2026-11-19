@@ -39,11 +39,15 @@ export function createJsonRenderDockRenderer(
     const view: JsonRenderViewRef = entry.view
     const rpc = context.rpc
     const interactive = rpc.connectionMeta?.backend !== 'static'
-    const viewId = 'stateKey' in view ? view.stateKey : entry.id
+    const viewId = 'stateKey' in view
+      ? view.stateKey
+      : entry.id
 
     // Inline view: render the embedded spec as-is; shared-state view: subscribe
     // to the live spec and track updates through `specRef`.
-    const specRef = shallowRef<Spec | null>('spec' in view ? view.spec : null)
+    const specRef = shallowRef<Spec | null>('spec' in view
+      ? view.spec
+      : null)
     let off: (() => void) | undefined
     if ('stateKey' in view) {
       const state = await rpc.sharedState.get<Spec>(view.stateKey)

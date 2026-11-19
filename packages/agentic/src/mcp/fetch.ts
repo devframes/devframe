@@ -2,7 +2,7 @@ import type { CreateMcpFetchHandlerOptions, DevframeNodeContext, McpAuthorizatio
 import { createMcpHandler } from '@modelcontextprotocol/server'
 import { timingSafeEqual } from 'devframe/utils/crypto-token'
 import { isAllowedOrigin, isLoopbackAddress } from 'devframe/utils/origin'
-import { bridgeListChanged, buildMcpServerFromContext } from './build-server'
+import { bridgeListChanged, buildMcpServerFromContext, compilePrompts, compileResourceTemplates } from './build-server'
 
 /**
  * Parse exactly one `Authorization: Bearer <token>` credential, returning the
@@ -73,10 +73,19 @@ export function createMcpFetchHandler(
   // identity check is configured.
   const authorization = options.authorization ?? false
 
+  // Compiled once for the endpoint, not per request; an invalid template
+  // fails here, at mount time (DF0084).
+  const resourceTemplates = compileResourceTemplates(options.resourceTemplates)
+  // A repeated prompt name fails here too (DF0085).
+  const prompts = compilePrompts(options.prompts)
+
   const handler = createMcpHandler(() => buildMcpServerFromContext(ctx, {
     serverName: options.serverName,
     serverVersion: options.serverVersion,
     exposeSharedState: options.exposeSharedState,
+    instructions: options.instructions,
+    resourceTemplates,
+    prompts,
   }))
 
   // A single, long-lived bridge from devframe's change events onto the
@@ -85,7 +94,7 @@ export function createMcpFetchHandler(
   const unbridge = bridgeListChanged(ctx, {
     tools: () => { handler.notify.toolsChanged() },
     resources: () => { handler.notify.resourcesChanged() },
-  })
+  }, options.onResourcesChanged)
 
   // The zero-config trust boundary: no widened origin allow-list and no
   // identity check, so the endpoint trusts same-machine callers alone. A
@@ -115,8 +124,12 @@ export function createMcpFetchHandler(
     // prove *who* it is. A generic 401 (with the `WWW-Authenticate` challenge)
     // whether the bearer is absent, malformed, or wrong: no response reveals
     // whether a supplied token was close to correct.
-    if (!await isAuthorized(req, authorization))
-      return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } })
+    if (!await isAuthorized(req, authorization)) {
+      return new Response('Unauthorized', {
+        status: 401,
+        headers: { 'WWW-Authenticate': 'Bearer' },
+      })
+    }
 
     return handler.fetch(req)
   }

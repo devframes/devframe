@@ -75,10 +75,15 @@ describe('createMessagesReporter', () => {
     const { client, added } = createStubMessages()
     const reporter = createMessagesReporter(client, {
       resolveBoundingBox: target =>
-        target[0] === '#image-alt-0' ? { x: 1, y: 2, width: 30, height: 40 } : undefined,
+        target[0] === '#image-alt-0'
+          ? { x: 1, y: 2, width: 30, height: 40 }
+          : undefined,
     })
 
-    reporter.report(report([violation('image-alt', 'critical', 2), violation('label', 'moderate')]))
+    reporter.report(report([
+      violation('image-alt', 'critical', 2),
+      violation('label', 'moderate'),
+    ]))
 
     const summary = added.find(m => m.id === 'devframes:plugin:a11y:scan')
     expect(summary).toMatchObject({
@@ -109,32 +114,48 @@ describe('createMessagesReporter', () => {
 
   it('carries dock-navigation actions deep-linked to the rule + route, and the summary to the dashboard', () => {
     const { client, added } = createStubMessages()
-    const reporter = createMessagesReporter(client, { dockId: () => 'custom_a11y' })
+    const reporter = createMessagesReporter(client, {
+      dockId: () => 'custom_a11y',
+    })
 
-    reporter.report(report([violation('image-alt', 'critical')], '/about'))
+    reporter.report(report([
+      violation('image-alt', 'critical'),
+    ], '/about'))
 
     const summary = added.find(m => m.id === 'devframes:plugin:a11y:scan')
-    expect(summary?.actions).toEqual([{
-      id: 'dashboard',
-      label: 'Open a11y dashboard',
-      kind: 'activate',
-      activate: { dockId: 'custom_a11y', params: { tab: 'dashboard' } },
-    }])
+    expect(summary?.actions).toEqual([
+      {
+        id: 'dashboard',
+        label: 'Open a11y dashboard',
+        kind: 'activate',
+        activate: {
+          dockId: 'custom_a11y',
+          params: { tab: 'dashboard' },
+        },
+      },
+    ])
 
     const rule = added.find(m => m.id === 'devframes:plugin:a11y:rule:image-alt')
-    expect(rule?.actions).toEqual([{
-      id: 'view',
-      label: 'View in a11y inspector',
-      kind: 'activate',
-      activate: { dockId: 'custom_a11y', params: { tab: 'violations', ruleId: 'image-alt', route: '/about' } },
-    }])
+    expect(rule?.actions).toEqual([
+      {
+        id: 'view',
+        label: 'View in a11y inspector',
+        kind: 'activate',
+        activate: {
+          dockId: 'custom_a11y',
+          params: { tab: 'violations', ruleId: 'image-alt', route: '/about' },
+        },
+      },
+    ])
   })
 
   it('falls back to the default dock id when none is configured', () => {
     const { client, added } = createStubMessages()
     const reporter = createMessagesReporter(client)
 
-    reporter.report(report([violation('image-alt', 'critical')]))
+    reporter.report(report([
+      violation('image-alt', 'critical'),
+    ]))
     const rule = added.find(m => m.id === 'devframes:plugin:a11y:rule:image-alt')
     expect(rule?.actions?.[0]?.activate.dockId).toBe('devframes_plugin_a11y')
   })
@@ -143,8 +164,13 @@ describe('createMessagesReporter', () => {
     const { client, added, removed } = createStubMessages()
     const reporter = createMessagesReporter(client)
 
-    reporter.report(report([violation('image-alt', 'critical'), violation('label', 'minor')]))
-    reporter.report(report([violation('label', 'minor')]))
+    reporter.report(report([
+      violation('image-alt', 'critical'),
+      violation('label', 'minor'),
+    ]))
+    reporter.report(report([
+      violation('label', 'minor'),
+    ]))
 
     expect(removed).toEqual(['devframes:plugin:a11y:rule:image-alt'])
     // The surviving rule was re-added (dedup by stable id updates in place).
@@ -176,7 +202,9 @@ describe('createMessagesReporter', () => {
     })
     expect(() => {
       reporter.scanning()
-      reporter.report(report([violation('image-alt', 'critical')]))
+      reporter.report(report([
+        violation('image-alt', 'critical'),
+      ]))
       reporter.report(report([]))
       reporter.failed(new Error('boom'))
     }).not.toThrow()

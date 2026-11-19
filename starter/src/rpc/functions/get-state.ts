@@ -37,7 +37,12 @@ export const getState = defineRpcFunction({
       const entries = await readdir(cwd, { withFileTypes: true })
       const items = entries
         .filter(e => !e.name.startsWith('.'))
-        .map(e => ({ name: e.name, kind: e.isDirectory() ? 'dir' as const : 'file' as const }))
+        .map(e => ({
+          name: e.name,
+          kind: e.isDirectory()
+            ? 'dir' as const
+            : 'file' as const,
+        }))
         .sort((a, b) => a.name.localeCompare(b.name))
       return { cwd, node: process.version, items }
     },

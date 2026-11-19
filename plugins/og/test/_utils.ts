@@ -57,10 +57,20 @@ export async function startOgServer(): Promise<OgServer> {
     appName: testDevframe.id,
     mount: (base, dir) => mountStaticHandler(app, base, dir),
   })
-  const ctx = await createHostContext({ cwd: process.cwd(), mode: 'dev', host: h3Host })
+  const ctx = await createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: h3Host,
+  })
   await testDevframe.setup(ctx)
   app.use(`${basePath}${DEVFRAME_CONNECTION_META_FILENAME}`, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, path.resolve(distDir))
-  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({
+    context: ctx,
+    host,
+    port,
+    app,
+    auth: false,
+  })
   return Object.assign(server, { basePath })
 }

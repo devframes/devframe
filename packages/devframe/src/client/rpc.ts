@@ -7,11 +7,11 @@ import type { DevframeConnection, DevframeConnectionStatus, SetupDevframeConnect
 import type { DevframeServicesClient } from './rpc-services'
 import type { RpcStreamingClientHost } from './rpc-streaming'
 import type { DevframeScopedClientContext } from './scope'
-import { DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
+import { DEVFRAME_EVENTS, DEVFRAME_OTP_URL_PARAM } from 'devframe/constants'
 import { RpcCacheManager, RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createEventEmitter } from 'devframe/utils/events'
 import { withBase } from 'devframe/utils/url'
-import { setupDevframeConnection } from './connection'
+import { DevframeConnectionError, setupDevframeConnection } from './connection'
 import { storeAuthToken } from './connection-storage'
 import { authenticateWithUrlOtp } from './otp'
 import { createDevframeServicesClient } from './rpc-services'
@@ -99,6 +99,7 @@ export interface DevframeRpcClientOptions extends SetupDevframeConnectionOptions
   /** Channel overrides for the SSE transport, the `wsOptions` counterpart. */
   sseOptions?: Partial<SseRpcChannelOptions>
   rpcOptions?: Partial<BirpcOptions<DevframeRpcServerFunctions, DevframeRpcClientFunctions, boolean>>
+  /** Cache declared static/opted-in query methods with `true`, or select an explicit function list. */
   cacheOptions?: boolean | Partial<RpcCacheOptions>
   /**
    * Mirror `agent`-flagged client RPC functions (functions registered on
@@ -340,7 +341,9 @@ export async function getDevframeRpcClient(
     cacheOptions = false,
   } = options
   const events = createEventEmitter<RpcClientEvents>()
-  const bases = Array.isArray(baseURL) ? baseURL : [baseURL]
+  const bases = Array.isArray(baseURL)
+    ? baseURL
+    : [baseURL]
   let connection = await setupDevframeConnection(options)
   const { connectionMeta, metaBaseUrl, authToken } = connection
   let resolvedBaseURL = bases[0] ?? './'
@@ -349,15 +352,42 @@ export async function getDevframeRpcClient(
   }
   catch {}
 
-  const cacheManager = new RpcCacheManager({ functions: [], ...(typeof options.cacheOptions === 'object' ? options.cacheOptions : {}) })
+  const cacheManager = new RpcCacheManager({
+    functions: [],
+    ...(typeof options.cacheOptions === 'object'
+      ? options.cacheOptions
+      : {}),
+  })
   const context: DevframeRpcContext = {
     rpc: undefined!,
   }
   const clientRpc: DevframeClientRpcHost = new RpcFunctionsCollectorBase<DevframeRpcClientFunctions, DevframeRpcContext>(context)
   // No-op when the browser provides no WebMCP model context.
-  const disposeWebMcp = options.webmcp === false ? undefined : registerWebMcpTools(clientRpc)
+  const disposeWebMcp = options.webmcp === false
+    ? undefined
+    : registerWebMcpTools(clientRpc)
   let disposeBrowserAgentBridge: (() => void) | undefined
   let closed = false
+  let cacheGeneration = 0
+  let cacheFunctions: Promise<void> | undefined
+
+  function invalidateCache(): void {
+    cacheGeneration++
+    cacheFunctions = undefined
+    cacheManager.clear()
+    if (cacheOptions === true)
+      cacheManager.updateOptions({ functions: [] })
+  }
+
+  if (cacheOptions) {
+    clientRpc.register({
+      name: DEVFRAME_EVENTS.broadcast.cacheInvalidate,
+      type: 'event',
+      handler: invalidateCache,
+    })
+    events.on(DEVFRAME_EVENTS.client.connectionStatus, invalidateCache)
+    events.on(DEVFRAME_EVENTS.client.isTrustedUpdated, invalidateCache)
+  }
 
   async function fetchJsonFromBases(path: string): Promise<any> {
     const candidates = [
@@ -385,6 +415,11 @@ export async function getDevframeRpcClient(
     })
   }
 
+  const timeout = options.callTimeout ?? 0
+  const requestBudget = timeout > 0
+    ? timeout
+    : Infinity
+  let mode: DevframeRpcClientMode
   const liveModeOptions = {
     authToken,
     connectionMeta,
@@ -395,13 +430,42 @@ export async function getDevframeRpcClient(
     rpcOptions: {
       ...rpcOptions,
       async onRequest(req, next, resolve) {
+        const deadline = performance.now() + requestBudget
         await rpcOptions.onRequest?.call(this, req, next, resolve)
-        if (cacheOptions && cacheManager?.validate(req.m)) {
+        // Auth and protocol calls must be able to run before cache discovery.
+        if (cacheOptions === true && req.i && mode.isTrusted && !req.m.startsWith('anonymous:') && req.m !== 'devframe:rpc:cacheable-functions') {
+          // Rediscovery shares this call's deadline, even when another call keeps waiting.
+          function checkDeadline(): void {
+            if (performance.now() >= deadline)
+              throw new DevframeConnectionError('timeout', `[devframe] RPC call "${req.m}" timed out after ${timeout}ms`)
+          }
+          while (!cacheFunctions) {
+            checkDeadline()
+            if (closed || mode.status !== 'connected')
+              break
+            const generation = cacheGeneration
+            cacheFunctions = mode.callOptional('devframe:rpc:cacheable-functions').then((functions) => {
+              if (generation === cacheGeneration)
+                cacheManager.updateOptions({ functions: functions ?? [] })
+            }).catch((error) => {
+              // Retry on a later call without resetting discovery after invalidation.
+              if (generation === cacheGeneration)
+                cacheFunctions = undefined
+              throw error
+            })
+            await cacheFunctions
+          }
+          await cacheFunctions
+          checkDeadline()
+        }
+        const generation = cacheGeneration
+        if (cacheOptions && req.i && !closed && mode.isTrusted && cacheManager.validate(req.m)) {
           if (cacheManager.has(req.m, req.a)) {
             return resolve(cacheManager.cached(req.m, req.a))
           }
           const res = await next(req)
-          cacheManager.apply(req, res)
+          if (generation === cacheGeneration && !closed)
+            cacheManager.apply(req, res)
         }
         else {
           await next(req)
@@ -411,7 +475,7 @@ export async function getDevframeRpcClient(
   }
 
   const transport = resolveClientTransport(options.transport ?? 'auto', connectionMeta)
-  const mode = transport === 'static'
+  mode = transport === 'static'
     ? await createStaticRpcClientMode({
         fetchJsonFromBases,
       })
@@ -450,6 +514,7 @@ export async function getDevframeRpcClient(
   /** Release authentication and transport resources even if another disposer fails. */
   function closeRpcClient(): void {
     closed = true
+    invalidateCache()
     try {
       disposeBrowserAgentBridge?.()
       disposeWebMcp?.()
@@ -586,7 +651,9 @@ export async function getDevframeRpcClient(
     const otpParam = options.otpParam ?? DEVFRAME_OTP_URL_PARAM
     // Always consume the URL OTP (so it's stripped) even once trusted; it only
     // exchanges when a code is present and we're not yet trusted.
-    const viaOtp = otpParam ? await authenticateWithUrlOtp(rpc, { param: otpParam }) : false
+    const viaOtp = otpParam
+      ? await authenticateWithUrlOtp(rpc, { param: otpParam })
+      : false
     if (trusted || viaOtp || rpc.isTrusted)
       return
     await runSimpleAuthPrompt()

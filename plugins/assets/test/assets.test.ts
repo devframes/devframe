@@ -6,7 +6,9 @@ import process from 'node:process'
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { bootClient, call, cleanupTempDir, createTempDir, startAssetsServer } from './_utils'
 
-const describeSymlinks = process.platform === 'win32' ? describe.skip : describe
+const describeSymlinks = process.platform === 'win32'
+  ? describe.skip
+  : describe
 
 // A minimal, valid 1x1 PNG.
 const ONE_PIXEL_PNG = Buffer.from(
@@ -68,7 +70,10 @@ describe('assets plugin', () => {
     server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
     const caps = await call(client, 'devframes:plugin:assets:capabilities')
-    expect(caps).toEqual({ write: true, uploadExtensions: expect.any(Array) })
+    expect(caps).toEqual({
+      write: true,
+      uploadExtensions: expect.any(Array),
+    })
   })
 
   it('creates a folder and uploads a file into it via the streaming channel', async () => {
@@ -129,7 +134,9 @@ describe('assets plugin', () => {
     server = await startAssetsServer(dir, { watch: false })
     client = bootClient(server.port)
 
-    const result = await call(client, 'devframes:plugin:assets:delete', { paths: ['a.txt', 'b.txt', 'missing.txt'] })
+    const result = await call(client, 'devframes:plugin:assets:delete', {
+      paths: ['a.txt', 'b.txt', 'missing.txt'],
+    })
     expect(result.deleted.sort()).toEqual(['a.txt', 'b.txt'])
     expect(await call(client, 'devframes:plugin:assets:list')).toEqual([])
   })
@@ -197,7 +204,9 @@ describe('assets plugin', () => {
         call(client, 'devframes:plugin:assets:mkdir', { path: 'escape/sub' }),
       ).rejects.toThrow(/outside the managed directory/)
       await expect(
-        call(client, 'devframes:plugin:assets:delete', { paths: ['escape/secret.txt'] }),
+        call(client, 'devframes:plugin:assets:delete', {
+          paths: ['escape/secret.txt'],
+        }),
       ).rejects.toThrow(/outside the managed directory/)
     })
 
@@ -208,7 +217,9 @@ describe('assets plugin', () => {
       client = bootClient(server.port)
 
       await expect(
-        call(client, 'devframes:plugin:assets:delete', { paths: ['alias.txt'] }),
+        call(client, 'devframes:plugin:assets:delete', {
+          paths: ['alias.txt'],
+        }),
       ).rejects.toThrow(/outside the managed directory/)
       await expect(
         call(client, 'devframes:plugin:assets:rename', { path: 'alias.txt', newName: 'renamed' }),
@@ -217,7 +228,10 @@ describe('assets plugin', () => {
   })
 
   it('rejects uploads with a disallowed extension', async () => {
-    server = await startAssetsServer(dir, { uploadExtensions: ['png'], watch: false })
+    server = await startAssetsServer(dir, {
+      uploadExtensions: ['png'],
+      watch: false,
+    })
     client = bootClient(server.port)
 
     await expect(

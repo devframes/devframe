@@ -8,6 +8,7 @@ import type { DataSourceMeta, FilterOptions, NodePath, QueryOutcome, QueryStats,
  * An empty query runs `$` (the root), so every source lands on a full view.
  */
 import type { InjectionKey } from 'vue'
+import type { QueryObservation } from './query-observation'
 import jora from 'jora'
 import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
 import { backend, connection } from './rpc'
@@ -34,7 +35,9 @@ const FILTER_KEYS = ['excludeFunctions', 'excludeUnderscoreProps', 'excludeDolla
 function loadDrafts(): Record<string, string> {
   try {
     const parsed = JSON.parse(localStorage.getItem(DRAFTS_KEY) ?? '{}')
-    return parsed && typeof parsed === 'object' ? parsed : {}
+    return parsed && typeof parsed === 'object'
+      ? parsed
+      : {}
   }
   catch {
     return {}
@@ -78,7 +81,9 @@ function readUrlState(): { sourceId: string, query: string, filters: FilterOptio
     query: params.get('query') ?? '',
     filters,
     autoRun: params.get('autorun') === '1',
-    autoRunSeconds: seconds ? clampSeconds(seconds) : DEFAULT_AUTO_RERUN_SECONDS,
+    autoRunSeconds: seconds
+      ? clampSeconds(seconds)
+      : DEFAULT_AUTO_RERUN_SECONDS,
   }
 }
 
@@ -143,7 +148,9 @@ export function useWorkbench() {
       const hash = params.toString()
       if (location.hash.replace(/^#/, '') === hash)
         return
-      history.replaceState(history.state, '', hash ? `#${hash}` : location.pathname + location.search)
+      history.replaceState(history.state, '', hash
+        ? `#${hash}`
+        : location.pathname + location.search)
     }, URL_SYNC_DEBOUNCE)
   }
 
@@ -172,6 +179,22 @@ export function useWorkbench() {
   const statsStale = ref(false)
   const result = shallowRef<unknown>()
   const hasResult = ref(false)
+  const observation = shallowRef<QueryObservation | null>(null)
+  const observationNotices = computed(() => {
+    const saved = observation.value
+    if (!saved)
+      return []
+    const notices: string[] = []
+    if (saved.query !== (query.value.trim() || '$') || FILTER_KEYS.some(key => saved.filters[key] !== settings[key]))
+      notices.push('Query conditions changed. This result uses the earlier conditions shown in the copy.')
+    if (running.value)
+      notices.push('A new query is pending. This is the previous successful result.')
+    if (serverError.value)
+      notices.push('The latest query failed. This is an earlier successful result.')
+    if (syntax.value.kind !== 'ok')
+      notices.push('The current query has incomplete or invalid syntax and was not executed.')
+    return notices
+  })
   /** When the last successful query landed, driving the "ran … ago" label. */
   const lastRunAt = ref<number | null>(null)
 
@@ -264,17 +287,24 @@ export function useWorkbench() {
       syntax.value = { kind: 'ok' }
     }
 
+    const request = {
+      source: { id: sourceId.value, title: activeSource.value?.title ?? sourceId.value },
+      query: text,
+      filters: { ...settings },
+    }
     const seq = ++runSeq
     running.value = true
     const started = performance.now()
     let outcome: QueryOutcome
     try {
-      outcome = await backend().query(sourceId.value, text, { ...settings })
+      outcome = await backend().query(request.source.id, request.query, request.filters)
     }
     catch (error) {
       if (seq === runSeq) {
         running.value = false
-        serverError.value = `rpc: ${error instanceof Error ? error.message : String(error)}`
+        serverError.value = `rpc: ${error instanceof Error
+          ? error.message
+          : String(error)}`
         statsStale.value = true
       }
       return
@@ -290,10 +320,19 @@ export function useWorkbench() {
     }
     serverError.value = null
     statsStale.value = false
-    stats.value = { ...outcome.stats, rpcMs: Math.round(performance.now() - started) }
+    stats.value = {
+      ...outcome.stats,
+      rpcMs: Math.round(performance.now() - started),
+    }
     result.value = outcome.result
     hasResult.value = true
     lastRunAt.value = Date.now()
+    observation.value = {
+      ...request,
+      receivedAt: lastRunAt.value,
+      result: outcome.result,
+      normalize: { ...outcome.stats.normalize },
+    }
   }
 
   function scheduleRun(): void {
@@ -354,8 +393,12 @@ export function useWorkbench() {
    * the outcome so the edit panel can surface a failure inline.
    */
   async function applyEdit(request: WriteRequest): Promise<WriteOutcome> {
-    if (!sourceId.value)
-      return { ok: false, error: { name: 'NoSource', message: 'no source selected' } }
+    if (!sourceId.value) {
+      return {
+        ok: false,
+        error: { name: 'NoSource', message: 'no source selected' },
+      }
+    }
     let outcome: WriteOutcome
     try {
       // Only excludeFunctions shifts array indices server-side; thread it so
@@ -363,7 +406,15 @@ export function useWorkbench() {
       outcome = await backend().write(sourceId.value, request, { excludeFunctions: settings.excludeFunctions })
     }
     catch (error) {
-      return { ok: false, error: { name: 'RpcError', message: error instanceof Error ? error.message : String(error) } }
+      return {
+        ok: false,
+        error: {
+          name: 'RpcError',
+          message: error instanceof Error
+            ? error.message
+            : String(error),
+        },
+      }
     }
     if (outcome.ok) {
       void runNow()
@@ -405,7 +456,9 @@ export function useWorkbench() {
     catch (error) {
       if (seq === skeletonSeq) {
         skeletonLoading.value = false
-        skeletonError.value = `rpc: ${error instanceof Error ? error.message : String(error)}`
+        skeletonError.value = `rpc: ${error instanceof Error
+          ? error.message
+          : String(error)}`
       }
       return
     }
@@ -436,7 +489,9 @@ export function useWorkbench() {
     if (seq !== suggestSeq)
       return
     // jora returns the full candidate set per range; prefix-filter client-side.
-    suggestions.value = (out.ok ? out.suggestions : []).filter(s =>
+    suggestions.value = (out.ok
+      ? out.suggestions
+      : []).filter(s =>
       !s.current || s.value.toLowerCase().startsWith(s.current.toLowerCase()),
     )
   }
@@ -473,6 +528,17 @@ export function useWorkbench() {
     scheduleRun()
   })
   watch(sourceId, () => {
+    ++runSeq
+    running.value = false
+    result.value = undefined
+    hasResult.value = false
+    observation.value = null
+    lastRunAt.value = null
+    stats.value = null
+    statsStale.value = false
+    serverError.value = null
+  }, { flush: 'sync' })
+  watch(sourceId, () => {
     suggestions.value = []
     restoreDraft()
     syncUrl()
@@ -501,21 +567,29 @@ export function useWorkbench() {
   // ── query composition helpers ──────────────────────────────────────
   /** Set the query to a single top-level key (from the data-shape panel). */
   function queryProp(key: string): void {
-    query.value = /^[a-z_$][\w$]*$/i.test(key) ? key : `$["${key.replaceAll('"', '\\"')}"]`
+    query.value = /^[a-z_$][\w$]*$/i.test(key)
+      ? key
+      : `$["${key.replaceAll('"', '\\"')}"]`
     void runNow()
   }
 
   /** Pipe a path onto the current query ("create a subquery from the path"). */
   function applySubquery(path: string): void {
     const current = query.value.trim()
-    query.value = current && current !== '$' ? `${current}\n| ${path}` : path
+    query.value = current && current !== '$'
+      ? `${current}\n| ${path}`
+      : path
     void runNow()
   }
 
   /** Append a path to the current query (plain textual append). */
   function appendPath(path: string): void {
     const current = query.value.trim()
-    query.value = current ? `${current}${path.startsWith('[') ? '' : '.'}${path}` : path
+    query.value = current
+      ? `${current}${path.startsWith('[')
+        ? ''
+        : '.'}${path}`
+      : path
     void runNow()
   }
 
@@ -534,6 +608,8 @@ export function useWorkbench() {
     statsStale,
     result,
     hasResult,
+    observation,
+    observationNotices,
     lastRunAt,
     suggestions,
     skeleton,

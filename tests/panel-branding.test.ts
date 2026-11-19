@@ -11,7 +11,9 @@ beforeEach(() => {
   values = new Map()
   setup.mockReset()
   vi.stubGlobal('window', { parent: {} })
-  vi.stubGlobal('CSS', { supports: (_: string, color: string) => color === '#6b84fd' })
+  vi.stubGlobal('CSS', {
+    supports: (_: string, color: string) => color === '#6b84fd',
+  })
   vi.stubGlobal('document', {
     documentElement: {
       style: {
@@ -39,16 +41,34 @@ it('keeps standalone SPAs independent of hub branding', () => {
 
 it('maps startup metadata to one CSS input and restores the previous palette on cleanup', async () => {
   values.set('--devframe-primary', 'red')
-  setup.mockResolvedValue({ connectionMeta: { configs: { ui: { branding: { primaryColor: '#6b84fd' } } } } })
+  setup.mockResolvedValue({
+    connectionMeta: {
+      configs: {
+        ui: {
+          branding: { primaryColor: '#6b84fd' },
+        },
+      },
+    },
+  })
   cleanup = applyPanelBranding()
   await vi.waitFor(() => expect(values.get('--devframe-primary')).toBe('#6b84fd'))
-  expect([...values.keys()]).toEqual(['--devframe-primary'])
+  expect([
+    ...values.keys(),
+  ]).toEqual(['--devframe-primary'])
   cleanup()
   expect(values.get('--devframe-primary')).toBe('red')
 })
 
 it.each([undefined, '', 'invalid-color'])('keeps the default palette for missing or invalid branding (%s)', async (primaryColor) => {
-  setup.mockResolvedValue({ connectionMeta: { configs: { ui: { branding: { primaryColor } } } } })
+  setup.mockResolvedValue({
+    connectionMeta: {
+      configs: {
+        ui: {
+          branding: { primaryColor },
+        },
+      },
+    },
+  })
   cleanup = applyPanelBranding()
   await setup.mock.results[0].value
   expect(values.size).toBe(0)
@@ -68,7 +88,15 @@ it('ignores metadata that arrives after the SPA has been disposed', async () => 
   }))
   cleanup = applyPanelBranding()
   cleanup()
-  resolve({ connectionMeta: { configs: { ui: { branding: { primaryColor: '#6b84fd' } } } } })
+  resolve({
+    connectionMeta: {
+      configs: {
+        ui: {
+          branding: { primaryColor: '#6b84fd' },
+        },
+      },
+    },
+  })
   await setup.mock.results[0].value
   expect(values.size).toBe(0)
 })

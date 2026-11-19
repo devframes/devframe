@@ -36,7 +36,9 @@ const ACTION = 'inline-flex items-center gap-1.5 text-xs color-muted bg-secondar
  * selection actions, and the scan / best-practice / clear controls.
  */
 export function SummaryBar(props: SummaryBarProps) {
-  const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`
+  const plural = (n: number, one: string) => `${n} ${n === 1
+    ? one
+    : `${one}s`}`
   return (
     <div class="flex flex-col gap-2 pt-3 pb-2.5 sticky top-0 z-nav bg-base">
       <Summary counts={props.counts} active={props.filter} onToggle={props.onToggleFilter} onHover={props.onHoverImpact} />

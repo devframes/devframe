@@ -24,7 +24,14 @@ const emit = defineEmits<{
 const wb = injectWorkbench()
 
 type ValueType = 'string' | 'number' | 'boolean' | 'null' | 'undefined' | 'json'
-const VALUE_TYPES: ValueType[] = ['string', 'number', 'boolean', 'null', 'undefined', 'json']
+const VALUE_TYPES: ValueType[] = [
+  'string',
+  'number',
+  'boolean',
+  'null',
+  'undefined',
+  'json',
+]
 
 /** The normalized node currently on screen at the edited path. */
 const node = computed(() => navigateNormalized(wb.result.value, props.path))
@@ -117,10 +124,15 @@ function encodeValue(type: ValueType, text: string, bool: boolean): WriteValue {
       return { kind: 'undefined' }
     case 'json':
       try {
-        return { kind: 'json', value: JSON.parse(text) }
+        return {
+          kind: 'json',
+          value: JSON.parse(text),
+        }
       }
       catch (e) {
-        throw new Error(`invalid JSON: ${e instanceof Error ? e.message : String(e)}`)
+        throw new Error(`invalid JSON: ${e instanceof Error
+          ? e.message
+          : String(e)}`)
       }
   }
 }
@@ -143,7 +155,9 @@ function applySet(): void {
     value = encodeValue(valueType.value, valueText.value, boolValue.value)
   }
   catch (e) {
-    error.value = e instanceof Error ? e.message : String(e)
+    error.value = e instanceof Error
+      ? e.message
+      : String(e)
     return
   }
   void submit({ op: 'set', path: props.path, value }, () => emit('close'))
@@ -152,13 +166,19 @@ function applySet(): void {
 // ── rename section ───────────────────────────────────────────────────
 const renameText = ref('')
 watch(lastSegment, (seg) => {
-  renameText.value = seg?.[0] === 'k' ? String(seg[1]) : ''
+  renameText.value = seg?.[0] === 'k'
+    ? String(seg[1])
+    : ''
 }, { immediate: true })
 
 function applyRename(): void {
   if (!renameText.value)
     return
-  void submit({ op: 'rename', path: props.path, key: { kind: 'json', value: renameText.value } }, () => emit('close'))
+  void submit({
+    op: 'rename',
+    path: props.path,
+    key: { kind: 'json', value: renameText.value },
+  }, () => emit('close'))
 }
 
 // ── add section ──────────────────────────────────────────────────────
@@ -190,7 +210,10 @@ function encodeAddKey(): WriteValue | undefined {
   }
   if (containerKind.value === 'map') {
     try {
-      return { kind: 'json', value: JSON.parse(text) }
+      return {
+        kind: 'json',
+        value: JSON.parse(text),
+      }
     }
     catch {
       return { kind: 'json', value: text }
@@ -209,10 +232,17 @@ function applyAdd(): void {
     value = encodeValue(addValueType.value, addValueText.value, addBoolValue.value)
   }
   catch (e) {
-    error.value = e instanceof Error ? e.message : String(e)
+    error.value = e instanceof Error
+      ? e.message
+      : String(e)
     return
   }
-  void submit({ op: 'add', path: props.path, key, value }, () => {
+  void submit({
+    op: 'add',
+    path: props.path,
+    key,
+    value,
+  }, () => {
     addKeyText.value = ''
     addValueText.value = ''
   })

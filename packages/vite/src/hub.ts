@@ -147,7 +147,9 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
   }
 
   const resolveUi = async (): Promise<DevframeHubUi | undefined> =>
-    options.ui === false ? undefined : options.ui ?? await loadDefaultUi()
+    options.ui === false
+      ? undefined
+      : options.ui ?? await loadDefaultUi()
 
   return {
     name: 'devframes:hub',
@@ -195,7 +197,9 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         clientModuleResolution: '/@id/{specifier}',
         origin: options.origin ?? (() => {
           const resolved = server.resolvedUrls?.local?.[0]
-          return resolved ? new URL(resolved).origin : ''
+          return resolved
+            ? new URL(resolved).origin
+            : ''
         }),
         auth: options.auth,
         /**
@@ -206,12 +210,26 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
          */
         server: httpServer,
         ...resolveWsBinding(options.port, httpServer),
-        ...(ui ? { ui } : {}),
+        ...(ui
+          ? { ui }
+          : {}),
         devframes,
-        ...pickDefined(options, ['host', 'renderers', 'rpcDeclarations', 'mcp', 'register', 'getStorageDir', 'name', 'version', 'configure']),
+        ...pickDefined(options, [
+          'host',
+          'renderers',
+          'rpcDeclarations',
+          'mcp',
+          'register',
+          'getStorageDir',
+          'name',
+          'version',
+          'configure',
+        ]),
       })
       instance = hub
-      embeddedSrc = ui?.embedded ? `${base}embedded.js` : undefined
+      embeddedSrc = ui?.embedded
+        ? `${base}embedded.js`
+        : undefined
 
       // One namespace, one catch-all: the middleware serves everything under
       // `base` and `next()`s the rest back to Vite.
@@ -231,18 +249,22 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
       if (viteConfig?.command !== 'build' || !options.build)
         return
       buildUi = await resolveUi()
-      embeddedSrc = buildUi?.embedded ? `${base}embedded.js` : undefined
+      embeddedSrc = buildUi?.embedded
+        ? `${base}embedded.js`
+        : undefined
     },
 
     transformIndexHtml() {
       // Inject the floating-dock bootstrap when the resolved UI ships one.
       if (!embeddedSrc)
         return
-      return [{
-        tag: 'script',
-        attrs: { type: 'module', src: embeddedSrc },
-        injectTo: 'body',
-      }]
+      return [
+        {
+          tag: 'script',
+          attrs: { type: 'module', src: embeddedSrc },
+          injectTo: 'body',
+        },
+      ]
     },
 
     async closeBundle() {
@@ -260,8 +282,17 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
         cwd,
         outDir: resolve(viteConfig.root, viteConfig.build.outDir, base.slice(1)),
         devframes: attachClientScripts(options.devframes, options.clientScripts) ?? [],
-        ...(buildUi ? { ui: buildUi } : {}),
-        ...pickDefined(options, ['renderers', 'rpcDeclarations', 'getStorageDir', 'name', 'version', 'configure']),
+        ...(buildUi
+          ? { ui: buildUi }
+          : {}),
+        ...pickDefined(options, [
+          'renderers',
+          'rpcDeclarations',
+          'getStorageDir',
+          'name',
+          'version',
+          'configure',
+        ]),
       })
     },
   }
@@ -273,9 +304,16 @@ export function viteDevframeHub(options: ViteDevframeHubOptions = {}): Plugin {
  * auto-port side-car.
  */
 function resolveWsBinding(port: number | undefined, httpServer: NodeHttpServer | undefined): { ws?: { port: number } | { sidecar: true } } {
-  if (port != null)
-    return { ws: { port } }
-  return httpServer ? {} : { ws: { sidecar: true } }
+  if (port != null) {
+    return {
+      ws: { port },
+    }
+  }
+  return httpServer
+    ? {}
+    : {
+        ws: { sidecar: true },
+      }
 }
 
 /** Forward only the options a caller actually set. */
@@ -313,7 +351,13 @@ function attachClientScripts(
     if (!def || !clientScript)
       return entry
     return 'devframe' in (entry as object)
-      ? { ...(entry as HubDevframeEntry), dock: { clientScript, ...(entry as HubDevframeEntry).dock } }
-      : { devframe: def, dock: { clientScript } }
+      ? {
+          ...(entry as HubDevframeEntry),
+          dock: { clientScript, ...(entry as HubDevframeEntry).dock },
+        }
+      : {
+          devframe: def,
+          dock: { clientScript },
+        }
   })
 }

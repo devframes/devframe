@@ -35,13 +35,19 @@ describe('the MCP SDK stays out of consumer bundles', () => {
       setup(context) {
         context.onResolve({ filter: /^(?:@modelcontextprotocol|@devframes\/agentic)(?:\/|$)/ }, (args) => {
           resolvedMcpImports.push(args.path)
-          return { errors: [{ text: `Unexpected MCP import: ${args.path}` }] }
+          return {
+            errors: [
+              { text: `Unexpected MCP import: ${args.path}` },
+            ],
+          }
         })
       },
     }
 
     await build({
-      entryPoints: [join(root, entry)],
+      entryPoints: [
+        join(root, entry),
+      ],
       bundle: true,
       format: 'esm',
       platform: 'node',
@@ -59,7 +65,9 @@ describe('the MCP SDK stays out of consumer bundles', () => {
     const outfile = join(outputDirectory, 'hub.mjs')
 
     await build({
-      entryPoints: [join(hubDist, 'node/initiate.mjs')],
+      entryPoints: [
+        join(hubDist, 'node/initiate.mjs'),
+      ],
       bundle: true,
       format: 'esm',
       outfile,
@@ -116,7 +124,9 @@ describe('the MCP SDK stays out of consumer bundles', () => {
     const outfile = join(outputDirectory, 'hub-auto.mjs')
 
     await build({
-      entryPoints: [join(hubDist, 'node/initiate.mjs')],
+      entryPoints: [
+        join(hubDist, 'node/initiate.mjs'),
+      ],
       bundle: true,
       format: 'esm',
       outfile,

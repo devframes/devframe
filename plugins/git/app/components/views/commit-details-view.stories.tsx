@@ -43,9 +43,27 @@ const detail: CommitDetail = {
   parents: ['b2c3d4e5f6a7b8c9'],
   refs: ['HEAD -> main', 'origin/main'],
   files: [
-    { path: 'src/client/components/views/log-panel-view.tsx', additions: 41, deletions: 18, binary: false, status: 'modified' },
-    { path: 'src/client/components/log-panel.tsx', additions: 6, deletions: 1, binary: false, status: 'added' },
-    { path: 'public/preview.png', additions: 0, deletions: 0, binary: true, status: 'added' },
+    {
+      path: 'src/client/components/views/log-panel-view.tsx',
+      additions: 41,
+      deletions: 18,
+      binary: false,
+      status: 'modified',
+    },
+    {
+      path: 'src/client/components/log-panel.tsx',
+      additions: 6,
+      deletions: 1,
+      binary: false,
+      status: 'added',
+    },
+    {
+      path: 'public/preview.png',
+      additions: 0,
+      deletions: 0,
+      binary: true,
+      status: 'added',
+    },
   ],
   totalAdditions: 47,
   totalDeletions: 19,
@@ -68,7 +86,19 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
-export const Loading: Story = { args: { data: null, loading: true } }
-export const StaticNoPatch: Story = { args: { data: { ...detail, patch: null } } }
-export const NotFound: Story = { args: { data: { ...detail, found: false } } }
-export const Error: Story = { args: { data: null, error: 'fatal: bad object deadbeef' } }
+export const Loading: Story = {
+  args: { data: null, loading: true },
+}
+export const StaticNoPatch: Story = {
+  args: {
+    data: { ...detail, patch: null },
+  },
+}
+export const NotFound: Story = {
+  args: {
+    data: { ...detail, found: false },
+  },
+}
+export const Error: Story = {
+  args: { data: null, error: 'fatal: bad object deadbeef' },
+}

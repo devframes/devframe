@@ -12,7 +12,12 @@ const fakeMode = vi.hoisted(() => {
   const call = vi.fn(async () => 'ok')
   const callOptional = vi.fn(async () => 'ok')
   const callEvent = vi.fn(async () => {})
-  return { requestTrustGate, call, callOptional, callEvent }
+  return {
+    requestTrustGate,
+    call,
+    callOptional,
+    callEvent,
+  }
 })
 
 vi.mock('./rpc-ws', () => ({
@@ -41,7 +46,10 @@ class FakeBroadcastChannel {
   close(): void {}
 }
 
-const connectionMeta: ConnectionMeta = { backend: 'websocket', websocket: { path: '__ws' } }
+const connectionMeta: ConnectionMeta = {
+  backend: 'websocket',
+  websocket: { path: '__ws' },
+}
 
 describe('getDevframeRpcClient: auth bootstrap gates outbound calls', () => {
   beforeEach(() => {
@@ -151,7 +159,10 @@ describe('getDevframeRpcClient: auth bootstrap gates outbound calls', () => {
   it('loads the browser-agent bridge only when the node advertises MCP', async () => {
     const { getDevframeRpcClient } = await import('./rpc')
     const rpc = await getDevframeRpcClient({
-      connectionMeta: { ...connectionMeta, mcp: { path: '__mcp' } },
+      connectionMeta: {
+        ...connectionMeta,
+        mcp: { path: '__mcp' },
+      },
       otpParam: false,
       simpleAuth: false,
     })

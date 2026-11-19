@@ -71,11 +71,15 @@ let cm: Cm | null = null
 let blurTimer: ReturnType<typeof setTimeout> | undefined
 
 function caretIndex(): number {
-  return cm ? cm.indexFromPos(cm.getCursor()) : query.value.length
+  return cm
+    ? cm.indexFromPos(cm.getCursor())
+    : query.value.length
 }
 
 function stripQuote(text: string): string {
-  return text[0] === '"' || text[0] === '\'' ? text.slice(1) : text
+  return text[0] === '"' || text[0] === '\''
+    ? text.slice(1)
+    : text
 }
 
 /** Mirror of discovery's hint-item rendering: type badge + match highlight. */
@@ -85,7 +89,9 @@ function renderHintItem(el: HTMLElement, item: SuggestItem, typed: string): void
   name.className = 'name'
   const pattern = stripQuote(typed).toLowerCase()
   const offset = pattern
-    ? item.value.toLowerCase().indexOf(pattern, item.value[0] === '"' || item.value[0] === '\'' ? 1 : 0)
+    ? item.value.toLowerCase().indexOf(pattern, item.value[0] === '"' || item.value[0] === '\''
+        ? 1
+        : 0)
     : -1
   if (offset === -1) {
     name.textContent = item.value
@@ -105,7 +111,9 @@ function accept(item: SuggestItem): void {
   // the caret so the completion swallows those characters instead of
   // duplicating them.
   const to = Math.max(item.to, caretIndex())
-  emit('accept', to === item.to ? item : { ...item, to })
+  emit('accept', to === item.to
+    ? item
+    : { ...item, to })
   // The workbench owns the replacement; place the caret after the model
   // round-trips back into the editor.
   void nextTick(() => {
@@ -145,7 +153,9 @@ function currentHints(): { list: HintItem[] } | null {
       hint: () => accept(item),
     })
   }
-  return list.length ? { list } : null
+  return list.length
+    ? { list }
+    : null
 }
 
 onMounted(() => {

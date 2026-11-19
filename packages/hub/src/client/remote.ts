@@ -52,7 +52,9 @@ export function buildRemoteDevframeUrl(
 function extractKeyFromFragment(hash: string): string | null {
   if (!hash)
     return null
-  const raw = hash.startsWith('#') ? hash.slice(1) : hash
+  const raw = hash.startsWith('#')
+    ? hash.slice(1)
+    : hash
   const queryIdx = raw.indexOf('?')
   if (queryIdx !== -1) {
     const value = new URLSearchParams(raw.slice(queryIdx + 1)).get(REMOTE_CONNECTION_KEY)
@@ -71,7 +73,9 @@ function extractKeyFromFragment(hash: string): string | null {
 function extractKeyFromQuery(search: string): string | null {
   if (!search)
     return null
-  return new URLSearchParams(search.startsWith('?') ? search.slice(1) : search)
+  return new URLSearchParams(search.startsWith('?')
+    ? search.slice(1)
+    : search)
     .get(REMOTE_CONNECTION_KEY)
 }
 
@@ -136,7 +140,7 @@ function validateConnectionDescriptor(payload: unknown): RemoteConnectionInfo {
   if (typeof info.authToken !== 'string' || !info.authToken)
     throw new Error('[@devframes/hub] Remote connection descriptor must carry an auth token.')
   if (typeof info.origin !== 'string')
-    throw new Error('[@devframes/hub] Remote connection descriptor must carry an origin.')
+    throw new TypeError('[@devframes/hub] Remote connection descriptor must carry an origin.')
 
   return info as RemoteConnectionInfo
 }

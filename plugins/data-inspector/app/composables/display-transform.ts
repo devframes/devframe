@@ -176,7 +176,12 @@ function walkArray(value: unknown[], track: NodePath | null, segKind: 'i' | 's')
   let hasKeyBadges = false
   let hasChildPaths = false
   value.forEach((item, i) => {
-    const childTrack = track && !isUntrackable(item) ? [...track, [segKind, i] as PathSegment] : null
+    const childTrack = track && !isUntrackable(item)
+      ? [
+          ...track,
+          [segKind, i] as PathSegment,
+        ]
+      : null
     const walked = walk(item, childTrack)
     out[i] = walked.value
     if (childTrack && recordChildPath(walked.value, childTrack, out, i, childPaths))
@@ -192,19 +197,35 @@ function walkArray(value: unknown[], track: NodePath | null, segKind: 'i' | 's')
 }
 
 function walkTruncatedDepth(obj: Record<string, unknown>): Walked {
-  const preview = typeof obj.$preview === 'string' ? obj.$preview : 'load deeper'
-  const absolute = [...currentBasePath, ...(obj.$path as NodePath)]
+  const preview = typeof obj.$preview === 'string'
+    ? obj.$preview
+    : 'load deeper'
+  const absolute = [
+    ...currentBasePath,
+    ...(obj.$path as NodePath),
+  ]
   return {
     value: preview,
-    badge: { text: 'load deeper', className: 'di-type-badge di-type-lazy', href: encodeExpandHref(absolute) },
+    badge: {
+      text: 'load deeper',
+      className: 'di-type-badge di-type-lazy',
+      href: encodeExpandHref(absolute),
+    },
   }
 }
 
 function walkTypeStub(obj: Record<string, unknown>, type: string, track: NodePath | null): Walked {
   switch (type) {
     case 'function': {
-      const name = typeof obj.name === 'string' && obj.name !== '(anonymous)' ? obj.name : ''
-      return { value: name ? `<function ${name}>` : '<function>', badge: badgeFor('function', 'Function') }
+      const name = typeof obj.name === 'string' && obj.name !== '(anonymous)'
+        ? obj.name
+        : ''
+      return {
+        value: name
+          ? `<function ${name}>`
+          : '<function>',
+        badge: badgeFor('function', 'Function'),
+      }
     }
     case 'Map': {
       // String-keyed Maps (`value` form) descend with `['k', key]` steps,
@@ -214,30 +235,51 @@ function walkTypeStub(obj: Record<string, unknown>, type: string, track: NodePat
       const inner = obj.value !== undefined
         ? walk(obj.value, track)
         : walk(obj.entries ?? {}, null)
-      return { value: inner.value, badge: badgeFor('Map', `Map(${obj.size ?? '?'})`) }
+      return {
+        value: inner.value,
+        badge: badgeFor('Map', `Map(${obj.size ?? '?'})`),
+      }
     }
     case 'Set': {
       const inner = walk(obj.values ?? [], track, 's')
-      return { value: inner.value, badge: badgeFor('Set', `Set(${obj.size ?? '?'})`) }
+      return {
+        value: inner.value,
+        badge: badgeFor('Set', `Set(${obj.size ?? '?'})`),
+      }
     }
     case 'Date':
     case 'RegExp':
     case 'URL':
     case 'bigint':
     case 'symbol':
-      return { value: obj.value, badge: badgeFor(type, type === 'bigint' ? 'BigInt' : type === 'symbol' ? 'Symbol' : type) }
+      return {
+        value: obj.value,
+        badge: badgeFor(type, type === 'bigint'
+          ? 'BigInt'
+          : type === 'symbol'
+            ? 'Symbol'
+            : type),
+      }
     case 'Error': {
       const clone = { ...obj }
       delete clone.$type
-      return { value: clone, badge: badgeFor('Error') }
+      return {
+        value: clone,
+        badge: badgeFor('Error'),
+      }
     }
     case 'getter-error':
-      return { value: String(obj.message ?? ''), badge: badgeFor('getter-error', 'getter threw') }
+      return {
+        value: String(obj.message ?? ''),
+        badge: badgeFor('getter-error', 'getter threw'),
+      }
     default:
       // Promise, WeakMap, TypedArray tags, ... - opaque stubs
       return {
         value: `<${type}>`,
-        badge: badgeFor(type, typeof obj.length === 'number' ? `${type}(${obj.length})` : type),
+        badge: badgeFor(type, typeof obj.length === 'number'
+          ? `${type}(${obj.length})`
+          : type),
       }
   }
 }
@@ -245,7 +287,10 @@ function walkTypeStub(obj: Record<string, unknown>, type: string, track: NodePat
 /** The source path for an object property, unless the child is untrackable. */
 function childTrackFor(trackChildren: NodePath | null, key: string, child: unknown): NodePath | null {
   return trackChildren && key !== '$truncated' && !isUntrackable(child)
-    ? [...trackChildren, ['k', key] as PathSegment]
+    ? [
+        ...trackChildren,
+        ['k', key] as PathSegment,
+      ]
     : null
 }
 
@@ -258,7 +303,9 @@ function walkPlainObject(obj: Record<string, unknown>, track: NodePath | null): 
   let classBadge: DisplayBadge | undefined
   // `$ref` / `$truncated` carriers pass through as data; their props are
   // normalizer bookkeeping, not live structure.
-  const trackChildren = track && !isUntrackable(obj) ? track : null
+  const trackChildren = track && !isUntrackable(obj)
+    ? track
+    : null
 
   for (const [key, child] of Object.entries(obj)) {
     if (key === '$class' && typeof child === 'string') {
@@ -298,10 +345,14 @@ export function navigateNormalized(result: unknown, path: NodePath): unknown {
           : obj[at]
         break
       case 'i':
-        cur = Array.isArray(cur) ? (cur as unknown[])[at] : undefined
+        cur = Array.isArray(cur)
+          ? (cur as unknown[])[at]
+          : undefined
         break
       case 's':
-        cur = obj.$type === 'Set' ? (obj.values as unknown[] | undefined)?.[at] : undefined
+        cur = obj.$type === 'Set'
+          ? (obj.values as unknown[] | undefined)?.[at]
+          : undefined
         break
       case 'mk':
         cur = (obj.entries as { key: unknown, value: unknown }[] | undefined)?.[at]?.key
@@ -320,7 +371,9 @@ export function formatNodePath(path: NodePath): string {
     return '$'
   return `$${path.map(([kind, at]) => {
     switch (kind) {
-      case 'k': return /^[a-z_$][\w$]*$/i.test(String(at)) ? `.${at}` : `["${at}"]`
+      case 'k': return /^[a-z_$][\w$]*$/i.test(String(at))
+        ? `.${at}`
+        : `["${at}"]`
       case 'i': return `[${at}]`
       case 's': return `~set[${at}]`
       case 'mk': return `~keys[${at}]`
@@ -341,7 +394,9 @@ export function formatNodePath(path: NodePath): string {
 export function prepareForDisplay(result: unknown, basePath: NodePath = [], trackPaths = false): unknown {
   currentBasePath = basePath
   try {
-    const walked = walk(result, trackPaths && !isUntrackable(result) ? basePath : null)
+    const walked = walk(result, trackPaths && !isUntrackable(result)
+      ? basePath
+      : null)
     if (walked.badge && walked.value && typeof walked.value === 'object')
       objectBadges.set(walked.value as object, walked.badge)
     if (trackPaths && walked.value && typeof walked.value === 'object' && !isUntrackable(result))

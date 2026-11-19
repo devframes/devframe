@@ -100,7 +100,10 @@ function patchPackageJson(repoDir: string, tarball: string): void {
   const pkgPath = resolve(repoDir, 'package.json')
   const pkg = readManifest(pkgPath)
   pkg.pnpm ??= {}
-  pkg.pnpm.overrides = { ...(pkg.pnpm.overrides ?? {}), devframe: `file:${tarball}` }
+  pkg.pnpm.overrides = {
+    ...(pkg.pnpm.overrides ?? {}),
+    devframe: `file:${tarball}`,
+  }
   writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`)
   log(`Patched ${pkgPath}: devframe -> file:${tarball}`)
 }
@@ -125,6 +128,8 @@ function log(msg: string): void {
 }
 
 main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err)
+  console.error(err instanceof Error
+    ? err.message
+    : err)
   process.exit(1)
 })

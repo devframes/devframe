@@ -20,10 +20,31 @@ export default defineAppConfig({
         label: 'Adapters',
         sections: ['adapters', 'frameworks'],
       },
-      { label: 'Add-ons', sections: ['add-ons'], link: 'section' as const },
-      { label: 'Reference', sections: ['references'], link: 'section' as const },
-      { label: 'Errors', sections: ['errors'], link: 'section' as const },
-      { label: 'Blog', sections: ['posts'], link: 'section' as const },
+      {
+        label: 'Add-ons',
+        sections: ['add-ons'],
+        link: 'section' as const,
+      },
+      {
+        label: 'Ecosystem',
+        sections: ['ecosystem'],
+        link: 'section' as const,
+      },
+      {
+        label: 'Reference',
+        sections: ['references'],
+        link: 'section' as const,
+      },
+      {
+        label: 'Errors',
+        sections: ['errors'],
+        link: 'section' as const,
+      },
+      {
+        label: 'Blog',
+        sections: ['posts'],
+        link: 'section' as const,
+      },
       {
         label: `v${devframePkg.version}`,
         to: '/migrations',
@@ -126,7 +147,10 @@ export default defineAppConfig({
             '/guide/security',
           ],
         },
-        { title: 'Agentic', items: ['/guide/agent-native'] },
+        {
+          title: 'Agentic',
+          items: ['/guide/agent-native'],
+        },
         {
           title: 'Compose a hub',
           items: [
@@ -143,10 +167,6 @@ export default defineAppConfig({
             '/guide/build-your-own-json-render-frontend',
             '/guide/build-your-own-hub-ui',
           ],
-        },
-        {
-          title: 'Ecosystem',
-          items: ['/guide/built-with'],
         },
       ],
     },

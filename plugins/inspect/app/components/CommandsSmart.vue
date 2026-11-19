@@ -28,7 +28,10 @@ async function onExecute(cmd: DevframeInspectCommandInfo, parsedArgs: unknown[])
   }
   catch (e) {
     const err = e as Error
-    results[cmd.id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+    results[cmd.id] = {
+      ok: false,
+      error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) },
+    }
   }
   finally {
     pending[cmd.id] = false

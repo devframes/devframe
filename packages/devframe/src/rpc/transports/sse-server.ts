@@ -177,7 +177,9 @@ export function attachSseRpcTransport<
         }
         catch {}
         rpcGroup.updateChannels((channels) => {
-          const index = session.channel ? channels.indexOf(session.channel) : -1
+          const index = session.channel
+            ? channels.indexOf(session.channel)
+            : -1
           if (index >= 0)
             channels.splice(index, 1)
         })
@@ -242,13 +244,18 @@ export function attachSseRpcTransport<
 
     return new Response(body, {
       status: 200,
-      headers: { ...SSE_STREAM_HEADERS, ...corsHeaders(request) },
+      headers: {
+        ...SSE_STREAM_HEADERS,
+        ...corsHeaders(request),
+      },
     })
   }
 
   async function handlePost(request: Request): Promise<Response> {
     const id = request.headers.get(DEVFRAME_SSE_SESSION_HEADER)
-    const session = id ? sessions.get(id) : undefined
+    const session = id
+      ? sessions.get(id)
+      : undefined
     if (!session || session.closed) {
       return new Response('Unknown SSE session', {
         status: 400,
@@ -273,13 +280,19 @@ export function attachSseRpcTransport<
       }
       return new Response(responseBody, {
         status: 200,
-        headers: { 'content-type': 'text/plain; charset=utf-8', ...corsHeaders(request) },
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          ...corsHeaders(request),
+        },
       })
     }
     // A client event or a reply to a server-initiated call: nothing to
     // send back on this request.
     session.onMessage?.(frame)
-    return new Response(null, { status: 202, headers: corsHeaders(request) })
+    return new Response(null, {
+      status: 202,
+      headers: corsHeaders(request),
+    })
   }
 
   function handlePreflight(request: Request): Response {
@@ -314,7 +327,9 @@ export function attachSseRpcTransport<
     },
     sessionCount: () => sessions.size,
     close: () => {
-      for (const session of [...sessions.values()]) session.close()
+      for (const session of [
+        ...sessions.values(),
+      ]) session.close()
     },
   }
 }

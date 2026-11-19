@@ -95,7 +95,10 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
      * deep-merge: `roots` union, `editor` last-wins.
      */
     setup(ctx, { options }) {
-      const allowedRoots = [ctx.workspaceRoot, ...(options?.roots ?? [])].map(r => resolve(r))
+      const allowedRoots = [
+        ctx.workspaceRoot,
+        ...(options?.roots ?? []),
+      ].map(r => resolve(r))
       // Canonical forms of the same roots (symlinks in the root paths
       // resolved), computed once for the symlink-aware pass.
       const canonicalRoots = Promise.all(allowedRoots.map(r => nearestExistingCanonical(r)))
@@ -113,7 +116,9 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
        * allowing not-yet-existing files under a root.
        */
       async function assertAllowedPath(path: string): Promise<string> {
-        const resolved = isAbsolute(path) ? resolve(path) : resolve(ctx.workspaceRoot, path)
+        const resolved = isAbsolute(path)
+          ? resolve(path)
+          : resolve(ctx.workspaceRoot, path)
         if (!within(allowedRoots, resolved) || !within(await canonicalRoots, await nearestExistingCanonical(resolved)))
           throw diagnostics.DS_OPEN_0002({ path })
         return resolved
@@ -123,7 +128,9 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
         async openInEditor(input) {
           const path = await assertAllowedPath(input.path)
           const target = input.line != null
-            ? `${path}:${input.line}${input.column != null ? `:${input.column}` : ''}`
+            ? `${path}:${input.line}${input.column != null
+              ? `:${input.column}`
+              : ''}`
             : path
           const { launchEditor } = await import('devframe/utils/launch-editor')
           launchEditor(target, input.editor ?? options?.editor)
@@ -139,12 +146,14 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
         name: 'open-in-editor',
         type: 'action',
         jsonSerializable: true,
-        args: [s.object({
-          path: s.string(),
-          line: s.optional(s.number()),
-          column: s.optional(s.number()),
-          editor: s.optional(s.picklist(KNOWN_EDITORS)),
-        })],
+        args: [
+          s.object({
+            path: s.string(),
+            line: s.optional(s.number()),
+            column: s.optional(s.number()),
+            editor: s.optional(s.picklist(KNOWN_EDITORS)),
+          }),
+        ],
         returns: s.void(),
         handler: input => api.openInEditor(input),
       }))
@@ -152,7 +161,11 @@ export function createOpenService(options?: OpenServiceOptions): DevframeService
         name: 'open-in-finder',
         type: 'action',
         jsonSerializable: true,
-        args: [s.object({ path: s.string() })],
+        args: [
+          s.object({
+            path: s.string(),
+          }),
+        ],
         returns: s.void(),
         handler: input => api.openInFinder(input),
       }))

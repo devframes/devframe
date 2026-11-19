@@ -10,7 +10,10 @@ function report(counts: Partial<ReturnType<typeof emptyCounts>>, route = '/'): S
     scannedAt: 1,
     engine: 'axe-test',
     violations: [],
-    counts: { ...emptyCounts(), ...counts },
+    counts: {
+      ...emptyCounts(),
+      ...counts,
+    },
   }
 }
 
@@ -20,7 +23,12 @@ describe('sumCounts', () => {
       report({ critical: 2, minor: 1 }, '/'),
       report({ critical: 1, serious: 3 }, '/about'),
     ])
-    expect(total).toEqual({ critical: 3, serious: 3, moderate: 0, minor: 1 })
+    expect(total).toEqual({
+      critical: 3,
+      serious: 3,
+      moderate: 0,
+      minor: 1,
+    })
   })
 
   it('returns an empty counter for no reports', () => {
@@ -47,7 +55,10 @@ describe('createGetConfig', () => {
       autoScan: false,
       logIssues: false,
       defaultHighlight: true,
-      axe: { tags: ['wcag2a'], runOptions: { iframes: true } },
+      axe: {
+        tags: ['wcag2a'],
+        runOptions: { iframes: true },
+      },
     }).handler!() as any
     expect(cfg.dockId).toBe('my_a11y')
     expect(cfg.defaultHighlight).toBe(true)

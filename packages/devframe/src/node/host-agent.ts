@@ -128,7 +128,10 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     const resources = Array.from(this.resources.values()).map(r => r.resource)
 
     // Provider tools are queried lazily; earlier sources win on id collision.
-    const seen = new Set([...rpcTools, ...plainTools].map(t => t.id))
+    const seen = new Set([
+      ...rpcTools,
+      ...plainTools,
+    ].map(t => t.id))
     const providerTools: AgentTool[] = []
     for (const { tool } of this._collectProviderTools()) {
       if (seen.has(tool.id))
@@ -138,7 +141,11 @@ export class DevframeAgentHost implements DevframeAgentHostType {
     }
 
     return {
-      tools: [...rpcTools, ...plainTools, ...providerTools],
+      tools: [
+        ...rpcTools,
+        ...plainTools,
+        ...providerTools,
+      ],
       resources,
     }
   }
@@ -247,8 +254,12 @@ export class DevframeAgentHost implements DevframeAgentHostType {
   private _collectProviderTools(): { input: AgentToolInput, tool: AgentTool }[] {
     const out: { input: AgentToolInput, tool: AgentTool }[] = []
     for (const provider of this.providers) {
-      for (const input of provider())
-        out.push({ input, tool: this._projectTool(input) })
+      for (const input of provider()) {
+        out.push({
+          input,
+          tool: this._projectTool(input),
+        })
+      }
     }
     return out
   }

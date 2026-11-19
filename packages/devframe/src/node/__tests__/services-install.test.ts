@@ -59,21 +59,48 @@ describe('satisfiesVersionRange', () => {
 
 describe('deepMergeOptionSets', () => {
   it('merges plain objects in order, later scalars win', () => {
-    expect(deepMergeOptionSets([{ a: 1, b: 1 }, { b: 2, c: 3 }])).toEqual({ a: 1, b: 2, c: 3 })
+    expect(deepMergeOptionSets([
+      { a: 1, b: 1 },
+      { b: 2, c: 3 },
+    ])).toEqual({ a: 1, b: 2, c: 3 })
   })
 
   it('recurses into nested objects', () => {
-    expect(deepMergeOptionSets([{ nested: { x: 1, y: 1 } }, { nested: { y: 2, z: 3 } }]))
-      .toEqual({ nested: { x: 1, y: 2, z: 3 } })
+    expect(deepMergeOptionSets([
+      {
+        nested: { x: 1, y: 1 },
+      },
+      {
+        nested: { y: 2, z: 3 },
+      },
+    ]))
+      .toEqual({
+        nested: { x: 1, y: 2, z: 3 },
+      })
   })
 
   it('unions + dedupes arrays', () => {
-    expect(deepMergeOptionSets([{ roots: ['a', 'b'] }, { roots: ['b', 'c'] }]))
-      .toEqual({ roots: ['a', 'b', 'c'] })
+    expect(deepMergeOptionSets([
+      {
+        roots: ['a', 'b'],
+      },
+      {
+        roots: ['b', 'c'],
+      },
+    ]))
+      .toEqual({
+        roots: ['a', 'b', 'c'],
+      })
   })
 
   it('takes the later value for mismatched shapes', () => {
-    expect(deepMergeOptionSets<unknown>([{ a: 1 }, ['x']])).toEqual(['x'])
-    expect(deepMergeOptionSets<unknown>(['x', { a: 1 }])).toEqual({ a: 1 })
+    expect(deepMergeOptionSets<unknown>([
+      { a: 1 },
+      ['x'],
+    ])).toEqual(['x'])
+    expect(deepMergeOptionSets<unknown>([
+      'x',
+      { a: 1 },
+    ])).toEqual({ a: 1 })
   })
 })

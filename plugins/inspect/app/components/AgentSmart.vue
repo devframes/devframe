@@ -28,7 +28,10 @@ async function onInvoke(id: string, parsedArgs: unknown) {
   }
   catch (e) {
     const err = e as Error
-    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+    results[id] = {
+      ok: false,
+      error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) },
+    }
   }
   finally {
     pending[id] = false
@@ -44,7 +47,10 @@ async function onRead(id: string) {
   }
   catch (e) {
     const err = e as Error
-    results[id] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+    results[id] = {
+      ok: false,
+      error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) },
+    }
   }
   finally {
     pending[id] = false

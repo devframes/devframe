@@ -61,7 +61,12 @@ function seedDemoMessages(messages: DevframeMessagesHostType): void {
     elementPosition: {
       selector: 'main > figure > img.hero',
       description: 'Hero image in the landing section',
-      boundingBox: { x: 24, y: 180, width: 640, height: 360 },
+      boundingBox: {
+        x: 24,
+        y: 180,
+        width: 640,
+        height: 360,
+      },
     },
   })
   void messages.add({

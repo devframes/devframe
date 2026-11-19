@@ -5,7 +5,8 @@
   "scripts": {
     "docs": "nuxt dev --port 5175",
     "docs:build": "nuxt build",
-    "docs:serve": "nuxt preview"
+    "docs:serve": "nuxt preview",
+    "lint": "comark-lint \"content/**/*.md\""
   },
   "dependencies": {
     "@iconify-json/carbon": "catalog:frontend",
@@ -17,12 +18,21 @@
     "@iconify-json/twemoji": "catalog:frontend",
     "@iconify-json/unjs": "catalog:frontend",
     "@shikijs/magic-move": "catalog:frontend",
+    "@shikijs/themes": "catalog:docs",
+    "@vueuse/core": "catalog:frontend",
+    "comark": "catalog:docs",
     "comark-docs": "catalog:docs",
     "d3-shape": "catalog:frontend",
     "nuxt": "catalog:build",
     "shiki": "catalog:deps"
   },
   "devDependencies": {
-    "@types/d3-shape": "catalog:types"
+    "@devframes/plugin-a11y": "workspace:*",
+    "@devframes/plugin-og": "workspace:*",
+    "@nuxt/devtools-kit": "catalog:docs",
+    "@types/d3-shape": "catalog:types",
+    "comark-linter": "catalog:docs",
+    "devframe": "workspace:*",
+    "satori": "catalog:docs"
   }
 }

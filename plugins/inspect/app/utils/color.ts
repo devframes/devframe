@@ -53,7 +53,9 @@ export function parseNamespacedName(name: string): NamespaceSegment[] {
       text,
       separator,
       isLeaf,
-      color: isLeaf ? undefined : getHashColorFromString(path),
+      color: isLeaf
+        ? undefined
+        : getHashColorFromString(path),
     })
     path += separator
   }

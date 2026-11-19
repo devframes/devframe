@@ -31,7 +31,9 @@ interface SelectProps {
 }
 
 function normalize(option: string | SelectOption): { value: string, label?: string } {
-  return typeof option === 'string' ? { value: option } : { value: option.value, label: option.label }
+  return typeof option === 'string'
+    ? { value: option }
+    : { value: option.value, label: option.label }
 }
 
 // Stateful inner component: a JrComponent render fn can't hold a ref, so the
@@ -40,7 +42,10 @@ function normalize(option: string | SelectOption): { value: string, label?: stri
 const SelectImpl = defineComponent({
   name: 'JrSelectImpl',
   props: {
-    options: { type: Array as PropType<(string | SelectOption)[]>, default: () => [] },
+    options: {
+      type: Array as PropType<(string | SelectOption)[]>,
+      default: () => [],
+    },
     value: { type: String, default: undefined },
     placeholder: { type: String, default: undefined },
     label: { type: String, default: undefined },

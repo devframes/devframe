@@ -9,7 +9,11 @@ describe('dumps', () => {
     const add = defineRpcFunction({
       name: 'add',
       dump: {
-        inputs: [[1, 2], [3, 4], [5, 6]],
+        inputs: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+        ],
       },
       handler: (a: number, b: number) => a + b,
     })
@@ -25,16 +29,29 @@ describe('dumps', () => {
       .map(([, record]) => record as RpcDumpRecord)
 
     expect(addRecords.length).toBe(3)
-    expect(addRecords[0]).toMatchObject({ inputs: [1, 2], output: 3 })
-    expect(addRecords[1]).toMatchObject({ inputs: [3, 4], output: 7 })
-    expect(addRecords[2]).toMatchObject({ inputs: [5, 6], output: 11 })
+    expect(addRecords[0]).toMatchObject({
+      inputs: [1, 2],
+      output: 3,
+    })
+    expect(addRecords[1]).toMatchObject({
+      inputs: [3, 4],
+      output: 7,
+    })
+    expect(addRecords[2]).toMatchObject({
+      inputs: [5, 6],
+      output: 11,
+    })
   })
 
   it('should create dump client and return correct results', async () => {
     const greet = defineRpcFunction({
       name: 'greet',
       dump: {
-        inputs: [['Alice'], ['Bob'], ['Charlie']],
+        inputs: [
+          ['Alice'],
+          ['Bob'],
+          ['Charlie'],
+        ],
       },
       handler: (name: string) => `Hello, ${name}!`,
     })
@@ -51,7 +68,10 @@ describe('dumps', () => {
     const greet = defineRpcFunction({
       name: 'greet',
       dump: {
-        inputs: [['Alice'], ['Bob']],
+        inputs: [
+          ['Alice'],
+          ['Bob'],
+        ],
         fallback: 'Hello, stranger!',
       },
       handler: (name: string) => `Hello, ${name}!`,
@@ -68,7 +88,10 @@ describe('dumps', () => {
     const greet = defineRpcFunction({
       name: 'greet',
       dump: {
-        inputs: [['Alice'], ['Bob']],
+        inputs: [
+          ['Alice'],
+          ['Bob'],
+        ],
       },
       handler: (name: string) => `Hello, ${name}!`,
     })
@@ -84,7 +107,10 @@ describe('dumps', () => {
     const divide = defineRpcFunction({
       name: 'divide',
       dump: {
-        inputs: [[10, 2], [10, 0]],
+        inputs: [
+          [10, 2],
+          [10, 0],
+        ],
       },
       handler: (a: number, b: number) => {
         if (b === 0)
@@ -100,7 +126,10 @@ describe('dumps', () => {
       .filter(([key]) => key.startsWith('divide---') && !key.endsWith('---fallback'))
       .map(([, record]) => record as RpcDumpRecord)
 
-    expect(divideRecords[0]).toMatchObject({ inputs: [10, 2], output: 5 })
+    expect(divideRecords[0]).toMatchObject({
+      inputs: [10, 2],
+      output: 5,
+    })
     expect(divideRecords[1]!.inputs).toEqual([10, 0])
     expect(divideRecords[1]!.error).toBeDefined()
     expect(divideRecords[1]!.error?.message).toBe('Division by zero')
@@ -113,14 +142,19 @@ describe('dumps', () => {
   })
 
   it('should preserve error name, cause, and custom properties', async () => {
-    const tags = new Map<string, number>([['a', 1], ['b', 2]])
+    const tags = new Map<string, number>([
+      ['a', 1],
+      ['b', 2],
+    ])
     const flaky = defineRpcFunction({
       name: 'flaky',
       dump: {
         inputs: [[]] as [][],
       },
       handler: (): void => {
-        const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
+        const err = new TypeError('boom', {
+          cause: new Error('inner'),
+        }) as Error & { tags?: unknown }
         err.tags = tags
         throw err
       },
@@ -205,13 +239,19 @@ describe('dumps', () => {
     const getValue = defineWithContext({
       name: 'getValue',
       dump: {
-        inputs: [[1], [2]],
+        inputs: [
+          [1],
+          [2],
+        ],
       },
       setup: (context) => {
         return {
           handler: (x: number) => x * context.multiplier,
           dump: {
-            inputs: [[5], [10]], // Different inputs from definition
+            inputs: [
+              [5],
+              [10],
+            ], // Different inputs from definition
           },
         }
       },
@@ -226,8 +266,14 @@ describe('dumps', () => {
 
     // Should use setup dumps, not definition dumps
     expect(valueRecords.length).toBe(2)
-    expect(valueRecords[0]).toMatchObject({ inputs: [5], output: 15 })
-    expect(valueRecords[1]).toMatchObject({ inputs: [10], output: 30 })
+    expect(valueRecords[0]).toMatchObject({
+      inputs: [5],
+      output: 15,
+    })
+    expect(valueRecords[1]).toMatchObject({
+      inputs: [10],
+      output: 30,
+    })
   })
 
   it('should handle context-dependent dumps', async () => {
@@ -245,7 +291,9 @@ describe('dumps', () => {
             return configs[context.env]
           },
           dump: {
-            inputs: [['apiUrl']] as [string][], // Type as tuple array
+            inputs: [
+              ['apiUrl'],
+            ] as [string][], // Type as tuple array
           },
         }
       },
@@ -265,8 +313,14 @@ describe('dumps', () => {
       name: 'complexArgs',
       dump: {
         inputs: [
-          [{ id: 1, name: 'Alice' }, [1, 2, 3]],
-          [{ id: 2, name: 'Bob' }, [4, 5, 6]],
+          [
+            { id: 1, name: 'Alice' },
+            [1, 2, 3],
+          ],
+          [
+            { id: 2, name: 'Bob' },
+            [4, 5, 6],
+          ],
         ],
       },
       handler: (user: { id: number, name: string }, nums: number[]) => {
@@ -288,7 +342,9 @@ describe('dumps', () => {
     const add = defineRpcFunction({
       name: 'add',
       dump: {
-        inputs: [[1, 2]],
+        inputs: [
+          [1, 2],
+        ],
         fallback: 0,
       },
       handler: (a: number, b: number) => a + b,
@@ -308,14 +364,19 @@ describe('dumps', () => {
 
     await expect(client.add(3, 4)).resolves.toBe(0) // Returns fallback
     expect(misses).toHaveLength(1)
-    expect(misses[0]).toEqual({ functionName: 'add', args: [3, 4] })
+    expect(misses[0]).toEqual({
+      functionName: 'add',
+      args: [3, 4],
+    })
   })
 
   it('should throw error for non-existent function', async () => {
     const add = defineRpcFunction({
       name: 'add',
       dump: {
-        inputs: [[1, 2]],
+        inputs: [
+          [1, 2],
+        ],
       },
       handler: (a: number, b: number) => a + b,
     })
@@ -330,7 +391,9 @@ describe('dumps', () => {
     const withDump = defineRpcFunction({
       name: 'withDump',
       dump: {
-        inputs: [[1]],
+        inputs: [
+          [1],
+        ],
       },
       handler: (x: number) => x * 2,
     })
@@ -351,7 +414,10 @@ describe('dumps', () => {
     const fetchData = defineRpcFunction({
       name: 'fetchData',
       dump: {
-        inputs: [['user1'], ['user2']],
+        inputs: [
+          ['user1'],
+          ['user2'],
+        ],
       },
       handler: async (id: string) => {
         await new Promise(resolve => setTimeout(resolve, 10))
@@ -375,10 +441,17 @@ describe('dumps', () => {
     const getUser = defineRpcFunction({
       name: 'getUser',
       type: 'query',
-      args: [v.string()],
-      returns: v.object({ id: v.string(), name: v.string() }),
+      args: [
+        v.string(),
+      ],
+      returns: v.object({
+        id: v.string(),
+        name: v.string(),
+      }),
       dump: {
-        inputs: [['user1']],
+        inputs: [
+          ['user1'],
+        ],
       },
       handler: (id: string) => ({ id, name: `User ${id}` }),
     })
@@ -402,7 +475,10 @@ describe('dumps', () => {
       }),
     })
 
-    const store = await dumpFunctions([multiply], { multiplier: 2, values: [1, 2, 3] })
+    const store = await dumpFunctions([multiply], {
+      multiplier: 2,
+      values: [1, 2, 3],
+    })
 
     // Get all records for 'multiply' function (excluding fallback)
     const multiplyRecords = Object.entries(store.records)
@@ -410,9 +486,18 @@ describe('dumps', () => {
       .map(([, record]) => record as RpcDumpRecord)
 
     expect(multiplyRecords.length).toBe(3)
-    expect(multiplyRecords[0]).toMatchObject({ inputs: [2], output: 20 })
-    expect(multiplyRecords[1]).toMatchObject({ inputs: [4], output: 40 })
-    expect(multiplyRecords[2]).toMatchObject({ inputs: [6], output: 60 })
+    expect(multiplyRecords[0]).toMatchObject({
+      inputs: [2],
+      output: 20,
+    })
+    expect(multiplyRecords[1]).toMatchObject({
+      inputs: [4],
+      output: 40,
+    })
+    expect(multiplyRecords[2]).toMatchObject({
+      inputs: [6],
+      output: 60,
+    })
 
     const client = createClientFromDump(store)
     await expect(client.multiply(2)).resolves.toBe(20)
@@ -444,17 +529,29 @@ describe('dumps', () => {
       .map(([, record]) => record as RpcDumpRecord)
 
     expect(userRecords.length).toBe(2)
-    expect(userRecords[0]).toMatchObject({ inputs: ['user1'], output: { id: 'user1', name: 'User user1' } })
-    expect(userRecords[1]).toMatchObject({ inputs: ['user2'], output: { id: 'user2', name: 'User user2' } })
+    expect(userRecords[0]).toMatchObject({
+      inputs: ['user1'],
+      output: { id: 'user1', name: 'User user1' },
+    })
+    expect(userRecords[1]).toMatchObject({
+      inputs: ['user2'],
+      output: { id: 'user2', name: 'User user2' },
+    })
   })
 
   it('should snapshot the store structure', async () => {
     const add = defineRpcFunction({
       name: 'add',
-      args: [v.number(), v.number()],
+      args: [
+        v.number(),
+        v.number(),
+      ],
       returns: v.number(),
       dump: {
-        inputs: [[1, 2], [3, 4]],
+        inputs: [
+          [1, 2],
+          [3, 4],
+        ],
         fallback: 0,
       },
       handler: (a: number, b: number) => a + b,
@@ -463,7 +560,10 @@ describe('dumps', () => {
     const greet = defineRpcFunction({
       name: 'greet',
       dump: {
-        inputs: [['Alice'], ['Bob']],
+        inputs: [
+          ['Alice'],
+          ['Bob'],
+        ],
       },
       handler: (name: string) => `Hello, ${name}!`,
     })
@@ -477,7 +577,11 @@ describe('dumps', () => {
       const divide = defineRpcFunction({
         name: 'divide',
         dump: {
-          inputs: [[10, 2], [10, 0], [20, 4]],
+          inputs: [
+            [10, 2],
+            [10, 0],
+            [20, 4],
+          ],
         },
         handler: (a: number, b: number) => {
           if (b === 0)
@@ -496,9 +600,18 @@ describe('dumps', () => {
         handler: (a: number, b: number) => a * b,
         dump: {
           records: [
-            { inputs: [2, 3], output: 6 },
-            { inputs: [4, 5], output: 20 },
-            { inputs: [10, 0], output: 0 },
+            {
+              inputs: [2, 3],
+              output: 6,
+            },
+            {
+              inputs: [4, 5],
+              output: 20,
+            },
+            {
+              inputs: [10, 0],
+              output: 0,
+            },
           ],
         },
       })
@@ -512,10 +625,19 @@ describe('dumps', () => {
         name: 'add',
         handler: (a: number, b: number) => a + b,
         dump: {
-          inputs: [[1, 2], [3, 4]],
+          inputs: [
+            [1, 2],
+            [3, 4],
+          ],
           records: [
-            { inputs: [10, 20], output: 30 },
-            { inputs: [100, 200], output: 300 },
+            {
+              inputs: [10, 20],
+              output: 30,
+            },
+            {
+              inputs: [100, 200],
+              output: 300,
+            },
           ],
         },
       })
@@ -539,7 +661,9 @@ describe('dumps', () => {
               return configs[context.env]
             },
             dump: {
-              inputs: [['apiUrl']] as [string][],
+              inputs: [
+                ['apiUrl'],
+              ] as [string][],
             },
           }
         },
@@ -553,7 +677,10 @@ describe('dumps', () => {
       const greet = defineRpcFunction({
         name: 'greet',
         dump: {
-          inputs: [['Alice'], ['Bob']],
+          inputs: [
+            ['Alice'],
+            ['Bob'],
+          ],
           fallback: 'Hello, stranger!',
         },
         handler: (name: string) => `Hello, ${name}!`,
@@ -588,7 +715,10 @@ describe('dumps', () => {
       const divide = defineRpcFunction({
         name: 'divide',
         dump: {
-          inputs: [[10, 2], [10, 0]],
+          inputs: [
+            [10, 2],
+            [10, 0],
+          ],
         },
         handler: (a: number, b: number) => {
           if (b === 0)
@@ -602,7 +732,10 @@ describe('dumps', () => {
         handler: (a: number, b: number) => a * b,
         dump: {
           records: [
-            { inputs: [2, 3], output: 6 },
+            {
+              inputs: [2, 3],
+              output: 6,
+            },
           ],
         },
       })
@@ -611,9 +744,14 @@ describe('dumps', () => {
         name: 'add',
         handler: (a: number, b: number) => a + b,
         dump: {
-          inputs: [[1, 2]],
+          inputs: [
+            [1, 2],
+          ],
           records: [
-            { inputs: [10, 20], output: 30 },
+            {
+              inputs: [10, 20],
+              output: 30,
+            },
           ],
           fallback: 0,
         },
@@ -636,14 +774,18 @@ describe('dumps', () => {
         name: 'getPayload',
         type: 'query',
         snapshot: true,
-        handler: () => ({ packages: ['a', 'b', 'c'] }),
+        handler: () => ({
+          packages: ['a', 'b', 'c'],
+        }),
       })
 
       const store = await dumpFunctions([getPayload])
       const client = createClientFromDump(store)
 
       // No-args call matches the baked record.
-      await expect(client.getPayload()).resolves.toEqual({ packages: ['a', 'b', 'c'] })
+      await expect(client.getPayload()).resolves.toEqual({
+        packages: ['a', 'b', 'c'],
+      })
     })
 
     it('should expose the snapshot via fallback so any call variant resolves', async () => {
@@ -682,7 +824,11 @@ describe('dumps', () => {
         name: 'getPayload',
         type: 'query',
         snapshot: true,
-        dump: { inputs: [['explicit']] },
+        dump: {
+          inputs: [
+            ['explicit'],
+          ],
+        },
         handler: (kind: string) => `from-${kind}`,
       })
 
@@ -713,7 +859,9 @@ describe('dumps', () => {
       name: 'sendEmail',
       type: 'action',
       dump: {
-        inputs: [['test@example.com']],
+        inputs: [
+          ['test@example.com'],
+        ],
       },
       handler: (email: string) => `Sent to ${email}`,
     })
@@ -728,7 +876,9 @@ describe('dumps', () => {
       name: 'notifyUser',
       type: 'event',
       dump: {
-        inputs: [['user1']],
+        inputs: [
+          ['user1'],
+        ],
       },
       handler: (userId: string) => `Notified ${userId}`,
     })
@@ -743,7 +893,9 @@ describe('dumps', () => {
       name: 'getUser',
       type: 'query',
       dump: {
-        inputs: [['user1']],
+        inputs: [
+          ['user1'],
+        ],
       },
       handler: (id: string) => ({ id, name: `User ${id}` }),
     })
@@ -820,7 +972,10 @@ describe('dumps', () => {
       name: 'getConfigForEnv',
       type: 'static',
       dump: {
-        inputs: [['dev'], ['prod']],
+        inputs: [
+          ['dev'],
+          ['prod'],
+        ],
       },
       handler: (env: string) => ({ env, apiUrl: `https://${env}.api.example.com` }),
     })
@@ -843,9 +998,18 @@ describe('dumps', () => {
       handler: (a: number, b: number) => a * b,
       dump: {
         records: [
-          { inputs: [2, 3], output: 6 },
-          { inputs: [4, 5], output: 20 },
-          { inputs: [10, 0], output: 0 },
+          {
+            inputs: [2, 3],
+            output: 6,
+          },
+          {
+            inputs: [4, 5],
+            output: 20,
+          },
+          {
+            inputs: [10, 0],
+            output: 0,
+          },
         ],
       },
     })
@@ -857,9 +1021,18 @@ describe('dumps', () => {
       .map(([, record]) => record as RpcDumpRecord)
 
     expect(multiplyRecords.length).toBe(3)
-    expect(multiplyRecords[0]).toMatchObject({ inputs: [2, 3], output: 6 })
-    expect(multiplyRecords[1]).toMatchObject({ inputs: [4, 5], output: 20 })
-    expect(multiplyRecords[2]).toMatchObject({ inputs: [10, 0], output: 0 })
+    expect(multiplyRecords[0]).toMatchObject({
+      inputs: [2, 3],
+      output: 6,
+    })
+    expect(multiplyRecords[1]).toMatchObject({
+      inputs: [4, 5],
+      output: 20,
+    })
+    expect(multiplyRecords[2]).toMatchObject({
+      inputs: [10, 0],
+      output: 0,
+    })
 
     // Verify client works with pre-computed records
     const client = createClientFromDump(store)
@@ -873,9 +1046,15 @@ describe('dumps', () => {
       name: 'add',
       handler: (a: number, b: number) => a + b,
       dump: {
-        inputs: [[1, 2], [3, 4]],
+        inputs: [
+          [1, 2],
+          [3, 4],
+        ],
         records: [
-          { inputs: [10, 20], output: 30 },
+          {
+            inputs: [10, 20],
+            output: 30,
+          },
         ],
       },
     })
@@ -900,7 +1079,10 @@ describe('dumps', () => {
       handler: (a: number, b: number) => a / b,
       dump: {
         records: [
-          { inputs: [10, 2], output: 5 },
+          {
+            inputs: [10, 2],
+            output: 5,
+          },
           {
             inputs: [10, 0],
             error: {
@@ -929,7 +1111,13 @@ describe('dumps', () => {
         return a + b
       },
       dump: {
-        inputs: [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]],
+        inputs: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+          [9, 10],
+        ],
       },
     })
 
@@ -943,9 +1131,18 @@ describe('dumps', () => {
       .map(([, record]) => record as RpcDumpRecord)
 
     expect(records.length).toBe(5)
-    expect(records[0]).toMatchObject({ inputs: [1, 2], output: 3 })
-    expect(records[1]).toMatchObject({ inputs: [3, 4], output: 7 })
-    expect(records[2]).toMatchObject({ inputs: [5, 6], output: 11 })
+    expect(records[0]).toMatchObject({
+      inputs: [1, 2],
+      output: 3,
+    })
+    expect(records[1]).toMatchObject({
+      inputs: [3, 4],
+      output: 7,
+    })
+    expect(records[2]).toMatchObject({
+      inputs: [5, 6],
+      output: 11,
+    })
 
     // Parallel execution should be faster than sequential (roughly)
     // 5 operations * 10ms = 50ms sequential, but parallel should be ~10-20ms
@@ -966,7 +1163,13 @@ describe('dumps', () => {
         return a + b
       },
       dump: {
-        inputs: [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]],
+        inputs: [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+          [9, 10],
+        ],
       },
     })
 

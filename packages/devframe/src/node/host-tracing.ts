@@ -137,8 +137,11 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
       this.refresh()
       return
     }
-    if (this.owners.get(event.type === 'record' ? event.record.channel : event.channel) !== source)
+    if (this.owners.get(event.type === 'record'
+      ? event.record.channel
+      : event.channel) !== source) {
       return
+    }
     if (event.type === 'clear') {
       // A fresh stream drops the replay buffer, so a client that reconnects
       // after a clear does not see the cleared records again.

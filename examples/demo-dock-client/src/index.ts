@@ -26,7 +26,10 @@ const KEY_GLOBAL = '__devframes_demo_dock_client__'
 function getStore(): DemoStore {
   const holder = globalThis as Record<string, unknown> & { [KEY_GLOBAL]?: DemoStore }
   if (!holder[KEY_GLOBAL]) {
-    const store: DemoStore = { activations: 0, events: createNanoEvents<DemoEvents>() }
+    const store: DemoStore = {
+      activations: 0,
+      events: createNanoEvents<DemoEvents>(),
+    }
     Object.defineProperty(holder, KEY_GLOBAL, { value: store, configurable: true, enumerable: false })
   }
   return holder[KEY_GLOBAL]!

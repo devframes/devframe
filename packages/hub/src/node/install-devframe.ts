@@ -58,7 +58,10 @@ async function resolvePageScriptClientScript(
   // directory lands in `ctx.views.buildStaticDirs`, and a static build bakes
   // it whether it copies statics live during mount or from that list.
   ctx.views.hostStatic(scriptBase, dirname(importFrom))
-  return { ...clientScript, importFrom: joinURL(scriptBase, basename(importFrom)) }
+  return {
+    ...clientScript,
+    importFrom: joinURL(scriptBase, basename(importFrom)),
+  }
 }
 
 /**
@@ -85,7 +88,9 @@ async function serveDevframeAssets(
     diagnostics.DF8106({ id, name: d.name, base })
   // Resolve the plugin's assets against *its* dependency graph: pass the
   // devframe's own `importMetaUrl` as the default `resolveFrom`.
-  ctx.views.hostStatic(base, typeof clientAssets === 'string' ? resolve(clientAssets) : clientAssets, d.importMetaUrl)
+  ctx.views.hostStatic(base, typeof clientAssets === 'string'
+    ? resolve(clientAssets)
+    : clientAssets, d.importMetaUrl)
 }
 
 /**
@@ -121,7 +126,9 @@ export async function prepareDevframe(
   // The 'duplicate' strategy lets instances coexist, so the dock id (and,
   // when auto-derived, the mount path) is disambiguated to avoid clashing
   // with the already-mounted instance.
-  const id = isDuplicate ? nextAvailableDockId(ctx.docks.views, d.id) : d.id
+  const id = isDuplicate
+    ? nextAvailableDockId(ctx.docks.views, d.id)
+    : d.id
   const base = options.base
     ?? (id === d.id
       ? resolveBasePath(d, 'hosted')
@@ -129,7 +136,10 @@ export async function prepareDevframe(
 
   // Definition `dock` beneath per-mount `options.dock`. Resolved before the SPA
   // mount so an absolute-path page script is served ahead of the SPA catch-all.
-  const dockDefaults = { ...d.dock, ...options.dock }
+  const dockDefaults = {
+    ...d.dock,
+    ...options.dock,
+  }
   const clientScript = await resolvePageScriptClientScript(ctx, dockDefaults.clientScript, base)
   if (clientScript)
     dockDefaults.clientScript = clientScript

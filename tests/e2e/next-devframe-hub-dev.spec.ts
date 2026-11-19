@@ -19,7 +19,10 @@ test.describe('devframe connect (next-devframe-hub)', () => {
       catch {
         return 0
       }
-    }, { timeout: 150_000, intervals: [1000] }).toBe(200)
+    }, {
+      timeout: 150_000,
+      intervals: [1000],
+    }).toBe(200)
 
     // The meta advertises the in-process MCP endpoint: same origin as the
     // Next app, no side-car port (the `/_next/mcp` shape).

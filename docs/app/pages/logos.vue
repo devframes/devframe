@@ -23,7 +23,9 @@ useSeoMeta({
 })
 
 useHead({
-  link: [{ rel: 'canonical', href: canonicalUrl }],
+  link: [
+    { rel: 'canonical', href: canonicalUrl },
+  ],
 })
 
 defineOgImage('DocsSatori', {

@@ -29,8 +29,18 @@ export const Default: Story = {
           description: 'A sample tool',
           safety: 'read',
           tags: ['sample'],
-          inputSchema: { type: 'object', properties: { foo: { type: 'string' } } },
-          outputSchema: { type: 'object', properties: { bar: { type: 'string' } } },
+          inputSchema: {
+            type: 'object',
+            properties: {
+              foo: { type: 'string' },
+            },
+          },
+          outputSchema: {
+            type: 'object',
+            properties: {
+              bar: { type: 'string' },
+            },
+          },
         },
         {
           id: 'tool2',
@@ -52,8 +62,16 @@ export const Default: Story = {
     },
     isStatic: false,
     results: {
-      'devframes:plugin:demo:tool1': { ok: true, result: { bar: 'qux' }, durationMs: 15 },
-      'res1': { ok: false, error: { name: 'Error', message: 'Not found' }, durationMs: 2 },
+      'devframes:plugin:demo:tool1': {
+        ok: true,
+        result: { bar: 'qux' },
+        durationMs: 15,
+      },
+      'res1': {
+        ok: false,
+        error: { name: 'Error', message: 'Not found' },
+        durationMs: 2,
+      },
     },
     pending: {
       tool2: true,

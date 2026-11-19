@@ -9,8 +9,14 @@ export const deleteAssets = defineRpcFunction({
   name: 'devframes:plugin:assets:delete',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ paths: s.array(s.string()) })],
-  returns: s.object({ deleted: s.array(s.string()) }),
+  args: [
+    s.object({
+      paths: s.array(s.string()),
+    }),
+  ],
+  returns: s.object({
+    deleted: s.array(s.string()),
+  }),
   agent: {
     title: 'Delete assets',
     description: 'Delete one or more assets from the managed directory.',

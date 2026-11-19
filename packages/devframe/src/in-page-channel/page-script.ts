@@ -54,7 +54,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
   const callTimeoutMs = options.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS
   const win = options.window === false
     ? undefined
-    : options.window ?? (typeof window === 'undefined' ? undefined : window)
+    : options.window ?? (typeof window === 'undefined'
+      ? undefined
+      : window)
   const allowedOrigins = resolveAllowedOrigins(options.allowedOrigins, win)
   const instanceId = resolveInstanceId(win)
   const heartbeat = resolveHeartbeat(options.heartbeat)
@@ -77,7 +79,12 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       yield {
         subscribedStates: peer.subscribedStates,
         callEventRaw: (method: string, args: unknown[]) => {
-          void peer.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
+          void peer.attached.rpc.$callRaw({
+            method,
+            args: serializeArgs(codec, args),
+            event: true,
+            optional: true,
+          }).catch(() => {})
         },
       }
     }
@@ -101,11 +108,19 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     // grant) replaces the previous port.
     removePeer(id, { reason: 'the panel re-connected' })
 
-    const internal = { id, subscribedStates: new Set<string>() } as PeerInternal<P>
+    const internal = {
+      id,
+      subscribedStates: new Set<string>(),
+    } as PeerInternal<P>
     internal.internalHandlers = stateHost.createPeerHandlers({
       subscribedStates: internal.subscribedStates,
       callEventRaw: (method, args) => {
-        void internal.attached.rpc.$callRaw({ method, args: serializeArgs(codec, args), event: true, optional: true }).catch(() => {})
+        void internal.attached.rpc.$callRaw({
+          method,
+          args: serializeArgs(codec, args),
+          event: true,
+          optional: true,
+        }).catch(() => {})
       },
     })
     const stateRegistry = createLocalFunctionRegistry(codec)
@@ -132,7 +147,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     if (heartbeat && !heartbeatTimer) {
       heartbeatTimer = setInterval(() => {
         const now = Date.now()
-        for (const peer of [...peers.values()]) {
+        for (const peer of [
+          ...peers.values(),
+        ]) {
           if (now - peer.attached.lastActivity > heartbeat.timeoutMs)
             removePeer(peer.id, { reason: 'the panel went silent (heartbeat timeout)' })
         }
@@ -173,7 +190,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       instanceId,
     }
     try {
-      source.postMessage(grant, allowedOrigins.includes('*') ? '*' : event.origin, [messageChannel.port2])
+      source.postMessage(grant, allowedOrigins.includes('*')
+        ? '*'
+        : event.origin, [messageChannel.port2])
     }
     catch (error) {
       console.warn(`[devframe] in-page channel "${name}": failed to grant a port`, error)
@@ -199,7 +218,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
     name,
     instanceId,
     get panels() {
-      return [...peers.values()].map(peer => peer.peer)
+      return [
+        ...peers.values(),
+      ].map(peer => peer.peer)
     },
     events: { on: events.on, once: events.once },
     emit,
@@ -212,7 +233,9 @@ export function createPageScriptChannel<P extends InPageChannelProtocol>(
       closed = true
       disposeAgentTools()
       win?.removeEventListener('message', onWindowMessage)
-      for (const id of [...peers.keys()])
+      for (const id of [
+        ...peers.keys(),
+      ])
         removePeer(id, { bye: true, reason: 'the page script closed the channel' })
     },
   }

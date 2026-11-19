@@ -3,7 +3,7 @@
   "globalDependencies": ["pnpm-lock.yaml", "tsconfig.base.json"],
   "tasks": {
     "typecheck": {
-      "dependsOn": ["^typecheck", "@devframes/hub-ui#build:css", "@devframes/json-render-ui#build:css"]
+      "dependsOn": ["^typecheck", "@devframes/hub-ui#build:css", "@devframes/hub-ui-onboard#build:css", "@devframes/json-render-ui#build:css"]
     },
     // `devframe` ⇄ `@devframes/agentic` are circular in the package graph
     // (agentic peers on devframe; devframe devDeps agentic so tests can
@@ -17,6 +17,10 @@
       "dependsOn": []
     },
     "@devframes/hub-ui#build:css": {
+      "outputLogs": "new-only",
+      "outputs": ["src/client/.generated/**"]
+    },
+    "@devframes/hub-ui-onboard#build:css": {
       "outputLogs": "new-only",
       "outputs": ["src/client/.generated/**"]
     },
@@ -61,6 +65,11 @@
     "@devframes/hub-ui#build": {
       "outputLogs": "new-only",
       "dependsOn": ["devframe#build", "@devframes/hub#build"],
+      "outputs": ["dist/**"]
+    },
+    "@devframes/hub-ui-onboard#build": {
+      "outputLogs": "new-only",
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/design/**"],
       "outputs": ["dist/**"]
     },
     "@devframes/json-render-ui#build": {

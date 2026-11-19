@@ -130,7 +130,10 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   }
 
   const cwd = process.cwd()
-  const port = await getPort({ port: options.port ?? 9878, portRange: [9878, 9978] })
+  const port = await getPort({
+    port: options.port ?? 9878,
+    portRange: [9878, 9978],
+  })
   const websocket = `ws://127.0.0.1:${port}`
 
   const host: DevframeHost = {
@@ -150,9 +153,14 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
   setupDataInspector(context, { exampleSource: options.exampleSource })
 
   const useAuth = options.auth ?? true
-  const token = useAuth ? (options.token ?? randomToken()) : undefined
+  const token = useAuth
+    ? (options.token ?? randomToken())
+    : undefined
   const auth = useAuth
-    ? createInteractiveAuth(context, { clientAuthTokens: [token!], banner: () => {} })
+    ? createInteractiveAuth(context, {
+        clientAuthTokens: [token!],
+        banner: () => {},
+      })
     : false
 
   // A bare WS RPC endpoint, with no SPA and no discovery routes, so the inject endpoint
@@ -178,7 +186,12 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
 
   const discoveryPath = join(cwd, DISCOVERY_FILE)
   if (options.discoveryFile !== false) {
-    const discovery: InjectDiscovery = { websocket, token, pid: process.pid, startedAt: Date.now() }
+    const discovery: InjectDiscovery = {
+      websocket,
+      token,
+      pid: process.pid,
+      startedAt: Date.now(),
+    }
     mkdirSync(dirname(discoveryPath), { recursive: true })
     writeFileSync(discoveryPath, `${JSON.stringify(discovery, null, 2)}\n`)
     process.once('exit', () => {
@@ -193,7 +206,9 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
     // The inject endpoint runs inside arbitrary user processes: stderr, not stdout,
     // so it never corrupts piped program output.
     console.error(`[data-inspector] inject endpoint listening on ${websocket} (pid ${process.pid})`)
-    console.error(`[data-inspector] attach with: devframe-data-inspector attach${options.discoveryFile === false && token ? ` ${websocket} --token ${token}` : ''}`)
+    console.error(`[data-inspector] attach with: devframe-data-inspector attach${options.discoveryFile === false && token
+      ? ` ${websocket} --token ${token}`
+      : ''}`)
   }
 
   return {
@@ -216,7 +231,9 @@ export async function exposeDataInspector(options: ExposeDataInspectorOptions = 
 // so merely importing the module never opens a port.
 if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INSPECTOR === 'true') {
   void exposeDataInspector({
-    port: process.env.DEVFRAME_DATA_INSPECTOR_PORT ? Number(process.env.DEVFRAME_DATA_INSPECTOR_PORT) : undefined,
+    port: process.env.DEVFRAME_DATA_INSPECTOR_PORT
+      ? Number(process.env.DEVFRAME_DATA_INSPECTOR_PORT)
+      : undefined,
     auth: process.env.DEVFRAME_DATA_INSPECTOR_AUTH !== '0',
     token: process.env.DEVFRAME_DATA_INSPECTOR_TOKEN,
     exampleSource: process.env.DEVFRAME_DATA_INSPECTOR_EXAMPLE !== '0',
@@ -224,7 +241,11 @@ if (process.env.DEVFRAME_DATA_INSPECTOR === '1' || process.env.DEVFRAME_DATA_INS
      * Zero-code path: with no chance to call `registerDataSource`, expose
      * `globalThis` so assigning to it is enough to inspect anything.
      */
-    sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0' ? [createGlobalThisDataSource()] : undefined,
+    sources: process.env.DEVFRAME_DATA_INSPECTOR_GLOBAL !== '0'
+      ? [
+          createGlobalThisDataSource(),
+        ]
+      : undefined,
   }).catch((error) => {
     console.error('[data-inspector] inject endpoint failed to start:', error)
   })

@@ -2,6 +2,13 @@
   --un-text-opacity: 100%;
 }
 
+/* Keep portaled select options scrollable within the available window height.
+ * Reserve the two border pixels on FormSelect's enclosing content. */
+[data-reka-select-viewport] {
+  max-height: calc(var(--reka-select-content-available-height) - 2px);
+  overscroll-behavior-y: contain;
+}
+
 /*
  * Thin/transparent scrollbar, matching packages/ui/src/styles/global.css -
  * that stylesheet only reaches the Nuxt plugin apps, not this injected
@@ -21,6 +28,10 @@
   --app-scrollbar-radius: 1px;
   --app-scrollbar-thumb: #8884;
   --app-scrollbar-thumb-hover: #8885;
+  --devframes-safe-area-top: env(safe-area-inset-top, 0px);
+  --devframes-safe-area-right: env(safe-area-inset-right, 0px);
+  --devframes-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --devframes-safe-area-left: env(safe-area-inset-left, 0px);
 }
 
 ::-webkit-scrollbar {

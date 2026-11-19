@@ -11,10 +11,13 @@ function createMockClient() {
 
   // eslint-disable-next-line slop/no-chained-type-assertions -- partial test mock exercises only the members client.scope() touches
   const rpc = {
+    ensureTrusted: vi.fn(async () => true),
     call: vi.fn((..._args: any[]) => Promise.resolve('ok')),
     callEvent: vi.fn((..._args: any[]) => {}),
     callOptional: vi.fn((..._args: any[]) => Promise.resolve('ok')),
-    client: { register: vi.fn((fn: any) => registered.push(fn)) },
+    client: {
+      register: vi.fn((fn: any) => registered.push(fn)),
+    },
     sharedState: {
       get: vi.fn((key: string, options?: any) => {
         if (!states.has(key))
@@ -50,7 +53,9 @@ describe('client.scope()', () => {
     const { rpc } = createMockClient()
     // To properly test this, we need the `scope` method added to `rpc`, similar
     // to what `getDevframeRpcClient` does in `rpc.ts`.
-    rpc.scope = (ns?: string | null) => (ns ? createScopedClientContext(rpc, ns) : rpc) as any
+    rpc.scope = (ns?: string | null) => (ns
+      ? createScopedClientContext(rpc, ns)
+      : rpc) as any
     const scoped = rpc.scope('my-plugin')
     expect(rpc.scope('')).toBe(rpc)
     expect(rpc.scope(null)).toBe(rpc)
@@ -60,7 +65,9 @@ describe('client.scope()', () => {
 
   it('replaces the scope instead of chaining when calling scope() on a scoped client', () => {
     const { rpc } = createMockClient()
-    rpc.scope = (ns?: string | null) => (ns ? createScopedClientContext(rpc, ns) : rpc) as any
+    rpc.scope = (ns?: string | null) => (ns
+      ? createScopedClientContext(rpc, ns)
+      : rpc) as any
     const scope1 = rpc.scope('first')
     const scope2 = scope1.scope('second')
     expect(scope2.namespace).toBe('second')
@@ -117,8 +124,12 @@ describe('client.scope()', () => {
     const scoped = createScopedClientContext(rpc, 'my-plugin')
     scoped.rpc.streaming.subscribe('chat', '1')
     scoped.rpc.streaming.upload('chat', '2')
-    expect(subscribes).toEqual([['my-plugin:chat', '1']])
-    expect(uploads).toEqual([['my-plugin:chat', '2']])
+    expect(subscribes).toEqual([
+      ['my-plugin:chat', '1'],
+    ])
+    expect(uploads).toEqual([
+      ['my-plugin:chat', '2'],
+    ])
   })
 
   it('round-trips settings through namespaced shared states', async () => {
@@ -126,7 +137,7 @@ describe('client.scope()', () => {
     const { settings } = createScopedClientContext(rpc, 'my-plugin')
 
     await settings.global.set('token', 'abc')
-    expect(rpc.sharedState.get).toHaveBeenCalledWith('devframe:settings:global:my-plugin', { initialValue: {} })
+    expect(rpc.sharedState.get).toHaveBeenCalledWith('devframe:settings:global:my-plugin')
     expect(await settings.global.get('token')).toBe('abc')
 
     await settings.project.set('theme', 'dark')

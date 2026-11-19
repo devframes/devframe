@@ -22,8 +22,12 @@ function resolveHref(href: string | undefined): string | undefined {
   if (!href)
     return undefined
   try {
-    const url = new URL(href, typeof location === 'undefined' ? 'http://localhost' : location.href)
-    return ALLOWED_SCHEMES.has(url.protocol) ? href : undefined
+    const url = new URL(href, typeof location === 'undefined'
+      ? 'http://localhost'
+      : location.href)
+    return ALLOWED_SCHEMES.has(url.protocol)
+      ? href
+      : undefined
   }
   catch {
     return undefined
@@ -33,7 +37,11 @@ function resolveHref(href: string | undefined): string | undefined {
 export const Link: JrComponent<LinkProps> = ({ props }) => {
   const href = resolveHref(props.href)
   const content = [
-    props.icon ? Icon({ props: { name: props.icon, size: 14 } } as Parameters<typeof Icon>[0]) : null,
+    props.icon
+      ? Icon({
+          props: { name: props.icon, size: 14 },
+        } as Parameters<typeof Icon>[0])
+      : null,
     h('span', props.label ?? href),
   ]
   if (!href)

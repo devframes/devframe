@@ -84,7 +84,9 @@ describe('devToolsAgentHost', () => {
         type: 'query',
         jsonSerializable: true,
         agent: { description: 'An RPC' },
-        setup: () => ({ handler: async () => 'rpc' }),
+        setup: () => ({
+          handler: async () => 'rpc',
+        }),
       }))
 
       expect(() => ctx.agent.registerTool({
@@ -122,7 +124,9 @@ describe('devToolsAgentHost', () => {
           description: 'An exposed RPC.',
           title: 'Exposed',
         },
-        setup: () => ({ handler: async () => 42 }),
+        setup: () => ({
+          handler: async () => 42,
+        }),
       }))
 
       const tools = ctx.agent.list().tools
@@ -142,7 +146,9 @@ describe('devToolsAgentHost', () => {
       ctx.rpc.register(rpcDef({
         name: 'private-rpc',
         type: 'query',
-        setup: () => ({ handler: async () => 42 }),
+        setup: () => ({
+          handler: async () => 42,
+        }),
       }))
 
       expect(ctx.agent.list().tools).toHaveLength(0)
@@ -155,21 +161,27 @@ describe('devToolsAgentHost', () => {
         type: 'query',
         jsonSerializable: true,
         agent: { description: 'q' },
-        setup: () => ({ handler: async () => {} }),
+        setup: () => ({
+          handler: async () => {},
+        }),
       }))
       ctx.rpc.register(rpcDef({
         name: 'a',
         type: 'action',
         jsonSerializable: true,
         agent: { description: 'a' },
-        setup: () => ({ handler: async () => {} }),
+        setup: () => ({
+          handler: async () => {},
+        }),
       }))
       ctx.rpc.register(rpcDef({
         name: 's',
         type: 'static',
         jsonSerializable: true,
         agent: { description: 's' },
-        setup: () => ({ handler: async () => {} }),
+        setup: () => ({
+          handler: async () => {},
+        }),
       }))
 
       const tools = ctx.agent.list().tools
@@ -189,7 +201,9 @@ describe('devToolsAgentHost', () => {
         type: 'query',
         jsonSerializable: true,
         agent: { description: 'x' },
-        setup: () => ({ handler: async () => {} }),
+        setup: () => ({
+          handler: async () => {},
+        }),
       }))
 
       expect(handler).toHaveBeenCalled()
@@ -208,7 +222,9 @@ describe('devToolsAgentHost', () => {
 
       const result = await ctx.agent.invoke('echo', { ping: true })
       expect(handler).toHaveBeenCalledWith({ ping: true })
-      expect(result).toEqual({ echoed: { ping: true } })
+      expect(result).toEqual({
+        echoed: { ping: true },
+      })
     })
 
     it('dispatches to an RPC function via invokeLocal', async () => {
@@ -239,7 +255,9 @@ describe('devToolsAgentHost', () => {
       ctx.agent.registerResource({
         id: 'my-resource',
         name: 'My resource',
-        read: () => ({ json: { hello: 'world' } }),
+        read: () => ({
+          json: { hello: 'world' },
+        }),
       })
 
       const resources = ctx.agent.list().resources
@@ -247,7 +265,9 @@ describe('devToolsAgentHost', () => {
       expect(resources[0]!.uri).toBe('devframe://resource/my-resource')
 
       const content = await ctx.agent.read('my-resource')
-      expect(content).toEqual({ json: { hello: 'world' } })
+      expect(content).toEqual({
+        json: { hello: 'world' },
+      })
     })
 
     it('throws DF0016 on duplicate id', () => {
@@ -274,7 +294,9 @@ describe('devToolsAgentHost', () => {
     it('carries args raw on the projected tool; conversion is deferred to protocol adapters', async () => {
       const v = await import('valibot')
       const ctx = createContext()
-      const schema = v.object({ name: v.optional(v.string()) })
+      const schema = v.object({
+        name: v.optional(v.string()),
+      })
       ctx.agent.registerTool({
         id: 'schema:tool',
         description: 'Schema-typed.',
@@ -297,8 +319,17 @@ describe('devToolsAgentHost', () => {
       ctx.agent.registerTool({
         id: 'override:tool',
         description: 'Override.',
-        args: [v.object({ ignored: v.string() })],
-        inputSchema: { type: 'object', properties: { custom: { type: 'string' } } },
+        args: [
+          v.object({
+            ignored: v.string(),
+          }),
+        ],
+        inputSchema: {
+          type: 'object',
+          properties: {
+            custom: { type: 'string' },
+          },
+        },
         handler: () => {},
       })
 
@@ -313,7 +344,14 @@ describe('devToolsAgentHost', () => {
       const handler = vi.fn(async (args: unknown) => args)
       let exposed = false
       ctx.agent.registerToolProvider(() => exposed
-        ? [{ id: 'derived:tool', description: 'Derived.', safety: 'read', handler }]
+        ? [
+            {
+              id: 'derived:tool',
+              description: 'Derived.',
+              safety: 'read',
+              handler,
+            },
+          ]
         : [])
 
       // The provider's source of truth changes; no re-registration needed.
@@ -332,9 +370,17 @@ describe('devToolsAgentHost', () => {
 
     it('earlier sources win on id collision', () => {
       const ctx = createContext()
-      ctx.agent.registerTool({ id: 'shared:id', description: 'Registered.', handler: () => 'plain' })
+      ctx.agent.registerTool({
+        id: 'shared:id',
+        description: 'Registered.',
+        handler: () => 'plain',
+      })
       ctx.agent.registerToolProvider(() => [
-        { id: 'shared:id', description: 'Provided.', handler: () => 'provided' },
+        {
+          id: 'shared:id',
+          description: 'Provided.',
+          handler: () => 'provided',
+        },
       ])
 
       expect(ctx.agent.getTool('shared:id')!.description).toBe('Registered.')

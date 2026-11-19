@@ -1,12 +1,15 @@
 import type { BirpcGroup } from 'birpc'
 import type { DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, RpcBroadcastOptions, RpcFunctionsHost as RpcFunctionsHostType, RpcSharedStateHost, RpcStreamingHost } from 'devframe/types'
 import type { AsyncLocalStorage } from 'node:async_hooks'
+import { defineRpcFunction } from 'devframe'
+import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { RpcFunctionsCollectorBase } from 'devframe/rpc'
 import { createDebug } from 'obug'
 import { removeClientAgentSession } from './client-agent'
 import { diagnostics } from './diagnostics'
 import { createRpcSharedStateServerHost } from './rpc-shared-state'
 import { createRpcStreamingServerHost } from './rpc-streaming'
+import { resolveSettingsState } from './settings'
 
 const debugBroadcast = createDebug('devframe:rpc:broadcast')
 
@@ -38,8 +41,21 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
   constructor(context: DevframeNodeContext) {
     super(context)
 
-    this.sharedState = createRpcSharedStateServerHost(this)
+    this.sharedState = createRpcSharedStateServerHost(this, key => resolveSettingsState(context, key))
     this.streaming = createRpcStreamingServerHost(this)
+
+    this.register(defineRpcFunction({
+      name: 'devframe:rpc:cacheable-functions',
+      type: 'query',
+      handler: () => [
+        ...this.definitions.values(),
+      ]
+        .filter(fn => fn.type === 'static' || (fn.type === 'query' && fn.cacheable === true))
+        .map(fn => fn.name),
+    }))
+    this.onChanged(() => {
+      void this.broadcast({ method: DEVFRAME_EVENTS.broadcast.cacheInvalidate, args: [] })
+    })
   }
 
   sharedState: RpcSharedStateHost
@@ -65,7 +81,9 @@ export class RpcFunctionsHostImpl extends RpcFunctionsCollectorBase<DevframeRpcS
     ...args: Args
   ): Promise<Awaited<ReturnType<DevframeRpcServerFunctions[T]>>> {
     if (!this.definitions.has(method as string)) {
-      throw diagnostics.DF0006({ name: String(method) })
+      throw diagnostics.DF0006({
+        name: String(method),
+      })
     }
 
     const handler = await this.getHandler(method)

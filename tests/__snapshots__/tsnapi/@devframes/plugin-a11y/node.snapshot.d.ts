@@ -5,6 +5,30 @@
 export declare function setupA11y(_: DevframeNodeContext, _?: A11yRuntimeConfig): void;
 // #endregion
 
-// #region Other
-export { serverFunctions }
+// #region Variables
+export declare const serverFunctions: readonly [import("devframe/rpc").RpcFunctionDefinitionWithoutSchemas<"devframes:plugin:a11y:get-config", "static", [], {
+  channel: string;
+  nodeAttr: string;
+  docsBase: string;
+  dockId: string;
+  defaultHighlight: boolean;
+  pageScript: PageScriptConfig;
+  impacts: ({
+    label: "Critical";
+    blurb: "Blocks people with disabilities from using the page. Fix first.";
+    id: "critical" | "serious" | "moderate" | "minor";
+  } | {
+    label: "Serious";
+    blurb: "Severe barriers for some users; frustrating and often exclusionary.";
+    id: "critical" | "serious" | "moderate" | "minor";
+  } | {
+    label: "Moderate";
+    blurb: "Causes friction and confusion, though the page stays usable.";
+    id: "critical" | "serious" | "moderate" | "minor";
+  } | {
+    label: "Minor";
+    blurb: "Small annoyances and polish, worth clearing once the rest is done.";
+    id: "critical" | "serious" | "moderate" | "minor";
+  })[];
+}, undefined, undefined, import("devframe").DevframeNodeContext>];
 // #endregion

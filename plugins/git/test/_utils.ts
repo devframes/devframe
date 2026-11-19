@@ -78,6 +78,12 @@ export async function startDashboardServer(
   app.use(metaPath, () => ({ backend: 'websocket', websocket: port }))
   mountStaticHandler(app, basePath, resolve(distDir))
 
-  const server = await serveTestContext({ context: ctx, host, port, app, auth: false })
+  const server = await serveTestContext({
+    context: ctx,
+    host,
+    port,
+    app,
+    auth: false,
+  })
   return Object.assign(server, { basePath })
 }

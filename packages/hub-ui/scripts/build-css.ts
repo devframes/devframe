@@ -13,7 +13,12 @@ const require = createRequire(import.meta.url)
 
 const { sourceCount, css } = await buildShadowCss({
   srcDir: SRC_DIR,
-  globs: ['components/**/*.{ts,vue}', 'state/**/*.ts', 'embedded/**/*.ts', 'standalone/**/*.{ts,html}'],
+  globs: [
+    'components/**/*.{ts,vue}',
+    'state/**/*.ts',
+    'embedded/**/*.ts',
+    'standalone/**/*.{ts,html}',
+  ],
   config,
   primaryRampPath: fileURLToPath(new URL('../../../design/primary-ramp.css', import.meta.url)),
   userStylePath: [

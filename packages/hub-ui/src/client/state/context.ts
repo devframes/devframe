@@ -78,10 +78,13 @@ export async function createDocksContext(
     // hub-ui owns the built-in Settings tab so it's always reachable without a
     // host registering `~settings`; a host that registered its own wins, so add
     // ours only when the merged list has none.
-    const localized = base.map(localizeTitle)
+    const localized = base.map(entry => localizeTitle(entry))
     if (localized.some(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id))
       return localized
-    return [...localized, { ...BUILTIN_ENTRY_SETTINGS, title: t('dock.settings') }]
+    return [
+      ...localized,
+      localizeTitle(BUILTIN_ENTRY_SETTINGS, t('dock.settings')),
+    ]
   })
 
   // Per-tab session UI state (open/selectedId/route). A caller (the embedded and
@@ -106,6 +109,9 @@ export async function createDocksContext(
   const selectedDockId = computed<string | null>({
     get: () => sessionStore.value.selectedDockId,
     set: (id) => {
+      // Drop the old dock's route before observers persist the new selection.
+      if (sessionStore.value.selectedDockId !== id)
+        sessionStore.value.selectedDockRoute = null
       sessionStore.value.selectedDockId = id
     },
   })
@@ -124,6 +130,16 @@ export async function createDocksContext(
       ?? null
   })
 
+  /** Toggle actions that are on; they never take the selection. */
+  const activeActions: Set<string> = reactive(new Set())
+  /** Whether turning the last toggle action off should reopen the panel it hid. */
+  let reopenPanel = false
+  const restorePanel = (): void => {
+    if (reopenPanel)
+      sessionStore.value.open = true
+    reopenPanel = false
+  }
+
   const dockEntryStateMap: Map<string, DockEntryState> = reactive(new Map())
   watchEffect(() => {
     for (const entry of entries.value) {
@@ -133,7 +149,7 @@ export async function createDocksContext(
       }
       dockEntryStateMap.set(
         entry.id,
-        createDockEntryState(entry, selected),
+        createDockEntryState(entry, selected, activeActions),
       )
     }
   })
@@ -148,19 +164,25 @@ export async function createDocksContext(
     // `getStateById`) synchronously right after registering, so the state has
     // to exist immediately, mirroring hub's synchronous client-host reconcile.
     if (!dockEntryStateMap.has(entry.id))
-      dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected))
+      dockEntryStateMap.set(entry.id, createDockEntryState(entry, selected, activeActions))
     return {
       update: (patch: Partial<T>) => {
         if (patch.id != null && patch.id !== entry.id)
           throw new Error(`[@devframes/hub-ui] a client dock id is immutable ("${entry.id}")`)
         const existing = clientDocks.get(entry.id)
-        if (existing)
-          clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
+        if (existing) {
+          clientDocks.set(entry.id, {
+            ...existing,
+            ...patch,
+          } as DevframeDockEntry)
+        }
       },
       dispose: () => {
         if (!clientDocks.delete(entry.id))
           return
         dockEntryStateMap.delete(entry.id)
+        if (activeActions.delete(entry.id) && activeActions.size === 0)
+          restorePanel()
         // Clearing the selection when the active member vanishes matches the
         // hub reconcile behavior for a removed selected entry (shared-iframe
         // soft-nav §7.5).
@@ -184,7 +206,9 @@ export async function createDocksContext(
     if (!_settingsStorePromise) {
       _settingsStorePromise = rpc.sharedState.get(
         'devframe:user-settings',
-        { initialValue: DEFAULT_STATE_USER_SETTINGS() },
+        {
+          initialValue: DEFAULT_STATE_USER_SETTINGS(),
+        },
       )
     }
     return _settingsStorePromise
@@ -207,6 +231,7 @@ export async function createDocksContext(
     paletteOpen: commandsContext?.paletteOpen ?? false,
     dockSelectedId: selectedDockId.value ?? '',
     popupOpen: isDockPopupOpen.value,
+    dockActionActive: activeActions.size > 0,
   })
 
   // The shared frame's live member tab, keyed by `frameId`. Lets `switchEntry`
@@ -315,8 +340,44 @@ export async function createDocksContext(
     })
   }
 
+  /** A new selection wins over the panel a toggle action hid, so it is not restored. */
+  const turnOffActions = (): void => {
+    reopenPanel = false
+    for (const id of [...activeActions]) {
+      activeActions.delete(id)
+      dockEntryStateMap.get(id)?.events.emit('entry:deactivated')
+    }
+  }
+
+  const setActionActive = async (id: string, active: boolean): Promise<boolean> => {
+    const entry = entries.value.find(e => e.id === id)
+    if (entry?.type !== 'action' || !entry.toggle || activeActions.has(id) === active)
+      return false
+    if (!active) {
+      activeActions.delete(id)
+      dockEntryStateMap.get(id)?.events.emit('entry:deactivated')
+      if (activeActions.size === 0)
+        restorePanel()
+      return true
+    }
+    if (!rpc.isTrusted)
+      return false
+    // Run once: the script listens to the entry events instead of re-running per click.
+    await executeSetupScript(entry, scriptContext(entry), true)
+    if (!rpc.isTrusted || activeActions.has(id))
+      return false
+    if (activeActions.size === 0) {
+      reopenPanel = sessionStore.value.open
+      sessionStore.value.open = false
+    }
+    activeActions.add(id)
+    dockEntryStateMap.get(id)?.events.emit('entry:activated')
+    return true
+  }
+
   const switchEntry = async (id: string | null = null): Promise<boolean> => {
     if (id == null) {
+      turnOffActions()
       initialRestorePending.value = false
       selectedDockId.value = null
       sessionStore.value.open = false
@@ -324,6 +385,7 @@ export async function createDocksContext(
       return true
     }
     if (id === '~client-auth-notice') {
+      turnOffActions()
       initialRestorePending.value = false
       selectedDockId.value = id
       sessionStore.value.open = true
@@ -338,6 +400,14 @@ export async function createDocksContext(
       return false
     if (redirect !== null)
       return switchEntry(redirect)
+
+    // A toggle action never takes the selection, so it skips the group's default
+    // member load as well. A popup forwards the click to the main frame.
+    if (entry.type === 'action' && entry.toggle) {
+      if (await triggerMainFrameDockAction(clientType, entry.id) != null)
+        return false
+      return setActionActive(entry.id, !activeActions.has(entry.id))
+    }
 
     const loading = loadGroupDefaultChild(entry, switchEntry)
     if (loading)
@@ -357,6 +427,7 @@ export async function createDocksContext(
       return false
 
     initialRestorePending.value = false
+    turnOffActions()
     selectedDockId.value = entry.id
     sessionStore.value.open = true
 
@@ -456,7 +527,12 @@ export async function createDocksContext(
   // delivered once via the connection handshake.
   const categoryOrderOverride = rpc.connectionMeta.configs?.ui?.dockPreferences?.categoryOrder
   const groupedEntries = computed(() => {
-    return docksGroupByCategories(entries.value, settings.value, { whenContext: getWhenContext(), collapseGroups: true, categoryOrderOverride })
+    return docksGroupByCategories(entries.value, settings.value, {
+      whenContext: getWhenContext(),
+      collapseGroups: true,
+      liftPinnedMembers: true,
+      categoryOrderOverride,
+    })
   })
 
   // Initialize commands context with reactive when-context
@@ -475,7 +551,9 @@ export async function createDocksContext(
         title: t('command.togglePalette'),
         icon: 'ph:magnifying-glass-duotone',
         showInPalette: false,
-        keybindings: [{ key: 'Mod+K' }],
+        keybindings: [
+          { key: 'Mod+K' },
+        ],
         action: () => {
           commandsContext.paletteOpen = !commandsContext.paletteOpen
         },
@@ -486,10 +564,26 @@ export async function createDocksContext(
         title: t('command.closePanel'),
         icon: 'ph:x-circle-duotone',
         when: 'dockOpen && !paletteOpen',
-        keybindings: [{ key: 'Escape' }],
+        keybindings: [
+          { key: 'Escape' },
+        ],
         action: () => {
           sessionStore.value.open = false
           selectedDockId.value = null
+        },
+      },
+      {
+        id: 'devframes:stop-active-tool',
+        source: 'client',
+        title: t('command.stopActiveTool'),
+        icon: 'ph:stop-circle-duotone',
+        when: 'dockActionActive && !paletteOpen',
+        keybindings: [
+          { key: 'Escape' },
+        ],
+        action: () => {
+          for (const id of [...activeActions])
+            void setActionActive(id, false)
         },
       },
       {
@@ -527,7 +621,9 @@ export async function createDocksContext(
          * renders the standalone layout, so neither mode is observable, mirroring
          * the Appearance settings hiding its own dock-mode control.
          */
-        when: clientType === 'embedded' ? 'clientType == embedded && !popupOpen' : undefined,
+        when: clientType === 'embedded'
+          ? 'clientType == embedded && !popupOpen'
+          : undefined,
         children: [
           {
             id: 'devframes:dock-mode:float',
@@ -601,14 +697,19 @@ export async function createDocksContext(
       .filter(entry => entry.type !== '~builtin')
       .filter(entry => !(entry.groupId && registeredGroupIds.has(entry.groupId)))
       .flatMap((entry): DevframeClientCommand[] => {
-        if (entry.type !== 'group')
-          return [toCommand(entry)]
+        if (entry.type !== 'group') {
+          return [
+            toCommand(entry),
+          ]
+        }
         // Members hang directly off their group, in the dock rail's sub-category
         // order. The rail's sub-category *dividers* have no counterpart here: a
         // category is not something you can run, and turning one into a command
         // would add an inert row nothing can bind to. Ordering carries the
         // grouping instead.
-        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, { whenContext: getWhenContext() })
+        const visibleMembers = getGroupMembers(entries.value, entry.id, settings.value, {
+          whenContext: getWhenContext(),
+        })
         const preferredChildId = resolveGroupPreferredChild(
           entries.value,
           entry,
@@ -622,14 +723,18 @@ export async function createDocksContext(
         if (visibleMembers.length === 0 && !preferredChildId)
           return []
         const commandId = dockCommandId(entry.id)
-        return [{
-          ...toCommand(entry),
-          action: () => activateGroup(
-            commandId,
-            preferredChildId ?? (visibleMembers.length === 1 ? visibleMembers[0]!.id : undefined),
-          ),
-          children: visibleMembers.map(toCommand),
-        }]
+        return [
+          {
+            ...toCommand(entry),
+            action: () => activateGroup(
+              commandId,
+              preferredChildId ?? (visibleMembers.length === 1
+                ? visibleMembers[0]!.id
+                : undefined),
+            ),
+            children: visibleMembers.map(toCommand),
+          },
+        ]
       })
 
     if (dockChildren.length > 0) {
@@ -646,12 +751,27 @@ export async function createDocksContext(
   // One-shot boot route (see `DocksPanelContext.consumeBootRoute`): the persisted
   // address-bar URL is handed back to exactly the iframe dock that was selected
   // before the reload, once.
-  let bootRoute: string | null = restoreIntent.selectedDockId != null ? restoreIntent.selectedDockRoute : null
+  let bootRoute: string | null = restoreIntent.selectedDockId != null
+    ? restoreIntent.selectedDockRoute
+    : null
   const consumeBootRoute = (id: string): string | null => {
     if (bootRoute != null && id === restoreIntent.selectedDockId) {
       const route = bootRoute
       bootRoute = null
-      return route
+      const entry = entries.value.find(entry => entry.id === id)
+      if (entry?.type !== 'iframe')
+        return null
+      try {
+        const base = new URL(entry.url, globalThis.location?.href)
+        const url = new URL(route, globalThis.location?.href)
+        const path = base.pathname.replace(/\/$/, '')
+        return url.origin === base.origin && (url.pathname === path || url.pathname.startsWith(`${path}/`))
+          ? route
+          : null
+      }
+      catch {
+        return null
+      }
     }
     return null
   }
@@ -687,11 +807,17 @@ export async function createDocksContext(
       entries,
       entryToStateMap: markRaw(dockEntryStateMap),
       groupedEntries,
-      categoryOrder: categoryOrderOverride ? { ...DEFAULT_CATEGORIES_ORDER, ...categoryOrderOverride } : DEFAULT_CATEGORIES_ORDER,
+      categoryOrder: categoryOrderOverride
+        ? {
+            ...DEFAULT_CATEGORIES_ORDER,
+            ...categoryOrderOverride,
+          }
+        : DEFAULT_CATEGORIES_ORDER,
       settings: settingsStore,
       getStateById: (id: string) => dockEntryStateMap.get(id),
       switchEntry,
       toggleEntry,
+      setActionActive,
       register: registerClientDock,
       update: updateClientDock,
     },
@@ -767,7 +893,11 @@ export async function createDocksContext(
   }
   let previousPanelState = docksContext.panel.state
   watch(
-    [panelVisible, () => sessionStore.value.open, selectedDockId],
+    [
+      panelVisible,
+      () => sessionStore.value.open,
+      selectedDockId,
+    ],
     () => {
       const panelState = docksContext.panel.state
       if (

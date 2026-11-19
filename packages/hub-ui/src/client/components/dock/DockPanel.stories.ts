@@ -35,12 +35,18 @@ type Story = StoryObj
 export const Default: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: categorizedEntries, selectedId: 'overview', panel: { position: 'bottom', width: 60, height: 60 } },
+      {
+        entries: categorizedEntries,
+        selectedId: 'overview',
+        panel: { position: 'bottom', width: 60, height: 60 },
+      },
       ctx => h(DockPanel, {
         context: ctx,
         selected: ctx.docks.selected,
         panelMargins: MARGINS,
-      }, { view: ({ entry }: any) => body(entry) }),
+      }, {
+        view: ({ entry }: any) => body(entry),
+      }),
     ),
   }),
 }
@@ -49,12 +55,18 @@ export const Default: Story = {
 export const WithGroupSidebar: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: groupedEntries, selectedId: 'nuxt:overview', panel: { position: 'bottom', width: 60, height: 60 } },
+      {
+        entries: groupedEntries,
+        selectedId: 'nuxt:overview',
+        panel: { position: 'bottom', width: 60, height: 60 },
+      },
       ctx => h(DockPanel, {
         context: ctx,
         selected: ctx.docks.selected,
         panelMargins: MARGINS,
-      }, { view: ({ entry }: any) => body(entry) }),
+      }, {
+        view: ({ entry }: any) => body(entry),
+      }),
     ),
   }),
 }
@@ -63,12 +75,18 @@ export const WithGroupSidebar: Story = {
 export const RightAnchored: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: categorizedEntries, selectedId: 'overview', panel: { position: 'right', width: 40, height: 80 } },
+      {
+        entries: categorizedEntries,
+        selectedId: 'overview',
+        panel: { position: 'right', width: 40, height: 80 },
+      },
       ctx => h(DockPanel, {
         context: ctx,
         selected: ctx.docks.selected,
         panelMargins: MARGINS,
-      }, { view: ({ entry }: any) => body(entry) }),
+      }, {
+        view: ({ entry }: any) => body(entry),
+      }),
     ),
   }),
 }
@@ -78,7 +96,17 @@ function patternedPanelStory(theme: 'light' | 'dark'): Story {
     globals: { theme },
     render: () => ({
       setup: () => mountWithContext(
-        { entries: categorizedEntries, selectedId: 'overview', panel: { position: 'bottom', left: 50, top: 100, width: 60, height: 60 } },
+        {
+          entries: categorizedEntries,
+          selectedId: 'overview',
+          panel: {
+            position: 'bottom',
+            left: 50,
+            top: 100,
+            width: 60,
+            height: 60,
+          },
+        },
         ctx => h('div', { class: 'relative w-screen h-screen overflow-hidden bg-secondary bg-grid-24' }, [
           h('div', {
             'aria-hidden': 'true',
@@ -88,12 +116,17 @@ function patternedPanelStory(theme: 'light' | 'dark'): Story {
             'aria-hidden': 'true',
             'class': 'pointer-events-none absolute right-[12%] bottom-[8%] h-40 w-72 rounded-3xl bg-active',
           }),
-          h('div', { id: 'devframes-anchor', style: { left: '50vw', top: '100vh' } }, [
+          h('div', {
+            id: 'devframes-anchor',
+            style: { left: '50vw', top: '100vh' },
+          }, [
             h(DockPanel, {
               context: ctx,
               selected: ctx.docks.selected,
               panelMargins: MARGINS,
-            }, { view: ({ entry }: any) => body(entry) }),
+            }, {
+              view: ({ entry }: any) => body(entry),
+            }),
           ]),
         ]),
       ),

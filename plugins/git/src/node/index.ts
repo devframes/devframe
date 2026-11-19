@@ -55,7 +55,9 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
   // Resolved at factory time (process.cwd() here equals the adapter's ctx.cwd)
   // so it can ride the declarative service descriptor; omit to let the service
   // default to the context cwd.
-  const cwd = options.repoRoot ? resolve(process.cwd(), options.repoRoot) : undefined
+  const cwd = options.repoRoot
+    ? resolve(process.cwd(), options.repoRoot)
+    : undefined
 
   return defineDevframe({
     id: 'devframes_plugin_git',
@@ -85,7 +87,14 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
      * falls back to a plain, un-highlighted diff.
      */
     services: [
-      { package: GIT_SERVICE, ...(cwd ? { options: { cwd } } : {}) },
+      {
+        package: GIT_SERVICE,
+        ...(cwd
+          ? {
+              options: { cwd },
+            }
+          : {}),
+      },
       { package: '@devframes/service-shiki' },
     ],
     /**
@@ -100,7 +109,14 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
         'devframes:service:git:status',
         'devframes:service:git:branches',
         'devframes:service:git:diff',
-        { method: 'devframes:service:git:log', inputs: [[{ limit: 200 }]] },
+        {
+          method: 'devframes:service:git:log',
+          inputs: [
+            [
+              { limit: 200 },
+            ],
+          ],
+        },
         {
           method: 'devframes:service:git:show',
           inputs: async (ctx) => {
@@ -108,7 +124,9 @@ export function createGitDevframe(options: GitDevframeOptions = {}): DevframeDef
             if (!git)
               return []
             const { commits } = await git.log({ limit: 200 })
-            return commits.map(commit => [{ hash: commit.hash, patch: false }])
+            return commits.map(commit => [
+              { hash: commit.hash, patch: false },
+            ])
           },
         },
       ],

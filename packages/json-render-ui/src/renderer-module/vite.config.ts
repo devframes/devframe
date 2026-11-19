@@ -40,7 +40,10 @@ function inlineSfcCss(): Plugin {
  */
 export default defineConfig({
   resolve: { alias },
-  plugins: [vue(), inlineSfcCss()],
+  plugins: [
+    vue(),
+    inlineSfcCss(),
+  ],
   define: {
     /** Bundled for a host page: strip Vue's dev-mode branches. */
     'process.env.NODE_ENV': JSON.stringify('production'),

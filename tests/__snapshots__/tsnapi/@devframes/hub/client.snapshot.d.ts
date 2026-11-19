@@ -105,6 +105,7 @@ export interface DocksEntriesContext {
   getStateById: (_: string) => DockEntryState | undefined;
   switchEntry: (_?: string | null) => Promise<boolean>;
   toggleEntry: (_: string) => Promise<boolean>;
+  setActionActive: (_: string, _: boolean) => Promise<boolean>;
   register: <T extends DevframeDockEntry>(_: T, _?: boolean) => DockRegistration<T>;
   update: (_: DevframeDockUserEntry) => void;
 }
@@ -112,6 +113,7 @@ export interface DockSessionStorage {
   open: boolean;
   selectedDockId: string | null;
   selectedDockRoute: string | null;
+  recentDockIds?: string[];
   recentDockId?: string | null;
   groupLastChildIds?: Record<string, string>;
 }
@@ -249,6 +251,7 @@ export declare function createDevframeClientRuntime(_?: DevframeClientRuntimeOpt
 export declare function createDockRenderersContext(_: CreateDockRenderersContextOptions): DockRenderersContext;
 export declare function createMessagesClient(_: DevframeRpcClient, _?: MessagesClientOptions): DevframeMessagesClient;
 export declare function getDevframeClientContext(): DevframeClientContext | undefined;
+export declare function matchLocale(_: string | undefined, _: Iterable<string>): string | undefined;
 export declare function parseRemoteConnection(_?: string): RemoteConnectionInfo | null;
 export declare function resolveClientModuleSpecifier(_: string, _?: {
   resolveClientModule?: (_: string) => string | undefined;
@@ -257,6 +260,7 @@ export declare function resolveClientModuleSpecifier(_: string, _?: {
 }): string;
 export declare function resolveDockIcon(_: DevframeDockEntryIcon, _: DevframeConnection): DevframeDockEntryIcon;
 export declare function resolveDockUrl(_: string, _: DevframeConnection): string;
+export declare function resolveTitle(_: DevframeTitled, _: string | undefined): string;
 export declare function setDevframeClientContext(_: DevframeClientContext | undefined): void;
 export declare function stripRemoteConnectionFromUrl(_: string): string;
 export declare function watchFrameLocation(_: WatchFrameLocationOptions): () => void;
@@ -274,7 +278,5 @@ export * from "devframe/client";
 
 // #region Other
 export { DevframeClientRpcHost }
-export { matchLocale }
-export { resolveTitle }
 export { RpcClientEvents }
 // #endregion

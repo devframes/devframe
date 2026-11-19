@@ -88,8 +88,13 @@ export function flattenPaletteCommands(commands: DevframeCommandEntry[]): Palett
     const parentTitle = ancestors.at(-1)?.title
     result.push({
       entry: cmd,
-      ...(parentTitle ? { parentTitle } : {}),
-      searchTitle: [...ancestors.map(a => a.title), cmd.title].join(' > '),
+      ...(parentTitle
+        ? { parentTitle }
+        : {}),
+      searchTitle: [
+        ...ancestors.map(a => a.title),
+        cmd.title,
+      ].join(' > '),
     })
     if (cmd.showInPalette === 'without-children')
       return 'skip'

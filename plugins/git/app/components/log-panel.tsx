@@ -63,13 +63,18 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
           setHasMore(false)
           return
         }
-        setCommits(prev => [...prev, ...unique])
+        setCommits(prev => [
+          ...prev,
+          ...unique,
+        ])
         setSkip(prev => prev + unique.length)
       }
       setHasMore(page.hasMore)
     }
     catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      setError(e instanceof Error
+        ? e.message
+        : String(e))
     }
     finally {
       setLoading(false)
@@ -100,7 +105,10 @@ export function LogPanel({ branch, selectedHash, onSelectCommit }: LogPanelProps
   const refresh = useCallback(async () => {
     if (!rpc)
       return
-    await Promise.all([loadPage(rpc, 0, 'replace'), loadStatus(rpc)])
+    await Promise.all([
+      loadPage(rpc, 0, 'replace'),
+      loadStatus(rpc),
+    ])
   }, [rpc, loadPage, loadStatus])
 
   const loadMore = useCallback(async () => {

@@ -184,7 +184,12 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
       if (removal.time > since)
         removedIds.push(removal.id)
     }
-    return { entries, removedIds, version, full: false }
+    return {
+      entries,
+      removedIds,
+      version,
+      full: false,
+    }
   }
 
   private _createHandle(id: string): DevframeMessageHandle {

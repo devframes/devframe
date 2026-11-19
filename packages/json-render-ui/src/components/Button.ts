@@ -33,7 +33,9 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
       /** `danger` isn't an ActionButton variant, so override the primary tint. */
       class: [
         'h-8 px-2.5!',
-        variant === 'danger' ? 'bg-red! color-white! border-red! hover:bg-red/90!' : undefined,
+        variant === 'danger'
+          ? 'bg-red! color-white! border-red! hover:bg-red/90!'
+          : undefined,
       ],
       onClick: () => on('press').emit(),
     },
@@ -41,8 +43,14 @@ export const Button: JrComponent<ButtonProps> = ({ props, on }) => {
     // static UnoCSS class, unsuited to spec-supplied names). Skip it while
     // loading, since ActionButton already shows its spinner.
     () => [
-      props.icon && !props.loading ? Icon({ props: { name: props.icon, size: 16 } } as Parameters<typeof Icon>[0]) : null,
-      props.label ? h('span', props.label) : null,
+      props.icon && !props.loading
+        ? Icon({
+            props: { name: props.icon, size: 16 },
+          } as Parameters<typeof Icon>[0])
+        : null,
+      props.label
+        ? h('span', props.label)
+        : null,
     ],
   )
 }

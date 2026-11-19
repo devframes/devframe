@@ -13,10 +13,28 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 function noop() {}
-const counts = { critical: 3, serious: 5, moderate: 2, minor: 8 }
+const counts = {
+  critical: 3,
+  serious: 5,
+  moderate: 2,
+  minor: 8,
+}
 
-export const Issues: Story = { args: { counts, active: null, onToggle: noop } }
-export const Filtered: Story = { args: { counts, active: 'serious', onToggle: noop } }
+export const Issues: Story = {
+  args: { counts, active: null, onToggle: noop },
+}
+export const Filtered: Story = {
+  args: { counts, active: 'serious', onToggle: noop },
+}
 export const Clean: Story = {
-  args: { counts: { critical: 0, serious: 0, moderate: 0, minor: 0 }, active: null, onToggle: noop },
+  args: {
+    counts: {
+      critical: 0,
+      serious: 0,
+      moderate: 0,
+      minor: 0,
+    },
+    active: null,
+    onToggle: noop,
+  },
 }

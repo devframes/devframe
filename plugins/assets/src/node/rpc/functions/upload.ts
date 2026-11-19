@@ -26,8 +26,14 @@ export const upload = defineRpcFunction({
   name: 'devframes:plugin:assets:upload',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ path: s.string() })],
-  returns: s.object({ uploadId: s.string() }),
+  args: [
+    s.object({
+      path: s.string(),
+    }),
+  ],
+  returns: s.object({
+    uploadId: s.string(),
+  }),
   agent: {
     title: 'Upload an asset',
     description: 'Allocate an upload slot for a new file at the given path. The caller streams the bytes over the paired upload channel.',
@@ -43,7 +49,9 @@ export const upload = defineRpcFunction({
           throw diagnostics.DP_ASSETS_0002({
             path,
             extension: extname(path).slice(1).toLowerCase() || '(none)',
-            allowed: assets.uploadExtensions === '*' ? [] : assets.uploadExtensions,
+            allowed: assets.uploadExtensions === '*'
+              ? []
+              : assets.uploadExtensions,
           })
         }
 

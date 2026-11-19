@@ -63,7 +63,9 @@ export const Mounted: Story = {
         el.textContent = 'Rendered by the registered renderer.'
         el.style.padding = '24px'
         container.append(el)
-        return { dispose: () => el.remove() }
+        return {
+          dispose: () => el.remove(),
+        }
       })
       return stage(h(ViewDockRenderer, { context: ctx, entry }))
     }),

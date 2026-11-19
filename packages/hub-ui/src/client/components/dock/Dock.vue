@@ -2,14 +2,15 @@
 import type { DocksContext } from '@devframes/hub/client'
 import type { CSSProperties } from 'vue'
 import type { DockLayout } from './dock-layout'
-import { useEventListener, useScreenSafeArea, whenever } from '@vueuse/core'
+import { useEventListener, useFocusWithin, whenever } from '@vueuse/core'
 import { computed, onMounted, reactive, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_CLIENT_AUTH_NOTICE } from '../../constants'
 import { t } from '../../i18n'
-import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockId, resolveRecentDockEntry } from '../../state/dock-settings'
-import { sharedStateToRef } from '../../state/docks'
+import { docksSplitGroupsWithCapacity, getEntryGroup, resolveNextRecentDockIds, resolveRecentDockEntries } from '../../state/dock-settings'
 import { setDocksOverflowPanel, useDocksGroupPanel } from '../../state/floating-tooltip'
+import { useSettings } from '../../state/settings-defaults'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
+import { useSafeArea } from '../../utils/useSafeArea'
 import BrandMark from '../icons/BrandMark.vue'
 import {
   dockLayoutCssVars,
@@ -39,29 +40,16 @@ const layout = computed(() => resolveDockLayout(props.layout))
 
 const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')
 
-const safeArea = useScreenSafeArea()
+const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
 
-function toNumber(value: string) {
-  const num = +value
-  if (Number.isNaN(num))
-    return 0
-  return num
-}
+const safeArea = useSafeArea(anchorEl)
 
 // Effective spacing from the viewport edge: device safe-area insets plus the
 // configured viewport margin. Passed down to the panel so both stay in sync.
-const panelMargins = computed(() => resolveViewportMargins(
-  {
-    left: toNumber(safeArea.left.value),
-    top: toNumber(safeArea.top.value),
-    right: toNumber(safeArea.right.value),
-    bottom: toNumber(safeArea.bottom.value),
-  },
-  layout.value,
-))
+const panelMargins = computed(() => resolveViewportMargins(safeArea.value, layout.value))
 
 const dockEl = useTemplateRef<HTMLDivElement>('dockEl')
-const anchorEl = useTemplateRef<HTMLDivElement>('anchorEl')
+const { focused: isFocused } = useFocusWithin(dockEl)
 
 const recalculateCounter = ref(0)
 const isHovering = ref(false)
@@ -95,30 +83,43 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
 
 const groupedEntries = computed(() => context.docks.groupedEntries)
 
-const settings = sharedStateToRef(context.docks.settings)
+const settings = useSettings(context)
 
-// The recent dock: the entry last selected from beyond the bar (the overflow
-// popover or a group popover), raised into its own slot between the visible
-// items and the overflow button so deselecting it keeps it one click away.
-// Persisted per-tab in the session store; resolved to `null` when the id no
-// longer maps to a raisable entry.
-const recentEntry = computed(() => resolveRecentDockEntry({
-  entries: context.docks.entries,
-  groups: groupedEntries.value,
-  recentId: context.panel.session.recentDockId,
-  settings: settings.value,
-  whenContext: context.when.context,
-}))
+// The recent docks: the entries last selected from beyond the bar (the
+// overflow popover or a group popover), raised into their own slots after the
+// visible items so they stay one click away. Persisted per-tab in the session
+// store (newest first); ids that no longer map to a raisable entry drop out.
+// `recentDockId` is the older single-entry field, read until a tab writes
+// `recentDockIds`.
+const recentEntries = computed(() => {
+  const session = context.panel.session
+  return resolveRecentDockEntries({
+    entries: context.docks.entries,
+    groups: groupedEntries.value,
+    recentIds: session.recentDockIds ?? (session.recentDockId
+      ? [session.recentDockId]
+      : []),
+    limit: settings.value.docksRecentLimit,
+    settings: settings.value,
+    whenContext: context.when.context,
+  })
+})
 
 const splitEntries = computed(() => {
-  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems, recentEntry.value)
+  return docksSplitGroupsWithCapacity(groupedEntries.value, layout.value.maxVisibleItems, recentEntries.value)
 })
 
 const selectedEntry = computed(() => {
   return context.docks.selected
 })
 
-// Remember the recent dock whenever the selection lands on an entry that has
+// The bar marks the selection only while its panel shows: a toggle action
+// hides the panel, and a click on the hidden view then reopens it.
+const barSelectedEntry = computed(() => {
+  return context.panel.session.open ? selectedEntry.value : null
+})
+
+// Remember a recent dock whenever the selection lands on an entry that has
 // no slot on the bar as currently rendered (grouped members always; top-level
 // entries when picked from the overflow popover). Observing the selection
 // (rather than the bar's own click handlers) also covers selections made via
@@ -126,13 +127,15 @@ const selectedEntry = computed(() => {
 watch(selectedEntry, (entry) => {
   if (!entry)
     return
-  context.panel.session.recentDockId = resolveNextRecentDockId({
+  context.panel.session.recentDockIds = resolveNextRecentDockIds({
     groups: groupedEntries.value,
     capacity: layout.value.maxVisibleItems,
-    recentEntry: recentEntry.value,
+    recentEntries: recentEntries.value,
     selected: entry,
     selectedIsGroupMember: !!getEntryGroup(context.docks.entries, entry),
+    limit: settings.value.docksRecentLimit,
   })
+  context.panel.session.recentDockId = undefined
 })
 
 onMounted(async () => {
@@ -217,7 +220,12 @@ const docksGroupPanel = useDocksGroupPanel()
 const isMinimized = computed(() => {
   if (context.panel.store.inactiveTimeout < 0)
     return false
+  if (isFocused.value)
+    return false
   if (docksGroupPanel.value)
+    return false
+  // Keep an active tool's button in sight while it hides the panel.
+  if (context.when.context.dockActionActive)
     return false
   if (context.panel.store.inactiveTimeout === 0)
     return true
@@ -302,7 +310,8 @@ onMounted(() => {
         @pointerdown="onPointerDown"
       >
         <div
-          class="w-3 h-3 absolute left-1/2 top-1/2 translate-x--1/2 translate-y--1/2 transition-opacity duration-300"
+          aria-hidden="true"
+          class="pointer-events-none w-3 h-3 absolute left-1/2 top-1/2 translate-x--1/2 translate-y--1/2 transition-opacity duration-300"
           :class="[
             isMinimized ? 'op100' : 'op0',
             context.panel.isVertical ? 'rotate-270' : 'rotate-0',
@@ -313,6 +322,8 @@ onMounted(() => {
         </div>
         <div
           v-if="!isRpcTrusted"
+          :inert="!!isMinimized"
+          :aria-hidden="!!isMinimized"
           class="transition duration-300 delay-200 ma"
           :class="isMinimized ? 'opacity-0 pointer-events-none ws-nowrap text-sm text-orange of-hidden' : 'opacity-100'"
         >
@@ -333,6 +344,8 @@ onMounted(() => {
         </div>
         <div
           v-if="isRpcTrusted"
+          :inert="!!isMinimized"
+          :aria-hidden="!!isMinimized"
           :class="isMinimized ? 'opacity-0 pointer-events-none' : 'opacity-100'"
           class="transition duration-200 flex items-center w-full h-full justify-center px1 overflow-hidden"
         >
@@ -340,25 +353,27 @@ onMounted(() => {
             :context="context"
             :groups="splitEntries.visible"
             :is-vertical="context.panel.isVertical"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
 
-          <template v-if="splitEntries.overflow.length > 0">
+          <template v-if="splitEntries.recent.length > 0">
             <div class="border-base m1 h-20px w-px border-r-1.5" />
             <DockEntries
-              v-if="splitEntries.recent"
               :context="context"
-              :entries="[splitEntries.recent]"
+              :entries="splitEntries.recent"
               :is-vertical="context.panel.isVertical"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
             />
+          </template>
+          <template v-if="splitEntries.overflow.length > 0">
+            <div v-if="splitEntries.recent.length === 0" class="border-base m1 h-20px w-px border-r-1.5" />
             <DockOverflowButton
               :context="context"
               :is-vertical="context.panel.isVertical"
               :groups="splitEntries.overflow"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
               @activity="bringUp"
             />

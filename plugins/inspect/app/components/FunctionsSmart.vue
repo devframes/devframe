@@ -28,7 +28,10 @@ async function onInvoke(fn: RpcFunctionInfo, parsedArgs: unknown[]): Promise<voi
   }
   catch (e) {
     const err = e as Error
-    results[fn.name] = { ok: false, error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) } }
+    results[fn.name] = {
+      ok: false,
+      error: { name: err?.name ?? 'Error', message: err?.message ?? String(e) },
+    }
   }
   finally {
     pending[fn.name] = false

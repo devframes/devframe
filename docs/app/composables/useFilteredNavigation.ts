@@ -31,12 +31,16 @@ interface HeaderNavGroup {
 
 /** Logical top-level segment of a path, ignoring the active version `base`. */
 function segmentOf(path: string, base: string): string {
-  const rel = base && path.startsWith(base) ? path.slice(base.length) : path
+  const rel = base && path.startsWith(base)
+    ? path.slice(base.length)
+    : path
   return rel.split('/').filter(Boolean)[0] ?? ''
 }
 
 function relOf(path: string, base: string): string {
-  return (base && path.startsWith(base) ? path.slice(base.length) : path) || '/'
+  return (base && path.startsWith(base)
+    ? path.slice(base.length)
+    : path) || '/'
 }
 
 export function useFilteredNavigation(): ComputedRef<NavItem[]> {
@@ -53,13 +57,23 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
     const headerGroups = (appConfig.header?.nav ?? []) as HeaderNavGroup[]
     const groups = headerGroups.length
       ? headerGroups
-      : nav.map(item => ({ label: item.title, sections: [segmentOf(item.path, base)] }))
+      : nav.map(item => ({
+          label: item.title,
+          sections: [
+            segmentOf(item.path, base),
+          ],
+        }))
 
     const sidebarGroups = (appConfig as { docs?: { sidebarGroups?: Record<string, SidebarGroup[]> } })
       .docs
       ?.sidebarGroups
     const matched = groups.find(group => group.sections?.includes(seg))
-      ?? (sidebarGroups?.[seg] ? { label: seg, sections: [seg] } : undefined)
+      ?? (sidebarGroups?.[seg]
+        ? {
+            label: seg,
+            sections: [seg],
+          }
+        : undefined)
     // A section reachable only through a manual tab (e.g. migrations, under the
     // version dropdown) still gets its own flat sidebar.
     if (!matched) {
@@ -75,7 +89,9 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       return nav
 
     // Single-section tab with configured groups: labeled subsections.
-    const groupsConfig = sections.length === 1 ? sidebarGroups?.[sections[0]!] : undefined
+    const groupsConfig = sections.length === 1
+      ? sidebarGroups?.[sections[0]!]
+      : undefined
     if (groupsConfig) {
       // Index every page by base-relative path, preferring leaf pages over
       // section nodes (a section node carries the directory title).
@@ -118,7 +134,10 @@ export function useFilteredNavigation(): ComputedRef<NavItem[]> {
       const node = nav.find(item => segmentOf(item.path, base) === sections[0])
       const leftovers = (node?.children ?? [])
         .filter(child => !used.has(relOf(child.path, base)))
-      return [...grouped, ...leftovers]
+      return [
+        ...grouped,
+        ...leftovers,
+      ]
     }
 
     // Single-section tab: that section's children as a flat tree.

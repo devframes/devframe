@@ -21,7 +21,9 @@ const HUB_BASE = '/__devframes/'
  * `<script src="<base>embedded.js">`. The default mounts `DockStandalone`
  * full-page, the primary surface most hub-ui changes touch.
  */
-const mode = new URLSearchParams(location.search).has('embedded') ? 'embedded' : 'standalone'
+const mode = new URLSearchParams(location.search).has('embedded')
+  ? 'embedded'
+  : 'standalone'
 document.body.classList.add(mode)
 
 // This page runs in the light DOM, so mirror the color mode onto the

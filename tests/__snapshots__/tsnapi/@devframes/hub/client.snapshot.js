@@ -4,15 +4,20 @@
 // #region Functions
 export function attachFrameNavClient(_) {}
 export function buildRemoteDevframeUrl(_, _) {}
+export function clientScriptFailureHint(_, _) {}
 export async function connectRemoteDevframe(_) {}
 export async function createDevframeClientRuntime(_) {}
 export function createDockRenderersContext(_) {}
 export function createMessagesClient(_, _) {}
 export function getDevframeClientContext() {}
+export function matchLocale(_, _) {}
 export function parseRemoteConnection(_) {}
+export function resolveClientModuleSpecifier(_, _) {}
 export function resolveDockIcon(_, _) {}
 export function resolveDockUrl(_, _) {}
+export function resolveTitle(_, _) {}
 export function setDevframeClientContext(_) {}
+export function stripRemoteConnectionFromUrl(_) {}
 export function watchFrameLocation(_) {}
 // #endregion
 
@@ -24,12 +29,4 @@ export var FRAME_NAV_VERSION /* const */
 
 // #region Re-exports
 export * from "devframe/client";
-// #endregion
-
-// #region Other
-export { clientScriptFailureHint }
-export { matchLocale }
-export { resolveClientModuleSpecifier }
-export { resolveTitle }
-export { stripRemoteConnectionFromUrl }
 // #endregion

@@ -7,7 +7,7 @@ import { useEventListener } from '@vueuse/core'
 import { computed, h, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { BUILTIN_ENTRY_SETTINGS } from '../../constants'
 import { t } from '../../i18n'
-import { docksSplitGroupsBySize, getEntryGroup } from '../../state/dock-settings'
+import { docksSplitGroupsBySize, getEntryGroup, getPanelViewEntry } from '../../state/dock-settings'
 import { setEdgePositionDropdown, setFloatingTooltip, useDocksGroupPanel, useDocksOverflowPanel, useEdgePositionDropdown } from '../../state/floating-tooltip'
 import { useSettings } from '../../state/settings-defaults'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
@@ -38,11 +38,19 @@ const isVertical = computed(() => store.position === 'left' || store.position ==
 
 const settingsEntries = computed(() => context.docks.groupedEntries.flatMap(([, entries]) => entries.filter(entry => entry.id === BUILTIN_ENTRY_SETTINGS.id)))
 const groupedEntries = computed(() => context.docks.groupedEntries
-  .map(([category, entries]): DevframeDockEntriesGrouped[number] => [category, entries.filter(entry => entry.id !== BUILTIN_ENTRY_SETTINGS.id)])
+  .map(([category, entries]): DevframeDockEntriesGrouped[number] => [
+    category,
+    entries.filter(entry => entry.id !== BUILTIN_ENTRY_SETTINGS.id),
+  ])
   .filter(([, entries]) => entries.length > 0))
 const toolbarEntries = useTemplateRef<HTMLElement>('toolbarEntries')
 const settingsDock = useTemplateRef<HTMLElement>('settingsDock')
-const toolbarSize = ref({ width: 0, height: 0, item: 32, gap: 2 })
+const toolbarSize = ref({
+  width: 0,
+  height: 0,
+  item: 32,
+  gap: 2,
+})
 
 watch([toolbarEntries, settingsDock], ([el, pinned], _prev, onCleanup) => {
   if (!el || !pinned)
@@ -70,17 +78,17 @@ const splitEntries = computed(() => {
   const { width, height, item, gap } = toolbarSize.value
   // Category dividers use m1 (four gap-0.5 units) and a 1.5px border.
   const separatorSize = gap * 4 + 1.5
-  const settingsSize = settingsEntries.value.length ? item + separatorSize + gap * 2 : 0
+  const settingsSize = settingsEntries.value.length
+    ? item + separatorSize + gap * 2
+    : 0
   return docksSplitGroupsBySize(groupedEntries.value, (isVertical.value ? height : width) - settingsSize, item, gap, separatorSize)
 })
 const selectedEntry = computed(() => context.docks.selected)
+// The bar marks the selection only while its panel shows: a toggle action
+// hides the panel, and a click on the hidden view then reopens it.
+const barSelectedEntry = computed(() => context.panel.session.open ? selectedEntry.value : null)
 const activeGroup = computed(() => getEntryGroup(context.docks.entries, selectedEntry.value))
-const hasPanelContent = computed(() => {
-  const entry = selectedEntry.value
-  return context.panel.session.open
-    && !!entry
-    && entry.type !== 'action'
-})
+const hasPanelContent = computed(() => !!getPanelViewEntry(context))
 
 // Auto-collapse (on by default, opt out via `settings.autoCollapseEdgeToolbar:
 // false`): idle-timeout + hover tracking, mirroring Dock.vue's own float-bar
@@ -115,6 +123,9 @@ const isCollapsed = computed(() => {
   if (docksGroupPanel.value || docksOverflowPanel.value)
     return false
   if (hasPanelContent.value)
+    return false
+  // Keep an active tool's button in sight while it hides the panel.
+  if (context.when.context.dockActionActive)
     return false
   if (store.inactiveTimeout === 0)
     return true
@@ -202,7 +213,9 @@ function togglePositionDropdown() {
       h('button', {
         class: [
           'flex items-center gap-2 w-full px2 py1 rounded hover:bg-active transition text-sm',
-          store.position === pos ? 'text-primary bg-active' : 'op75 hover:op100',
+          store.position === pos
+            ? 'text-primary bg-active'
+            : 'op75 hover:op100',
         ],
         onClick: () => switchPosition(pos),
       }, [
@@ -297,7 +310,9 @@ const COLLAPSED_INSET = '8px'
 const panelStyle = computed(() => {
   const style: any = {
     position: 'fixed',
-    pointerEvents: (context.panel.isResizing || context.panel.isDragging) ? 'none' : 'auto',
+    pointerEvents: (context.panel.isResizing || context.panel.isDragging)
+      ? 'none'
+      : 'auto',
   }
 
   switch (store.position) {
@@ -314,7 +329,9 @@ const panelStyle = computed(() => {
         style.left = '0'
         style.width = '100%'
         style.borderRadius = '8px 8px 0 0'
-        style.height = hasPanelContent.value ? `${store.height}vh` : 'var(--devframes-dock-height, 40px)'
+        style.height = hasPanelContent.value
+          ? `${store.height}vh`
+          : 'var(--devframes-dock-height, 40px)'
         if (hasPanelContent.value)
           style.minHeight = '150px'
       }
@@ -332,7 +349,9 @@ const panelStyle = computed(() => {
         style.left = '0'
         style.width = '100%'
         style.borderRadius = '0 0 8px 8px'
-        style.height = hasPanelContent.value ? `${store.height}vh` : 'var(--devframes-dock-height, 40px)'
+        style.height = hasPanelContent.value
+          ? `${store.height}vh`
+          : 'var(--devframes-dock-height, 40px)'
         if (hasPanelContent.value)
           style.minHeight = '150px'
       }
@@ -350,7 +369,9 @@ const panelStyle = computed(() => {
         style.top = '0'
         style.height = '100%'
         style.borderRadius = '0 8px 8px 0'
-        style.width = hasPanelContent.value ? `${store.width}vw` : 'var(--devframes-dock-height, 40px)'
+        style.width = hasPanelContent.value
+          ? `${store.width}vw`
+          : 'var(--devframes-dock-height, 40px)'
         if (hasPanelContent.value)
           style.minWidth = '200px'
       }
@@ -368,7 +389,9 @@ const panelStyle = computed(() => {
         style.top = '0'
         style.height = '100%'
         style.borderRadius = '8px 0 0 8px'
-        style.width = hasPanelContent.value ? `${store.width}vw` : 'var(--devframes-dock-height, 40px)'
+        style.width = hasPanelContent.value
+          ? `${store.width}vw`
+          : 'var(--devframes-dock-height, 40px)'
         if (hasPanelContent.value)
           style.minWidth = '200px'
       }
@@ -477,7 +500,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
             :groups="splitEntries.visible"
             :is-vertical="isVertical"
             :rotate="false"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
           />
           <DockOverflowButton
@@ -486,7 +509,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
             :groups="splitEntries.overflow"
             :is-vertical="false"
             :placement="positionDropdownPlacement[store.position]"
-            :selected="selectedEntry"
+            :selected="barSelectedEntry"
             @select="(e) => context.docks.switchEntry(e?.id)"
             @activity="bringUp"
           />
@@ -500,7 +523,7 @@ const dragPreviewStyle = computed<CSSProperties | undefined>(() => {
               :context="context"
               :entries="settingsEntries"
               :is-vertical="false"
-              :selected="selectedEntry"
+              :selected="barSelectedEntry"
               @select="(e) => context.docks.switchEntry(e?.id)"
             />
           </div>

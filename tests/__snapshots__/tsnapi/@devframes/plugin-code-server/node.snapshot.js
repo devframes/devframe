@@ -72,12 +72,12 @@ export class CodeServerSupervisor {
 
 // #region Functions
 export function detectCodeServer(_, _) {}
+export function getCodeServerSupervisor(_) {}
 export function resolveProfile(_, _) {}
+export function setCodeServerSupervisor(_, _) {}
 export async function setupCodeServer(_, _) {}
 // #endregion
 
-// #region Other
-export { diagnostics }
-export { getCodeServerSupervisor }
-export { setCodeServerSupervisor }
+// #region Variables
+export var diagnostics /* const */
 // #endregion

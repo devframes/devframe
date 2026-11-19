@@ -36,7 +36,9 @@ export function RouteGroup(props: RouteGroupProps) {
           <span class="ml-auto text-[11px] color-faint tabular-nums shrink-0">
             {props.violations.length}
             {' '}
-            {props.violations.length === 1 ? 'rule' : 'rules'}
+            {props.violations.length === 1
+              ? 'rule'
+              : 'rules'}
           </span>
         </button>
         <button

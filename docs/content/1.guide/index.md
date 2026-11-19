@@ -94,7 +94,10 @@ import { createTerminalsDevframe } from '@devframes/plugin-terminals'
 
 const hub = initHub({
   base: DEVFRAMES_HUB_BASE,
-  devframes: [createDataInspectorDevframe(), createTerminalsDevframe()],
+  devframes: [
+    createDataInspectorDevframe(),
+    createTerminalsDevframe()
+  ],
   ui: createUi(),
 })
 
@@ -106,7 +109,7 @@ The mounted devframes share one RPC registry, state store, connection, auth gate
 
 ## Inheriting the ecosystem
 
-[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) ([`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next)) add conventions over the same handler. See [Built with Devframe](/guide/built-with).
+[Vite DevTools](https://devtools.vite.dev/) is the first flagship hub UI provider, using `initHub()` alongside its own Vite, Rolldown, Vitest, and Oxc tooling. The [framework kits](/frameworks) ([`@devframes/vite`](/frameworks/vite), [`@devframes/nuxt`](/frameworks/nuxt), [`@devframes/next`](/frameworks/next)) add conventions over the same handler. See the [Ecosystem](/ecosystem) page.
 
 ## Install
 
@@ -178,4 +181,5 @@ The CLI adapter serves the SPA at `/`; embedded in a host framework (`vite`, `em
 - [The Standard Handler](/adapters/initiate): mount into any host framework
 - [Adapters](/adapters): convenience entry points
 - [Hub](/guide/hub): compose many devframes
+- [Opt-in DevTools with Onboarding](/guide/hub-ui-onboard): ship a 20 kB button and install the hub on demand
 - [Pluggable, Extensible, and Playful DevTools](/posts/pluggable-extensible-playful-devtools): the vision and story behind Devframe

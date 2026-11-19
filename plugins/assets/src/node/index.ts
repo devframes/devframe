@@ -101,14 +101,18 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
   // adapter's ctx.cwd, the same process) so it can be declared as a service-open
   // allowed root before any setup runs. Only matters when `dir` points
   // outside the workspace; an in-workspace `public/` is already allowed.
-  const dir = options.dir ? resolve(process.cwd(), options.dir) : resolve(process.cwd(), 'public')
+  const dir = options.dir
+    ? resolve(process.cwd(), options.dir)
+    : resolve(process.cwd(), 'public')
   const distDir = options.distDir ?? remoteAssets
   const write = options.write ?? true
   const serveStatic = options.serveStatic ?? false
   // When self-serving (standalone CLI), mount under a dedicated base so the
   // asset bytes don't collide with the SPA served at `/`. Otherwise trust the
   // host to serve `public/` at `baseURL` (default `/`).
-  const baseURL = options.baseURL ?? (serveStatic ? `/__${id}-raw/` : '/')
+  const baseURL = options.baseURL ?? (serveStatic
+    ? `/__${id}-raw/`
+    : '/')
 
   return defineDevframe({
     id,
@@ -118,7 +122,7 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
     importMetaUrl: import.meta.url,
     homepage: pkg.homepage,
     description: pkg.description,
-    icon: options.icon ?? 'ph:image-square-duotone',
+    icon: options.icon ?? 'ph:folder-notch-open-duotone',
     basePath: options.basePath,
     capabilities: { build: options.build ?? false },
     clientAssets: distDir,
@@ -140,7 +144,12 @@ export function createAssetsDevframe(options: AssetsDevframeOptions = {}): Devfr
      * text previews, with a plain `<pre>` fallback when it isn't advertised.
      */
     services: [
-      { package: '@devframes/service-open', options: { roots: [dir] } },
+      {
+        package: '@devframes/service-open',
+        options: {
+          roots: [dir],
+        },
+      },
       { package: '@devframes/service-shiki' },
     ],
     async setup(ctx, info) {

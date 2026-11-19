@@ -26,7 +26,10 @@ function safeJsonParse<T>(text: string): T {
 
 export function createStorage<T extends object>(options: CreateStorageOptions<T>) {
   const {
-    mergeInitialValue = (initialValue, savedValue) => ({ ...initialValue, ...savedValue }),
+    mergeInitialValue = (initialValue, savedValue) => ({
+      ...initialValue,
+      ...savedValue,
+    }),
     debounce: debounceTime = 100,
   } = options
 
@@ -34,7 +37,9 @@ export function createStorage<T extends object>(options: CreateStorageOptions<T>
   if (fs.existsSync(options.filepath)) {
     try {
       const savedValue = safeJsonParse<T>(fs.readFileSync(options.filepath, 'utf-8'))
-      initialValue = mergeInitialValue ? mergeInitialValue(options.initialValue, savedValue) : savedValue
+      initialValue = mergeInitialValue
+        ? mergeInitialValue(options.initialValue, savedValue)
+        : savedValue
     }
     catch (error) {
       diagnostics.DF0012({ filepath: options.filepath, cause: error }, { method: 'warn' })

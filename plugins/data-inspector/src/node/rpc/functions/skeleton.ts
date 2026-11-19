@@ -12,14 +12,26 @@ export const skeleton = defineRpcFunction({
   setup: () => ({
     handler: async (sourceId: string, options?: FilterOptions): Promise<SkeletonOutcome> => {
       const source = getDataSource(sourceId)
-      if (!source)
-        return { ok: false, error: { name: 'UnknownSource', message: `No data source "${sourceId}"` } }
+      if (!source) {
+        return {
+          ok: false,
+          error: { name: 'UnknownSource', message: `No data source "${sourceId}"` },
+        }
+      }
       try {
-        return { ok: true, ...skeletonOf(await resolveSourceData(source), options) }
+        return {
+          ok: true,
+          ...skeletonOf(await resolveSourceData(source), options),
+        }
       }
       catch (error) {
-        const e = error instanceof Error ? error : new Error(String(error))
-        return { ok: false, error: { name: e.name, message: e.message } }
+        const e = error instanceof Error
+          ? error
+          : new Error(String(error))
+        return {
+          ok: false,
+          error: { name: e.name, message: e.message },
+        }
       }
     },
   }),

@@ -31,7 +31,10 @@ interface TabsProps {
 const TabsImpl = defineComponent({
   name: 'JrTabsImpl',
   props: {
-    tabs: { type: Array as PropType<TabDescriptor[]>, default: () => [] },
+    tabs: {
+      type: Array as PropType<TabDescriptor[]>,
+      default: () => [],
+    },
     value: { type: String, default: undefined },
     defaultValue: { type: String, default: undefined },
     orientation: { type: String as PropType<'horizontal' | 'vertical'>, default: 'horizontal' },
@@ -70,7 +73,9 @@ const TabsImpl = defineComponent({
       const tabs = props.tabs
       const activeValue = active.value
       const panels = slots.default?.() ?? []
-      const panelArr = (Array.isArray(panels) ? panels : [panels]) as VNode[]
+      const panelArr = (Array.isArray(panels)
+        ? panels
+        : [panels]) as VNode[]
       const activeIndex = tabs.findIndex(tab => tab.value === activeValue)
 
       const triggers = tabs.map((tab, index) => {
@@ -112,19 +117,31 @@ const TabsImpl = defineComponent({
             }
           },
         }, [
-          tab.icon ? Icon({ props: { name: tab.icon, size: 14 } } as Parameters<typeof Icon>[0]) : null,
+          tab.icon
+            ? Icon({
+                props: { name: tab.icon, size: 14 },
+              } as Parameters<typeof Icon>[0])
+            : null,
           h('span', tab.label),
-          tab.badge ? Badge({ props: { text: tab.badge, variant: tab.badgeVariant ?? 'default' } } as Parameters<typeof Badge>[0]) : null,
+          tab.badge
+            ? Badge({
+                props: { text: tab.badge, variant: tab.badgeVariant ?? 'default' },
+              } as Parameters<typeof Badge>[0])
+            : null,
         ])
       })
 
-      return h('div', { class: isVertical.value ? 'flex gap-3' : 'flex flex-col gap-2' }, [
+      return h('div', {
+        class: isVertical.value ? 'flex gap-3' : 'flex flex-col gap-2',
+      }, [
         h('div', {
           'role': 'tablist',
           'aria-orientation': props.orientation,
           'class': isVertical.value ? 'flex flex-col border-r border-base shrink-0' : 'flex border-b border-base',
         }, triggers),
-        h('div', { role: 'tabpanel', class: 'flex-1 min-w-0' }, activeIndex >= 0 ? [panelArr[activeIndex]] : []),
+        h('div', { role: 'tabpanel', class: 'flex-1 min-w-0' }, activeIndex >= 0
+          ? [panelArr[activeIndex]]
+          : []),
       ])
     }
   },

@@ -26,7 +26,9 @@ export async function startFastifyServer(port: number): Promise<{ port: number, 
   const detach = hub.attach(app.server)
   await app.listen({ port, host: '0.0.0.0' })
   const address = app.server.address()
-  const boundPort = typeof address === 'object' && address ? address.port : port
+  const boundPort = typeof address === 'object' && address
+    ? address.port
+    : port
 
   return {
     port: boundPort,

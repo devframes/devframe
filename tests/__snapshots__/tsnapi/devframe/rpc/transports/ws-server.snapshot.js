@@ -5,9 +5,6 @@
 export function attachWsRpcTransport(_, _) {}
 export function createWsOriginRegistry(_) {}
 export function createWsRpcPeerHooks(_, _) {}
-// #endregion
-
-// #region Other
-export { isAllowedOrigin }
-export { isLoopbackHostname }
+export function isAllowedOrigin(_, _) {}
+export function isLoopbackHostname(_) {}
 // #endregion

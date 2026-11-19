@@ -7,16 +7,23 @@ import App from './App.svelte'
 // surface + `@antfu/design` chrome (nav, empty state) offline.
 function mockRpc() {
   const state = (initial: unknown) =>
-    Promise.resolve({ value: () => initial, on: () => () => {} })
+    Promise.resolve({
+      value: () => initial,
+      on: () => () => {},
+    })
   return {
     sharedState: {
       get: (_key: string, opts?: { initialValue?: unknown }) => state(opts?.initialValue ?? {}),
     },
-    call: async (method: string) => (method.endsWith(':list') ? [] : undefined),
+    call: async (method: string) => (method.endsWith(':list')
+      ? []
+      : undefined),
     streaming: {
       subscribe: () => ({
         [Symbol.asyncIterator]() {
-          return { next: () => new Promise<never>(() => {}) }
+          return {
+            next: () => new Promise<never>(() => {}),
+          }
         },
         cancel() {},
       }),
@@ -35,5 +42,8 @@ type Story = StoryObj<typeof meta>
 
 /** No sessions yet: the empty state with a "New terminal" affordance. */
 export const Empty: Story = {
-  args: { rpc: mockRpc(), autostart: false },
+  args: {
+    rpc: mockRpc(),
+    autostart: false,
+  },
 }

@@ -132,10 +132,20 @@ export function buildFileModel(file: DiffFileChange): DiffFileModel {
         tokenLine = newLines.length
         newLines.push(line.content)
       }
-      return { ...line, tokenSide, tokenLine, wordRanges: wordRanges.get(idx) ?? [] }
+      return {
+        ...line,
+        tokenSide,
+        tokenLine,
+        wordRanges: wordRanges.get(idx) ?? [],
+      }
     })
     return { header: hunk.header, lines }
   })
 
-  return { file, oldText: oldLines.join('\n'), newText: newLines.join('\n'), hunks }
+  return {
+    file,
+    oldText: oldLines.join('\n'),
+    newText: newLines.join('\n'),
+    hunks,
+  }
 }

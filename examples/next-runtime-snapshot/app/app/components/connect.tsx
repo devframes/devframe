@@ -30,6 +30,11 @@ export function useRpc(): ConnectionState {
   const { error } = useRpcStatus()
   // `rpc` is stable once resolved, so memoizing on it keeps `ctx` referentially
   // stable across renders (the snapshot components depend on `ctx` identity).
-  const ctx = useMemo(() => (rpc ? rpc.scope(NAMESPACE) : null), [rpc])
-  return { ctx, error: error ? error.message : null }
+  const ctx = useMemo(() => (rpc
+    ? rpc.scope(NAMESPACE)
+    : null), [rpc])
+  return {
+    ctx,
+    error: error ? error.message : null,
+  }
 }

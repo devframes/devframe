@@ -151,7 +151,9 @@ export default defineConfig({
        * `json-render` dock mounts, with no Vue and no renderer code compiled
        * into this host's own bundle.
        */
-      renderers: [jsonRenderUiRenderer()],
+      renderers: [
+        jsonRenderUiRenderer(),
+      ],
       configure: async (context) => {
         // Seed a sample command directly on the hub so the UI shows something
         // even without any plugged-in devframes.

@@ -4,7 +4,9 @@ import { createResolveMetadataRpc, resolveMetadata } from './rpc/functions/resol
 
 export function setupOg(ctx: DevframeNodeContext, options: ResolveMetadataOptions = {}): void {
   const hasOptions = options.defaultUrl !== undefined || options.fetch !== undefined
-  ctx.rpc.register(hasOptions ? createResolveMetadataRpc(options) : resolveMetadata)
+  ctx.rpc.register(hasOptions
+    ? createResolveMetadataRpc(options)
+    : resolveMetadata)
 }
 
 export { fetchOgMetadata, parseOgMetadata } from './metadata'

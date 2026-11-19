@@ -130,8 +130,12 @@ export function createOverlay(): Overlay {
     marker.box.style.width = `${rect.width + pad * 2}px`
     marker.box.style.height = `${rect.height + pad * 2}px`
     // Flip the label below the box when it would clip past the top edge.
-    marker.label.style.transform = rect.top < 22 ? 'translateY(0)' : 'translateY(-100%)'
-    marker.label.style.top = rect.top < 22 ? '100%' : '0'
+    marker.label.style.transform = rect.top < 22
+      ? 'translateY(0)'
+      : 'translateY(-100%)'
+    marker.label.style.top = rect.top < 22
+      ? '100%'
+      : '0'
   }
 
   function placeAll() {
@@ -171,8 +175,12 @@ export function createOverlay(): Overlay {
   function scrollIntoViewIfNeeded(el: Element) {
     const rect = el.getBoundingClientRect()
     const offscreen = rect.bottom < 0 || rect.top > innerHeight
-    if (offscreen)
-      el.scrollIntoView({ block: 'center', behavior: PREFERS_REDUCED_MOTION ? 'auto' : 'smooth' })
+    if (offscreen) {
+      el.scrollIntoView({
+        block: 'center',
+        behavior: PREFERS_REDUCED_MOTION ? 'auto' : 'smooth',
+      })
+    }
   }
 
   function showNotice(color: string, text: string) {

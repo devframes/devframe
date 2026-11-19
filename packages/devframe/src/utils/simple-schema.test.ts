@@ -55,14 +55,19 @@ describe('utils/simple-schema builder', () => {
   })
 
   it('validates objects and reports issue paths', () => {
-    const schema = s.object({ id: s.string(), count: s.number() })
+    const schema = s.object({
+      id: s.string(),
+      count: s.number(),
+    })
     expect(accepts(schema, { id: 'x', count: 1 })).toBe(true)
     const bad = run(schema, { id: 'x', count: 'nope' })
     expect(bad.issues?.[0]?.path).toEqual(['count'])
   })
 
   it('keeps object keys beyond the schema (guard-only)', () => {
-    const schema = s.object({ id: s.string() })
+    const schema = s.object({
+      id: s.string(),
+    })
     const result = run(schema, { id: 'x', extra: true })
     expect(result.issues).toBeUndefined()
     if (!result.issues)

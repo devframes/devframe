@@ -37,7 +37,9 @@ function looksLikeHubCommandsHost(value: unknown): value is HubCommandsHostLike 
  */
 export function resolveHubCommands(ctx: object): HubCommandsHostLike | undefined {
   const commands = (ctx as { commands?: unknown }).commands
-  return looksLikeHubCommandsHost(commands) ? commands : undefined
+  return looksLikeHubCommandsHost(commands)
+    ? commands
+    : undefined
 }
 
 /**

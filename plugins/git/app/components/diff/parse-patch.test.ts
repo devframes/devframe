@@ -94,25 +94,64 @@ index 1111111..2222222 100644
 describe('parseUnifiedPatch', () => {
   it('parses a modified file with counts, line numbers, and section heading', () => {
     const [file] = parseUnifiedPatch(MODIFIED)
-    expect(file).toMatchObject({ name: 'src/a.ts', prevName: null, type: 'modified', binary: false, additions: 1, deletions: 1, lang: 'ts' })
+    expect(file).toMatchObject({
+      name: 'src/a.ts',
+      prevName: null,
+      type: 'modified',
+      binary: false,
+      additions: 1,
+      deletions: 1,
+      lang: 'ts',
+    })
     expect(file.hunks).toHaveLength(1)
     expect(file.hunks[0].header).toBe('@@ -1,3 +1,3 @@ function foo() {')
     expect(file.hunks[0].lines).toEqual([
-      { type: 'context', content: 'a', oldNumber: 1, newNumber: 1 },
-      { type: 'del', content: 'b', oldNumber: 2, newNumber: null },
-      { type: 'add', content: 'B', oldNumber: null, newNumber: 2 },
-      { type: 'context', content: 'c', oldNumber: 3, newNumber: 3 },
+      {
+        type: 'context',
+        content: 'a',
+        oldNumber: 1,
+        newNumber: 1,
+      },
+      {
+        type: 'del',
+        content: 'b',
+        oldNumber: 2,
+        newNumber: null,
+      },
+      {
+        type: 'add',
+        content: 'B',
+        oldNumber: null,
+        newNumber: 2,
+      },
+      {
+        type: 'context',
+        content: 'c',
+        oldNumber: 3,
+        newNumber: 3,
+      },
     ])
   })
 
   it('classifies a new file', () => {
     const [file] = parseUnifiedPatch(NEW_FILE)
-    expect(file).toMatchObject({ name: 'new.md', type: 'new', additions: 2, deletions: 0, lang: 'md' })
+    expect(file).toMatchObject({
+      name: 'new.md',
+      type: 'new',
+      additions: 2,
+      deletions: 0,
+      lang: 'md',
+    })
   })
 
   it('classifies a deleted file (named by its old path)', () => {
     const [file] = parseUnifiedPatch(DELETED)
-    expect(file).toMatchObject({ name: 'gone.txt', type: 'deleted', additions: 0, deletions: 2 })
+    expect(file).toMatchObject({
+      name: 'gone.txt',
+      type: 'deleted',
+      additions: 0,
+      deletions: 2,
+    })
   })
 
   it('classifies a pure rename (no hunks) with prevName', () => {
@@ -123,7 +162,13 @@ describe('parseUnifiedPatch', () => {
 
   it('classifies a rename with content changes', () => {
     const [file] = parseUnifiedPatch(RENAME_CHANGED)
-    expect(file).toMatchObject({ name: 'new.ts', prevName: 'old.ts', type: 'rename-changed', additions: 1, deletions: 1 })
+    expect(file).toMatchObject({
+      name: 'new.ts',
+      prevName: 'old.ts',
+      type: 'rename-changed',
+      additions: 1,
+      deletions: 1,
+    })
   })
 
   it('flags a binary change with no hunks', () => {
@@ -136,9 +181,24 @@ describe('parseUnifiedPatch', () => {
     const [file] = parseUnifiedPatch(MULTI_HUNK)
     expect(file.hunks).toHaveLength(2)
     expect(file.hunks[1].lines).toEqual([
-      { type: 'context', content: 'x', oldNumber: 10, newNumber: 10 },
-      { type: 'add', content: 'y', oldNumber: null, newNumber: 11 },
-      { type: 'context', content: 'z', oldNumber: 11, newNumber: 12 },
+      {
+        type: 'context',
+        content: 'x',
+        oldNumber: 10,
+        newNumber: 10,
+      },
+      {
+        type: 'add',
+        content: 'y',
+        oldNumber: null,
+        newNumber: 11,
+      },
+      {
+        type: 'context',
+        content: 'z',
+        oldNumber: 11,
+        newNumber: 12,
+      },
     ])
   })
 

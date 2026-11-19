@@ -32,6 +32,10 @@ export function mountDevframeHubClient(
   const { base = DEVFRAMES_HUB_BASE, connect, ...rest } = options
   return createDevframeClientRuntime({
     ...rest,
-    ...(rest.rpc ? {} : { connect: { baseURL: base, ...connect } }),
+    ...(rest.rpc
+      ? {}
+      : {
+          connect: { baseURL: base, ...connect },
+        }),
   })
 }

@@ -124,7 +124,12 @@ describe('createStaticRpcCaller', () => {
       async () => {
         // What a server would have written: SC-stringified, then read
         // back via fetch.json() (i.e. JSON.parse of the SC text).
-        const payload = { output: new Map([['a', 1], ['b', 2]]) }
+        const payload = {
+          output: new Map([
+            ['a', 1],
+            ['b', 2],
+          ]),
+        }
         return JSON.parse(structuredCloneStringify(payload))
       },
     )
@@ -146,7 +151,10 @@ describe('createStaticRpcCaller', () => {
         },
       },
       async () => {
-        const payload = { inputs: ['k'], output: new Set(['x', 'y']) }
+        const payload = {
+          inputs: ['k'],
+          output: new Set(['x', 'y']),
+        }
         return JSON.parse(structuredCloneStringify(payload))
       },
     )
@@ -165,10 +173,16 @@ describe('createStaticRpcCaller', () => {
           // no `serialization` field, so it must default to JSON parsing
         },
       },
-      async () => ({ output: { items: [1, 2, 3] } }),
+      async () => ({
+        output: {
+          items: [1, 2, 3],
+        },
+      }),
     )
 
-    await expect(caller.call('demo:legacy-static', [])).resolves.toEqual({ items: [1, 2, 3] })
+    await expect(caller.call('demo:legacy-static', [])).resolves.toEqual({
+      items: [1, 2, 3],
+    })
   })
 
   it('treats placeholder args on static entries as a no-arg call', async () => {
@@ -179,7 +193,9 @@ describe('createStaticRpcCaller', () => {
           path: DEMO_STATIC_VERSION_PATH,
         },
       },
-      async () => ({ output: ['ok'] }),
+      async () => ({
+        output: ['ok'],
+      }),
     )
 
     await expect(caller.call('demo:messages', [null])).resolves.toEqual(['ok'])
@@ -213,7 +229,11 @@ describe('createStaticRpcCaller', () => {
       async () => ({
         serialization: 'structured-clone',
         fnName: 'demo:graph',
-        data: JSON.parse(structuredCloneStringify({ output: new Map([['a', 1]]) })),
+        data: JSON.parse(structuredCloneStringify({
+          output: new Map([
+            ['a', 1],
+          ]),
+        })),
       }),
     )
 
@@ -235,7 +255,10 @@ describe('createStaticRpcCaller', () => {
       async () => ({
         serialization: 'structured-clone',
         fnName: 'demo:query-set',
-        data: JSON.parse(structuredCloneStringify({ inputs: ['k'], output: new Set(['x']) })),
+        data: JSON.parse(structuredCloneStringify({
+          inputs: ['k'],
+          output: new Set(['x']),
+        })),
       }),
     )
 

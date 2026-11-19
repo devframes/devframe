@@ -9,6 +9,10 @@ export default defineNuxtConfig({
    */
   extends: [process.env.COMARK_DOCS_LAYER || 'comark-docs'],
 
+  comarkDocs: {
+    highlighter: './highlighter.ts',
+  },
+
   css: [
     '@shikijs/magic-move/style.css',
     '~/assets/css/devframe.css',
@@ -29,6 +33,32 @@ export default defineNuxtConfig({
       description:
         'Complete Devframe documentation as plain markdown: guide, adapters, frameworks, add-ons, references, and the error reference.',
     },
+  },
+
+  // Nuxt DevTools v4 imports the workspace `devframe`, which is unbuilt in
+  // `docs:build` (Vercel), so keep it dev-only.
+  devtools: { enabled: false },
+
+  // Dev only: mount the devframes into Nuxt DevTools. The imports are lazy,
+  // so `docs:build` needs no built workspace packages.
+  $development: {
+    devtools: { enabled: true },
+    // DevTools v4 sets `noExternals` to an array when it is unset. Nitro 2 reads
+    // any truthy value as "inline everything" and fails on `playwright-core`.
+    nitro: { noExternals: false },
+    modules: [
+      async () => {
+        const [{ onDevtoolsReady }, { createA11yDevframe }, { createOgDevframe }] = await Promise.all([
+          import('@nuxt/devtools-kit'),
+          import('@devframes/plugin-a11y'),
+          import('@devframes/plugin-og'),
+        ])
+        onDevtoolsReady(async (kit) => {
+          await kit.install(createA11yDevframe())
+          await kit.install(createOgDevframe({ defaultUrl: 'http://localhost:5175' }))
+        })
+      },
+    ],
   },
 
   app: {

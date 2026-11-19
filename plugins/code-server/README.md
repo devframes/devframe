@@ -65,7 +65,9 @@ export default createCodeServerDevframe({
 import { codeServerVite } from '@devframes/plugin-code-server/vite'
 
 export default {
-  plugins: [codeServerVite()],
+  plugins: [
+    codeServerVite()
+  ],
 }
 ```
 

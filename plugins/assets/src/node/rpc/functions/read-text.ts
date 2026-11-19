@@ -10,7 +10,10 @@ export const readText = defineRpcFunction({
   name: 'devframes:plugin:assets:read-text',
   type: 'query',
   jsonSerializable: true,
-  args: [s.string(), s.optional(s.number())],
+  args: [
+    s.string(),
+    s.optional(s.number()),
+  ],
   returns: s.nullable(s.string()),
   agent: {
     title: 'Read a text asset',

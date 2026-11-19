@@ -31,7 +31,13 @@ type Story = StoryObj<typeof meta>
 export const Connecting: Story = {
   args: {
     phase: 'connecting',
-    detection: { checked: false, installed: false, bin: 'code-server', backend: 'code-server', mode: 'local' },
+    detection: {
+      checked: false,
+      installed: false,
+      bin: 'code-server',
+      backend: 'code-server',
+      mode: 'local',
+    },
     server: { status: 'stopped' },
     busy: false,
   },
@@ -41,7 +47,13 @@ export const Connecting: Story = {
 export const NotInstalled: Story = {
   args: {
     phase: 'not-installed',
-    detection: { checked: true, installed: false, bin: 'code-server', backend: 'code-server', mode: 'local' },
+    detection: {
+      checked: true,
+      installed: false,
+      bin: 'code-server',
+      backend: 'code-server',
+      mode: 'local',
+    },
     server: { status: 'stopped' },
     busy: false,
   },
@@ -83,7 +95,12 @@ export const Launch: Story = {
 export const LaunchServeWeb: Story = {
   args: {
     phase: 'launch',
-    detection: { ...localCodeServer, backend: 'ms-code-serve-web', bin: 'code', version: '1.99.0' },
+    detection: {
+      ...localCodeServer,
+      backend: 'ms-code-serve-web',
+      bin: 'code',
+      version: '1.99.0',
+    },
     server: { status: 'stopped' },
     busy: false,
   },
@@ -128,7 +145,14 @@ export const StartingViewInTerminal: Story = {
 export const TunnelLogin: Story = {
   args: {
     phase: 'starting',
-    detection: { checked: true, installed: true, version: '1.99.0', bin: 'code', backend: 'ms-code-serve-web', mode: 'tunnel' },
+    detection: {
+      checked: true,
+      installed: true,
+      version: '1.99.0',
+      bin: 'code',
+      backend: 'ms-code-serve-web',
+      mode: 'tunnel',
+    },
     server: {
       status: 'starting',
       login: { url: 'https://github.com/login/device', code: 'ABCD-1234' },

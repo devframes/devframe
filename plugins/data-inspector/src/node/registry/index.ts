@@ -107,7 +107,13 @@ function store(): RegistryStore {
   const holder = globalThis as Record<PropertyKey, unknown>
   let value = holder[GLOBAL_KEY] as RegistryStore | undefined
   if (!value) {
-    value = { entries: new Map(), staticCache: new Map(), listeners: new Set(), dataListeners: new Set(), subscriptions: new Map() }
+    value = {
+      entries: new Map(),
+      staticCache: new Map(),
+      listeners: new Set(),
+      dataListeners: new Set(),
+      subscriptions: new Map(),
+    }
     holder[GLOBAL_KEY] = value
   }
   // Stores minted by an older copy of this module may predate these fields.
@@ -232,7 +238,9 @@ export function onDataSourceDataChanged(listener: (sourceId: string) => void): (
 /** Drop every registration and cache; a test isolation helper. */
 export function resetDataSources(): void {
   const registry = store()
-  for (const id of [...registry.subscriptions.keys()])
+  for (const id of [
+    ...registry.subscriptions.keys(),
+  ])
     unwireSubscription(registry, id)
   registry.entries.clear()
   registry.staticCache.clear()

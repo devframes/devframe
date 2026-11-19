@@ -59,7 +59,9 @@ function fakeHttpsViteServer(tls: { key: string, cert: string }) {
   const server = {
     httpServer,
     resolvedUrls: null,
-    middlewares: { use: (handler: ConnectMiddleware) => stack.push(handler) },
+    middlewares: {
+      use: (handler: ConnectMiddleware) => stack.push(handler),
+    },
   }
   const close = async (): Promise<void> => {
     for (const socket of sockets)
@@ -111,7 +113,10 @@ describe.skipIf(!opensslAvailable)('viteDevframeHub', () => {
       '-subj',
       '/CN=localhost',
     ], { stdio: 'ignore' })
-    tls = { key: readFileSync(keyPath, 'utf8'), cert: readFileSync(certPath, 'utf8') }
+    tls = {
+      key: readFileSync(keyPath, 'utf8'),
+      cert: readFileSync(certPath, 'utf8'),
+    }
   })
 
   afterEach(async () => {

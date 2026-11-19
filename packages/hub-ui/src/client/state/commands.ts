@@ -64,7 +64,9 @@ export async function createCommandsContext(
   })
 
   function register(cmd: DevframeClientCommand | DevframeClientCommand[]): () => void {
-    const cmds = Array.isArray(cmd) ? cmd : [cmd]
+    const cmds = Array.isArray(cmd)
+      ? cmd
+      : [cmd]
     for (const c of cmds) {
       clientCommands.set(c.id, c)
     }
@@ -107,11 +109,14 @@ export async function createCommandsContext(
   }
 
   function getKeybindings(id: string): DevframeCommandKeybinding[] {
+    const cmd = findCommandDeep(commands.value, id)
+    if (cmd?.allowShortcuts === false)
+      return []
+
     const overrides = shortcutOverrides.value[id]
     if (overrides !== undefined)
       return overrides
 
-    const cmd = findCommandDeep(commands.value, id)
     return cmd?.keybindings ?? []
   }
 
@@ -149,6 +154,10 @@ function setupShortcutListener(
     // composedPath reaches the input through shadow DOM; structural checks also
     // work for elements belonging to the popup window's realm.
     if (e.composedPath().some(target => (target as Element).classList?.contains('shortcut-key-input')))
+      return
+    // An open dock context menu owns its keys (Escape closes the menu, not
+    // the panel; arrows move between items).
+    if (e.composedPath().some(target => (target as Element).classList?.contains('devframes-dock-menu')))
       return
 
     const pressed = normalizeKeyEvent(e)

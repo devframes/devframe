@@ -97,7 +97,10 @@ describe('ws client post on a non-open socket', () => {
       // Baseline: `createWsRpcChannel` itself registers one 'open' listener
       // (for `onConnected`) regardless of readyState; that one is expected
       // to stick around; `post` must not add another on top of it.
-      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const channel = createWsRpcChannel({
+        url: 'ws://127.0.0.1:1',
+        onError: e => errors.push(e),
+      })
       const ws = instances[0]!
       const baseline = ws.listeners.get('open')?.size ?? 0
       channel.post!('hello')
@@ -115,7 +118,10 @@ describe('ws client post on a non-open socket', () => {
     const instances: FakeWS[] = []
     vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CLOSING, instances))
     try {
-      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const channel = createWsRpcChannel({
+        url: 'ws://127.0.0.1:1',
+        onError: e => errors.push(e),
+      })
       const ws = instances[0]!
       const baseline = ws.listeners.get('open')?.size ?? 0
       channel.post!('hello')
@@ -137,7 +143,10 @@ describe('ws client post on a non-open socket', () => {
       // (`onConnected`) and one 'close' listener (`onDisconnected`) up front;
       // `post`'s queued listeners are on top of those and must clean up back
       // down to this baseline.
-      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const channel = createWsRpcChannel({
+        url: 'ws://127.0.0.1:1',
+        onError: e => errors.push(e),
+      })
       const ws = instances[0]!
       const openBaseline = ws.listeners.get('open')?.size ?? 0
       const closeBaseline = ws.listeners.get('close')?.size ?? 0
@@ -163,7 +172,10 @@ describe('ws client post on a non-open socket', () => {
     const instances: FakeWS[] = []
     vi.stubGlobal('WebSocket', fakeWsCtor(FakeWS.CONNECTING, instances))
     try {
-      const channel = createWsRpcChannel({ url: 'ws://127.0.0.1:1', onError: e => errors.push(e) })
+      const channel = createWsRpcChannel({
+        url: 'ws://127.0.0.1:1',
+        onError: e => errors.push(e),
+      })
       const ws = instances[0]!
       const openBaseline = ws.listeners.get('open')?.size ?? 0
       const closeBaseline = ws.listeners.get('close')?.size ?? 0
@@ -272,7 +284,9 @@ describe('devframe rpc', () => {
       })
     })
 
-    const serverFunctions = { ping: () => 'pong' }
+    const serverFunctions = {
+      ping: () => 'pong',
+    }
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
     const { close } = attachWsRpcTransport(server, { server: httpServer, path: '/__ws' })
 
@@ -312,7 +326,10 @@ describe('devframe rpc', () => {
     }
 
     const definitions = new Map<string, { jsonSerializable?: boolean }>([
-      ['explode', { jsonSerializable: true }],
+      [
+        'explode',
+        { jsonSerializable: true },
+      ],
     ])
 
     const server = createRpcServer<Record<string, never>, typeof serverFunctions>(serverFunctions)
@@ -362,7 +379,11 @@ describe('ws origin check', () => {
 
   async function connectRaw(url: string, origin?: string): Promise<'open' | 'closed'> {
     return await new Promise((resolve) => {
-      const ws = new WebSocket(url, origin ? { headers: { origin } } : undefined)
+      const ws = new WebSocket(url, origin
+        ? {
+            headers: { origin },
+          }
+        : undefined)
       ws.on('open', () => {
         ws.close()
         resolve('open')
@@ -422,7 +443,11 @@ describe('ws origin check', () => {
     const HOST = '127.0.0.1'
     const PORT = await getPort({ host: HOST, random: true })
     const server = createRpcServer<Record<string, never>, Record<string, never>>({})
-    const { close } = attachWsRpcTransport(server, { port: PORT, host: HOST, allowedOrigins: ['http://evil.example'] })
+    const { close } = attachWsRpcTransport(server, {
+      port: PORT,
+      host: HOST,
+      allowedOrigins: ['http://evil.example'],
+    })
 
     try {
       const result = await connectRaw(`ws://${HOST}:${PORT}`, 'http://evil.example')
@@ -481,7 +506,9 @@ describe('ws origin check', () => {
     })
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const registered = registry.registerFromUrl(String(input))
-      return new Response(null, { status: registered ? 204 : 403 })
+      return new Response(null, {
+        status: registered ? 204 : 403,
+      })
     })
 
     try {

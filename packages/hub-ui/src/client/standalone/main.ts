@@ -17,7 +17,9 @@ import { applyViewerBackground } from './viewer-background'
 // The standalone viewer runs in the light DOM, so mirror the color mode onto the
 // document element; its background and foreground controls follow the
 // Auto/Light/Dark choice, including when branding supplies a custom background.
-const brandingBackground = useBrandingBackground(window.self !== window.top ? 'iframe' : 'standalone')
+const brandingBackground = useBrandingBackground(window.self !== window.top
+  ? 'iframe'
+  : 'standalone')
 
 watchEffect(() => {
   const el = document.documentElement

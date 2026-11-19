@@ -16,7 +16,11 @@ interface AgenticConnectModule {
 
 /** Parse the repeatable `--port` flag value(s) from cac into numbers. */
 function parsePortsFlag(value: unknown): number[] {
-  const values = Array.isArray(value) ? value : value === undefined ? [] : [value]
+  const values = Array.isArray(value)
+    ? value
+    : value === undefined
+      ? []
+      : [value]
   return values
     .map(v => Number(v))
     .filter(n => Number.isInteger(n) && n > 0 && n < 65536)
@@ -31,7 +35,9 @@ async function importConnect(): Promise<AgenticConnectModule> {
     return await importRuntimeModule<AgenticConnectModule>('@devframes/agentic/connect')
   }
   catch (error) {
-    const reason = error instanceof Error ? error.message : String(error)
+    const reason = error instanceof Error
+      ? error.message
+      : String(error)
     throw diagnostics.DF0046({ reason, cause: error })
   }
 }
@@ -54,7 +60,9 @@ export async function runDevframeCli(argv: string[] = process.argv): Promise<voi
       const { startConnectServer } = await importConnect()
       await startConnectServer({
         ports: parsePortsFlag(options.port),
-        base: typeof options.base === 'string' ? options.base : undefined,
+        base: typeof options.base === 'string'
+          ? options.base
+          : undefined,
         instancesDir: options.instancesDir,
         timeoutMs: options.timeout,
         /**

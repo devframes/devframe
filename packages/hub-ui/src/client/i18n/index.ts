@@ -98,7 +98,9 @@ export function t(key: MessageKey, params?: Record<string, string | number>): st
   const message = loaded[locale.value]?.[key] ?? en[key]
   if (!params)
     return message
-  return message.replace(/\{(\w+)\}/g, (slot, name: string) => name in params ? String(params[name]) : slot)
+  return message.replace(/\{(\w+)\}/g, (slot, name: string) => name in params
+    ? String(params[name])
+    : slot)
 }
 
 /**

@@ -137,7 +137,9 @@ const activePart = computed(() => activePartId.value ? parts[activePartId.value]
 const activeGroup = computed(() => activePartId.value ? parts[activePartId.value].group : undefined)
 
 function togglePart(id: PartId) {
-  selectedPart.value = selectedPart.value === id ? undefined : id
+  selectedPart.value = selectedPart.value === id
+    ? undefined
+    : id
 }
 
 function partStateClass(id: PartId) {

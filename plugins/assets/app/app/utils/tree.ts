@@ -33,18 +33,31 @@ export interface TreeNode {
 
 /** Builds a nested folder/file tree from a flat asset list (folders first, then alphabetical). */
 export function buildTree(assets: readonly AssetInfo[]): TreeNode[] {
-  const root: TreeNode = { name: '', path: '', isFolder: true, children: [] }
+  const root: TreeNode = {
+    name: '',
+    path: '',
+    isFolder: true,
+    children: [],
+  }
 
   for (const asset of assets) {
     const parts = asset.path.split('/').filter(Boolean)
     let node = root
     let acc = ''
     parts.forEach((part, i) => {
-      acc = acc ? `${acc}/${part}` : part
+      acc = acc
+        ? `${acc}/${part}`
+        : part
       const isLast = i === parts.length - 1
       let child = node.children.find(c => c.name === part && c.isFolder === !isLast)
       if (!child) {
-        child = { name: part, path: acc, isFolder: !isLast, children: [], asset: isLast ? asset : undefined }
+        child = {
+          name: part,
+          path: acc,
+          isFolder: !isLast,
+          children: [],
+          asset: isLast ? asset : undefined,
+        }
         node.children.push(child)
       }
       node = child
@@ -53,8 +66,11 @@ export function buildTree(assets: readonly AssetInfo[]): TreeNode[] {
 
   const sortNode = (node: TreeNode): void => {
     node.children.sort((a, b) => {
-      if (a.isFolder !== b.isFolder)
-        return a.isFolder ? -1 : 1
+      if (a.isFolder !== b.isFolder) {
+        return a.isFolder
+          ? -1
+          : 1
+      }
       return a.name.localeCompare(b.name)
     })
     node.children.forEach(sortNode)

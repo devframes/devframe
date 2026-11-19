@@ -10,5 +10,7 @@ import type { CSSProperties } from 'vue'
  * inherits the global primary.
  */
 export function accentVarStyle(color: string | undefined): CSSProperties | undefined {
-  return color ? ({ '--devframe-primary': color } as CSSProperties) : undefined
+  return color
+    ? ({ '--devframe-primary': color } as CSSProperties)
+    : undefined
 }

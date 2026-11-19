@@ -48,7 +48,9 @@ export function createWsRpcChannel(options: WsRpcChannelOptions): ChannelOptions
   })
 
   ws.addEventListener('error', (e) => {
-    const _e = e instanceof Error ? e : new Error(e.type)
+    const _e = e instanceof Error
+      ? e
+      : new Error(e.type)
     onError(_e)
   })
 

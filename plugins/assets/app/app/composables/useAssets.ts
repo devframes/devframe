@@ -48,7 +48,9 @@ export function useAssets(): UseAssetsResult {
       error.value = null
     }
     catch (cause) {
-      error.value = cause instanceof Error ? cause.message : String(cause)
+      error.value = cause instanceof Error
+        ? cause.message
+        : String(cause)
     }
     finally {
       loading.value = false
@@ -93,5 +95,15 @@ export function useAssets(): UseAssetsResult {
     })
   }
 
-  return { rpc, assets, capabilities, loading, error, isStatic, status, connect, refresh }
+  return {
+    rpc,
+    assets,
+    capabilities,
+    loading,
+    error,
+    isStatic,
+    status,
+    connect,
+    refresh,
+  }
 }

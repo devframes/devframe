@@ -20,7 +20,9 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(true)
-const icon = computed(() => (props.node.isFolder ? 'i-ph-folder-duotone' : TYPE_META[props.node.asset?.type ?? 'other'].icon))
+const icon = computed(() => (props.node.isFolder
+  ? 'i-ph-folder-duotone'
+  : TYPE_META[props.node.asset?.type ?? 'other'].icon))
 const isActive = computed(() => !props.node.isFolder && props.node.asset?.path === props.selectedPath)
 
 function onActivate(): void {

@@ -35,7 +35,7 @@ const viewTabs = [
 <template>
   <LayoutToolbar :glass="false" class="h-nav">
     <span class="flex shrink-0 select-none items-center gap-1.5 text-sm font-semibold">
-      <span class="i-ph-image-square-duotone text-base color-active" />
+      <span class="i-ph-folder-notch-open-duotone text-base color-active" />
       <span>Assets</span>
     </span>
     <DisplayBadge v-if="isStatic" text="static" class="text-xs" />

@@ -44,7 +44,11 @@ export function useDevframeHubClient(
 
     void createDevframeClientRuntime({
       ...options,
-      ...(rpc ? { rpc } : { connect: { baseURL: base, ...connect } }),
+      ...(rpc
+        ? { rpc }
+        : {
+            connect: { baseURL: base, ...connect },
+          }),
     }).then((next) => {
       if (disposed) {
         next.dispose()

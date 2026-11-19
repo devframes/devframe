@@ -17,6 +17,7 @@ export default defineConfig({
       'packages/devframe',
       'packages/hub',
       'packages/hub-ui',
+      'packages/hub-ui-onboard',
       'packages/json-render',
       'packages/json-render-ui',
       'plugins/code-server',

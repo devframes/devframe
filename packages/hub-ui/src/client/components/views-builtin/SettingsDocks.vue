@@ -5,7 +5,7 @@ import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
 import { useDraggable } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
 import { t } from '../../i18n'
-import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable } from '../../state/dock-settings'
+import { applyCustomOrderPatch, docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable, resolveCustomOrderPatch } from '../../state/dock-settings'
 import { useSettings } from '../../state/settings-defaults'
 import HashBadge from '../display/HashBadge.vue'
 import DockIcon from '../dock/DockIcon.vue'
@@ -104,16 +104,11 @@ function isInteractiveElement(el: HTMLElement | null): boolean {
 }
 
 function applyOrder(container: string, items: DevframeDockEntry[]) {
-  const def = defaultItemsOfContainer(container).map(i => i.id)
-  const isDefault = items.length === def.length && items.every((item, i) => item.id === def[i])
-  settingsStore.mutate((state) => {
-    items.forEach((item, index) => {
-      if (isDefault)
-        delete state.docksCustomOrder[item.id]
-      else
-        state.docksCustomOrder[item.id] = index
-    })
-  })
+  const patch = resolveCustomOrderPatch(
+    items.map(i => i.id),
+    defaultItemsOfContainer(container).map(i => i.id),
+  )
+  settingsStore.mutate(state => applyCustomOrderPatch(state, patch))
 }
 
 useDraggable(sortContainerEl, {
@@ -155,7 +150,9 @@ useDraggable(sortContainerEl, {
   },
   onEnd() {
     if (draggingId.value && hasMoved.value && dragOverId.value && draggingContainer.value) {
-      const items = [...itemsOfContainer(draggingContainer.value)]
+      const items = [
+        ...itemsOfContainer(draggingContainer.value),
+      ]
       const fromIndex = items.findIndex(item => item.id === draggingId.value)
       const toIndex = items.findIndex(item => item.id === dragOverId.value)
       if (fromIndex !== -1 && toIndex !== -1) {
@@ -230,7 +227,9 @@ function togglePin(id: string) {
 }
 
 function moveOrder(container: string, id: string, delta: number) {
-  const array = [...itemsOfContainer(container)]
+  const array = [
+    ...itemsOfContainer(container),
+  ]
   const index = array.findIndex(item => item.id === id)
   const newIndex = index + delta
   if (newIndex < 0 || newIndex >= array.length)

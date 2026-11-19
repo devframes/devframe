@@ -28,7 +28,9 @@ describe('devframe/types lib-neutrality', () => {
     const host = ts.createCompilerHost(options)
     host.getCurrentDirectory = () => pkgRoot
     const program = ts.createProgram(
-      [resolve(pkgRoot, 'dist/types/index.d.mts')],
+      [
+        resolve(pkgRoot, 'dist/types/index.d.mts'),
+      ],
       options,
       host,
     )

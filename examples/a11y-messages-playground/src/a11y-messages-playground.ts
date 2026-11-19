@@ -54,15 +54,25 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
       // `node:http` server; otherwise (a pinned port, or an https/http2 dev
       // server) fall back to a side-car. Either way the browser finds the
       // socket through `__connection.json`.
-      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
-      const ws = options.port != null ? { port: options.port } : httpServer ? undefined : { sidecar: true as const }
+      const httpServer = server.httpServer instanceof NodeHttpServer
+        ? server.httpServer
+        : undefined
+      const ws = options.port != null
+        ? { port: options.port }
+        : httpServer
+          ? undefined
+          : { sidecar: true as const }
 
       hub = initHub({
         base,
         cwd,
         auth: false,
-        ...(options.port == null && httpServer ? { server: httpServer } : {}),
-        ...(ws ? { ws } : {}),
+        ...(options.port == null && httpServer
+          ? { server: httpServer }
+          : {}),
+        ...(ws
+          ? { ws }
+          : {}),
         getStorageDir: storageDirs(cwd),
         devframes: options.devframes ?? [],
         /**
@@ -109,12 +119,14 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
             description: 'This feed is a build-time snapshot; live entries need the dev server.',
             level: 'info',
             category: 'hub',
-            actions: [{
-              id: 'open-a11y',
-              label: 'Open a11y inspector',
-              kind: 'activate',
-              activate: { dockId: 'devframes_plugin_a11y' },
-            }],
+            actions: [
+              {
+                id: 'open-a11y',
+                label: 'Open a11y inspector',
+                kind: 'activate',
+                activate: { dockId: 'devframes_plugin_a11y' },
+              },
+            ],
           })
         },
       })
@@ -123,7 +135,9 @@ export function a11yMessagesPlayground(options: A11yMessagesPlaygroundOptions = 
 }
 
 function normalizeBase(base: string): string {
-  let out = base.startsWith('/') ? base : `/${base}`
+  let out = base.startsWith('/')
+    ? base
+    : `/${base}`
   if (!out.endsWith('/'))
     out = `${out}/`
   return out

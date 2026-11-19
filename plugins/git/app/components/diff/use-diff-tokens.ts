@@ -33,36 +33,71 @@ export interface DiffTokensState {
  */
 export function useDiffTokens(oldText: string, newText: string, lang: string | undefined, enabled: boolean): DiffTokensState {
   const { rpc } = useRpc()
-  const [state, setState] = useState<DiffTokensState>({ oldTokens: null, newTokens: null, loading: true, unavailable: false })
+  const [state, setState] = useState<DiffTokensState>({
+    oldTokens: null,
+    newTokens: null,
+    loading: true,
+    unavailable: false,
+  })
 
   useEffect(() => {
     if (!enabled)
       return
     if (!rpc) {
-      setState({ oldTokens: null, newTokens: null, loading: true, unavailable: false })
+      setState({
+        oldTokens: null,
+        newTokens: null,
+        loading: true,
+        unavailable: false,
+      })
       return
     }
     const shiki = rpc.services.get(SHIKI_SERVICE)
     if (!shiki) {
-      setState({ oldTokens: null, newTokens: null, loading: false, unavailable: true })
+      setState({
+        oldTokens: null,
+        newTokens: null,
+        loading: false,
+        unavailable: true,
+      })
       return
     }
 
     let cancelled = false
-    setState({ oldTokens: null, newTokens: null, loading: true, unavailable: false })
+    setState({
+      oldTokens: null,
+      newTokens: null,
+      loading: true,
+      unavailable: false,
+    })
     const fetchSide = (code: string): Promise<TokenLines> =>
       code === ''
         ? Promise.resolve([])
         : shiki.rpc.call('code-to-tokens', { code, lang, themes: DIFF_THEMES }).then(result => result.tokens)
 
-    Promise.all([fetchSide(oldText), fetchSide(newText)]).then(
+    Promise.all([
+      fetchSide(oldText),
+      fetchSide(newText),
+    ]).then(
       ([oldTokens, newTokens]) => {
-        if (!cancelled)
-          setState({ oldTokens, newTokens, loading: false, unavailable: false })
+        if (!cancelled) {
+          setState({
+            oldTokens,
+            newTokens,
+            loading: false,
+            unavailable: false,
+          })
+        }
       },
       () => {
-        if (!cancelled)
-          setState({ oldTokens: null, newTokens: null, loading: false, unavailable: true })
+        if (!cancelled) {
+          setState({
+            oldTokens: null,
+            newTokens: null,
+            loading: false,
+            unavailable: true,
+          })
+        }
       },
     )
     return () => {

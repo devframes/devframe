@@ -10,7 +10,12 @@ interface SummaryProps {
   onHover?: (impact: Impact | null) => void
 }
 
-const IMPACTS: Impact[] = ['critical', 'serious', 'moderate', 'minor']
+const IMPACTS: Impact[] = [
+  'critical',
+  'serious',
+  'moderate',
+  'minor',
+]
 
 /**
  * The severity summary chips, which double as the impact filter. The one expressive,

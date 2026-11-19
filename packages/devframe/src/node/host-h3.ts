@@ -46,7 +46,9 @@ export function createH3DevframeHost(options: CreateH3DevframeHostOptions): Devf
       return options.mount?.(base, source)
     },
     resolveOrigin() {
-      return typeof options.origin === 'function' ? options.origin() : options.origin
+      return typeof options.origin === 'function'
+        ? options.origin()
+        : options.origin
     },
     getStorageDir(scope) {
       const namespace = `.${options.appName}/devframe`

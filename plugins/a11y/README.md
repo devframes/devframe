@@ -85,7 +85,13 @@ createA11yDevframe({
   logIssues: true, //        log new violations to the console (default true)
   defaultHighlight: false, // auto-pin a route's violations on first scan (default false)
   axe: {
-    tags: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'],
+    tags: [
+      'wcag2a',
+      'wcag2aa',
+      'wcag21aa',
+      'wcag22aa',
+      'best-practice'
+    ],
     runOptions: {}, //       extra axe `run` options merged over the defaults
   },
 })

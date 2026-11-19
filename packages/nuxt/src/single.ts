@@ -117,7 +117,9 @@ export default defineNuxtModule<ModuleOptions>({
     const runtimeDir = resolve('./runtime')
 
     nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(runtimeDir, 'types') })
+      references.push({
+        path: resolve(runtimeDir, 'types'),
+      })
     })
 
     addPlugin({
@@ -129,7 +131,9 @@ export default defineNuxtModule<ModuleOptions>({
     // user opts out; `apply: 'serve'` on the inner Vite plugin is a
     // second guard against accidental activation during build.
     if (options.devframe && options.devMiddleware !== false && nuxt.options.dev) {
-      const mw = typeof options.devMiddleware === 'object' ? options.devMiddleware : {}
+      const mw = typeof options.devMiddleware === 'object'
+        ? options.devMiddleware
+        : {}
       const host = mw.host
         ?? (nuxt.options.devServer as any)?.host
         ?? options.devframe.cli?.host

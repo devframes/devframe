@@ -38,10 +38,15 @@ async function main(): Promise<void> {
 
     const code = result.status ?? result.signal ?? 'unknown'
     const isLastAttempt = attempt === attempts
-    console.error(`\n[ci-retry] \`${command}\` failed (exit ${code}), attempt ${attempt}/${attempts}${isLastAttempt ? '' : `; retrying in ${delayMs}ms`}\n`)
+    console.error(`\n[ci-retry] \`${command}\` failed (exit ${code}), attempt ${attempt}/${attempts}${isLastAttempt
+      ? ''
+      : `; retrying in ${delayMs}ms`}\n`)
 
-    if (isLastAttempt)
-      process.exit(typeof result.status === 'number' ? result.status : 1)
+    if (isLastAttempt) {
+      process.exit(typeof result.status === 'number'
+        ? result.status
+        : 1)
+    }
 
     await sleep(delayMs)
   }

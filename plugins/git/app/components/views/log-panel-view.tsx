@@ -62,14 +62,23 @@ function relativeTime(epoch: number): string {
   const mins = Math.round(diff / 60000)
   if (mins < 1)
     return 'just now'
-  if (mins < 60)
-    return `${mins} minute${mins === 1 ? '' : 's'} ago`
+  if (mins < 60) {
+    return `${mins} minute${mins === 1
+      ? ''
+      : 's'} ago`
+  }
   const hours = Math.round(mins / 60)
-  if (hours < 24)
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  if (hours < 24) {
+    return `${hours} hour${hours === 1
+      ? ''
+      : 's'} ago`
+  }
   const days = Math.round(hours / 24)
-  if (days < 30)
-    return `${days} day${days === 1 ? '' : 's'} ago`
+  if (days < 30) {
+    return `${days} day${days === 1
+      ? ''
+      : 's'} ago`
+  }
   return new Date(epoch).toLocaleDateString()
 }
 
@@ -150,7 +159,11 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
     return (
       <span
         className="inline-flex max-w-[140px] items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] leading-none font-medium"
-        style={{ color, borderColor: withAlpha(color, 0.5), backgroundColor: withAlpha(color, 0.12) }}
+        style={{
+          color,
+          borderColor: withAlpha(color, 0.5),
+          backgroundColor: withAlpha(color, 0.12),
+        }}
       >
         <Icon name="i-ph-tag-duotone" className="size-2.5 shrink-0" />
         <span className="truncate" title={refToken.name}>{refToken.name}</span>
@@ -166,7 +179,9 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
     )
   }
 
-  const name = refToken.kind === 'remote' ? `${refToken.remote}/${refToken.name}` : refToken.name
+  const name = refToken.kind === 'remote'
+    ? `${refToken.remote}/${refToken.name}`
+    : refToken.name
   const current = refToken.kind === 'branch' && refToken.current
 
   return (
@@ -175,7 +190,13 @@ function RefLabel({ refToken, color }: { refToken: GitRef, color: string }) {
       style={
         current
           ? { color: '#fff', backgroundColor: color }
-          : { color, borderColor: withAlpha(color, 0.5), backgroundColor: withAlpha(color, 0.12), borderWidth: 1, borderStyle: 'solid' }
+          : {
+              color,
+              borderColor: withAlpha(color, 0.5),
+              backgroundColor: withAlpha(color, 0.12),
+              borderWidth: 1,
+              borderStyle: 'solid',
+            }
       }
     >
       {current
@@ -239,7 +260,9 @@ function CommitHoverCard({ commit, detail, onOpen }: {
                   <span className="color-base font-medium">
                     {files}
                     {' '}
-                    {files === 1 ? 'file' : 'files'}
+                    {files === 1
+                      ? 'file'
+                      : 'files'}
                     {' '}
                     changed
                   </span>
@@ -284,10 +307,17 @@ const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, s
     open,
     onOpenChange: setOpen,
     placement: 'bottom-start',
-    middleware: [offset(6), flip({ padding: 8 }), shift({ padding: 8 })],
+    middleware: [
+      offset(6),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+    ],
     whileElementsMounted: autoUpdate,
   })
-  const hover = useHover(floating.context, { delay: { open: 200, close: 80 }, handleClose: safePolygon() })
+  const hover = useHover(floating.context, {
+    delay: { open: 200, close: 80 },
+    handleClose: safePolygon(),
+  })
   const focus = useFocus(floating.context)
   const dismiss = useDismiss(floating.context)
   const { getReferenceProps, getFloatingProps } = useInteractions([hover, focus, dismiss])
@@ -304,7 +334,12 @@ const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, s
     return () => {
       alive = false
     }
-  }, [open, detail, onLoadDetail, commit.hash])
+  }, [
+    open,
+    detail,
+    onLoadDetail,
+    commit.hash,
+  ])
 
   return (
     <li>
@@ -318,7 +353,9 @@ const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, s
           selected ? 'bg-active' : 'hover:bg-active',
         )}
         style={{ height: ROW_H }}
-        {...getReferenceProps({ onClick: () => onSelect?.(commit.hash) })}
+        {...getReferenceProps({
+          onClick: () => onSelect?.(commit.hash),
+        })}
       >
         <div className="relative z-10">
           <GraphCell row={row} width={gutter} isHead={isHead} topStub={topStub} />
@@ -346,7 +383,9 @@ const CommitRow = memo(({ commit, row, gutter, currentBranch, isHead, topStub, s
             ref={floating.refs.setFloating}
             style={floating.floatingStyles}
             data-af-animate
-            data-state={status === 'open' ? 'open' : 'closed'}
+            data-state={status === 'open'
+              ? 'open'
+              : 'closed'}
             className="border-base bg-base z-tooltip w-80 overflow-hidden rounded-lg border shadow-lg"
             {...getFloatingProps()}
           >
@@ -393,7 +432,9 @@ function WipRow({ col, color, gutter, changes }: {
         <span className="color-muted text-xs">
           {changes}
           {' '}
-          {changes === 1 ? 'change' : 'changes'}
+          {changes === 1
+            ? 'change'
+            : 'changes'}
         </span>
       </div>
     </li>
@@ -469,7 +510,9 @@ export function LogPanelView(props: LogPanelViewProps) {
           <h2 className="text-lg leading-none font-semibold tracking-tight">Commit History</h2>
           <span className="color-muted shrink-0 text-xs tabular-nums">
             {isRepo
-              ? `${commits.length}${hasMore ? '+' : ''}${selectedRef ? ` · ${selectedRef}` : ''}`
+              ? `${commits.length}${hasMore ? '+' : ''}${selectedRef
+                ? ` · ${selectedRef}`
+                : ''}`
               : ''}
           </span>
         </div>

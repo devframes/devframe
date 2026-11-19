@@ -9,12 +9,20 @@ import { rename } from './functions/rename'
 import { upload } from './functions/upload'
 
 /** Read-only RPC, always registered. */
-export const readFunctions = [list, readImageMeta, readText, capabilities] as const
+export const readFunctions = [
+  list,
+  readImageMeta,
+  readText,
+  capabilities,
+] as const
 
 /** Mutating RPC, registered only when write actions are enabled. */
 export const writeFunctions = [upload, rename, deleteAssets, mkdir] as const
 
-export const serverFunctions = [...readFunctions, ...writeFunctions] as const
+export const serverFunctions = [
+  ...readFunctions,
+  ...writeFunctions,
+] as const
 
 declare module 'devframe' {
   interface DevframeRpcServerFunctions extends RpcDefinitionsToFunctions<typeof serverFunctions> {}

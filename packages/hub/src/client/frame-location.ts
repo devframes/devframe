@@ -85,7 +85,9 @@ export function watchFrameLocation(options: WatchFrameLocationOptions): () => vo
   function readableWindow(): FrameLocationWindow | null {
     try {
       const win = iframe.contentWindow
-      return win && typeof win.location.href === 'string' ? win : null
+      return win && typeof win.location.href === 'string'
+        ? win
+        : null
     }
     catch {
       return null

@@ -14,5 +14,7 @@ export function isQualifiedName(name: string): boolean {
  * ids explicitly (e.g. `ctx.rpc.call('other-plugin:fn')`).
  */
 export function qualifyName(namespace: string, name: string): string {
-  return isQualifiedName(name) ? name : `${namespace}:${name}`
+  return isQualifiedName(name)
+    ? name
+    : `${namespace}:${name}`
 }

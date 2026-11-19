@@ -13,12 +13,18 @@ const stageEl = document.querySelector<HTMLElement>('#dock-stage')!
 const appEl = document.querySelector<HTMLElement>('#app-under-test')!
 
 function setStatus(text: string, kind?: 'ready' | 'error') {
-  const dot = kind === 'ready' ? 'bg-success' : kind === 'error' ? 'bg-error' : 'bg-neutral-400'
+  const dot = kind === 'ready'
+    ? 'bg-success'
+    : kind === 'error'
+      ? 'bg-error'
+      : 'bg-neutral-400'
   connEl.innerHTML = `<span class="inline-block size-1.5 rounded-full shrink-0 ${dot} mr-1.5 align-middle"></span>${text}`
 }
 
 function dockIcon(entry: DevframeDockEntry): string {
-  const cls = iconClass(typeof entry.icon === 'string' ? entry.icon : undefined)
+  const cls = iconClass(typeof entry.icon === 'string'
+    ? entry.icon
+    : undefined)
   if (cls)
     return `<span class="${cls} shrink-0 text-lg"></span>`
   const initial = (entry.title?.[0] ?? '?').toUpperCase()
@@ -72,8 +78,12 @@ async function main() {
   }
 
   function showSelection(list: DevframeDockEntry[]): void {
-    const entry = docksCtx.selectedId ? list.find(d => d.id === docksCtx.selectedId) ?? null : null
-    const active = entry && isIframeDock(entry) ? ensureIframe(entry) : null
+    const entry = docksCtx.selectedId
+      ? list.find(d => d.id === docksCtx.selectedId) ?? null
+      : null
+    const active = entry && isIframeDock(entry)
+      ? ensureIframe(entry)
+      : null
     for (const el of iframePool.values()) el.hidden = el !== active
   }
 
@@ -102,7 +112,9 @@ async function main() {
 
     docksEl.innerHTML = list.map(d =>
       `<li><button type="button" data-dock-id="${d.id}" title="${d.title}"
-         class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active${d.id === docksCtx.selectedId ? ' op100! bg-active border-base! color-base' : ''}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`,
+         class="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md border border-transparent text-sm op-fade select-none cursor-pointer transition hover:op100 hover:bg-active${d.id === docksCtx.selectedId
+            ? ' op100! bg-active border-base! color-base'
+            : ''}">${dockIcon(d)}<span class="truncate">${d.title}</span></button></li>`,
     ).join('')
 
     showSelection(list)

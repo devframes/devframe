@@ -13,7 +13,10 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 function noop() {}
-const violations = [makeViolation('image-alt', 'critical', 2), makeViolation('label', 'serious', 1)]
+const violations = [
+  makeViolation('image-alt', 'critical', 2),
+  makeViolation('label', 'serious', 1),
+]
 const base = {
   report: makeReport('/forms', violations),
   violations,
@@ -25,5 +28,9 @@ const base = {
   selection: stubSelection,
 }
 
-export const ActiveExpanded: Story = { args: { ...base, active: true, collapsed: false } }
-export const Collapsed: Story = { args: { ...base, active: false, collapsed: true } }
+export const ActiveExpanded: Story = {
+  args: { ...base, active: true, collapsed: false },
+}
+export const Collapsed: Story = {
+  args: { ...base, active: false, collapsed: true },
+}

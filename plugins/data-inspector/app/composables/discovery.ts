@@ -105,8 +105,14 @@ function typeAnnotation(value: unknown, context?: AnnotationContext): Annotation
   // Object-valued entries: identity lookup.
   if (value && typeof value === 'object') {
     const v = value as Record<string, unknown>
-    if (typeof v.$ref === 'string')
-      return { place: 'after', style: 'badge', text: '#Circular', className: 'di-type-badge di-type-ref' }
+    if (typeof v.$ref === 'string') {
+      return {
+        place: 'after',
+        style: 'badge',
+        text: '#Circular',
+        className: 'di-type-badge di-type-ref',
+      }
+    }
     const badge = objectBadges.get(value as object)
     if (badge)
       return { place: 'after', style: 'badge', ...badge }
@@ -184,7 +190,10 @@ export function useDiscoveryViewer(
     }
   }
 
-  const structConfig: Record<string, unknown> = { annotations: [typeAnnotation, editAnnotation], ...viewConfig }
+  const structConfig: Record<string, unknown> = {
+    annotations: [typeAnnotation, editAnnotation],
+    ...viewConfig,
+  }
 
   /**
    * Delegate clicks on the "load deeper" link badges the display transform
@@ -226,7 +235,9 @@ export function useDiscoveryViewer(
           link.classList.add('di-lazy-error')
           const errorEl = document.createElement('div')
           errorEl.className = 'di-lazy-children-error'
-          errorEl.textContent = error instanceof Error ? error.message : String(error)
+          errorEl.textContent = error instanceof Error
+            ? error.message
+            : String(error)
           anchorLine(link).after(errorEl)
         })
     })

@@ -13,10 +13,26 @@ import { createNextDevframeHub } from '@devframes/next/hub'
 const jsonRenderSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
-    root: { type: 'Card', props: { title: 'JSON Render' }, children: ['body'] },
-    body: { type: 'Stack', props: { gap: 8 }, children: ['text', 'badge'] },
-    text: { type: 'Text', props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' }, children: [] },
-    badge: { type: 'Badge', props: { text: 'renderer manifest', variant: 'info' }, children: [] },
+    root: {
+      type: 'Card',
+      props: { title: 'JSON Render' },
+      children: ['body'],
+    },
+    body: {
+      type: 'Stack',
+      props: { gap: 8 },
+      children: ['text', 'badge'],
+    },
+    text: {
+      type: 'Text',
+      props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' },
+      children: [],
+    },
+    badge: {
+      type: 'Badge',
+      props: { text: 'renderer manifest', variant: 'info' },
+      children: [],
+    },
   },
 }
 
@@ -68,13 +84,17 @@ async function loadHub(): Promise<HubInstance> {
   // `--devframe-primary` (see the shared `design/primary-ramp.css`).
   return createNextDevframeHub({
     devframes,
-    ui: (hubUi.createUi as typeof CreateUi)({ branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' } }),
+    ui: (hubUi.createUi as typeof CreateUi)({
+      branding: { primaryColor: '#3f8ba9', productName: 'Devframes on Next.js' },
+    }),
     /**
      * Serve the reference json-render frontend as a prebuilt renderer module,
      * the one-liner that makes `'json-render'` docks render in the prebuilt
      * hub UI provider. Swap it for any community implementation of the same contract.
      */
-    renderers: [(jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)()],
+    renderers: [
+      (jsonRenderUi.jsonRenderUiRenderer as typeof JsonRenderUiRenderer)(),
+    ],
     configure(ctx) {
       ctx.docks.register(jsonRenderDock)
     },

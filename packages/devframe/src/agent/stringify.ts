@@ -39,10 +39,20 @@ export function stringifyForMcp(value: unknown): string {
         out.cause = (val as { cause?: unknown }).cause
       return out
     }
-    if (val instanceof Map)
-      return { __type: 'Map', entries: [...val.entries()] }
-    if (val instanceof Set)
-      return { __type: 'Set', entries: [...val] }
+    if (val instanceof Map) {
+      return {
+        __type: 'Map',
+        entries: [
+          ...val.entries(),
+        ],
+      }
+    }
+    if (val instanceof Set) {
+      return {
+        __type: 'Set',
+        entries: [...val],
+      }
+    }
     if (typeof val === 'function')
       return `[Function: ${val.name || 'anonymous'}]`
     if (typeof val === 'symbol')
@@ -71,8 +81,12 @@ export function formatMcpError(error: unknown): string {
       error: {
         code: error.code,
         message: error.message,
-        ...(error.fix ? { fix: error.fix } : {}),
-        ...(error.docs ? { docs: error.docs } : {}),
+        ...(error.fix
+          ? { fix: error.fix }
+          : {}),
+        ...(error.docs
+          ? { docs: error.docs }
+          : {}),
       },
     }, null, 2)
   }

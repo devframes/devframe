@@ -25,7 +25,12 @@ export const rename = defineRpcFunction({
   name: 'devframes:plugin:assets:rename',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ path: s.string(), newName: s.string() })],
+  args: [
+    s.object({
+      path: s.string(),
+      newName: s.string(),
+    }),
+  ],
   returns: assetInfoSchema,
   agent: {
     title: 'Rename an asset',
@@ -44,7 +49,9 @@ export const rename = defineRpcFunction({
 
         const folder = dirname(path)
         const nextName = `${trimmed}${extname(path)}`
-        const nextRelPath = folder === '.' ? nextName : `${folder}/${nextName}`
+        const nextRelPath = folder === '.'
+          ? nextName
+          : `${folder}/${nextName}`
         // Reject a pre-existing symlink component on either side before we
         // touch the filesystem.
         const from = await assertAssetMutationPath(assets.dir, path)

@@ -91,12 +91,20 @@ export interface CreateMcpFetchHandlerOptions {
   serverName: string;
   serverVersion: string;
   exposeSharedState: boolean | ((_: string) => boolean);
+  instructions?: string;
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
 }
 export interface CreateMcpServerOptions {
   transport?: 'stdio';
   exposeSharedState?: boolean | ((_: string) => boolean);
+  instructions?: string;
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
   serverName?: string;
   serverVersion?: string;
   onReady?: (_: {
@@ -229,6 +237,7 @@ export interface DevframeNodeRpcSessionMeta {
   uploadingStreams?: Set<string>;
 }
 export interface DevframeRpcClientFunctions {
+  'devframe:rpc:cache:invalidate': () => Promise<void>;
   'devframe:agent:invoke-client-tool': (_: string, _: Record<string, unknown>) => Promise<unknown>;
   'devframe:auth:revoked': () => Promise<void>;
   'devframe:streaming:chunk': (_: string, _: string, _: number, _: any) => Promise<void>;
@@ -258,7 +267,8 @@ export interface DevframeRpcOptions {
   snapshot?: DevframeSnapshotRpcEntry[];
 }
 export interface DevframeRpcServerFunctions {
-  'devframe:agent:sync-client-tools': (_: string, _: BrowserAgentToolManifest[]) => Promise<void>;
+  'devframe:rpc:cacheable-functions': () => Promise<string[]>;
+  'devframe:agent:sync-client-tools': (_: string, _: BrowserAgentToolManifest[], _: BrowserAgentClientInfo) => Promise<void>;
   'anonymous:devframe:auth': (_: {
     authToken: string;
     ua: string;
@@ -510,10 +520,59 @@ export interface McpFetchHandler {
   fetch: (_: Request, _?: McpConnectionInfo) => Promise<Response>;
   dispose: () => Promise<void>;
 }
+export interface McpPrompt {
+  name: string;
+  title?: string;
+  description?: string;
+  arguments?: McpPromptArgument[];
+  get: (_: Record<string, string>) => McpPromptResult | Promise<McpPromptResult>;
+}
+export interface McpPromptArgument {
+  name: string;
+  description?: string;
+  required?: boolean;
+}
+export interface McpPromptMessage {
+  role: 'user' | 'assistant';
+  content: {
+    type: 'text';
+    text: string;
+  };
+}
+export interface McpPromptResult {
+  description?: string;
+  messages: McpPromptMessage[];
+}
+export interface McpResourceTemplate {
+  uriTemplate: string;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+  list?: (_: DevframeNodeContext) => McpResourceTemplateEntry[] | Promise<McpResourceTemplateEntry[]>;
+  read: (_: Record<string, string>, _: string, _: DevframeNodeContext) => McpResourceTemplateContent | Promise<McpResourceTemplateContent>;
+}
+export interface McpResourceTemplateContent {
+  text?: string;
+  json?: unknown;
+  mimeType?: string;
+}
+export interface McpResourceTemplateEntry {
+  uri: string;
+  name: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+}
 export interface McpRouteOptions {
   path?: string;
   authorization?: McpAuthorization;
   allowedOrigins?: readonly string[] | false;
+  exposeSharedState?: boolean | ((_: string) => boolean);
+  instructions?: string;
+  resourceTemplates?: McpResourceTemplate[];
+  onResourcesChanged?: McpResourcesChangedHook;
+  prompts?: McpPrompt[];
 }
 export interface McpServerHandle {
   stop: () => Promise<void>;
@@ -603,7 +662,6 @@ export interface ScopedBroadcastOptions<METHOD, Args extends any[]> {
 
 // #region Types
 export type AgentToolProvider = () => readonly AgentToolInput[];
-export type DevframeDefineDiagnosticsOptions<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[] = []> = Parameters<typeof defineDiagnostics<Codes, Reporters>>[0];
 export type DevframeDeploymentKind = 'standalone' | 'hosted';
 export type DevframeDiagnosticsLogger = Record<string, any>;
 export type DevframeDuplicationStrategy = 'warn' | 'silent' | 'throw' | 'duplicate';
@@ -631,6 +689,19 @@ export type DevframeTracingSourceEvent = {
   channel: string;
 };
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
+export type McpContentBlock = {
+  type: 'text';
+  text: string;
+} | {
+  type: 'image';
+  data: string;
+  mimeType: string;
+} | {
+  type: 'audio';
+  data: string;
+  mimeType: string;
+};
+export type McpResourcesChangedHook = (_: () => void, _: DevframeNodeContext) => () => void;
 export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;
 export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFunctions, DevframeNodeContext> & {
@@ -653,8 +724,13 @@ export type StaticAssetsSource = string | RemoteAssets;
 
 // #region Functions
 export declare function defineDevframe(_: DevframeDefinition): DevframeDefinition;
+export declare function withMcpContent<T extends object>(_: T, _: readonly McpContentBlock[]): T;
 // #endregion
 
 // #region Variables
 export declare const defineRpcFunction: <NAME extends string, TYPE extends RpcFunctionType, ARGS extends any[], RETURN = void, const AS extends RpcArgsSchema | undefined = undefined, const RS extends RpcReturnSchema | undefined = undefined>(definition: RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeNodeContext>) => RpcFunctionDefinition<NAME, TYPE, ARGS, RETURN, AS, RS, DevframeNodeContext>;
+// #endregion
+
+// #region Other
+export { DevframeDefineDiagnosticsOptions }
 // #endregion

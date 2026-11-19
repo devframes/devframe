@@ -126,7 +126,9 @@ export function createLiveRpcClientMode(
           if (settled)
             return
           finish()
-          const err = error instanceof Error ? error : new Error(String(error))
+          const err = error instanceof Error
+            ? error
+            : new Error(String(error))
           events.emit(DEVFRAME_EVENTS.client.error, err, method)
           reject(err)
         },
@@ -239,7 +241,9 @@ export function createLiveRpcClientMode(
     await serverRpc.$call('anonymous:devframe:auth:request-code', {
       ua: navigator.userAgent,
       origin: location.origin,
-      ...(options.reissue ? { reissue: true } : {}),
+      ...(options.reissue
+        ? { reissue: true }
+        : {}),
     })
   }
 

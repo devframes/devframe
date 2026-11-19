@@ -134,7 +134,13 @@ export function attachFrameNavClient(options: FrameNavClientOptions): FrameNavCl
 
   function post(message: FrameNavHostPayload): void {
     iframe.contentWindow?.postMessage(
-      { channel: FRAME_NAV_CHANNEL, v: FRAME_NAV_VERSION, frameId, from: 'host', ...message },
+      {
+        channel: FRAME_NAV_CHANNEL,
+        v: FRAME_NAV_VERSION,
+        frameId,
+        from: 'host',
+        ...message,
+      },
       expectedOrigin,
     )
   }
@@ -329,11 +335,18 @@ function deriveFallbackUrl(base: string, navTarget: NavTarget): string {
   catch {
     return base
   }
-  const path = navTarget.path.startsWith('#') ? navTarget.path.slice(1) : navTarget.path
+  const path = navTarget.path.startsWith('#')
+    ? navTarget.path.slice(1)
+    : navTarget.path
   let hash = `#${path}`
-  const qs = navTarget.query ? serializeNavQuery(navTarget.query) : ''
-  if (qs)
-    hash += (path.includes('?') ? '&' : '?') + qs
+  const qs = navTarget.query
+    ? serializeNavQuery(navTarget.query)
+    : ''
+  if (qs) {
+    hash += (path.includes('?')
+      ? '&'
+      : '?') + qs
+  }
   url.hash = hash
   return url.toString()
 }

@@ -191,8 +191,13 @@ async function remoteResponse(store: RemoteAssetsStore, urlPath: string, accept:
   catch (error) {
     if (typeof accept === 'string' && accept.includes('text/html')) {
       return new Response(
-        remoteErrorPage(store.assets.package, store.assets.version, error instanceof Error ? error.message : String(error)),
-        { status: 502, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+        remoteErrorPage(store.assets.package, store.assets.version, error instanceof Error
+          ? error.message
+          : String(error)),
+        {
+          status: 502,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        },
       )
     }
     return new Response(null, { status: 502 })
@@ -289,9 +294,13 @@ export function serveStaticNodeMiddleware(
   source: ServableAssets,
   options?: ServeStaticOptions,
 ): (req: IncomingMessage, res: ServerResponse, next?: (err?: Error) => void) => void {
-  const absDir = typeof source === 'string' ? resolve(source) : undefined
+  const absDir = typeof source === 'string'
+    ? resolve(source)
+    : undefined
   const opts = normalizeOptions(options)
-  const realRoot = absDir === undefined ? undefined : canonicalRoot(absDir)
+  const realRoot = absDir === undefined
+    ? undefined
+    : canonicalRoot(absDir)
   return (req, res, next) => {
     void (async () => {
       const method = req.method
@@ -342,7 +351,9 @@ export function serveStaticNodeMiddleware(
       createReadStream(file.abs).pipe(res)
     })().catch((err: unknown) => {
       if (next) {
-        next(err instanceof Error ? err : new Error(String(err)))
+        next(err instanceof Error
+          ? err
+          : new Error(String(err)))
         return
       }
       res.statusCode = 500
@@ -364,7 +375,12 @@ function remoteErrorPage(pkg: string, version: string, reason: string): string {
   const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const name = esc(pkg)
   const ver = esc(version)
-  const message: RemoteAssetsErrorMessage = { type: DEVFRAME_EVENTS.postMessage.remoteAssetsError, package: pkg, version, reason }
+  const message: RemoteAssetsErrorMessage = {
+    type: DEVFRAME_EVENTS.postMessage.remoteAssetsError,
+    package: pkg,
+    version,
+    reason,
+  }
   // `</script>` inside the JSON would end the block early; `<` is the only
   // character that can do that, and escaping it keeps the literal valid JS.
   const payload = JSON.stringify(message).replace(/</g, '\\u003c')

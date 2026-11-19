@@ -106,7 +106,9 @@ const selected = ref('hono')
 const current = computed(() => examples.find(example => example.id === selected.value)!)
 const colorMode = useColorMode()
 const highlighter = shallowRef<HighlighterCore>()
-const shikiTheme = computed(() => colorMode.value === 'dark' ? 'vitesse-dark' : 'vitesse-light')
+const shikiTheme = computed(() => colorMode.value === 'dark'
+  ? 'vitesse-dark'
+  : 'vitesse-light')
 
 let disposed = false
 

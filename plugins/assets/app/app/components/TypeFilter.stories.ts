@@ -5,7 +5,9 @@ const meta = {
   title: 'Assets/TypeFilter',
   component: TypeFilter,
   tags: ['autodocs'],
-  argTypes: { onToggle: { action: 'toggle' } },
+  argTypes: {
+    onToggle: { action: 'toggle' },
+  },
 } satisfies Meta<typeof TypeFilter>
 
 export default meta

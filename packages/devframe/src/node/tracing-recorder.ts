@@ -51,13 +51,19 @@ export class TracingRecorder implements DevframeTracingRecorder {
   }
 
   register(channel: string | TracingChannel, meta?: { description?: string }): TracingChannel {
-    const name = typeof channel === 'string' ? channel : baseName(channel)
-    return this.add(name, 'registered', meta?.description, typeof channel === 'string' ? undefined : channel).channel
+    const name = typeof channel === 'string'
+      ? channel
+      : baseName(channel)
+    return this.add(name, 'registered', meta?.description, typeof channel === 'string'
+      ? undefined
+      : channel).channel
   }
 
   applyOptions(options: DevframeTracingOptions | undefined): void {
     for (const entry of options?.channels ?? []) {
-      const { name, description } = typeof entry === 'string' ? { name: entry, description: undefined } : entry
+      const { name, description } = typeof entry === 'string'
+        ? { name: entry, description: undefined }
+        : entry
       this.add(name, 'config', description)
     }
   }
@@ -74,7 +80,9 @@ export class TracingRecorder implements DevframeTracingRecorder {
     if (!this.supported) {
       if (!this.warnedUnsupported) {
         this.warnedUnsupported = true
-        diagnostics.DF0081({ runtime: detectServerRuntime() })
+        diagnostics.DF0086({
+          runtime: detectServerRuntime(),
+        })
       }
       return
     }
@@ -138,7 +146,12 @@ export class TracingRecorder implements DevframeTracingRecorder {
     let changed = false
     if (!entry) {
       entry = {
-        info: { name, source, recording: false, count: 0 },
+        info: {
+          name,
+          source,
+          recording: false,
+          count: 0,
+        },
         channel: channel ?? this.createChannel(name),
         records: [],
         byContext: new WeakMap(),
@@ -174,24 +187,36 @@ export class TracingRecorder implements DevframeTracingRecorder {
   private onPhase(entry: ChannelEntry, phase: DevframeTracePhase, message: unknown): void {
     const at = Date.now()
     const keyed = typeof message === 'object' && message !== null
-    const record = (keyed ? entry.byContext.get(message) : undefined) ?? this.openRecord(entry, at, keyed ? message : undefined)
+    const record = (keyed
+      ? entry.byContext.get(message)
+      : undefined) ?? this.openRecord(entry, at, keyed ? message : undefined)
 
     record.events.push({ phase, at })
     record.duration = at - record.startedAt
-    const { result, error, ...rest } = keyed ? (message as { result?: unknown, error?: unknown }) : {}
+    const { result, error, ...rest } = keyed
+      ? (message as { result?: unknown, error?: unknown })
+      : {}
     record.context = serializeTraceValue(keyed ? rest : message)
     if (result !== undefined)
       record.result = serializeTraceValue(result)
     if (phase === 'error') {
       record.status = 'error'
       const serialized = serializeTraceValue(error)
-      record.error = isErrorShape(serialized) ? serialized : { name: 'Error', message: String(error) }
+      record.error = isErrorShape(serialized)
+        ? serialized
+        : {
+            name: 'Error',
+            message: String(error),
+          }
     }
     else if ((phase === 'end' || phase === 'asyncEnd') && record.status === 'pending') {
       record.status = 'ok'
     }
 
-    const snapshot = { ...record, events: [...record.events] }
+    const snapshot = {
+      ...record,
+      events: [...record.events],
+    }
     for (const fn of entry.listeners)
       fn(snapshot)
     this.emit({ type: 'record', record: snapshot })

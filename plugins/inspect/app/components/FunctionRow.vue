@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { RpcFunctionInfo } from '../connect'
 import ActionButton from '@antfu/design/components/Action/ActionButton.vue'
-import { computed, ref } from 'vue'
+import FeedbackTip from '@antfu/design/components/Feedback/FeedbackTip.vue'
+import { computed, ref, useId } from 'vue'
 import FunctionName from './FunctionName.vue'
 import JsonView from './JsonView.vue'
 
@@ -11,6 +12,7 @@ const props = defineProps<{
   results: Record<string, any>
   pending: Record<string, boolean>
   isStatic: boolean
+  invokeError?: string
 }>()
 
 const emit = defineEmits<{
@@ -19,6 +21,7 @@ const emit = defineEmits<{
 }>()
 
 const expanded = ref(false)
+const invokeErrorId = useId()
 
 const clickable = computed(() =>
   props.fn.invokable || !!props.fn.agent || props.fn.hasArgs || props.fn.hasReturns,
@@ -67,7 +70,25 @@ function toggle(): void {
         <div class="label">
           Invoke with positional args as a JSON array
         </div>
-        <textarea :value="argsInput[fn.name]" class="args" spellcheck="false" placeholder="[]" @input="emit('updateArgs', fn.name, ($event.target as HTMLTextAreaElement).value)" />
+        <textarea
+          :value="argsInput[fn.name]"
+          class="args"
+          spellcheck="false"
+          placeholder="[]"
+          :aria-invalid="!!invokeError"
+          :aria-describedby="invokeError ? invokeErrorId : undefined"
+          @input="emit('updateArgs', fn.name, ($event.target as HTMLTextAreaElement).value)"
+        />
+        <FeedbackTip
+          v-if="invokeError"
+          :id="invokeErrorId"
+          class="mt-2"
+          type="error"
+          icon="i-ph-warning-circle-duotone"
+          role="alert"
+        >
+          {{ invokeError }}
+        </FeedbackTip>
         <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
           <ActionButton
             variant="primary"

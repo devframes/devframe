@@ -31,7 +31,9 @@ function resolveAsset(urlPath) {
   const clean = urlPath.split('?')[0].split('#')[0]
   const decoded = decodeURIComponent(clean)
   // Treat trailing-slash URLs as index.html.
-  const requestPath = decoded.endsWith('/') ? `${decoded}index.html` : decoded
+  const requestPath = decoded.endsWith('/')
+    ? `${decoded}index.html`
+    : decoded
   const target = normalize(join(root, requestPath))
   const fromRoot = relative(root, target)
   if (fromRoot.startsWith('..') || isAbsolute(fromRoot))

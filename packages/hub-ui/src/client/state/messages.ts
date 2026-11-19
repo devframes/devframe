@@ -13,8 +13,11 @@ export interface MessagesState {
 function shouldToast(entry: DevframeMessageEntry, prev: DevframeMessageEntry | undefined, isInitialFetch: boolean): boolean {
   if (!entry.notify)
     return false
-  if (!prev)
-    return isInitialFetch ? entry.status === 'loading' : true
+  if (!prev) {
+    return isInitialFetch
+      ? entry.status === 'loading'
+      : true
+  }
   return JSON.stringify(entry) !== JSON.stringify(prev)
 }
 
@@ -48,7 +51,9 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     let removedIds = result.removedIds
     if (result.full) {
       const retainedIds = new Set(result.entries.map(entry => entry.id))
-      removedIds = [...entryMap.keys()].filter(id => !retainedIds.has(id))
+      removedIds = [
+        ...entryMap.keys(),
+      ].filter(id => !retainedIds.has(id))
     }
     for (const id of removedIds) {
       entryMap.delete(id)
@@ -85,7 +90,10 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     },
   })
 
-  context.rpc.ensureTrusted().then(() => refresh())
+  // Background initialization waits for trust without a deadline. A page can
+  // stay untrusted while the user authorizes DevTools, and the default 60s
+  // deadline would only surface an unhandled rejection in the app.
+  context.rpc.ensureTrusted(0).then(() => refresh())
   return state
 }
 

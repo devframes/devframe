@@ -53,7 +53,11 @@ export function buildSegments(tokens: Token[] | null | undefined, content: strin
       continue
     const style = spans.find(span => span.start <= a && span.end > a)?.style
     const changed = wordRanges.some(([start, end]) => a >= start && a < end)
-    segments.push({ text: content.slice(a, b), style, changed })
+    segments.push({
+      text: content.slice(a, b),
+      style,
+      changed,
+    })
   }
   if (segments.length === 0)
     segments.push({ text: '', style: undefined, changed: false })

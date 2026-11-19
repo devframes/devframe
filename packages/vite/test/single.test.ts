@@ -153,7 +153,9 @@ describe('devframeViteBridge (bridge mode mcp)', () => {
     // The advertised endpoint is live: a real MCP client presenting a loopback
     // Origin (required by the route's gate) can connect and list agent tools.
     const transport = new StreamableHTTPClientTransport(new URL(`http://${host}:${vitePort}/__vite-bridge-test/__mcp`), {
-      requestInit: { headers: { origin: `http://${host}:${vitePort}` } },
+      requestInit: {
+        headers: { origin: `http://${host}:${vitePort}` },
+      },
     })
     const client = new Client({ name: 'test-client', version: '0.0.0' })
     try {
@@ -195,6 +197,31 @@ describe('devframeViteBridge (bridge mode mcp)', () => {
     finally {
       rpc.$close?.()
     }
+  })
+
+  it('at base `/`, leaves the host app\'s own pages to Vite', async () => {
+    const host = '127.0.0.1'
+    const vitePort = await getPort({ port: 19717, host })
+    bridge = devframeViteBridge(defineTestDef(), { host, base: '/', auth: false })
+
+    vite = fakeViteServer()
+    await vite.listen(vitePort, host)
+    await bridge.configureServer(vite)
+    // Vite's own middlewares (transform, static, index.html) run after a
+    // plugin's `configureServer` middlewares.
+    vite.middlewares.use((req, res) => {
+      res.setHeader('content-type', 'text/html')
+      res.end(`vite ${req.url}`)
+    })
+
+    for (const path of ['/', '/main.tsx']) {
+      const res = await fetch(`http://${host}:${vitePort}${path}`)
+      expect(res.status).toBe(200)
+      expect(await res.text()).toBe(`vite ${path}`)
+    }
+
+    const meta = await (await fetch(`http://${host}:${vitePort}/__connection.json`)).json()
+    expect(meta.websocket).toEqual({ path: '__ws' })
   })
 })
 
@@ -258,7 +285,9 @@ describe('devframeViteBridge (allowedOrigins)', () => {
   /** Attempt a raw WS upgrade carrying a spoofed browser Origin header. */
   async function upgradeWithOrigin(port: number, origin: string): Promise<'open' | 'closed'> {
     return await new Promise((resolve) => {
-      const ws = new WebSocket(`ws://127.0.0.1:${port}/__ws`, { headers: { origin } })
+      const ws = new WebSocket(`ws://127.0.0.1:${port}/__ws`, {
+        headers: { origin },
+      })
       ws.on('open', () => {
         ws.close()
         resolve('open')
@@ -311,7 +340,12 @@ describe('devframeVite (dispatcher)', () => {
 
   it('starts the RPC bridge when bridge: true', async () => {
     const port = await getPort({ port: 19750, host: '127.0.0.1' })
-    plugin = devframeVite(defineTestDef(), { bridge: true, port, host: '127.0.0.1', auth: false })
+    plugin = devframeVite(defineTestDef(), {
+      bridge: true,
+      port,
+      host: '127.0.0.1',
+      auth: false,
+    })
     vite = fakeViteServer()
     await plugin.configureServer?.(vite as any)
 

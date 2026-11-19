@@ -21,7 +21,9 @@ const groups = computed(() => groupByFolder(props.assets))
 const GRID_STYLE = { gridTemplateColumns: 'repeat(auto-fill, minmax(8rem, 1fr))' }
 
 function labelOf(asset: AssetInfo, folder: string): string {
-  return folder && asset.path.startsWith(folder) ? asset.path.slice(folder.length) : asset.path
+  return folder && asset.path.startsWith(folder)
+    ? asset.path.slice(folder.length)
+    : asset.path
 }
 </script>
 

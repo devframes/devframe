@@ -2,6 +2,7 @@ import type { AgenticMcpModule } from '../node/agentic'
 import type { DevframeAgentHost } from '../types/agent'
 import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeDeploymentKind, McpAuthorization, McpSetting } from '../types/devframe'
+import type { McpPrompt, McpResourcesChangedHook, McpResourceTemplate } from '../types/mcp'
 import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailingSlash } from 'devframe/utils/url'
 import { getPort } from 'get-port-please'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
@@ -20,7 +21,9 @@ const DEFAULT_PORT = 9999
 export function resolveBasePath(def: DevframeDefinition, kind: DevframeDeploymentKind): string {
   if (def.basePath)
     return normalizeBasePath(def.basePath)
-  return kind === 'standalone' ? '/' : `/__${def.id}/`
+  return kind === 'standalone'
+    ? '/'
+    : `/__${def.id}/`
 }
 
 export function normalizeBasePath(base: string): string {
@@ -68,6 +71,16 @@ export interface ResolvedMcpConfig {
   path?: string
   /** Origin allow-list, or `false` to disable the origin gate. */
   allowedOrigins?: readonly string[] | false
+  /** Shared-state exposure from the route options; omitted means every key. */
+  exposeSharedState?: boolean | ((key: string) => boolean)
+  /** Handshake `instructions` from the route options; omitted means none. */
+  instructions?: string
+  /** Resource templates from the route options; omitted means none. */
+  resourceTemplates?: McpResourceTemplate[]
+  /** Resource-list change subscription from the route options; omitted means none. */
+  onResourcesChanged?: McpResourcesChangedHook
+  /** Prompt templates from the route options; omitted means none. */
+  prompts?: McpPrompt[]
   /** The resolved identity policy: a bearer token, callback, or `false`. */
   authorization: McpAuthorization
 }
@@ -94,8 +107,27 @@ export function resolveMcpConfig(mcp: McpSetting | undefined): ResolvedMcpConfig
     ? false
     : mcp.authorization ?? false
   return {
-    ...(mcp.path !== undefined ? { path: mcp.path } : {}),
-    ...(mcp.allowedOrigins !== undefined ? { allowedOrigins: mcp.allowedOrigins } : {}),
+    ...(mcp.path !== undefined
+      ? { path: mcp.path }
+      : {}),
+    ...(mcp.allowedOrigins !== undefined
+      ? { allowedOrigins: mcp.allowedOrigins }
+      : {}),
+    ...(mcp.exposeSharedState !== undefined
+      ? { exposeSharedState: mcp.exposeSharedState }
+      : {}),
+    ...(mcp.instructions !== undefined
+      ? { instructions: mcp.instructions }
+      : {}),
+    ...(mcp.resourceTemplates !== undefined
+      ? { resourceTemplates: mcp.resourceTemplates }
+      : {}),
+    ...(mcp.onResourcesChanged !== undefined
+      ? { onResourcesChanged: mcp.onResourcesChanged }
+      : {}),
+    ...(mcp.prompts !== undefined
+      ? { prompts: mcp.prompts }
+      : {}),
     authorization,
   }
 }
@@ -145,6 +177,9 @@ export function resolveMcpConnectionMeta(
     return undefined
   const route = withoutLeadingSlash(config.path ?? DEVFRAME_MCP_ROUTE)
   return port != null
-    ? { path: withLeadingSlash(route), port }
+    ? {
+        path: withLeadingSlash(route),
+        port,
+      }
     : { path: route }
 }

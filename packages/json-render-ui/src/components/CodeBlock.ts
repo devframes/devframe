@@ -12,10 +12,14 @@ export const CodeBlock: JrComponent<CodeBlockProps> = ({ props }) => {
   const header = props.filename || props.language
     ? h('div', { class: 'flex items-center justify-between px2 py1 border-b border-base bg-panel-raised text-xs color-faint' }, [
         h('span', props.filename ?? ''),
-        props.language ? h('span', { class: 'font-mono uppercase' }, props.language) : null,
+        props.language
+          ? h('span', { class: 'font-mono uppercase' }, props.language)
+          : null,
       ])
     : null
-  const preStyle = props.height != null ? { maxHeight: `${props.height}px` } : undefined
+  const preStyle = props.height != null
+    ? { maxHeight: `${props.height}px` }
+    : undefined
   return h('div', { 'class': 'rounded border border-base overflow-hidden bg-panel-sunken', 'data-language': props.language }, [
     header,
     h(

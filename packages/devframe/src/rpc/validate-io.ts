@@ -11,7 +11,9 @@ async function runStandardSchema<T extends StandardSchemaV1>(
   value: unknown,
 ): Promise<StandardSchemaV1.Result<StandardSchemaV1.InferOutput<T>>> {
   const result = schema['~standard'].validate(value)
-  return result instanceof Promise ? await result : result
+  return result instanceof Promise
+    ? await result
+    : result
 }
 
 /**
@@ -22,9 +24,13 @@ function formatIssues(issues: readonly StandardSchemaV1.Issue[]): string {
   return issues
     .map((issue) => {
       const path = issue.path
-        ?.map(segment => (typeof segment === 'object' ? segment.key : segment))
+        ?.map(segment => (typeof segment === 'object'
+          ? segment.key
+          : segment))
         .join('.')
-      return path ? `${path}: ${issue.message}` : issue.message
+      return path
+        ? `${path}: ${issue.message}`
+        : issue.message
     })
     .join('; ')
 }
@@ -55,8 +61,13 @@ export async function validateRpcArgs(
     if (!schema)
       continue
     const result = await runStandardSchema(schema, args[index])
-    if (result.issues)
-      throw diagnostics.DF0043({ name, index, issues: formatIssues(result.issues) })
+    if (result.issues) {
+      throw diagnostics.DF0043({
+        name,
+        index,
+        issues: formatIssues(result.issues),
+      })
+    }
   }
 
   return original
@@ -78,7 +89,11 @@ export async function validateRpcReturn(
   if (!returnSchema)
     return value
   const result = await runStandardSchema(returnSchema, value)
-  if (result.issues)
-    throw diagnostics.DF0044({ name, issues: formatIssues(result.issues) })
+  if (result.issues) {
+    throw diagnostics.DF0044({
+      name,
+      issues: formatIssues(result.issues),
+    })
+  }
   return value
 }

@@ -14,10 +14,26 @@ defineProps<{
 }>()
 
 const tabs = computed(() => [
-  { id: 'appearance', label: t('settings.appearance'), icon: 'i-ph-paint-brush-duotone' },
-  { id: 'docks', label: t('settings.docks'), icon: 'i-ph-layout-duotone' },
-  { id: 'shortcuts', label: t('settings.shortcuts'), icon: 'i-ph-keyboard-duotone' },
-  { id: 'advanced', label: t('settings.advanced'), icon: 'i-ph-wrench-duotone' },
+  {
+    id: 'appearance',
+    label: t('settings.appearance'),
+    icon: 'i-ph-paint-brush-duotone',
+  },
+  {
+    id: 'docks',
+    label: t('settings.docks'),
+    icon: 'i-ph-layout-duotone',
+  },
+  {
+    id: 'shortcuts',
+    label: t('settings.shortcuts'),
+    icon: 'i-ph-keyboard-duotone',
+  },
+  {
+    id: 'advanced',
+    label: t('settings.advanced'),
+    icon: 'i-ph-wrench-duotone',
+  },
 ] as const)
 
 type TabId = (typeof tabs)['value'][number]['id']

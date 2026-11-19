@@ -92,26 +92,54 @@ export async function createNextDevframeHub(options: NextDevframeHubOptions = {}
 
   return initHub({
     base,
-    ...(options.cwd != null ? { cwd: options.cwd } : {}),
-    ...(options.host != null ? { host: options.host } : {}),
-    ...(options.origin != null ? { origin: options.origin } : {}),
+    ...(options.cwd != null
+      ? { cwd: options.cwd }
+      : {}),
+    ...(options.host != null
+      ? { host: options.host }
+      : {}),
+    ...(options.origin != null
+      ? { origin: options.origin }
+      : {}),
     auth: options.auth,
     /** Next route handlers can't accept WS upgrades, so always a side-car socket. */
-    ws: options.port != null ? { port: options.port } : { sidecar: true },
+    ws: options.port != null
+      ? { port: options.port }
+      : { sidecar: true },
     // `mcp: true` is origin-only (trusting same-machine callers),
     // `mcp: { authorization }` adds an identity check. Undefined falls
     // through to `initHub`'s `'auto'` default: the aggregate route mounts
     // once the mounted devframes expose agent tools.
-    ...(options.mcp !== undefined ? { mcp: options.mcp } : {}),
-    ...(ui ? { ui } : {}),
-    ...(options.renderers ? { renderers: options.renderers } : {}),
-    ...(options.rpcDeclarations ? { rpcDeclarations: options.rpcDeclarations } : {}),
-    ...(options.register != null ? { register: options.register } : {}),
-    ...(options.getStorageDir ? { getStorageDir: options.getStorageDir } : {}),
-    ...(options.name != null ? { name: options.name } : {}),
-    ...(options.version != null ? { version: options.version } : {}),
-    ...(options.devframes ? { devframes: options.devframes } : {}),
-    ...(options.configure ? { configure: options.configure } : {}),
+    ...(options.mcp !== undefined
+      ? { mcp: options.mcp }
+      : {}),
+    ...(ui
+      ? { ui }
+      : {}),
+    ...(options.renderers
+      ? { renderers: options.renderers }
+      : {}),
+    ...(options.rpcDeclarations
+      ? { rpcDeclarations: options.rpcDeclarations }
+      : {}),
+    ...(options.register != null
+      ? { register: options.register }
+      : {}),
+    ...(options.getStorageDir
+      ? { getStorageDir: options.getStorageDir }
+      : {}),
+    ...(options.name != null
+      ? { name: options.name }
+      : {}),
+    ...(options.version != null
+      ? { version: options.version }
+      : {}),
+    ...(options.devframes
+      ? { devframes: options.devframes }
+      : {}),
+    ...(options.configure
+      ? { configure: options.configure }
+      : {}),
   })
 }
 

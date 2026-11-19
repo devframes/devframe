@@ -24,7 +24,12 @@ const DEFAULT_HEARTBEAT = { intervalMs: 5_000, timeoutMs: 12_000 }
 export function resolveHeartbeat(
   option: { intervalMs?: number, timeoutMs?: number } | false | undefined,
 ): { intervalMs: number, timeoutMs: number } | undefined {
-  return option === false ? undefined : { ...DEFAULT_HEARTBEAT, ...option }
+  return option === false
+    ? undefined
+    : {
+        ...DEFAULT_HEARTBEAT,
+        ...option,
+      }
 }
 
 /** Stable failure codes of the in-page channel. */
@@ -91,10 +96,16 @@ function jsonObjectViolation(value: object, path: string, seen: Set<object>): st
 function jsonViolation(value: unknown, path: string, seen: Set<object>): string | undefined {
   if (value === null || typeof value === 'boolean' || typeof value === 'string')
     return undefined
-  if (typeof value === 'number')
-    return Number.isFinite(value) ? undefined : `${path} is ${value}`
-  if (typeof value !== 'object')
-    return `${path} is ${value === undefined ? '`undefined`' : `a ${typeof value}`}`
+  if (typeof value === 'number') {
+    return Number.isFinite(value)
+      ? undefined
+      : `${path} is ${value}`
+  }
+  if (typeof value !== 'object') {
+    return `${path} is ${value === undefined
+      ? '`undefined`'
+      : `a ${typeof value}`}`
+  }
   if (seen.has(value))
     return `${path} is circular`
   seen.add(value)
@@ -122,8 +133,12 @@ function assertJsonSerializable(value: unknown, what: string, functionName: stri
 function formatIssues(issues: readonly StandardSchemaV1.Issue[]): string {
   return issues
     .map((issue) => {
-      const path = issue.path?.map(s => (typeof s === 'object' ? s.key : s)).join('.')
-      return path ? `${path}: ${issue.message}` : issue.message
+      const path = issue.path?.map(s => (typeof s === 'object'
+        ? s.key
+        : s)).join('.')
+      return path
+        ? `${path}: ${issue.message}`
+        : issue.message
     })
     .join('; ')
 }
@@ -156,15 +171,21 @@ export interface InPageChannelSerialization {
 }
 
 export function serializeArgs(codec: InPageChannelSerialization, args: unknown[]): unknown[] {
-  return codec.serialize ? args.map(codec.serialize) : args
+  return codec.serialize
+    ? args.map(codec.serialize)
+    : args
 }
 export function deserializeResult(codec: InPageChannelSerialization, result: unknown): unknown {
-  return codec.deserialize && result !== undefined ? codec.deserialize(result) : result
+  return codec.deserialize && result !== undefined
+    ? codec.deserialize(result)
+    : result
 }
 
 export function channelMethod(type: InPageFunctionType | 'function' | undefined, name: string): string {
   // Keep user functions, user events, and internal methods in separate wire namespaces.
-  const kind = type === 'event' ? 'event' : 'function'
+  const kind = type === 'event'
+    ? 'event'
+    : 'function'
   return `devframe:in-page:${kind}:${name}`
 }
 
@@ -225,19 +246,25 @@ export function createLocalFunctionRegistry(codec: InPageChannelSerialization): 
       if (!definition && !registered?.size)
         return undefined
       return async (...rawArgs: unknown[]) => {
-        const args = codec.deserialize ? rawArgs.map(codec.deserialize) : rawArgs
+        const args = codec.deserialize
+          ? rawArgs.map(codec.deserialize)
+          : rawArgs
         if (definition?.jsonSerializable)
           assertJsonSerializable(args, 'its arguments', definition.name)
         if (definition?.args?.length)
           await validateArgs(definition.name, definition.args, args)
         const result = await definition?.handler?.(...args)
-        for (const listener of [...(listeners.get(name) ?? [])])
+        for (const listener of [
+          ...(listeners.get(name) ?? []),
+        ])
           listener(...args)
         if (definition?.type === 'event')
           return undefined
         if (definition?.jsonSerializable && result !== undefined)
           assertJsonSerializable(result, 'its return value', definition.name)
-        return codec.serialize && result !== undefined ? codec.serialize(result) : result
+        return codec.serialize && result !== undefined
+          ? codec.serialize(result)
+          : result
       }
     },
   }
@@ -262,7 +289,9 @@ export function resolveLocalHandler(
   }
   if (name.startsWith(FUNCTION_METHOD_PREFIX)) {
     return () => {
-      throw diagnostics.DF0077({ name: name.slice(FUNCTION_METHOD_PREFIX.length) })
+      throw diagnostics.DF0077({
+        name: name.slice(FUNCTION_METHOD_PREFIX.length),
+      })
     }
   }
   return undefined

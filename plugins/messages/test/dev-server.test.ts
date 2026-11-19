@@ -125,7 +125,12 @@ describe('messages dev-server (plain context: warn + noop)', () => {
   it('list no-ops with an empty full snapshot', async () => {
     const rpc = connect(server)
     const result = await rpc.$call('devframes:plugin:messages:list') as DevframeMessagesListDelta
-    expect(result).toEqual({ entries: [], removedIds: [], version: 0, full: true })
+    expect(result).toEqual({
+      entries: [],
+      removedIds: [],
+      version: 0,
+      full: true,
+    })
   })
 
   it('mutations no-op without throwing', async () => {

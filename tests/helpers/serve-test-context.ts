@@ -11,8 +11,12 @@ import { H3 as H3App, toNodeHandler } from 'h3'
 
 /** Loopback / wildcard binds aren't dialable as-is, so advertise `localhost`. */
 function formatHostForUrl(host: string): string {
-  const dialable = ['0.0.0.0', '127.0.0.1', '::', ''].includes(host) ? 'localhost' : host
-  return isIP(dialable) === 6 ? `[${dialable}]` : dialable
+  const dialable = ['0.0.0.0', '127.0.0.1', '::', ''].includes(host)
+    ? 'localhost'
+    : host
+  return isIP(dialable) === 6
+    ? `[${dialable}]`
+    : dialable
 }
 
 export interface ServeTestContextOptions {
@@ -67,7 +71,9 @@ export async function serveTestContext(options: ServeTestContextOptions): Promis
   })
 
   const address = httpServer.address()
-  const resolvedPort = typeof address === 'object' && address ? address.port : port
+  const resolvedPort = typeof address === 'object' && address
+    ? address.port
+    : port
   const origin = `http://${formatHostForUrl(bindHost)}:${resolvedPort}`
 
   // Publish the dialable socket URL on the context, mirroring the shell's own

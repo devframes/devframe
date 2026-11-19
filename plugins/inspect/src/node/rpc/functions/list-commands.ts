@@ -25,7 +25,9 @@ export const listCommands = defineRpcFunction({
       const host = resolveHubCommands(ctx)
       if (!host)
         return []
-      const out = [...host.commands.values()].map(projectCommand)
+      const out = [
+        ...host.commands.values(),
+      ].map(projectCommand)
       out.sort((a, b) => a.title.localeCompare(b.title))
       return out
     },

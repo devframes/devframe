@@ -15,12 +15,17 @@ export interface JsonRenderActionBridge {
   handlers: Record<string, (params?: Record<string, unknown>) => Promise<unknown>>
   /** Reactive per-action loading flags. */
   loading: Record<string, boolean>
-  /** The most recent action failure, or `null`. */
+  /** The most recent action failure, cleared when that action is retried. */
   error: { value: JsonRenderActionError | null }
 }
 
 // Built-ins handled inside upstream's ActionProvider, never bridged to RPC.
-const RESERVED = new Set(['setState', 'pushState', 'removeState', 'validateForm'])
+const RESERVED = new Set([
+  'setState',
+  'pushState',
+  'removeState',
+  'validateForm',
+])
 // Promise-probe / symbol keys must not resolve to a phantom action.
 const PROBES = new Set(['then', 'catch', 'finally'])
 
@@ -53,6 +58,8 @@ export function createActionBridge(
         error.value = { action, error: err }
         throw err
       }
+      if (error.value?.action === action)
+        error.value = null
       loading[action] = true
       try {
         return await rpc.call(action, params)

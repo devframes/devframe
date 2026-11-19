@@ -52,7 +52,12 @@ describe('dev-server (CLI surface)', () => {
     }
     expect(config.channel).toBe('devframes:plugin:a11y')
     expect(config.nodeAttr).toBe('data-df-a11y-node')
-    expect(config.impacts.map(i => i.id)).toEqual(['critical', 'serious', 'moderate', 'minor'])
+    expect(config.impacts.map(i => i.id)).toEqual([
+      'critical',
+      'serious',
+      'moderate',
+      'minor',
+    ])
     // Runtime config the panel forwards to the page script.
     expect(config.dockId).toBe('devframes_plugin_a11y')
     expect(config.defaultHighlight).toBe(false)

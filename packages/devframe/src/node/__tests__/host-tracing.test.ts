@@ -36,7 +36,11 @@ function createTestHost(dir: string): DevframeHost {
 async function createCtx(): Promise<DevframeNodeContext> {
   const dir = mkdtempSync(join(tmpdir(), 'devframe-tracing-'))
   tempDirs.push(dir)
-  return createHostContext({ cwd: dir, mode: 'dev', host: createTestHost(dir) })
+  return createHostContext({
+    cwd: dir,
+    mode: 'dev',
+    host: createTestHost(dir),
+  })
 }
 
 async function channelsState(ctx: DevframeNodeContext): Promise<Record<string, DevframeTracingChannelInfo>> {
@@ -63,7 +67,12 @@ describe('devframeTracingHost', () => {
     expect(ctx.tracing.register(existing)).toBe(existing)
 
     const configName = uniqueName()
-    ctx.tracing._applyOptions({ channels: [configName, { name, description: 'ignored too' }] })
+    ctx.tracing._applyOptions({
+      channels: [
+        configName,
+        { name, description: 'ignored too' },
+      ],
+    })
     ctx.tracing.record(uniqueName())
 
     const byName = Object.fromEntries(ctx.tracing.list().map(info => [info.name, info]))
@@ -91,7 +100,12 @@ describe('devframeTracingHost', () => {
     ctx.tracing.record(name)
     expect(channel.hasSubscribers).toBe(true)
 
-    const sync = channel.traceSync((n: number) => n * 2, { id: 1, socket: { write() {} } }, undefined, 21)
+    const sync = channel.traceSync((n: number) => n * 2, {
+      id: 1,
+      socket: {
+        write() {},
+      },
+    }, undefined, 21)
     expect(sync).toBe(42)
     const async = await channel.tracePromise(async () => 'done', { id: 2 })
     expect(async).toBe('done')
@@ -101,10 +115,19 @@ describe('devframeTracingHost', () => {
 
     const records = ctx.tracing.records(name)
     expect(records.map(record => record.status)).toEqual(['ok', 'ok', 'error'])
-    expect(records[0]).toMatchObject({ channel: name, context: { id: 1, socket: {} }, result: 42 })
+    expect(records[0]).toMatchObject({
+      channel: name,
+      context: { id: 1, socket: {} },
+      result: 42,
+    })
     expect(records[0]!.events.map(event => event.phase)).toEqual(['start', 'end'])
     expect(records[0]!.duration).toBeGreaterThanOrEqual(0)
-    expect(records[1]!.events.map(event => event.phase)).toEqual(['start', 'end', 'asyncStart', 'asyncEnd'])
+    expect(records[1]!.events.map(event => event.phase)).toEqual([
+      'start',
+      'end',
+      'asyncStart',
+      'asyncEnd',
+    ])
     expect(records[1]).toMatchObject({ result: 'done' })
     expect(records[2]!.error).toMatchObject({ name: 'TypeError', message: 'boom' })
     expect(records[2]!.events.map(event => event.phase)).toEqual(['start', 'error', 'end'])
@@ -175,7 +198,11 @@ describe('devframeTracingHost', () => {
 
       const reader = client.streaming.subscribe<DevframeTraceRecord>(DEVFRAME_EVENTS.stream.tracing, streamId)
       const first = await reader[Symbol.asyncIterator]().next()
-      expect(first.value).toMatchObject({ channel: name, context: { n: 1 }, status: 'pending' })
+      expect(first.value).toMatchObject({
+        channel: name,
+        context: { n: 1 },
+        status: 'pending',
+      })
       client.close()
 
       // A fresh client replays the buffered chunks from the start.
@@ -207,7 +234,12 @@ describe('devframeTracingHost', () => {
     const seen: DevframeTraceRecord[] = []
     ctx.tracing.onRecord(name, record => seen.push(record))
     let state = await channelsState(ctx)
-    expect(state[name]).toMatchObject({ source: 'registered', description: 'tool query', recording: true, count: 1 })
+    expect(state[name]).toMatchObject({
+      source: 'registered',
+      description: 'tool query',
+      recording: true,
+      count: 1,
+    })
     expect(state[name]!.streamId).toBeTypeOf('string')
     expect(ctx.tracing.records(name)).toHaveLength(1)
 
@@ -235,9 +267,23 @@ describe('devframeTracingHost', () => {
     const ctx = await createCtx()
     const name = uniqueName()
     let emit: (event: any) => void = () => {}
-    const record: DevframeTraceRecord = { id: 'r1', channel: name, startedAt: 0, status: 'ok', context: null, events: [] }
+    const record: DevframeTraceRecord = {
+      id: 'r1',
+      channel: name,
+      startedAt: 0,
+      status: 'ok',
+      context: null,
+      events: [],
+    }
     ctx.tracing.attach({
-      list: () => [{ name, source: 'registered', recording: true, count: 1 }],
+      list: () => [
+        {
+          name,
+          source: 'registered',
+          recording: true,
+          count: 1,
+        },
+      ],
       records: () => [record],
       subscribe: (fn) => {
         emit = fn
@@ -258,7 +304,10 @@ describe('devframeTracingHost', () => {
     const ctx = await createCtx()
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const host = new DevframeTracingHostImpl(
-      { ...ctx, rpc: new RpcFunctionsHostImpl(ctx) },
+      {
+        ...ctx,
+        rpc: new RpcFunctionsHostImpl(ctx),
+      },
       { channel: diagnosticsChannel.channel },
     )
     expect(host.supported).toBe(false)
@@ -272,7 +321,7 @@ describe('devframeTracingHost', () => {
     host.record(name)
     expect(host.list().find(info => info.name === name)).toMatchObject({ recording: false })
     expect(warn).toHaveBeenCalledTimes(1)
-    expect(String(warn.mock.calls[0]![0])).toContain('DF0081')
+    expect(String(warn.mock.calls[0]![0])).toContain('DF0086')
     warn.mockRestore()
   })
 })
@@ -287,12 +336,16 @@ function bootClient(port: number): FakeClient {
   const clientFns: Record<string, (...args: any[]) => any> = {}
   const rpc = createRpcClient<DevframeRpcServerFunctions, Record<string, (...args: any[]) => any>>(
     clientFns,
-    { channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}` }) },
+    {
+      channel: createWsRpcChannel({ url: `ws://127.0.0.1:${port}` }),
+    },
   )
   // Mimics the `DevframeRpcClient` surface `createRpcStreamingClientHost` uses.
   const fakeRpcClient = {
     isTrusted: true,
-    events: { on: () => () => {} },
+    events: {
+      on: () => () => {},
+    },
     client: {
       register(def: { name: string, handler: (...args: any[]) => any }) {
         clientFns[def.name] = def.handler

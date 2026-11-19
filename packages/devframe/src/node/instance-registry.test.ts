@@ -44,7 +44,11 @@ describe('instance registry', () => {
 
     const read = readDevframeInstances({ instancesDir: dir })
     expect(read).toHaveLength(1)
-    expect(read[0]).toMatchObject({ id: 'test-devframe', port: 4242, mcp: { path: '/__mcp' } })
+    expect(read[0]).toMatchObject({
+      id: 'test-devframe',
+      port: 4242,
+      mcp: { path: '/__mcp' },
+    })
 
     registration.unregister()
     expect(existsSync(registration.file)).toBe(false)
@@ -67,7 +71,9 @@ describe('instance registry', () => {
     const dir = mkdtempSync(join(tmpdir(), 'devframe-registry-'))
 
     const server = createServer((req, res) => {
-      res.writeHead(req.url === '/__connection.json' ? 200 : 404, { 'content-type': 'application/json' })
+      res.writeHead(req.url === '/__connection.json'
+        ? 200
+        : 404, { 'content-type': 'application/json' })
       res.end('{}')
     })
     await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
@@ -195,7 +201,13 @@ describe('probeDevframeOrigin', () => {
     const spa = await startSpaFallbackServer()
     try {
       const probed = await probeDevframeOrigin(spa.origin, '/__devtools/', 2000)
-      expect(probed).toEqual({ origin: spa.origin, meta: { backend: 'websocket', mcp: { path: '__mcp' } } })
+      expect(probed).toEqual({
+        origin: spa.origin,
+        meta: {
+          backend: 'websocket',
+          mcp: { path: '__mcp' },
+        },
+      })
     }
     finally {
       await spa.close()

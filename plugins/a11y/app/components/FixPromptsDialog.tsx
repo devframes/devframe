@@ -54,7 +54,9 @@ export function FixPromptsDialog(props: FixPromptsDialogProps) {
             <p class="mt-0.5 text-xs color-muted">
               {ruleCount()}
               {' '}
-              {ruleCount() === 1 ? 'violation' : 'violations'}
+              {ruleCount() === 1
+                ? 'violation'
+                : 'violations'}
               {' '}
               selected. Copy the prompt into your AI assistant.
             </p>
@@ -79,8 +81,15 @@ export function FixPromptsDialog(props: FixPromptsDialogProps) {
           </span>
           <span class="flex-1" />
           <button type="button" class={button({ variant: 'primary', size: 'sm' })} onClick={copy}>
-            <span aria-hidden class={`shrink-0 ${copied() ? 'i-ph-check' : 'i-ph-copy'}`} />
-            {copied() ? 'Copied' : 'Copy prompt'}
+            <span
+              aria-hidden
+              class={`shrink-0 ${copied()
+                ? 'i-ph-check'
+                : 'i-ph-copy'}`}
+            />
+            {copied()
+              ? 'Copied'
+              : 'Copy prompt'}
           </button>
         </div>
       </div>

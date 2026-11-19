@@ -42,7 +42,9 @@ export const hub: HubInstance = globalRef.__hubDenoMinimal ??= initHub({
    * which the dock reads at connect time and feeds into `--devframe-primary`
    * (see the shared `design/primary-ramp.css`).
    */
-  ui: createUi({ branding: { primaryColor: '#70ffaf', productName: 'Devframes on Deno' } }),
+  ui: createUi({
+    branding: { primaryColor: '#70ffaf', productName: 'Devframes on Deno' },
+  }),
   /**
    * Gate with devframe's interactive OTP (the default). The hub prints a
    * 6-digit code + magic link on startup, and the reference UI's authorization

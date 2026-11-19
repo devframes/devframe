@@ -42,7 +42,9 @@ describe('open Graph metadata', () => {
       requestedUrl: 'http://localhost:4321/about',
       url: 'http://localhost:4321/about',
       status: 200,
-      tags: [{ tag: 'title', name: 'title', value: 'Local page' }],
+      tags: [
+        { tag: 'title', name: 'title', value: 'Local page' },
+      ],
     })
   })
 
@@ -65,7 +67,9 @@ describe('open Graph metadata', () => {
 
   it('rejects declared and streamed responses over 2 MB', async () => {
     await expect(fetchOgMetadata('https://example.com', async () => new Response('', {
-      headers: { 'content-length': String(2 * 1024 * 1024 + 1) },
+      headers: {
+        'content-length': String(2 * 1024 * 1024 + 1),
+      },
     }))).rejects.toThrow(/exceeds the 2 MB inspection limit/)
 
     const chunk = new Uint8Array(1024 * 1024 + 1)

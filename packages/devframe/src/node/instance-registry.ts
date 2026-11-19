@@ -103,7 +103,13 @@ export function registerDevframeInstance(
       renameSync(tmp, file)
     }
     catch (error) {
-      diagnostics.DF0045({ file, reason: error instanceof Error ? error.message : String(error), cause: error })
+      diagnostics.DF0045({
+        file,
+        reason: error instanceof Error
+          ? error.message
+          : String(error),
+        cause: error,
+      })
     }
   }
 
@@ -114,7 +120,13 @@ export function registerDevframeInstance(
         rmSync(file, { force: true })
       }
       catch (error) {
-        diagnostics.DF0045({ file, reason: error instanceof Error ? error.message : String(error), cause: error })
+        diagnostics.DF0045({
+          file,
+          reason: error instanceof Error
+            ? error.message
+            : String(error),
+          cause: error,
+        })
       }
     },
   }
@@ -159,7 +171,9 @@ function originCandidates(origin: string): string[] {
     const url = new URL(origin)
     if (url.hostname !== 'localhost')
       return [origin]
-    const port = url.port ? `:${url.port}` : ''
+    const port = url.port
+      ? `:${url.port}`
+      : ''
     return [
       origin,
       `${url.protocol}//127.0.0.1${port}`,
@@ -199,7 +213,9 @@ export async function probeDevframeOrigin(
   basePath: string,
   timeoutMs?: number,
 ): Promise<ProbedDevframeOrigin | null> {
-  const base = basePath.endsWith('/') ? basePath : `${basePath}/`
+  const base = basePath.endsWith('/')
+    ? basePath
+    : `${basePath}/`
   for (const candidate of originCandidates(origin)) {
     try {
       const response = await fetch(`${candidate}${base}__connection.json`, {
@@ -283,12 +299,18 @@ export async function listLiveDevframeInstances(
   }
 
   const live: DevframeInstanceRecord[] = []
-  await Promise.all([...newest.values()].map(async (record) => {
+  await Promise.all([
+    ...newest.values(),
+  ].map(async (record) => {
     const origin = await probeDevframeInstance(record, options)
-    if (origin)
-      live.push(origin === record.origin ? record : { ...record, origin })
-    else
+    if (origin) {
+      live.push(origin === record.origin
+        ? record
+        : { ...record, origin })
+    }
+    else {
       prune(record)
+    }
   }))
   live.sort((a, b) => a.startedAt - b.startedAt)
   return { live, pruned }

@@ -12,9 +12,13 @@ interface HeaderProps {
 /** The top nav bar: brand, connection status, generate-prompts, and rescan. */
 export function Header(props: HeaderProps) {
   const statusLabel = () =>
-    !props.pageScriptReady ? 'No page connected' : props.scanning ? 'Scanning…' : 'Connected'
+    !props.pageScriptReady
+      ? 'No page connected'
+      : props.scanning ? 'Scanning…' : 'Connected'
   const dotClass = () =>
-    !props.pageScriptReady ? 'bg-neutral-400' : props.scanning ? 'bg-primary-500 animate-pulse' : 'bg-success'
+    !props.pageScriptReady
+      ? 'bg-neutral-400'
+      : props.scanning ? 'bg-primary-500 animate-pulse' : 'bg-success'
 
   return (
     <header class={nav()}>
@@ -29,7 +33,12 @@ export function Header(props: HeaderProps) {
       </span>
       <button
         type="button"
-        class={button({ variant: props.selectedCount === 0 ? 'secondary' : 'primary', size: 'sm' })}
+        class={button({
+          variant: props.selectedCount === 0
+            ? 'secondary'
+            : 'primary',
+          size: 'sm',
+        })}
         onClick={() => props.onGenerate()}
         disabled={props.selectedCount === 0}
         title="Generate AI fix prompts for the selected violations"

@@ -90,7 +90,9 @@ export function useCodeServer() {
     }
     catch (error) {
       server.status = 'error'
-      server.error = error instanceof Error ? error.message : String(error)
+      server.error = error instanceof Error
+        ? error.message
+        : String(error)
       return undefined
     }
   }
@@ -129,7 +131,10 @@ export function useCodeServer() {
     const sessionId = server.terminalSessionId
     if (!sessionId)
       return
-    await call(DOCKS_ACTIVATE, { dockId: TERMINALS_DOCK_ID, params: { sessionId } })
+    await call(DOCKS_ACTIVATE, {
+      dockId: TERMINALS_DOCK_ID,
+      params: { sessionId },
+    })
   }
 
   async function recheck(): Promise<void> {
@@ -203,5 +208,17 @@ export function useCodeServer() {
     }
   }
 
-  return { detection, server, connect, busy, phase, canViewInTerminal, launch, stop, recheck, viewInTerminal, bootstrap }
+  return {
+    detection,
+    server,
+    connect,
+    busy,
+    phase,
+    canViewInTerminal,
+    launch,
+    stop,
+    recheck,
+    viewInTerminal,
+    bootstrap,
+  }
 }

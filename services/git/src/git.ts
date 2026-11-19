@@ -25,7 +25,12 @@ export async function runGit(cwd: string, args: string[]): Promise<GitRunResult>
     maxBuffer: MAX_BUFFER,
     windowsHide: true,
     /** Force plain, locale-independent output so parsers stay stable. */
-    env: { ...process.env, GIT_PAGER: 'cat', GIT_OPTIONAL_LOCKS: '0', LC_ALL: 'C' },
+    env: {
+      ...process.env,
+      GIT_PAGER: 'cat',
+      GIT_OPTIONAL_LOCKS: '0',
+      LC_ALL: 'C',
+    },
   })
   return { stdout, stderr }
 }

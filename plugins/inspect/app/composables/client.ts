@@ -31,11 +31,21 @@ export async function invokeClientFunction<F, C>(
   args: unknown[],
 ): Promise<InvokeResult> {
   const def = clientRpc.definitions.get(name)
-  if (!def)
-    return { ok: false, error: { name: 'Error', message: `No client RPC function named "${name}" is registered.` }, durationMs: 0 }
+  if (!def) {
+    return {
+      ok: false,
+      error: { name: 'Error', message: `No client RPC function named "${name}" is registered.` },
+      durationMs: 0,
+    }
+  }
   const type = def.type ?? 'query'
-  if (!INVOKABLE_TYPES.has(type))
-    return { ok: false, error: { name: 'Error', message: `"${name}" is a ${type} function; only read-only query/static functions are invoked.` }, durationMs: 0 }
+  if (!INVOKABLE_TYPES.has(type)) {
+    return {
+      ok: false,
+      error: { name: 'Error', message: `"${name}" is a ${type} function; only read-only query/static functions are invoked.` },
+      durationMs: 0,
+    }
+  }
 
   const start = Date.now()
   try {
@@ -44,7 +54,11 @@ export async function invokeClientFunction<F, C>(
     return { ok: true, result, durationMs: Date.now() - start }
   }
   catch (error) {
-    return { ok: false, error: normalizeError(error), durationMs: Date.now() - start }
+    return {
+      ok: false,
+      error: normalizeError(error),
+      durationMs: Date.now() - start,
+    }
   }
 }
 
@@ -84,7 +98,12 @@ export async function loadWebMcpState<F, C>(
         /** Chromium's current build reports the schema as a JSON string. */
         inputSchema: parseMaybeJson(tool.inputSchema),
       }))
-      return { available: true, live: true, executable: typeof modelContext.executeTool === 'function', tools }
+      return {
+        available: true,
+        live: true,
+        executable: typeof modelContext.executeTool === 'function',
+        tools,
+      }
     }
     catch {
       // Discovery denied (permissions policy); fall through to the projection.
@@ -94,10 +113,19 @@ export async function loadWebMcpState<F, C>(
   for (const [name, def] of clientRpc.definitions) {
     if (!def.agent)
       continue
-    tools.push({ name: toAgentToolName(name), description: def.agent.description, source: name })
+    tools.push({
+      name: toAgentToolName(name),
+      description: def.agent.description,
+      source: name,
+    })
   }
   tools.sort((a, b) => a.name.localeCompare(b.name))
-  return { available: !!modelContext, live: false, executable: false, tools }
+  return {
+    available: !!modelContext,
+    live: false,
+    executable: false,
+    tools,
+  }
 }
 
 /**
@@ -126,10 +154,18 @@ export async function executeWebMcpTool(
         throw error
       result = await modelContext.executeTool(tool, args)
     }
-    return { ok: true, result: parseMaybeJson(result), durationMs: Date.now() - start }
+    return {
+      ok: true,
+      result: parseMaybeJson(result),
+      durationMs: Date.now() - start,
+    }
   }
   catch (error) {
-    return { ok: false, error: normalizeError(error), durationMs: Date.now() - start }
+    return {
+      ok: false,
+      error: normalizeError(error),
+      durationMs: Date.now() - start,
+    }
   }
 }
 

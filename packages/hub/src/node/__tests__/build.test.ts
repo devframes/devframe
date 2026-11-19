@@ -28,8 +28,16 @@ function makeFrame(id: string, options: { distDir?: string, clientScript?: strin
     packageName: `@test/${id}`,
     homepage: '',
     description: '',
-    ...(options.distDir ? { clientAssets: options.distDir } : {}),
-    ...(options.clientScript ? { dock: { clientScript: { importFrom: options.clientScript } } } : {}),
+    ...(options.distDir
+      ? { clientAssets: options.distDir }
+      : {}),
+    ...(options.clientScript
+      ? {
+          dock: {
+            clientScript: { importFrom: options.clientScript },
+          },
+        }
+      : {}),
     setup(ctx: DevframeNodeContext) {
       ctx.rpc.register({
         name: `${id}:probe`,
@@ -51,8 +59,13 @@ describe('buildHub', () => {
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
       devframes: [
-        makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>'), clientScript: pageScript }),
-        makeFrame('beta', { distDir: makeDist('<h1>beta</h1>') }),
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+          clientScript: pageScript,
+        }),
+        makeFrame('beta', {
+          distDir: makeDist('<h1>beta</h1>'),
+        }),
       ],
     })
 
@@ -87,7 +100,9 @@ describe('buildHub', () => {
   it('skips a devframe declaring capabilities.build: false', async () => {
     const outDir = join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub')
     const live: DevframeDefinition = {
-      ...makeFrame('live', { distDir: makeDist('<h1>live</h1>') }),
+      ...makeFrame('live', {
+        distDir: makeDist('<h1>live</h1>'),
+      }),
       capabilities: { build: false },
     }
 
@@ -95,7 +110,12 @@ describe('buildHub', () => {
       outDir,
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), live],
+      devframes: [
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+        }),
+        live,
+      ],
     })
 
     // Nothing of the skipped devframe lands in the output: no SPA, no frame
@@ -121,7 +141,11 @@ describe('buildHub', () => {
       outDir,
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') })],
+      devframes: [
+        makeFrame('alpha', {
+          distDir: makeDist('<h1>alpha</h1>'),
+        }),
+      ],
     })
     writeFileSync(appFile, 'app', 'utf-8')
 
@@ -130,7 +154,11 @@ describe('buildHub', () => {
       base: '/__hub/',
       clean: false,
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
-      devframes: [makeFrame('beta', { distDir: makeDist('<h1>beta</h1>') })],
+      devframes: [
+        makeFrame('beta', {
+          distDir: makeDist('<h1>beta</h1>'),
+        }),
+      ],
     })
 
     // The pre-existing sibling file survives, and the re-bake lands beside it.
@@ -144,9 +172,21 @@ describe('buildHub', () => {
 
     // A host assembling the context itself: create + mount via `ctx.install`,
     // then hand the already-mounted context to `buildHub`.
-    const host = createH3DevframeHost({ origin: 'http://localhost', appName: 'devframes', workspaceRoot: cwd, mount: () => {} })
-    const ctx = await createHubContext({ cwd, workspaceRoot: cwd, mode: 'build', host })
-    await ctx.install(makeFrame('alpha', { distDir: makeDist('<h1>alpha</h1>') }), { base: '/__hub/alpha/' })
+    const host = createH3DevframeHost({
+      origin: 'http://localhost',
+      appName: 'devframes',
+      workspaceRoot: cwd,
+      mount: () => {},
+    })
+    const ctx = await createHubContext({
+      cwd,
+      workspaceRoot: cwd,
+      mode: 'build',
+      host,
+    })
+    await ctx.install(makeFrame('alpha', {
+      distDir: makeDist('<h1>alpha</h1>'),
+    }), { base: '/__hub/alpha/' })
 
     expect(ctx.frames.map(frame => frame.id)).toEqual(['alpha'])
 
@@ -172,7 +212,9 @@ describe('buildHub', () => {
       base: '/__hub/',
       cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
       async configure(ctx) {
-        await ctx.install(makeFrame('gamma', { distDir: makeDist('<h1>gamma</h1>') }), { base: '/gamma/' })
+        await ctx.install(makeFrame('gamma', {
+          distDir: makeDist('<h1>gamma</h1>'),
+        }), { base: '/gamma/' })
       },
     })
 
@@ -185,5 +227,74 @@ describe('buildHub', () => {
     expect(frameMeta.baseUrl).toBe('/__hub/__connection.json')
     const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
     expect(index.frames.map((frame: { id: string }) => frame.id)).toEqual(['gamma'])
+  })
+
+  it('rejects a hub base outside `deployBase`', async () => {
+    await expect(buildHub({
+      outDir: join(mkdtempSync(join(tmpdir(), 'hub-build-out-')), 'hub'),
+      base: '/__hub/',
+      deployBase: '/sub/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+    })).rejects.toThrow(/not under its deployBase/)
+  })
+
+  it('rebases the deploy-root layout under `deployBase`', async () => {
+    const deployRoot = mkdtempSync(join(tmpdir(), 'hub-build-out-'))
+    const outDir = join(deployRoot, '__devtools')
+    const panel = makeDist('<script type="module" src="/__panel/app.js"></script>')
+    writeFileSync(join(panel, 'app.js'), 'export const base = "/__panel/"\n', 'utf-8')
+
+    await buildHub({
+      outDir,
+      base: '/ci-build-123456/__devtools/',
+      deployBase: '/ci-build-123456/',
+      cwd: mkdtempSync(join(tmpdir(), 'hub-build-cwd-')),
+      async configure(ctx) {
+        await ctx.install(makeFrame('alpha', {
+          distDir: makeDist('<script type="module" src="/__alpha/app.js"></script>'),
+        }), { base: '/__alpha/' })
+        ctx.views.hostStatic('/__panel/', panel)
+        ctx.docks.register({
+          id: 'panel',
+          title: 'Panel',
+          icon: '/__panel/icon.svg',
+          type: 'iframe',
+          url: '/__panel/',
+        })
+      },
+    })
+
+    // The deploy root layout is unchanged on disk: siblings sit beside the hub.
+    expect(existsSync(join(outDir, '__connection.json'))).toBe(true)
+    expect(existsSync(join(deployRoot, '__alpha/index.html'))).toBe(true)
+    expect(existsSync(join(deployRoot, '__panel/app.js'))).toBe(true)
+
+    // Discovery and per-frame meta spell the served URLs.
+    const index = JSON.parse(readFileSync(join(outDir, '__index.json'), 'utf-8'))
+    expect(index.base).toBe('/ci-build-123456/__devtools/')
+    expect(index.frames).toEqual([
+      { id: 'alpha', base: '/ci-build-123456/__alpha/', title: 'Frame alpha' },
+    ])
+    const frameMeta = JSON.parse(readFileSync(join(deployRoot, '__alpha/__connection.json'), 'utf-8'))
+    expect(frameMeta.baseUrl).toBe('/ci-build-123456/__devtools/__connection.json')
+
+    // The baked RPC dump carries the served dock URL, not the root-absolute one.
+    const manifest = JSON.parse(readFileSync(join(outDir, '__rpc-dump/index.json'), 'utf-8'))
+    const stateEntry = manifest['devframe:rpc:server-state:get']
+    const records = (Object.values(stateEntry.records) as string[])
+      .map(path => readFileSync(join(outDir, path), 'utf-8'))
+    const docksRecord = records.find(text => text.includes(HUB_EVENTS.sharedState.docks))!
+    expect(docksRecord).toContain('/ci-build-123456/__alpha/')
+    expect(docksRecord).toContain('/ci-build-123456/__panel/')
+    expect(docksRecord).not.toContain('"/__alpha/"')
+    expect(docksRecord).not.toContain('"/__panel/"')
+
+    // Root-absolute asset references inside copied SPAs follow the new location.
+    expect(readFileSync(join(deployRoot, '__alpha/index.html'), 'utf-8'))
+      .toContain('/ci-build-123456/__alpha/app.js')
+    expect(readFileSync(join(deployRoot, '__panel/index.html'), 'utf-8'))
+      .toContain('/ci-build-123456/__panel/app.js')
+    expect(readFileSync(join(deployRoot, '__panel/app.js'), 'utf-8'))
+      .toContain('/ci-build-123456/__panel/')
   })
 })

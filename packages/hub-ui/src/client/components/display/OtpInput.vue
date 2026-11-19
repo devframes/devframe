@@ -152,7 +152,9 @@ defineExpose({
   /** Focus the first empty box (or the last one when full). */
   focus() {
     const firstEmpty = digits.value.findIndex(d => !d)
-    focusBox(firstEmpty === -1 ? props.length - 1 : firstEmpty)
+    focusBox(firstEmpty === -1
+      ? props.length - 1
+      : firstEmpty)
   },
 })
 </script>

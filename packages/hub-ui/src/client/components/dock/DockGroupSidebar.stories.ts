@@ -73,3 +73,42 @@ export const Overflow: Story = {
     ),
   }),
 }
+
+/**
+ * `expandGroupSidebar` on: a wider rail that shows each member's title next
+ * to its icon, so tools are findable without hovering for tooltips.
+ */
+export const Expanded: Story = {
+  render: () => ({
+    setup: () => mountWithContext(
+      {
+        entries: groupedEntries,
+        selectedId: 'nuxt:overview',
+        settings: { expandGroupSidebar: true },
+      },
+      ctx => stage(shell(h(DockGroupSidebar, {
+        context: ctx,
+        group: nuxtGroup,
+        selectedId: ctx.docks.selectedId,
+      }))),
+    ),
+  }),
+}
+
+/** Expanded with overflow: the show-more row keeps its label and count. */
+export const ExpandedOverflow: Story = {
+  render: () => ({
+    setup: () => mountWithContext(
+      {
+        entries: subcategorizedGroupEntries,
+        selectedId: 'tools:graph',
+        settings: { expandGroupSidebar: true },
+      },
+      ctx => stage(shell(h(DockGroupSidebar, {
+        context: ctx,
+        group: toolsGroup,
+        selectedId: ctx.docks.selectedId,
+      }), 'h-44')),
+    ),
+  }),
+}

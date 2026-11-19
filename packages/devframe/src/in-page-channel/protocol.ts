@@ -88,7 +88,9 @@ export function resolveAllowedOrigins(allowedOrigins: string[] | undefined, win:
   if (allowedOrigins?.length)
     return allowedOrigins
   const origin = win?.location?.origin
-  return origin && origin !== 'null' ? [origin] : ['*']
+  return origin && origin !== 'null'
+    ? [origin]
+    : ['*']
 }
 
 /**

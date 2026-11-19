@@ -1,7 +1,14 @@
 import type { AssetType } from '../connect'
 
 /** Canonical display order for the type filter. */
-export const ASSET_TYPES: readonly AssetType[] = ['image', 'video', 'audio', 'font', 'text', 'other']
+export const ASSET_TYPES: readonly AssetType[] = [
+  'image',
+  'video',
+  'audio',
+  'font',
+  'text',
+  'other',
+]
 
 /** Shared label + Phosphor icon per asset type, used by the filter and the tree. */
 export const TYPE_META: Record<AssetType, { label: string, icon: string }> = {

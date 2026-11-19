@@ -43,7 +43,10 @@ describe('agent gating (DF0019)', () => {
 
   it('also infers jsonSerializable: true on update()', () => {
     const collector = new RpcFunctionsCollectorBase({})
-    collector.register({ name: 'plugin:fn', handler: () => 0 } as any)
+    collector.register({
+      name: 'plugin:fn',
+      handler: () => 0,
+    } as any)
     collector.update({
       name: 'plugin:fn',
       agent: { description: 'x' },

@@ -3,7 +3,7 @@ import type { DevframeDockBadgeVariant, DevframeDockEntryBase } from '@devframes
 import type { DocksContext } from '@devframes/hub/client'
 import { useEventListener } from '@vueuse/core'
 import { computed, useTemplateRef } from 'vue'
-import { setFloatingTooltip } from '../../state/floating-tooltip'
+import { dockTooltipContent, setFloatingTooltip } from '../../state/floating-tooltip'
 import { openDockContextMenu } from './DockContextMenu'
 import DockIcon from './DockIcon.vue'
 
@@ -13,11 +13,23 @@ const props = withDefaults(
     dock: DevframeDockEntryBase
     isAction?: boolean
     isSelected?: boolean
+    /**
+     * The `aria-current` of the button: `page` for the dock shown now, `true`
+     * for a group or overflow button that holds it while it is out of sight.
+     * Unlike `isSelected`, which is also on while a group popover is open.
+     */
+    current?: 'page' | 'true'
     isDimmed?: boolean
     isVertical?: boolean
     badge?: string
     badgeVariant?: DevframeDockBadgeVariant
     tooltip?: boolean
+    /**
+     * The group this dock belongs to, when it sits on the bar outside its
+     * group button (pinned or recent). Draws the group icon as a corner mark,
+     * so two tools with similar icons from different groups stay apart.
+     */
+    group?: Pick<DevframeDockEntryBase, 'title' | 'icon'>
   }>(),
   {
     tooltip: true,
@@ -51,7 +63,7 @@ function updateTooltip() {
   if (!button.value)
     return
   setFloatingTooltip({
-    content: props.dock.title,
+    content: dockTooltipContent(props.dock, props.group),
     el: button.value,
   })
 }
@@ -98,6 +110,7 @@ useEventListener('pointerdown', () => {
     <button
       ref="button"
       :aria-label="dock.title"
+      :aria-current="current"
       :class="[
         isVertical ? 'rotate-270' : '',
         isDimmed ? 'op50 saturate-0' : '',
@@ -114,6 +127,13 @@ useEventListener('pointerdown', () => {
         :style="badgeStyle"
       >
         {{ badge }}
+      </div>
+      <div
+        v-if="group"
+        class="absolute bottom-0 right-0 w-3 h-3 p-0.25 rounded-full bg-base border border-base shadow-sm pointer-events-none"
+        aria-hidden="true"
+      >
+        <DockIcon :icon="group.icon" class="w-full h-full select-none" />
       </div>
     </button>
   </div>

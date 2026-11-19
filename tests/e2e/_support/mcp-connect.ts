@@ -14,7 +14,12 @@ export async function withConnectClient<T>(
 ): Promise<T> {
   const transport = new StdioClientTransport({
     command: 'node',
-    args: [BIN, 'connect', '--instances-dir', instancesDir],
+    args: [
+      BIN,
+      'connect',
+      '--instances-dir',
+      instancesDir,
+    ],
   })
   const client = new Client({ name: 'devframe-e2e', version: '0.0.0' })
   await client.connect(transport)

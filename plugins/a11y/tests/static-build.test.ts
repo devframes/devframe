@@ -60,6 +60,11 @@ describe('static build (CLI build surface)', () => {
       await readFile(path.join(outBuild, entry.path), 'utf-8'),
     ) as { output: { channel: string, impacts: { id: string }[] } }
     expect(record.output.channel).toBe('devframes:plugin:a11y')
-    expect(record.output.impacts.map(i => i.id)).toEqual(['critical', 'serious', 'moderate', 'minor'])
+    expect(record.output.impacts.map(i => i.id)).toEqual([
+      'critical',
+      'serious',
+      'moderate',
+      'minor',
+    ])
   })
 })

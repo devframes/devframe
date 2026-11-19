@@ -19,7 +19,9 @@ const itPty = ptyAvailable ? it : it.skip
 
 // These rely on POSIX PTY semantics that conpty doesn't provide: SIGWINCH,
 // foreground-process-name resolution, and prompt stdin echo timing.
-const itPosixPty = (!isWindows && ptyAvailable) ? it : it.skip
+const itPosixPty = (!isWindows && ptyAvailable)
+  ? it
+  : it.skip
 
 function subscribe(client: TestClient, id: string) {
   return client.streaming.subscribe<string>(TERMINAL_STREAM_CHANNEL, id)
@@ -309,7 +311,15 @@ describe('@devframes/plugin-terminals', () => {
   it('exposes presets and spawns from them', async () => {
     await server.close()
     server = await startTerminalsServer({
-      presets: [{ id: 'greet', title: 'Greet', command: NODE, args: ['-e', 'process.stdout.write("from-preset")'], mode: 'readonly' }],
+      presets: [
+        {
+          id: 'greet',
+          title: 'Greet',
+          command: NODE,
+          args: ['-e', 'process.stdout.write("from-preset")'],
+          mode: 'readonly',
+        },
+      ],
     })
     const client = bootClient(server.port)
     await new Promise(r => setTimeout(r, 50))

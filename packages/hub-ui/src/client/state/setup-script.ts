@@ -33,7 +33,7 @@ async function _executeSetupScript(
     const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ specifier)
     const fn = mod[script.importName ?? 'default']
     if (typeof fn !== 'function')
-      throw new Error(`[@devframes/hub-ui] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
+      throw new TypeError(`[@devframes/hub-ui] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
     /** Trust may change while the module is loading; rejection keeps setup retryable. */
     if (!context.rpc.isTrusted)
       throw new Error('[@devframes/hub-ui] RPC client is no longer trusted')

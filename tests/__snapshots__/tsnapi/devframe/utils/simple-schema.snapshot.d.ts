@@ -9,6 +9,35 @@ export interface SimpleSchema<Input, Output = Input> extends StandardSchemaV1<In
 }
 // #endregion
 
+// #region Namespaces
+export declare namespace StandardSchemaV1 {
+  interface Props<Input = unknown, Output = Input> extends StandardTypedV1.Props<Input, Output> {
+      readonly validate: (_: unknown, _?: StandardSchemaV1.Options | undefined) => Result<Output> | Promise<Result<Output>>;
+    }
+  type Result<Output> = SuccessResult<Output> | FailureResult;
+  interface SuccessResult<Output> {
+      readonly value: Output;
+      readonly issues?: undefined;
+    }
+  interface Options {
+      readonly libraryOptions?: Record<string, unknown> | undefined;
+    }
+  interface FailureResult {
+      readonly issues: ReadonlyArray<Issue>;
+    }
+  interface Issue {
+      readonly message: string;
+      readonly path?: ReadonlyArray<PropertyKey | PathSegment> | undefined;
+    }
+  interface PathSegment {
+      readonly key: PropertyKey;
+    }
+  interface Types<Input = unknown, Output = Input> extends StandardTypedV1.Types<Input, Output> {}
+  type InferInput<Schema extends StandardTypedV1> = StandardTypedV1.InferInput<Schema>;
+  type InferOutput<Schema extends StandardTypedV1> = StandardTypedV1.InferOutput<Schema>;
+}
+// #endregion
+
 // #region Functions
 export declare function array<T extends StandardSchemaV1>(_: T): SimpleSchema<StandardSchemaV1.InferInput<T>[], StandardSchemaV1.InferOutput<T>[]>;
 export declare function boolean(): SimpleSchema<boolean>;
@@ -47,8 +76,4 @@ export declare const s: {
 
 // #region Referenced (internal)
 type InferObject<T extends Record<string, StandardSchemaV1>, Mode extends 'input' | 'output'> = Prettify<{ [K in keyof T as undefined extends InferField<T[K], Mode> ? never : K]: InferField<T[K], Mode>; } & { [K in keyof T as undefined extends InferField<T[K], Mode> ? K : never]?: InferField<T[K], Mode>; }>;
-// #endregion
-
-// #region Other
-export { StandardSchemaV1 }
 // #endregion

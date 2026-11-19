@@ -86,6 +86,12 @@ export interface DevframeDockEntryBase {
   title: string
   /** Translations of `title` by BCP 47 tag; see `resolveTitle()` from `@devframes/hub`. */
   titleLocales?: DevframeTitleLocales
+  /**
+   * A longer, one-line hint of what the entry does. A viewer shows it under
+   * the {@link title} in the dock button tooltip, so a button whose icon is
+   * ambiguous still explains itself on hover.
+   */
+  description?: string
   icon: DevframeDockEntryIcon
   /**
    * The default order of the entry in the dock.
@@ -171,6 +177,68 @@ export interface DevframeDockEntryBase {
    * @see {@link DevframeViewGroup}
    */
   groupId?: string
+  /**
+   * Extra items for the dock button's context menu. The user opens this menu
+   * with a right-click, Shift+F10 or the Menu key. Each item runs a command
+   * from `ctx.commands` (server) or `context.commands` (client).
+   *
+   * A viewer shows these items above its own items (pin, hide, refresh, ...)
+   * and puts a separator between the two blocks. Use it for actions that
+   * belong to the tool but do not need a dock entry of their own. For
+   * example, a click toggles an inspector and the context menu opens its
+   * settings.
+   *
+   * @see {@link DevframeDockContextMenuItem}
+   */
+  contextMenu?: readonly DevframeDockContextMenuItem[]
+}
+
+/** One item in {@link DevframeDockEntryBase.contextMenu}. */
+export type DevframeDockContextMenuItem
+  = | DevframeDockContextMenuCommand
+    | DevframeDockContextMenuSeparator
+
+/**
+ * A context menu item that runs a command. The item is serializable, so a
+ * node-side devframe can declare it and an out-of-process viewer can show it.
+ */
+export interface DevframeDockContextMenuCommand {
+  type?: 'command'
+  /** Id of the command to run. A server command or a client command. */
+  command: string
+  /** Positional arguments for the command. */
+  args?: readonly DevframeDockContextMenuArg[]
+  /** Label of the item. The default is the `title` of the command. */
+  title?: string
+  /** Translations of `title` by BCP 47 tag; see `resolveTitle()` from `@devframes/hub`. */
+  titleLocales?: DevframeTitleLocales
+  /** Icon of the item. The default is the `icon` of the command. */
+  icon?: DevframeDockEntryIcon
+  /**
+   * Conditional visibility expression, same syntax as command `when` clauses.
+   * The viewer also hides the item when the `when` of the command is false,
+   * or when no command with this id exists.
+   */
+  when?: string
+  /**
+   * Shows a check mark next to the item, for an on/off setting. To change
+   * it, update the entry with `docks.update()`.
+   */
+  checked?: boolean
+}
+
+/**
+ * One argument of a context menu item. Only primitive values, so that the
+ * item can cross the wire in shared state.
+ */
+export type DevframeDockContextMenuArg = string | number | boolean | null
+
+/**
+ * A line between two groups of items. A viewer removes separators at the
+ * start and at the end, and merges two or more in a row into one.
+ */
+export interface DevframeDockContextMenuSeparator {
+  type: 'separator'
 }
 
 export interface ClientScriptEntry {
@@ -396,6 +464,27 @@ export interface DevframeViewLauncher extends DevframeDockEntryBase {
 export interface DevframeViewAction extends DevframeDockEntryBase {
   type: 'action'
   action: ClientScriptEntry
+  /**
+   * Make the action an on/off tool, such as an in-page element picker.
+   *
+   * - The {@link action} script runs once (cached like other client scripts)
+   *   and drives the tool from the entry's `entry:activated` /
+   *   `entry:deactivated` events.
+   * - Activating it does not select it: the panel's selected dock stays as is.
+   *   An open panel is hidden while the tool is on and comes back when it goes
+   *   off.
+   * - While on, the dock button renders as active (`DockEntryState.isActive`).
+   * - `docks.switchEntry(id)` (a click) flips it on and off.
+   * - It also goes off on `Escape` in a viewer that supports it, on
+   *   `docks.setActionActive(id, false)`, or when another dock is selected or
+   *   the selection is cleared (then the panel is not restored, the new
+   *   selection wins).
+   *
+   * When unset, the action is one-shot: each click runs the script again.
+   *
+   * @default false
+   */
+  toggle?: boolean
 }
 
 export interface DevframeViewCustomRender extends DevframeDockEntryBase {

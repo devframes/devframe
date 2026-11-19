@@ -66,7 +66,13 @@ export function createTempRepo(): TempRepo {
   // its own, later tagger date) on HEAD, exercising `creatordate`, which
   // populates for annotated tags where `committerdate` would be empty.
   git(dir, ['tag', 'v0.0.1', 'HEAD~1'])
-  gitAt(dir, ['tag', '-a', 'v1.0.0', '-m', 'release one'], '2021-06-01T00:00:00Z')
+  gitAt(dir, [
+    'tag',
+    '-a',
+    'v1.0.0',
+    '-m',
+    'release one',
+  ], '2021-06-01T00:00:00Z')
 
   // Working-tree state for status/diff assertions.
   write(dir, 'README.md', '# Demo\nmore\n') // unstaged modification

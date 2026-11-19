@@ -27,8 +27,12 @@ export function button({ variant = 'primary', size = 'md', class: extra }: Butto
     link: 'inline-flex items-center gap-1.5 color-active hover:underline underline-offset-2',
   }
   const sizeClass = size === 'sm'
-    ? (variant === 'primary' ? 'text-sm px-2.5! py-1!' : 'text-sm')
-    : size === 'lg' ? 'text-base px-4! py-2!' : ''
+    ? (variant === 'primary'
+        ? 'text-sm px-2.5! py-1!'
+        : 'text-sm')
+    : size === 'lg'
+      ? 'text-base px-4! py-2!'
+      : ''
   return cx(variantClass[variant], sizeClass, extra)
 }
 
@@ -37,8 +41,12 @@ export type IconButtonSize = 'md' | 'sm'
 export interface IconButtonProps { variant?: IconButtonVariant, size?: IconButtonSize, class?: string }
 
 export function iconButton({ variant = 'outline', size = 'md', class: extra }: IconButtonProps = {}): string {
-  const base = variant === 'ghost' ? 'btn-icon' : 'btn-icon-square'
-  const sizeClass = size === 'sm' ? 'w-7! h-7! text-sm' : ''
+  const base = variant === 'ghost'
+    ? 'btn-icon'
+    : 'btn-icon-square'
+  const sizeClass = size === 'sm'
+    ? 'w-7! h-7! text-sm'
+    : ''
   return cx(base, sizeClass, extra)
 }
 

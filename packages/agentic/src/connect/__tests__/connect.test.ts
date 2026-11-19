@@ -31,7 +31,9 @@ describe('resolveAuthToken', () => {
 
   it('delegates to a per-record resolver', () => {
     const record = makeRecord({ port: 4242 })
-    const resolved = resolveAuthToken(r => (r.port === 4242 ? 'match' : undefined), record)
+    const resolved = resolveAuthToken(r => (r.port === 4242
+      ? 'match'
+      : undefined), record)
     expect(resolved).toBe('match')
   })
 
@@ -66,7 +68,9 @@ describe('probePort', () => {
   let server: Server | undefined
 
   afterEach(async () => {
-    await new Promise<void>(resolve => (server ? server.close(() => resolve()) : resolve()))
+    await new Promise<void>(resolve => (server
+      ? server.close(() => resolve())
+      : resolve()))
     server = undefined
   })
 
@@ -99,7 +103,10 @@ describe('probePort', () => {
   it('normalizes a base given without slashes', async () => {
     const port = await startBasedHub()
     const record = await probePort(port, '__devtools', 2000)
-    expect(record).toMatchObject({ basePath: '/__devtools/', mcp: { path: '/__devtools/__mcp' } })
+    expect(record).toMatchObject({
+      basePath: '/__devtools/',
+      mcp: { path: '/__devtools/__mcp' },
+    })
   })
 
   it('reports no instance (not an MCP-less one) when the root only serves the SPA fallback', async () => {
@@ -136,16 +143,25 @@ describe('connector bearer against a live authenticated MCP route', () => {
   }
 
   it('authenticates with the resolved bearer in the request headers', async () => {
-    server = await createDevServer(defineDef(), { host: '127.0.0.1', port: 0, auth: false, mcp: { authorization: TOKEN } })
+    server = await createDevServer(defineDef(), {
+      host: '127.0.0.1',
+      port: 0,
+      auth: false,
+      mcp: { authorization: TOKEN },
+    })
     const url = `${server.origin}/__mcp`
     const record = makeRecord({ origin: server.origin, port: server.port })
 
     // Exactly what the connector does: resolve the token, build the headers,
     // and dial the route through a StreamableHTTP transport.
     const token = resolveAuthToken(TOKEN, record)
-    const client = new Client({ name: 'connect-test', version: '0.0.0' }, { versionNegotiation: { mode: 'auto' } })
+    const client = new Client({ name: 'connect-test', version: '0.0.0' }, {
+      versionNegotiation: { mode: 'auto' },
+    })
     const transport = new StreamableHTTPClientTransport(new URL(url), {
-      requestInit: { headers: buildInstanceRequestHeaders(url, token) },
+      requestInit: {
+        headers: buildInstanceRequestHeaders(url, token),
+      },
     })
     try {
       await client.connect(transport)
@@ -158,7 +174,12 @@ describe('connector bearer against a live authenticated MCP route', () => {
   })
 
   it('is refused (never falls through unauthenticated) when no bearer is resolved', async () => {
-    server = await createDevServer(defineDef(), { host: '127.0.0.1', port: 0, auth: false, mcp: { authorization: TOKEN } })
+    server = await createDevServer(defineDef(), {
+      host: '127.0.0.1',
+      port: 0,
+      auth: false,
+      mcp: { authorization: TOKEN },
+    })
     const url = `${server.origin}/__mcp`
     const record = makeRecord({ origin: server.origin, port: server.port })
 
@@ -166,8 +187,12 @@ describe('connector bearer against a live authenticated MCP route', () => {
     // gate rejects the request rather than serving it.
     const headers = buildInstanceRequestHeaders(url, resolveAuthToken(undefined, record))
     expect(headers.authorization).toBeUndefined()
-    const client = new Client({ name: 'connect-test', version: '0.0.0' }, { versionNegotiation: { mode: 'auto' } })
-    const transport = new StreamableHTTPClientTransport(new URL(url), { requestInit: { headers } })
+    const client = new Client({ name: 'connect-test', version: '0.0.0' }, {
+      versionNegotiation: { mode: 'auto' },
+    })
+    const transport = new StreamableHTTPClientTransport(new URL(url), {
+      requestInit: { headers },
+    })
     await expect(client.connect(transport)).rejects.toThrow()
     await client.close().catch(() => {})
   })

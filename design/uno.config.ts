@@ -2,6 +2,7 @@ import type { Preset } from 'unocss'
 import { fileURLToPath } from 'node:url'
 import { presetAnthonyDesign, resolvePrimary } from '@antfu/design/unocss'
 import {
+  cssIdRE,
   defineConfig,
   presetIcons,
   presetWind4,
@@ -43,27 +44,48 @@ export function createDesignConfig(options: CreateDesignConfigOptions = {}) {
   return defineConfig({
     presets: [
       presetAnthonyDesign({ primary: '#3a6a45' }),
-      ...(Array.isArray(base) ? base : [base]),
+      ...(Array.isArray(base)
+        ? base
+        : [base]),
       presetIcons({ scale: 1.1 }),
     ],
-    transformers: [transformerDirectives(), transformerVariantGroup()],
+    transformers: [
+      transformerDirectives(),
+      transformerVariantGroup(),
+    ],
     /**
      * The shared class-helper builders (`design/design.ts`) assemble their class
      * chains at runtime, so every app scans that one file (it carries
      * `@unocss-include`) for extraction regardless of its own framework globs.
      */
     content: {
-      filesystem: [fileURLToPath(new URL('./design.ts', import.meta.url))],
+      filesystem: [
+        fileURLToPath(new URL('./design.ts', import.meta.url)),
+      ],
+      /**
+       * Restates UnoCSS's default pipeline exclude. Without it, `mergeConfigs`
+       * leaves `exclude: []`, and UnoCSS 66.11 then treats every module as
+       * excluded, so no utilities are extracted from app sources.
+       */
+      pipeline: {
+        exclude: [cssIdRE],
+      },
     },
     /**
      * Wind leaves bare `border`/`border-b` at currentColor; restore the subtle
      * shared border color (matching `border-base`) for unqualified borders.
      */
-    preflights: [{ getCSS: () => '*,::before,::after{border-color:#8882}' }],
+    preflights: [
+      {
+        getCSS: () => '*,::before,::after{border-color:#8882}',
+      },
+    ],
     theme: {
       // Stable palette for status marks and preview content that intentionally
       // keeps the default accent when the surrounding panel adopts a theme.
-      colors: { devframe: resolvePrimary('#3a6a45') },
+      colors: {
+        devframe: resolvePrimary('#3a6a45'),
+      },
     },
     shortcuts: {
       /** Fixed semantic colors stay independent of the panel's primary accent. */
@@ -184,7 +206,9 @@ export function rewireBakedPrimaryColors(css: string, primaryRamp: Record<string
     const rgb = hex && hexToRgbTriplet(hex)
     if (!rgb)
       continue
-    const varName = stop === 'DEFAULT' ? '--colors-primary-DEFAULT' : `--colors-primary-${stop}`
+    const varName = stop === 'DEFAULT'
+      ? '--colors-primary-DEFAULT'
+      : `--colors-primary-${stop}`
     out = out.replace(
       new RegExp(String.raw`rgb\(${rgb}(?!\d)`, 'g'),
       `rgb(from var(${varName}, ${hex}) r g b`,

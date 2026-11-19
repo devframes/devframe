@@ -48,10 +48,26 @@ let hub: HubInstance | undefined
 const jsonRenderSpec: DevframeJsonRenderSpec = {
   root: 'root',
   elements: {
-    root: { type: 'Card', props: { title: 'JSON Render' }, children: ['body'] },
-    body: { type: 'Stack', props: { gap: 8 }, children: ['text', 'badge'] },
-    text: { type: 'Text', props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' }, children: [] },
-    badge: { type: 'Badge', props: { text: 'renderer manifest', variant: 'info' }, children: [] },
+    root: {
+      type: 'Card',
+      props: { title: 'JSON Render' },
+      children: ['body'],
+    },
+    body: {
+      type: 'Stack',
+      props: { gap: 8 },
+      children: ['text', 'badge'],
+    },
+    text: {
+      type: 'Text',
+      props: { text: 'This dock is a JSON spec authored on the server and rendered by the module composed via initHub({ renderers }).' },
+      children: [],
+    },
+    badge: {
+      type: 'Badge',
+      props: { text: 'renderer manifest', variant: 'info' },
+      children: [],
+    },
   },
 }
 
@@ -64,7 +80,9 @@ const jsonRenderDock: DevframeJsonRenderDockEntry = {
 }
 
 export default defineConfig({
-  source: { entry: { index: './src/index.ts' } },
+  source: {
+    entry: { index: './src/index.ts' },
+  },
   server: {
     /**
      * Runs before Rsbuild's built-in middlewares, so the hub owns
@@ -81,14 +99,18 @@ export default defineConfig({
          * connect time and feeds into `--devframe-primary` (see
          * the shared `design/primary-ramp.css`).
          */
-        ui: createUi({ branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' } }),
+        ui: createUi({
+          branding: { primaryColor: '#ff5e00', productName: 'Devframes on Rsbuild' },
+        }),
         /**
          * Serve the reference json-render frontend as a prebuilt renderer
          * module, the one-liner that makes `'json-render'` docks render in
          * the prebuilt hub UI provider. Swap it for any community implementation of
          * the same contract.
          */
-        renderers: [jsonRenderUiRenderer()],
+        renderers: [
+          jsonRenderUiRenderer(),
+        ],
         configure(ctx) {
           ctx.docks.register(jsonRenderDock)
         },
@@ -113,7 +135,11 @@ export default defineConfig({
      * embedded integration.
      */
     tags: [
-      { tag: 'script', attrs: { type: 'module', src: `${base}embedded.js` }, append: true },
+      {
+        tag: 'script',
+        attrs: { type: 'module', src: `${base}embedded.js` },
+        append: true,
+      },
     ],
   },
 })

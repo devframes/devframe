@@ -43,7 +43,9 @@ function FileRow({ entry, staged, selected, action, onSelect }: {
   action?: ReactNode
   onSelect?: (path: string, staged: boolean) => void
 }) {
-  const label = entry.from ? `${entry.from} → ${entry.path}` : entry.path
+  const label = entry.from
+    ? `${entry.from} → ${entry.path}`
+    : entry.path
   return (
     <li
       className={cn(
@@ -174,7 +176,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                     staged
                     selected={selectedKey === fileKey(entry.path, true)}
                     onSelect={onSelectFile}
-                    action={canWrite ? unstageBtn([entry.path], `Unstage ${entry.path}`) : undefined}
+                    action={canWrite
+                      ? unstageBtn([entry.path], `Unstage ${entry.path}`)
+                      : undefined}
                   />
                 ))}
               </Section>
@@ -193,7 +197,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                     staged={false}
                     selected={selectedKey === fileKey(entry.path, false)}
                     onSelect={onSelectFile}
-                    action={canWrite ? stageBtn([entry.path], `Stage ${entry.path}`) : undefined}
+                    action={canWrite
+                      ? stageBtn([entry.path], `Stage ${entry.path}`)
+                      : undefined}
                   />
                 ))}
               </Section>
@@ -212,7 +218,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
                     staged={false}
                     selected={selectedKey === fileKey(path, false)}
                     onSelect={onSelectFile}
-                    action={canWrite ? stageBtn([path], `Stage ${path}`) : undefined}
+                    action={canWrite
+                      ? stageBtn([path], `Stage ${path}`)
+                      : undefined}
                   />
                 ))}
               </Section>
@@ -237,7 +245,9 @@ export function StatusPanelView(props: StatusPanelViewProps) {
               />
               {note && <p className="text-error text-xs">{note}</p>}
               <Button size="sm" className="tabular-nums" onClick={onCommit} disabled={busy || message.trim().length === 0}>
-                {`Commit ${data.staged.length} file${data.staged.length === 1 ? '' : 's'}`}
+                {`Commit ${data.staged.length} file${data.staged.length === 1
+                  ? ''
+                  : 's'}`}
               </Button>
             </div>
           )}

@@ -140,6 +140,10 @@ export async function createDevframeClientRuntime(
   ])
 
   let selectedId: string | null = null
+  /** Toggle actions that are on; they never take the selection. */
+  const activeActions = new Set<string>()
+  /** Whether turning the last toggle action off should reopen the panel it hid. */
+  let reopenPanel = false
   /** Bumped by every `switchEntry` call, so a stale one can tell it was superseded. */
   let switchRequest = 0
   const entryToStateMap = new Map<string, DockEntryState>()
@@ -269,7 +273,7 @@ export async function createDevframeClientRuntime(
     return {
       entryMeta,
       get isActive() {
-        return selectedId === entryMeta.id
+        return selectedId === entryMeta.id || activeActions.has(entryMeta.id)
       },
       domElements: {},
       events: createEventEmitter(),
@@ -342,11 +346,15 @@ export async function createDevframeClientRuntime(
         existing.events.emit('entry:updated', meta as any)
       }
     }
-    for (const id of [...entryToStateMap.keys()]) {
+    for (const id of [
+      ...entryToStateMap.keys(),
+    ]) {
       if (seen.has(id))
         continue
       const removed = entryToStateMap.get(id)
       entryToStateMap.delete(id)
+      if (activeActions.delete(id) && activeActions.size === 0)
+        restorePanel()
       // Tear down a shared-frame adapter when its anchor iframe goes away.
       const removedMeta = removed?.entryMeta as DevframeViewIframe | undefined
       if (removedMeta?.type === 'iframe' && removedMeta.subTabs) {
@@ -395,7 +403,10 @@ export async function createDevframeClientRuntime(
       settings,
       getStateById: id => entryToStateMap.get(id),
       switchEntry,
-      toggleEntry: id => (selectedId === id ? switchEntry(null) : switchEntry(id)),
+      toggleEntry: id => (selectedId === id
+        ? switchEntry(null)
+        : switchEntry(id)),
+      setActionActive,
       register(entry, force) {
         if (clientDocks.has(entry.id) && !force)
           throw new Error(`[@devframes/hub] a client dock "${entry.id}" is already registered; pass force to overwrite`)
@@ -408,7 +419,10 @@ export async function createDevframeClientRuntime(
             const existing = clientDocks.get(entry.id)
             if (!existing)
               throw new Error(`[@devframes/hub] client dock "${entry.id}" was removed; register it again to update`)
-            clientDocks.set(entry.id, { ...existing, ...patch } as DevframeDockEntry)
+            clientDocks.set(entry.id, {
+              ...existing,
+              ...patch,
+            } as DevframeDockEntry)
             refreshEntries()
           },
           dispose: () => {
@@ -442,8 +456,70 @@ export async function createDevframeClientRuntime(
       await setupClientScript(entry.id, entry.renderer)
   }
 
+  function isToggleAction(entry: DevframeDockEntry | undefined): boolean {
+    return entry?.type === 'action' && !!entry.toggle
+  }
+
+  function restorePanel(): void {
+    if (reopenPanel)
+      panel.session.open = true
+    reopenPanel = false
+  }
+
+  /** A new selection wins over the panel a toggle action hid, so it is not restored. */
+  function turnOffActions(): void {
+    reopenPanel = false
+    for (const id of [...activeActions]) {
+      activeActions.delete(id)
+      entryToStateMap.get(id)?.events.emit('entry:deactivated')
+    }
+  }
+
+  async function setActionActive(id: string, active: boolean): Promise<boolean> {
+    const state = entryToStateMap.get(id)
+    const entry = state?.entryMeta
+    if (!state || entry?.type !== 'action' || !entry.toggle || activeActions.has(id) === active)
+      return false
+    if (!active) {
+      activeActions.delete(id)
+      state.events.emit('entry:deactivated')
+      if (activeActions.size === 0)
+        restorePanel()
+      return true
+    }
+    if (loadScriptsEnabled) {
+      if (!rpc.isTrusted)
+        return false
+      // Run once: the script listens to the entry events instead of re-running per click.
+      await setupClientScript(id, entry.action)
+      if (disposed || activeActions.has(id) || entryToStateMap.get(id) !== state)
+        return false
+    }
+    if (activeActions.size === 0) {
+      reopenPanel = panel.session.open
+      panel.session.open = false
+    }
+    activeActions.add(id)
+    state.events.emit('entry:activated')
+    return true
+  }
+
+  /** A click flips a toggle action; clearing an empty selection still turns tools off. */
+  function switchToggleAction(next: string | null): Promise<boolean> | undefined {
+    if (next !== null && isToggleAction(entryToStateMap.get(next)?.entryMeta))
+      return setActionActive(next, !activeActions.has(next))
+    if (next === null && selectedId === null && activeActions.size > 0) {
+      turnOffActions()
+      return Promise.resolve(true)
+    }
+    return undefined
+  }
+
   async function switchEntry(id?: string | null): Promise<boolean> {
     const next = id ?? null
+    const toggled = switchToggleAction(next)
+    if (toggled)
+      return toggled
     if (next === selectedId && entryToStateMap.get(next ?? '')?.entryMeta.type !== 'action')
       return false
     if (next !== null && !entryToStateMap.has(next))
@@ -462,6 +538,7 @@ export async function createDevframeClientRuntime(
 
     const previous = selectedId
     selectedId = next
+    turnOffActions()
     // Mirror onto the session context so a persisting host and the when-clause
     // context see the current selection.
     panel.session.selectedDockId = next
@@ -484,7 +561,10 @@ export async function createDevframeClientRuntime(
     const clientCommands = new Map<string, DevframeClientCommand>()
 
     function allCommands(): DevframeCommandEntry[] {
-      return [...(commandsState.value() as DevframeServerCommandEntry[]), ...clientCommands.values()]
+      return [
+        ...(commandsState.value() as DevframeServerCommandEntry[]),
+        ...clientCommands.values(),
+      ]
     }
 
     function findCommand(commands: Iterable<DevframeCommandEntry>, id: string): DevframeCommandEntry | undefined {
@@ -506,7 +586,9 @@ export async function createDevframeClientRuntime(
         return allCommands().filter(c => c.showInPalette !== false)
       },
       register(input) {
-        const list = Array.isArray(input) ? input : [input]
+        const list = Array.isArray(input)
+          ? input
+          : [input]
         for (const cmd of list) clientCommands.set(cmd.id, cmd)
         return () => {
           for (const cmd of list) clientCommands.delete(cmd.id)
@@ -545,7 +627,9 @@ export async function createDevframeClientRuntime(
 
     return createDockRenderersContext({
       context: () => context,
-      ...(options.renderers ? { local: options.renderers } : {}),
+      ...(options.renderers
+        ? { local: options.renderers }
+        : {}),
       manifest: () => renderersManifestState.value() as DockRendererManifest,
       onMounted(dispose, entry) {
         mountedDisposers.add(dispose)
@@ -613,7 +697,7 @@ export async function createDevframeClientRuntime(
       const mod = await import(/* @vite-ignore */ /* webpackIgnore: true */ /* turbopackIgnore: true */ specifier)
       const fn = mod[script.importName ?? 'default']
       if (typeof fn !== 'function')
-        throw new Error(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
+        throw new TypeError(`[@devframes/hub] "${specifier}" exports no callable "${script.importName ?? 'default'}"`)
       const current = entryToStateMap.get(entryId)
       if (!current || disposed)
         return
@@ -622,7 +706,9 @@ export async function createDevframeClientRuntime(
         throw new Error('[@devframes/hub] RPC client is no longer trusted')
       // Scope the messages client to this entry: its messages default their
       // `category` to the entry id, so the feed can attribute and group them.
-      const messages = createMessagesClient(rpc, { defaults: { category: entryId } })
+      const messages = createMessagesClient(rpc, {
+        defaults: { category: entryId },
+      })
       const scriptContext: DockClientScriptContext = { ...context, current, messages }
       await fn(scriptContext)
     }
@@ -732,7 +818,9 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
 
   const groups = new Map<string, DevframeDockEntry[]>()
   for (const entry of entries) {
-    const resolvedGroup = entry.groupId ? groupsById.get(entry.groupId) : undefined
+    const resolvedGroup = entry.groupId
+      ? groupsById.get(entry.groupId)
+      : undefined
     const category = resolvedGroup
       ? resolvedGroup.category ?? 'default'
       : entry.category ?? 'default'
@@ -743,7 +831,9 @@ function groupByCategory(entries: DevframeDockEntry[], categoryOrder: Record<str
     }
     list.push(entry)
   }
-  return [...groups.entries()].sort(
+  return [
+    ...groups.entries(),
+  ].sort(
     ([a], [b]) => (categoryOrder[a] ?? 0) - (categoryOrder[b] ?? 0),
   )
 }

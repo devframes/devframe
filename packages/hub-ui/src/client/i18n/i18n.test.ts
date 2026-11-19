@@ -7,7 +7,11 @@ const files = import.meta.glob<Record<string, string>>('./locales/*.json', { imp
 const keys = Object.keys(en)
 
 beforeAll(() => Promise.all(Object.keys(HUB_UI_LOCALES).map(code => loadLocale(code as keyof typeof HUB_UI_LOCALES))))
-const slots = (message: string) => [...message.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort()
+function slots(message: string) {
+  return [
+    ...message.matchAll(/\{(\w+)\}/g),
+  ].map(match => match[1]).sort()
+}
 
 afterEach(() => {
   setLocalePreference('auto')

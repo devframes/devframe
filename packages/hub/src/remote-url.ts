@@ -10,7 +10,9 @@ function base64UrlEncode(value: string): string {
 }
 
 function setRemoteConnectionParam(value: string, param: string): string {
-  const parts = value ? value.split('&') : []
+  const parts = value
+    ? value.split('&')
+    : []
   const existingIdx = parts.findIndex(part => part.split('=')[0] === REMOTE_CONNECTION_KEY)
   if (existingIdx >= 0)
     parts[existingIdx] = param
@@ -49,16 +51,25 @@ export function buildRemoteConnectionUrl(
   }
 
   const hashIdx = baseUrl.indexOf('#')
-  const hash = hashIdx === -1 ? '' : baseUrl.slice(hashIdx)
-  const beforeHash = hashIdx === -1 ? baseUrl : baseUrl.slice(0, hashIdx)
-  const separator = beforeHash.includes('?') ? '&' : '?'
+  const hash = hashIdx === -1
+    ? ''
+    : baseUrl.slice(hashIdx)
+  const beforeHash = hashIdx === -1
+    ? baseUrl
+    : baseUrl.slice(0, hashIdx)
+  const separator = beforeHash.includes('?')
+    ? '&'
+    : '?'
   return `${beforeHash}${separator}${param}${hash}`
 }
 
 function stripParamList(value: string): [value: string, changed: boolean] {
   const parts = value.split('&')
   const filtered = parts.filter(part => part.split('=')[0] !== REMOTE_CONNECTION_KEY)
-  return [filtered.join('&'), filtered.length !== parts.length]
+  return [
+    filtered.join('&'),
+    filtered.length !== parts.length,
+  ]
 }
 
 /** Strip the descriptor from a URL fragment, preserving its route/query split. */
@@ -70,7 +81,12 @@ function stripHashParams(hash: string): [hash: string, changed: boolean] {
   const [query, changed] = stripParamList(hash.slice(routeQueryIdx + 1))
   if (!changed)
     return [hash, false]
-  return [query ? `${route}?${query}` : route, true]
+  return [
+    query
+      ? `${route}?${query}`
+      : route,
+    true,
+  ]
 }
 
 /** Strip the descriptor from a URL query string (the part before any fragment). */
@@ -82,19 +98,32 @@ function stripQueryParams(beforeHash: string): [beforeHash: string, changed: boo
   const [query, changed] = stripParamList(beforeHash.slice(queryIdx + 1))
   if (!changed)
     return [beforeHash, false]
-  return [query ? `${path}?${query}` : path, true]
+  return [
+    query
+      ? `${path}?${query}`
+      : path,
+    true,
+  ]
 }
 
 /** Remove the remote connection descriptor from a URL before displaying or copying it. */
 export function stripRemoteConnectionFromUrl(input: string): string {
   const hashIdx = input.indexOf('#')
-  const rawHash = hashIdx === -1 ? undefined : input.slice(hashIdx + 1)
-  const rawBeforeHash = hashIdx === -1 ? input : input.slice(0, hashIdx)
+  const rawHash = hashIdx === -1
+    ? undefined
+    : input.slice(hashIdx + 1)
+  const rawBeforeHash = hashIdx === -1
+    ? input
+    : input.slice(0, hashIdx)
 
-  const [hash, hashChanged] = rawHash === undefined ? [undefined, false] as const : stripHashParams(rawHash)
+  const [hash, hashChanged] = rawHash === undefined
+    ? [undefined, false] as const
+    : stripHashParams(rawHash)
   const [beforeHash, queryChanged] = stripQueryParams(rawBeforeHash)
 
   if (!hashChanged && !queryChanged)
     return input
-  return hash ? `${beforeHash}#${hash}` : beforeHash
+  return hash
+    ? `${beforeHash}#${hash}`
+    : beforeHash
 }

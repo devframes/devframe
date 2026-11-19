@@ -12,14 +12,18 @@ function makeFakeRpc(serverState: DevframeServicesState) {
     connectionMeta: { backend: 'websocket' },
     isTrusted: true,
     events,
-    client: { register: () => {} },
+    client: {
+      register: () => {},
+    },
     callEvent: () => {},
     call: async (name: string, key: string) => {
       if (name === 'devframe:rpc:server-state:get' && key === 'devframe:services')
         return serverState
       return undefined
     },
-    scope: (namespace: string) => ({ rpc: { namespace } }),
+    scope: (namespace: string) => ({
+      rpc: { namespace },
+    }),
   } as any
   rpc.sharedState = createRpcSharedStateClientHost(rpc)
   return rpc

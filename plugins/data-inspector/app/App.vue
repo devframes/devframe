@@ -31,7 +31,10 @@ onMounted(async () => {
   await connect()
   if (!connection.connected)
     return
-  await Promise.all([wb.loadSources(), savedApi.refresh()])
+  await Promise.all([
+    wb.loadSources(),
+    savedApi.refresh(),
+  ])
   // Sources registered/unregistered after boot refresh the picker live.
   backend().onSourcesChanged(() => void wb.loadSources())
   // Data changes (writes, server-side notifications) refresh the active view.
@@ -86,6 +89,8 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
         <Pane class="min-w-0">
           <ResultViewer
             :result="wb.result.value"
+            :observation="wb.observation.value"
+            :observation-notices="wb.observationNotices.value"
             :has-result="wb.hasResult.value"
             :stats="wb.stats.value"
             :stats-stale="wb.statsStale.value"

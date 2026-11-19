@@ -9,7 +9,7 @@ import '../types'
 /** The subset of {@link DevframeDocksUserSettings} hub-ui itself contributes. */
 export type HubUiSettings = Pick<
   DevframeDocksUserSettings,
-  'showIframeAddressBar' | 'closeOnOutsideClick' | 'autoCollapseEdgeToolbar' | 'showDevframeInspector'
+  'showIframeAddressBar' | 'closeOnOutsideClick' | 'autoCollapseEdgeToolbar' | 'showDevframeInspector' | 'docksRecentLimit' | 'expandGroupSidebar'
 >
 
 /**
@@ -39,6 +39,10 @@ const HUB_UI_SETTINGS_DEFAULTS: Required<HubUiSettings> = Object.freeze({
   autoCollapseEdgeToolbar: true,
   /** The Devframe Inspector dock stays off the bar until opted into. */
   showDevframeInspector: false,
+  /** The float bar keeps the last three docks opened from beyond it. */
+  docksRecentLimit: 3,
+  /** The group sidebar stays an icon-only rail. */
+  expandGroupSidebar: false,
 })
 
 /**
@@ -54,7 +58,9 @@ export function hubUiSetting<K extends keyof HubUiSettings>(
   settings: Pick<DevframeDocksUserSettings, K> | undefined,
   key: K,
 ): Required<HubUiSettings>[K] {
-  return settings?.[key] ?? HUB_UI_SETTINGS_DEFAULTS[key]
+  // TS cannot relate the indexed access across a key union that mixes
+  // boolean and number fields, so the result is re-asserted.
+  return (settings?.[key] ?? HUB_UI_SETTINGS_DEFAULTS[key]) as Required<HubUiSettings>[K]
 }
 
 const settingsByContext = new WeakMap<DocksContext, ComputedRef<ResolvedDocksUserSettings>>()
@@ -77,7 +83,10 @@ export function useSettings(context: DocksContext): ComputedRef<ResolvedDocksUse
   let settings = settingsByContext.get(context)
   if (!settings) {
     const stored = sharedStateToRef(context.docks.settings)
-    settings = computed(() => ({ ...HUB_UI_SETTINGS_DEFAULTS, ...stored.value }))
+    settings = computed(() => ({
+      ...HUB_UI_SETTINGS_DEFAULTS,
+      ...stored.value,
+    }))
     settingsByContext.set(context, settings)
   }
   return settings

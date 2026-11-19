@@ -17,7 +17,11 @@ function createTestHost(): DevframeHost {
 }
 
 export async function createTestContext(): Promise<DevframeNodeContext> {
-  return createHostContext({ cwd: process.cwd(), mode: 'dev', host: createTestHost() })
+  return createHostContext({
+    cwd: process.cwd(),
+    mode: 'dev',
+    host: createTestHost(),
+  })
 }
 
 export interface FakeCodeServerOptions {
@@ -43,12 +47,16 @@ export function writeFakeCodeServer(options: FakeCodeServerOptions = {}): string
   const script = `#!/usr/bin/env node
 const args = process.argv.slice(2)
 if (args.includes('--version')) {
-  ${version ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)` : `process.exit(1)`}
+  ${version
+    ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)`
+    : `process.exit(1)`}
 }
 const i = args.indexOf('--bind-addr')
 const addr = i >= 0 ? args[i + 1] : '0.0.0.0:8080'
 const port = Number(addr.split(':').pop())
-const dump = ${options.dumpEnvTo ? JSON.stringify(options.dumpEnvTo) : 'null'}
+const dump = ${options.dumpEnvTo
+  ? JSON.stringify(options.dumpEnvTo)
+  : 'null'}
 if (dump) require('fs').writeFileSync(dump, process.env.HASHED_PASSWORD || '')
 const http = require('http')
 const server = http.createServer((req, res) => {
@@ -93,13 +101,17 @@ export function writeFakeServeWeb(options: FakeServeWebOptions = {}): string {
   const script = `#!/usr/bin/env node
 const args = process.argv.slice(2)
 if (args.includes('--version')) {
-  ${version ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)` : `process.exit(1)`}
+  ${version
+    ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)`
+    : `process.exit(1)`}
 }
 const pi = args.indexOf('--port')
 const port = Number(pi >= 0 ? args[pi + 1] : 8000)
 const ti = args.indexOf('--connection-token')
 const token = ti >= 0 ? args[ti + 1] : ''
-const dump = ${options.dumpTokenTo ? JSON.stringify(options.dumpTokenTo) : 'null'}
+const dump = ${options.dumpTokenTo
+  ? JSON.stringify(options.dumpTokenTo)
+  : 'null'}
 if (dump) require('fs').writeFileSync(dump, token)
 const http = require('http')
 const server = http.createServer((req, res) => { res.statusCode = 200; res.end('ok') })
@@ -142,10 +154,16 @@ export function writeFakeTunnel(options: FakeTunnelOptions = {}): string {
   const script = `#!/usr/bin/env node
 const args = process.argv.slice(2)
 if (args.includes('--version')) {
-  ${version ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)` : `process.exit(1)`}
+  ${version
+    ? `process.stdout.write(${JSON.stringify(`${version}\n`)}); process.exit(0)`
+    : `process.exit(1)`}
 }
-${options.printLogin ? `console.log('To grant access to the server, please log into https://github.com/login/device and use code ABCD-1234')` : ''}
-${options.printUrl ? `setTimeout(() => console.log('Open this link in your browser ${url}'), 20)` : ''}
+${options.printLogin
+  ? `console.log('To grant access to the server, please log into https://github.com/login/device and use code ABCD-1234')`
+  : ''}
+${options.printUrl
+  ? `setTimeout(() => console.log('Open this link in your browser ${url}'), 20)`
+  : ''}
 setInterval(() => {}, 1000)
 process.on('SIGTERM', () => process.exit(0))
 process.on('SIGINT', () => process.exit(0))
@@ -197,7 +215,10 @@ export function createFakeHubTerminals(): FakeHubTerminals {
     async startChildProcess(executeOptions, terminal) {
       const child = spawn(executeOptions.command, executeOptions.args ?? [], {
         cwd: executeOptions.cwd,
-        env: { ...process.env, ...executeOptions.env },
+        env: {
+          ...process.env,
+          ...executeOptions.env,
+        },
         stdio: ['ignore', 'pipe', 'pipe'],
         windowsHide: true,
         shell: process.platform === 'win32' && executeOptions.command.endsWith('.cmd'),

@@ -23,7 +23,10 @@ const HERE = fileURLToPath(new URL('.', import.meta.url))
 const ROOT = resolve(HERE, '..')
 const panelDir = resolve(ROOT, 'assets-pkg/dist')
 
-const devframe = createAssetsDevframe({ serveStatic: true, dir: resolve(ROOT, 'public') })
+const devframe = createAssetsDevframe({
+  serveStatic: true,
+  dir: resolve(ROOT, 'public'),
+})
 const basePath = devframe.basePath
 
 async function main() {

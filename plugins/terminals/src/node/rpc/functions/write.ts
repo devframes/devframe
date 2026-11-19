@@ -6,7 +6,12 @@ export const write = defineRpcFunction({
   name: 'devframes:plugin:terminals:write',
   type: 'action',
   jsonSerializable: true,
-  args: [s.object({ id: s.string(), data: s.string() })],
+  args: [
+    s.object({
+      id: s.string(),
+      data: s.string(),
+    }),
+  ],
   returns: s.void(),
   setup: ctx => ({
     handler: ({ id, data }) => {

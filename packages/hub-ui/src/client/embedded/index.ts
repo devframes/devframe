@@ -5,6 +5,7 @@ import { ref } from 'vue'
 import { applyPrimaryColor, setBranding } from '../state/branding'
 import { DEFAULT_DOCK_PANEL_STORE, DEFAULT_DOCK_SESSION_STORE } from '../state/docks'
 import { setupLocale } from '../state/locale'
+import { isInsideHub } from './is-inside-hub'
 import { isEmbeddedDockInitiallyVisible, setupEmbeddedVisibility } from './visibility'
 
 /**
@@ -20,7 +21,7 @@ let dockEl: HTMLElement | undefined
 async function mountDock(): Promise<void> {
   // A mounted frame's SPA runs inside the hub UI provider's iframes on the same
   // origin, so never stack a second dock inside them.
-  if (window.parent !== window)
+  if (isInsideHub(window))
     return
   if (dockEl)
     return
@@ -54,8 +55,12 @@ async function mountDock(): Promise<void> {
       // Seed a first-run visitor's mode/position from the configured
       // defaults; `useLocalStorage`'s own `mergeDefaults` already limits
       // this to a visitor with no stored preference yet.
-      ...(dockPreferences?.defaultMode ? { mode: dockPreferences.defaultMode } : {}),
-      ...(dockPreferences?.defaultPosition ? { position: dockPreferences.defaultPosition } : {}),
+      ...(dockPreferences?.defaultMode
+        ? { mode: dockPreferences.defaultMode }
+        : {}),
+      ...(dockPreferences?.defaultPosition
+        ? { position: dockPreferences.defaultPosition }
+        : {}),
     },
     { mergeDefaults: true },
   )
@@ -84,7 +89,11 @@ async function mountDock(): Promise<void> {
   const { DockEmbedded } = await import('../components/DockEmbedded')
   dockEl = new DockEmbedded({
     context,
-    ...(dockPreferences?.maxVisibleItems !== undefined ? { layout: { maxVisibleItems: dockPreferences.maxVisibleItems } } : {}),
+    ...(dockPreferences?.maxVisibleItems !== undefined
+      ? {
+          layout: { maxVisibleItems: dockPreferences.maxVisibleItems },
+        }
+      : {}),
   })
   // Inline on the host element: beats the generated `:host` ramp defaults and
   // inherits through the shadow tree. The embedded bootstrap never touches the

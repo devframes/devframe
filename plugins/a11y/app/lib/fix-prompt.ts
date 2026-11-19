@@ -22,7 +22,9 @@ export function buildFixPrompt(items: SelectedItem[]): string {
 
   for (const [route, bucket] of groupByRoute(items)) {
     const url = bucket[0]?.url
-    lines.push(`## Route: ${route}${url ? ` (${url})` : ''}`)
+    lines.push(`## Route: ${route}${url
+      ? ` (${url})`
+      : ''}`)
     for (const { violation } of bucket)
       lines.push(...renderViolation(violation))
     lines.push('')
@@ -51,7 +53,9 @@ function renderViolation(v: Violation): string[] {
     lines.push(`- WCAG: ${v.tags.join(', ')}`)
   lines.push(`- Docs: ${v.helpUrl}`)
   lines.push(`- What it checks: ${v.description}`)
-  lines.push(`- Affected element${v.nodes.length === 1 ? '' : 's'} (${v.nodes.length}):`)
+  lines.push(`- Affected element${v.nodes.length === 1
+    ? ''
+    : 's'} (${v.nodes.length}):`)
   for (const node of v.nodes)
     lines.push(...renderNode(node))
   return lines

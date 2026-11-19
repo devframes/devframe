@@ -28,7 +28,9 @@ function toolKey(name: string): string {
 }
 
 function toggleTool(name: string): void {
-  expanded.value = expanded.value === name ? null : name
+  expanded.value = expanded.value === name
+    ? null
+    : name
   toolArgsInput[name] ??= '{}'
 }
 
@@ -36,7 +38,9 @@ function invoke(fn: RpcFunctionInfo): void {
   let parsed: unknown[]
   try {
     const raw = JSON.parse(argsInput[fn.name] || '[]')
-    parsed = Array.isArray(raw) ? raw : [raw]
+    parsed = Array.isArray(raw)
+      ? raw
+      : [raw]
   }
   catch (e) {
     throw new Error(`Invalid JSON args: ${(e as Error).message}`)

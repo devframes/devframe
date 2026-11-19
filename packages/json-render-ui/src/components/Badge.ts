@@ -21,10 +21,14 @@ const badgeColor: Record<string, boolean | string> = {
 }
 
 export const Badge: JrComponent<BadgeProps> = ({ props, children }) => {
-  const style = props.minWidth != null ? { minWidth: `${props.minWidth}px` } : undefined
+  const style = props.minWidth != null
+    ? { minWidth: `${props.minWidth}px` }
+    : undefined
   return h(
     DisplayBadge,
     { text: props.text, color: badgeColor[props.variant ?? 'default'], style },
-    props.text ? undefined : () => children,
+    props.text
+      ? undefined
+      : () => children,
   )
 }

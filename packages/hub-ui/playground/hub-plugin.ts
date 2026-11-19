@@ -45,7 +45,9 @@ export function hubUiPlaygroundHub(): Plugin {
       // Vite re-invokes `configureServer` on each restart.
       await teardown()
 
-      const httpServer = server.httpServer instanceof NodeHttpServer ? server.httpServer : undefined
+      const httpServer = server.httpServer instanceof NodeHttpServer
+        ? server.httpServer
+        : undefined
       const hub = initHub({
         base: DEVFRAMES_HUB_BASE,
         /**
@@ -55,7 +57,9 @@ export function hubUiPlaygroundHub(): Plugin {
         cwd: new URL('..', import.meta.url).pathname,
         origin: () => {
           const resolved = server.resolvedUrls?.local?.[0]
-          return resolved ? new URL(resolved).origin : ''
+          return resolved
+            ? new URL(resolved).origin
+            : ''
         },
         /** Frictionless local loop with no interactive OTP gate. */
         auth: false,
@@ -64,7 +68,11 @@ export function hubUiPlaygroundHub(): Plugin {
          * `@devframes/vite/hub` does.
          */
         server: httpServer,
-        ...(httpServer ? {} : { ws: { sidecar: true } }),
+        ...(httpServer
+          ? {}
+          : {
+              ws: { sidecar: true },
+            }),
         /**
          * Collapsed under the "Playground Tools" group `seed.ts`'s
          * `configure` registers below, alongside the "Ping" action. Read-only
@@ -73,7 +81,10 @@ export function hubUiPlaygroundHub(): Plugin {
          * this package's own directory.
          */
         devframes: [
-          { devframe: createGitDevframe(), dock: { groupId: PLAYGROUND_GROUP_ID } },
+          {
+            devframe: createGitDevframe(),
+            dock: { groupId: PLAYGROUND_GROUP_ID },
+          },
         ],
         configure: seedPlayground,
       })

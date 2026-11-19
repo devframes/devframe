@@ -43,7 +43,7 @@ The `pnpm test` script intentionally runs `build` first so `tsnapi` snapshots co
 
 ## Generated artifacts under `src/`
 
-Ahead-of-time build artifacts that live under `src/` - the shadow-root stylesheets in `packages/hub-ui/src/client/.generated/` and `packages/json-render-ui/src/.generated/` - are **generated, not committed** (`.generated` is gitignored). Each owning package builds its own with `pnpm run build:css`; three things guarantee the file is on disk before anything imports it: the root `postinstall` runs `turbo run build:css`, the Turbo `typecheck` task depends on both `build:css` tasks, and each package's `build` script chains `build:css` first. A new generated-under-`src` artifact MUST follow the same shape - its own build script, declared `outputs` in `turbo.json`, and a `typecheck` dependency - and MUST NOT be checked in: a minified single-line blob conflicts on every concurrent edit.
+Ahead-of-time build artifacts that live under `src/` - the shadow-root stylesheets in `packages/hub-ui/src/client/.generated/`, `packages/hub-ui-onboard/src/client/.generated/` and `packages/json-render-ui/src/.generated/` - are **generated, not committed** (`.generated` is gitignored). Each owning package builds its own with `pnpm run build:css`; three things guarantee the file is on disk before anything imports it: the root `postinstall` runs `turbo run build:css`, the Turbo `typecheck` task depends on every `build:css` task, and each package's `build` script chains `build:css` first. A new generated-under-`src` artifact MUST follow the same shape - its own build script, declared `outputs` in `turbo.json`, and a `typecheck` dependency - and MUST NOT be checked in: a minified single-line blob conflicts on every concurrent edit.
 
 ## `starter/`
 

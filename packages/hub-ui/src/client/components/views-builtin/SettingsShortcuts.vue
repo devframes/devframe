@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { DevframeCommandEntry, DevframeCommandKeybinding } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import type { ShortcutRow } from '../../state/keybindings'
 import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { t } from '../../i18n'
-import { filterCommandsByWhen, findCommandDeep, formatKeybinding, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS, walkCommands } from '../../state/keybindings'
+import { filterCommandsByWhen, findCommandDeep, findKeybindingConflict, formatKeybinding, getShortcutRows, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
 import { useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
 
@@ -16,13 +17,6 @@ const commandsCtx = props.context.commands
 const settings = useSettings(props.context)
 const shortcutOverrides = computed(() => settings.value.commandShortcuts ?? {})
 const shortcutSearch = ref('')
-
-interface ShortcutRow {
-  command: DevframeCommandEntry
-  parentTitle?: string
-  /** Nesting level: 0 for a top-level command, +1 per ancestor. */
-  depth: number
-}
 
 // This page is only reachable with the dock open and the palette closed, so `when`
 // is evaluated against that context rather than the live one. `dockOpen`/`paletteOpen`
@@ -36,26 +30,7 @@ const availableCommands = computed(() => filterCommandsByWhen(
   { ...props.context.when.context, dockOpen: true, paletteOpen: false },
 ))
 
-/**
- * One row per command at every depth, in tree order, so anything the palette
- * can run can be given a shortcut here.
- *
- * Nesting runs deeper than a parent and its children: a dock group's members sit
- * two levels below the `Docks` command, and a devframe's own `children` go deeper
- * still.
- */
-const shortcutRows = computed<ShortcutRow[]>(() => {
-  const rows: ShortcutRow[] = []
-  walkCommands(availableCommands.value, (cmd, ancestors) => {
-    const parentTitle = ancestors.at(-1)?.title
-    rows.push({
-      command: cmd,
-      ...(parentTitle ? { parentTitle } : {}),
-      depth: ancestors.length,
-    })
-  })
-  return rows
-})
+const shortcutRows = computed(() => getShortcutRows(availableCommands.value))
 
 const filteredShortcutRows = computed(() => {
   if (!shortcutSearch.value)
@@ -79,7 +54,9 @@ function getEffectiveKeybindings(id: string): DevframeCommandKeybinding[] {
  * worth of space.
  */
 function rowIndentStyle(row: ShortcutRow): Record<string, string> {
-  return row.depth > 0 ? { marginLeft: `${row.depth * 1.5}rem` } : {}
+  return row.depth > 0
+    ? { marginLeft: `${row.depth * 1.5}rem` }
+    : {}
 }
 
 function isExecutable(command: DevframeCommandEntry): boolean {
@@ -179,20 +156,17 @@ const editorWarnings = computed<string[]>(() => {
   // Browser / OS conflict: show the description
   const browserDescription = KNOWN_BROWSER_SHORTCUTS[key]
   if (browserDescription) {
-    warnings.push(t('shortcuts.warnBrowser', { description: browserDescription, keys: formatKeybinding(key).join('+') }))
+    warnings.push(t('shortcuts.warnBrowser', {
+      description: browserDescription,
+      keys: formatKeybinding(key).join('+'),
+    }))
   }
 
-  // Conflict with other commands
+  // Hidden commands can share the same mode again after the user switches modes.
   if (editorCommandId.value) {
-    for (const row of shortcutRows.value) {
-      if (row.command.id === editorCommandId.value)
-        continue
-      const bindings = getEffectiveKeybindings(row.command.id)
-      if (bindings.some(b => b.key === key)) {
-        warnings.push(t('shortcuts.warnCommand', { title: row.command.title }))
-        break
-      }
-    }
+    const conflict = findKeybindingConflict(commandsCtx.commands, editorCommandId.value, key, getEffectiveKeybindings)
+    if (conflict)
+      warnings.push(t('shortcuts.warnCommand', { title: conflict.title }))
   }
 
   return warnings
@@ -225,7 +199,9 @@ function onEditorKeyDown(e: KeyboardEvent) {
 function saveEditor() {
   if (!editorCommandId.value || !editorCanSave.value)
     return
-  const override = [{ key: editorComposedKey.value }]
+  const override = [
+    { key: editorComposedKey.value },
+  ]
   if (isKeybindingOverrideDifferentFromDefault(override, getDefaultKeybindings(editorCommandId.value))) {
     commandsCtx.settings.mutate((state) => {
       state.commandShortcuts[editorCommandId.value!] = override

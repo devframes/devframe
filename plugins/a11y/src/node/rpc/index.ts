@@ -7,7 +7,9 @@ export const serverFunctions = [getConfig] as const
 
 /** Build the function set configured with author options. */
 export function buildServerFunctions(options: A11yRuntimeConfig = {}) {
-  return [createGetConfig(options)] as const
+  return [
+    createGetConfig(options),
+  ] as const
 }
 
 declare module 'devframe' {

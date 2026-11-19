@@ -5,7 +5,7 @@ import { HUB_EVENTS } from '@devframes/hub/constants'
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { createSharedState } from 'devframe/utils/shared-state'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref, watch } from 'vue'
 import { createDocksContext } from './context'
 import { executeSetupScript } from './setup-script'
@@ -96,7 +96,9 @@ describe('createDocksContext', () => {
 
     panelVisible.value = true
     await nextTick()
-    expect(panelStates).toEqual([{ state: 'open', selectedDockId: 'git' }])
+    expect(panelStates).toEqual([
+      { state: 'open', selectedDockId: 'git' },
+    ])
     panelVisible.value = false
     await nextTick()
     panelStates.length = 0
@@ -212,9 +214,29 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
-      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
-      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      {
+        id: 'nuxt',
+        type: 'group',
+        title: 'Nuxt',
+        icon: 'ph:cube-duotone',
+        defaultChildId: 'nuxt:overview',
+      },
+      {
+        id: 'nuxt:overview',
+        type: 'iframe',
+        url: '/',
+        title: 'Overview',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
+      {
+        id: 'nuxt:modules',
+        type: 'iframe',
+        url: '/',
+        title: 'Modules',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -253,9 +275,29 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'nuxt', type: 'group', title: 'Nuxt', icon: 'ph:cube-duotone', defaultChildId: 'nuxt:overview' },
-      { id: 'nuxt:overview', type: 'iframe', url: '/', title: 'Overview', icon: 'ph:cube-duotone', groupId: 'nuxt' },
-      { id: 'nuxt:modules', type: 'iframe', url: '/', title: 'Modules', icon: 'ph:cube-duotone', groupId: 'nuxt' },
+      {
+        id: 'nuxt',
+        type: 'group',
+        title: 'Nuxt',
+        icon: 'ph:cube-duotone',
+        defaultChildId: 'nuxt:overview',
+      },
+      {
+        id: 'nuxt:overview',
+        type: 'iframe',
+        url: '/',
+        title: 'Overview',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
+      {
+        id: 'nuxt:modules',
+        type: 'iframe',
+        url: '/',
+        title: 'Modules',
+        icon: 'ph:cube-duotone',
+        groupId: 'nuxt',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -281,8 +323,20 @@ describe('createDocksContext', () => {
 
     trust()
     sharedStates.get('devframe:docks')!.push([
-      { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
-      { id: 'tools:run', type: 'action', action: { importFrom: '/action.js' }, title: 'Run', icon: 'ph:play-duotone', groupId: 'tools' },
+      {
+        id: 'tools',
+        type: 'group',
+        title: 'Tools',
+        icon: 'ph:wrench-duotone',
+      },
+      {
+        id: 'tools:run',
+        type: 'action',
+        action: { importFrom: '/action.js' },
+        title: 'Run',
+        icon: 'ph:play-duotone',
+        groupId: 'tools',
+      },
     ] satisfies DevframeDockEntry[])
     sharedStates.get('devframe:dock-renderers')!.push({})
     await flushRestore()
@@ -315,15 +369,72 @@ describe('createDocksContext', () => {
 })
 
 const groupEntries = [
-  { id: 'tools', type: 'group', title: 'Tools', icon: 'ph:wrench-duotone' },
-  { id: 'tools:a', type: 'iframe', title: 'A', icon: 'ph:file-duotone', url: '/a', groupId: 'tools' },
-  { id: 'tools:b', type: 'iframe', title: 'B', icon: 'ph:file-duotone', url: '/b', groupId: 'tools', category: 'app' },
-  { id: 'solo', type: 'group', title: 'Solo', icon: 'ph:circle-duotone' },
-  { id: 'solo:only', type: 'iframe', title: 'Only', icon: 'ph:file-duotone', url: '/only', groupId: 'solo' },
-  { id: 'defaulted', type: 'group', title: 'Defaulted', icon: 'ph:star-duotone', defaultChildId: 'defaulted:second' },
-  { id: 'defaulted:first', type: 'iframe', title: 'First', icon: 'ph:file-duotone', url: '/first', groupId: 'defaulted' },
-  { id: 'defaulted:second', type: 'iframe', title: 'Second', icon: 'ph:file-duotone', url: '/second', groupId: 'defaulted' },
-  { id: 'empty', type: 'group', title: 'Empty', icon: 'ph:prohibit-duotone' },
+  {
+    id: 'tools',
+    type: 'group',
+    title: 'Tools',
+    icon: 'ph:wrench-duotone',
+  },
+  {
+    id: 'tools:a',
+    type: 'iframe',
+    title: 'A',
+    icon: 'ph:file-duotone',
+    url: '/a',
+    groupId: 'tools',
+  },
+  {
+    id: 'tools:b',
+    type: 'iframe',
+    title: 'B',
+    icon: 'ph:file-duotone',
+    url: '/b',
+    groupId: 'tools',
+    category: 'app',
+  },
+  {
+    id: 'solo',
+    type: 'group',
+    title: 'Solo',
+    icon: 'ph:circle-duotone',
+  },
+  {
+    id: 'solo:only',
+    type: 'iframe',
+    title: 'Only',
+    icon: 'ph:file-duotone',
+    url: '/only',
+    groupId: 'solo',
+  },
+  {
+    id: 'defaulted',
+    type: 'group',
+    title: 'Defaulted',
+    icon: 'ph:star-duotone',
+    defaultChildId: 'defaulted:second',
+  },
+  {
+    id: 'defaulted:first',
+    type: 'iframe',
+    title: 'First',
+    icon: 'ph:file-duotone',
+    url: '/first',
+    groupId: 'defaulted',
+  },
+  {
+    id: 'defaulted:second',
+    type: 'iframe',
+    title: 'Second',
+    icon: 'ph:file-duotone',
+    url: '/second',
+    groupId: 'defaulted',
+  },
+  {
+    id: 'empty',
+    type: 'group',
+    title: 'Empty',
+    icon: 'ph:prohibit-duotone',
+  },
 ] satisfies DevframeDockEntry[]
 
 async function createGroupedContext() {
@@ -462,5 +573,92 @@ describe('dock group command activation', () => {
       'devframes:docks:tools:a',
       'devframes:docks:tools:b',
     ])
+  })
+})
+
+describe('dock route persistence', () => {
+  const iframeEntries = [
+    {
+      id: 'vite',
+      type: 'iframe',
+      title: 'Vite',
+      icon: 'ph:lightning',
+      url: '/__devtools-vite/',
+    },
+    {
+      id: 'vite-task',
+      type: 'iframe',
+      title: 'Vite Task',
+      icon: 'ph:list',
+      url: '/__devtools-vite-task/',
+    },
+  ] satisfies DevframeDockEntry[]
+
+  beforeEach(() => {
+    vi.stubGlobal('location', new URL('http://localhost:5197/'))
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('clears the old route before publishing a different dock selection', async () => {
+    expect.assertions(2)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const session = ref<DockSessionStorage>({
+      open: true,
+      selectedDockId: 'vite',
+      selectedDockRoute: 'http://localhost:5197/__devtools-vite/home',
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session)
+    trust()
+    sharedStates.get(HUB_EVENTS.sharedState.docks)!.push(iframeEntries)
+    sharedStates.get(HUB_EVENTS.sharedState.dockRenderers)!.push({})
+    await flushRestore()
+
+    const snapshots: DockSessionStorage[] = []
+    const stop = watch(() => session.value.selectedDockId, () => {
+      snapshots.push({ ...session.value })
+    }, { flush: 'sync' })
+    await context.docks.switchEntry('vite-task')
+    stop()
+
+    expect(snapshots).toEqual([
+      expect.objectContaining({
+        selectedDockId: 'vite-task',
+        selectedDockRoute: null,
+      }),
+    ])
+    expect(session.value.selectedDockRoute).toBeNull()
+  })
+
+  it.each([
+    ['http://localhost:5197/__devtools-vite/home', true],
+    ['/__devtools-vite/home?tab=plugins#details', true],
+    ['/__devtools-vite/', true],
+    ['/__devtools-vite', true],
+    ['/__devtools-vite-task/', false],
+    ['http://localhost:5198/__devtools-vite/home', false],
+    ['https://localhost:5197/__devtools-vite/home', false],
+    ['http://[invalid', false],
+  ])('restores %s only within the selected dock URL', async (route, valid) => {
+    expect.assertions(3)
+
+    const { rpc, sharedStates, trust } = createStubRpc()
+    const session = ref<DockSessionStorage>({
+      open: true,
+      selectedDockId: 'vite',
+      selectedDockRoute: route,
+    })
+    const context = await createDocksContext('embedded', rpc, undefined, session)
+    trust()
+    sharedStates.get(HUB_EVENTS.sharedState.docks)!.push(iframeEntries)
+    sharedStates.get(HUB_EVENTS.sharedState.dockRenderers)!.push({})
+    await flushRestore()
+
+    expect(context.panel.consumeBootRoute?.('vite-task')).toBeNull()
+    expect(context.panel.consumeBootRoute?.('vite')).toBe(valid ? route : null)
+    expect(context.panel.consumeBootRoute?.('vite')).toBeNull()
   })
 })

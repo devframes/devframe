@@ -11,7 +11,11 @@ describe('node-side shared state', () => {
     expect(broadcast).toHaveBeenCalledTimes(1)
     expect(broadcast).toHaveBeenLastCalledWith({
       method: 'devframe:rpc:client-state:updated',
-      args: ['counter', { count: 1 }, 'first'],
+      args: [
+        'counter',
+        { count: 1 },
+        'first',
+      ],
       filter: expect.any(Function),
     })
 

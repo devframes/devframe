@@ -21,14 +21,23 @@ export interface WebMcpToolResult {
 /** A tool descriptor as passed to {@link WebMcpModelContext.registerTool}. */
 export interface WebMcpToolDescriptor {
   name: string
+  title?: string
   description: string
   inputSchema?: unknown
+  /**
+   * Hints from the current draft's `ToolAnnotations`. `title` and
+   * `destructiveHint` are also set for earlier drafts and polyfills that
+   * follow the MCP annotation shape.
+   */
   annotations?: {
     title?: string
     readOnlyHint?: boolean
+    consequentialHint?: boolean
+    untrustedContentHint?: boolean
+    debugging?: boolean
     destructiveHint?: boolean
   }
-  execute: (args: Record<string, unknown>) => Promise<WebMcpToolResult>
+  execute: (args: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<WebMcpToolResult>
 }
 
 /**
@@ -134,16 +143,21 @@ export function registerWebMcpTools<LocalFunctions, SetupContext>(
 
     const controller = new AbortController()
     const safety = resolveAgentSafety(def.type, agent)
+    const title = agent.title ?? def.name
     const result = modelContext.registerTool({
       name,
+      title,
       description: agent.description,
       inputSchema: argsToJsonSchema(def.args),
       annotations: {
-        title: agent.title ?? def.name,
+        title,
         readOnlyHint: safety === 'read',
+        consequentialHint: safety === 'destructive',
+        // Every devframe tool is developer tooling.
+        debugging: true,
         destructiveHint: safety === 'destructive',
       },
-      execute: args => executeRpcTool(def, clientRpc.context, args),
+      execute: (args, options) => executeRpcTool(def, clientRpc.context, args, options?.signal),
     }, { signal: controller.signal })
     // Registration may reject when the frame's permissions policy denies
     // `tools`; the surface is simply unavailable there.
@@ -160,7 +174,11 @@ export function registerWebMcpTools<LocalFunctions, SetupContext>(
   }
 
   function sync(id?: string): void {
-    const names = id ? [id] : [...clientRpc.definitions.keys()]
+    const names = id
+      ? [id]
+      : [
+          ...clientRpc.definitions.keys(),
+        ]
     for (const name of names) {
       registered.get(name)?.()
       registered.delete(name)
@@ -186,19 +204,49 @@ async function executeRpcTool<SetupContext>(
   def: RpcFunctionDefinitionAnyWithContext<SetupContext>,
   context: SetupContext,
   args: Record<string, unknown>,
+  signal?: AbortSignal,
 ): Promise<WebMcpToolResult> {
+  // An aborted call rejects with the signal's reason, as the draft expects.
+  // The handler itself cannot be stopped; its late result is dropped.
+  signal?.throwIfAborted()
   try {
     const positional = toolInputToRpcArgs(args, def.args?.length)
     const handler = await getRpcHandler(def, context)
-    const result = await handler(...positional)
-    return { content: [{ type: 'text', text: stringifyResult(result) }] }
-  }
-  catch (error) {
+    const result = await raceAbort(Promise.resolve(handler(...positional)), signal)
     return {
-      isError: true,
-      content: [{ type: 'text', text: formatError(error) }],
+      content: [
+        {
+          type: 'text',
+          text: stringifyResult(result),
+        },
+      ],
     }
   }
+  catch (error) {
+    if (signal?.aborted && error === signal.reason)
+      throw error
+    return {
+      isError: true,
+      content: [
+        {
+          type: 'text',
+          text: formatError(error),
+        },
+      ],
+    }
+  }
+}
+
+function raceAbort<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  if (!signal)
+    return promise
+  if (signal.aborted)
+    return Promise.reject(signal.reason)
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(signal.reason)
+    signal.addEventListener('abort', onAbort, { once: true })
+    promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort))
+  })
 }
 
 /**
@@ -216,6 +264,8 @@ function stringifyResult(value: unknown): string {
 function formatError(error: unknown): string {
   if (!(error instanceof Error))
     return String(error)
-  const cause = error.cause instanceof Error ? ` (cause: ${error.cause.message})` : ''
+  const cause = error.cause instanceof Error
+    ? ` (cause: ${error.cause.message})`
+    : ''
   return `${error.name}: ${error.message}${cause}`
 }

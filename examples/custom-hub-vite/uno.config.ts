@@ -15,7 +15,16 @@ export default mergeConfigs([
      * The JSON-render dock renders @devframes/json-render-ui, whose `Badge`
      * picks a `badge-color-<name>` at runtime - safelist the fixed set.
      */
-    safelist: ['badge-color-green', 'badge-color-amber', 'badge-color-red', 'badge-color-blue'],
-    content: { pipeline: { include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/] } },
+    safelist: [
+      'badge-color-green',
+      'badge-color-amber',
+      'badge-color-red',
+      'badge-color-blue',
+    ],
+    content: {
+      pipeline: {
+        include: [/\.(?:vue|[cm]?[jt]sx?|html)($|\?)/],
+      },
+    },
   },
 ])

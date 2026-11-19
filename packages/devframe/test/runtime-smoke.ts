@@ -112,7 +112,9 @@ async function checkSharedServer(runtime: Runtime): Promise<void> {
   try {
     await instance.ready
     const meta = instance.connectionMeta()
-    const expected = runtime === 'node' ? 'websocket' : 'sse'
+    const expected = runtime === 'node'
+      ? 'websocket'
+      : 'sse'
     assert(
       meta.backend === expected,
       `shared-server backend on ${runtime} should be "${expected}", got "${meta.backend}"`,

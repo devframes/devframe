@@ -21,7 +21,10 @@ export const capabilities = defineRpcFunction({
   args: [],
   returns: s.object({
     write: s.boolean(),
-    uploadExtensions: s.union([s.array(s.string()), s.literal('*')]),
+    uploadExtensions: s.union([
+      s.array(s.string()),
+      s.literal('*'),
+    ]),
   }),
   agent: {
     title: 'Read assets capabilities',

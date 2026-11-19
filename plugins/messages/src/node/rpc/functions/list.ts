@@ -22,8 +22,14 @@ export const messagesList = defineRpcFunction({
   setup: ctx => ({
     handler: async (since?: number | null): Promise<DevframeMessagesListDelta> => {
       const host = getMessagesHost(ctx)
-      if (!host)
-        return { entries: [], removedIds: [], version: 0, full: true }
+      if (!host) {
+        return {
+          entries: [],
+          removedIds: [],
+          version: 0,
+          full: true,
+        }
+      }
       return host.listSince(since)
     },
   }),

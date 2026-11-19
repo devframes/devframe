@@ -175,7 +175,9 @@ export interface DevframeInstance {
    * Connect/Express-style middleware over the same surface, for
    * `viteServer.middlewares.use(handler.nodeMiddleware)` or any other
    * node middleware stack. Mount it un-prefixed: paths outside the base
-   * call `next()` so the rest of the stack keeps working.
+   * call `next()` so the rest of the stack keeps working. At base `/`, a
+   * path no devframe route answers calls `next()` too, so the host app
+   * keeps its own pages.
    */
   nodeMiddleware: (req: IncomingMessage, res: ServerResponse, next?: (err?: unknown) => void) => void
   /**
@@ -254,7 +256,9 @@ export function initDevframe(
   options: InitDevframeOptions,
 ): DevframeInstance {
   const base = normalizeBasePath(options.base)
-  const distDir = options.distDir === false ? undefined : options.distDir ?? def.clientAssets
+  const distDir = options.distDir === false
+    ? undefined
+    : options.distDir ?? def.clientAssets
   const app = options.app ?? new H3()
   const host = options.host ?? def.cli?.host ?? 'localhost'
 
@@ -267,7 +271,9 @@ export function initDevframe(
      * Auth resolution mirrors `createDevServer`: gate by default, explicit
      * `false` opts out, a handler object installs a custom scheme.
      */
-    auth: options.auth !== undefined ? options.auth : def.cli?.auth,
+    auth: options.auth !== undefined
+      ? options.auth
+      : def.cli?.auth,
     server: options.server,
     ws: options.ws ?? def.cli?.ws,
     sse: options.sse ?? def.cli?.sse,
@@ -311,8 +317,12 @@ export function initDevframe(
 
       return {
         context,
-        ...(mcp?.meta ? { mcp: mcp.meta } : {}),
-        ...(mcp?.dispose ? { dispose: mcp.dispose } : {}),
+        ...(mcp?.meta
+          ? { mcp: mcp.meta }
+          : {}),
+        ...(mcp?.dispose
+          ? { dispose: mcp.dispose }
+          : {}),
       }
     },
 
@@ -324,7 +334,9 @@ export function initDevframe(
 
       if (distDir) {
         const source = resolveStaticAssetsSource(distDir, context.host.getStorageDir('project'), def.importMetaUrl)
-        mountStaticHandler(app, base, typeof source === 'string' ? resolve(source) : source)
+        mountStaticHandler(app, base, typeof source === 'string'
+          ? resolve(source)
+          : source)
       }
     },
   })
@@ -380,9 +392,16 @@ async function mountMcpRoute(
   const mounted = module.mountMcpHttp(app, context, joinURL(base, route), {
     serverName: `${def.id} (devframe)`,
     serverVersion: def.version ?? '0.0.0',
-    exposeSharedState: true,
+    exposeSharedState: config.exposeSharedState ?? true,
+    instructions: config.instructions,
+    resourceTemplates: config.resourceTemplates,
+    onResourcesChanged: config.onResourcesChanged,
+    prompts: config.prompts,
     authorization: config.authorization,
     allowedOrigins: config.allowedOrigins,
   })
-  return { meta: { path: route }, dispose: mounted.dispose }
+  return {
+    meta: { path: route },
+    dispose: mounted.dispose,
+  }
 }

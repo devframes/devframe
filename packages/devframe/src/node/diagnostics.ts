@@ -221,9 +221,31 @@ export const diagnostics = defineDiagnostics({
       fix: 'Install `@devframes/agentic` next to devframe (the MCP adapter and the MCP SDK live there), or remove the explicit `mcp` setting.',
     },
     DF0081: {
+      why: (p: { name: string, reason: string }) =>
+        `Tool "${p.name}" returned invalid MCP content blocks: ${p.reason}`,
+      fix: 'Pass `withMcpContent` a non-empty array of `{ type: \'text\', text }`, `{ type: \'image\', data, mimeType }` or `{ type: \'audio\', data, mimeType }` blocks, with string fields and base64 `data`.',
+    },
+    DF0082: {
+      why: (p: { clientId: string, tool: string, live: string[] }) =>
+        `Tool "${p.tool}" was addressed to client "${p.clientId}", but no connected browser tab has that id and the tool.${p.live.length
+          ? ` Connected clients: ${p.live.join(', ')}.`
+          : ' No browser tab is connected.'}`,
+      fix: 'Re-list the connected clients (`devframe:agent:list-clients`) and retry with a live `client_id`, or omit `client_id` to target the most recently focused tab.',
+    },
+    DF0084: {
+      why: (p: { name: string, uriTemplate: string, reason: string }) =>
+        `MCP resource template "${p.name}" has an invalid \`uriTemplate\` "${p.uriTemplate}": ${p.reason}`,
+      fix: 'Use RFC 6570 level 1 only: plain `{name}` expressions made of letters, digits, `_` and `.`, with no operator (`+`, `#`, `/`, `?`, …), modifier (`:n`, `*`) or list of names, and no `{` or `}` outside an expression.',
+    },
+    DF0085: {
+      why: (p: { name: string }) =>
+        `MCP prompt "${p.name}" is listed more than once.`,
+      fix: 'Give each entry in `prompts` its own `name`. `prompts/get` finds a prompt by its name, so two prompts cannot share one.',
+    },
+    DF0086: {
       why: (p: { runtime: string }) =>
         `Tracing Channels are unavailable: this runtime (${p.runtime}) does not provide \`node:diagnostics_channel\`'s \`tracingChannel\`, so \`ctx.tracing\` records nothing.`,
-      fix: 'Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` method is a no-op here.',
+      fix: 'Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` and `createTracingRecorder()` method is a no-op here.',
     },
   },
 })

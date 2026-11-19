@@ -35,7 +35,10 @@ export function createScopedNodeContext<NS extends string = string>(
     call: ((method: string, ...args: any[]) =>
       base.invokeLocal(qualifyName(namespace, method) as any, ...args)) as DevframeScopedNodeRpc<NS>['call'],
     broadcast: ((options: { method: string }) =>
-      base.broadcast({ ...options, method: qualifyName(namespace, options.method) } as any)) as DevframeScopedNodeRpc<NS>['broadcast'],
+      base.broadcast({
+        ...options,
+        method: qualifyName(namespace, options.method),
+      } as any)) as DevframeScopedNodeRpc<NS>['broadcast'],
     sharedState: ((key: string, options?: any) =>
       (base.sharedState.get as any)(qualifyName(namespace, key), options)) as DevframeScopedNodeRpc<NS>['sharedState'],
     streaming: {

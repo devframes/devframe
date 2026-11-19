@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import { computed, useTemplateRef, watch } from 'vue'
+import { t } from '../../i18n'
 import { getEntryGroup } from '../../state/dock-settings'
 import { getEntryPaneKey, useIframePanes } from '../../utils/useIframePanes'
 import { useIsRpcTrusted } from '../../utils/useIsRpcTrusted'
@@ -31,7 +32,10 @@ const isRpcTrusted = useIsRpcTrusted(context, (isTrusted) => {
 
 /** Select from the visible dock rail through normal activation, including client scripts and group routing. */
 watch(
-  [() => context.docks.groupedEntries, isRpcTrusted],
+  [
+    () => context.docks.groupedEntries,
+    isRpcTrusted,
+  ],
   ([groups, trusted]) => {
     if (!trusted || context.docks.selectedId)
       return
@@ -55,11 +59,11 @@ function switchEntry(id: string | undefined) {
 
 <template>
   <ColorSchemeRoot>
-    <div v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
+    <main v-if="!isRpcTrusted" class="h-screen w-screen of-hidden">
       <ViewBuiltinClientAuthNotice :context="context" />
-    </div>
+    </main>
     <div v-else class="h-screen w-screen of-clip grid cols-[max-content_1fr]">
-      <div class="border-r border-base flex flex-col min-h-0">
+      <nav :aria-label="t('settings.docks')" class="border-r border-base flex flex-col min-h-0">
         <div class="p2 border-b border-base flex">
           <BrandMark class="w-7 h-7 ma" />
         </div>
@@ -77,8 +81,8 @@ function switchEntry(id: string | undefined) {
             </template>
           </DockEntriesWithCategories>
         </div>
-      </div>
-      <div class="min-h-0 flex">
+      </nav>
+      <main class="min-h-0 flex">
         <DockGroupSidebar
           v-if="activeGroup"
           :context
@@ -95,7 +99,7 @@ function switchEntry(id: string | undefined) {
           />
           <div id="devframes-views-container" ref="viewsContainer" class="pointer-events-auto" />
         </div>
-      </div>
+      </main>
     </div>
     <FloatingElements />
     <CommandPalette :context />

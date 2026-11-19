@@ -11,7 +11,9 @@ const messagesDevframe = createMessagesDevframe()
 export default defineConfig({
   resolve: { alias },
   server: { allowedHosts: true, strictPort: false },
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   plugins: [
     UnoCSS(),
     a11yMessagesPlayground({

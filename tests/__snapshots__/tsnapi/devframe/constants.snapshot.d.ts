@@ -27,6 +27,7 @@ export declare const DEVFRAME_EVENTS: {
   };
   readonly broadcast: {
     readonly authRevoked: "devframe:auth:revoked";
+    readonly cacheInvalidate: "devframe:rpc:cache:invalidate";
     readonly clientStateUpdated: "devframe:rpc:client-state:updated";
     readonly clientStatePatch: "devframe:rpc:client-state:patch";
     readonly streamingChunk: "devframe:streaming:chunk";

@@ -22,11 +22,23 @@ const isDockPopupOpen = useIsDockPopupOpen()
 
 const dockModeOptions = computed(() => {
   const options = [
-    { value: 'float', label: t('appearance.dockFloat'), icon: 'i-ph-cards-three-duotone' },
-    { value: 'edge', label: t('appearance.dockEdge'), icon: 'i-ph-square-half-bottom-duotone' },
+    {
+      value: 'float',
+      label: t('appearance.dockFloat'),
+      icon: 'i-ph-cards-three-duotone',
+    },
+    {
+      value: 'edge',
+      label: t('appearance.dockEdge'),
+      icon: 'i-ph-square-half-bottom-duotone',
+    },
   ]
   if (isDockPopupSupported()) {
-    options.push({ value: 'popup', label: t('appearance.dockPopup'), icon: 'i-ph-arrow-square-out-duotone' })
+    options.push({
+      value: 'popup',
+      label: t('appearance.dockPopup'),
+      icon: 'i-ph-arrow-square-out-duotone',
+    })
   }
   return options
 })
@@ -34,17 +46,50 @@ const dockModeOptions = computed(() => {
 const currentDockMode = computed(() => panelStore.mode)
 
 const colorModeOptions = computed(() => [
-  { value: 'auto', label: t('appearance.colorAuto'), icon: 'i-ph-laptop-duotone' },
-  { value: 'light', label: t('appearance.colorLight'), icon: 'i-ph-sun-duotone' },
-  { value: 'dark', label: t('appearance.colorDark'), icon: 'i-ph-moon-duotone' },
+  {
+    value: 'auto',
+    label: t('appearance.colorAuto'),
+    icon: 'i-ph-laptop-duotone',
+  },
+  {
+    value: 'light',
+    label: t('appearance.colorLight'),
+    icon: 'i-ph-sun-duotone',
+  },
+  {
+    value: 'dark',
+    label: t('appearance.colorDark'),
+    icon: 'i-ph-moon-duotone',
+  },
 ] as const)
 
 // Language names stay in their own language so a visitor stranded in the
 // wrong locale can still find theirs.
 const localeOptions = computed(() => [
-  { value: 'auto', label: t('appearance.languageAuto') },
+  {
+    value: 'auto',
+    label: t('appearance.languageAuto'),
+  },
   ...Object.entries(HUB_UI_LOCALES).map(([value, label]) => ({ value, label })),
 ])
+
+// `0` turns the recent slots off; the upper bound keeps the bar short.
+const recentLimitOptions = computed(() => [
+  {
+    value: '0',
+    label: t('appearance.recentDocksOff'),
+  },
+  ...[1, 2, 3, 4, 5].map(count => ({
+    value: String(count),
+    label: String(count),
+  })),
+])
+
+function onRecentLimitChange(value: string | undefined): void {
+  const limit = Number(value)
+  if (Number.isInteger(limit) && limit >= 0)
+    settingsStore.mutate((s) => { s.docksRecentLimit = limit })
+}
 
 function onLocaleChange(value: string | undefined): void {
   setLocalePreference(matchLocale(value) ?? 'auto')
@@ -121,6 +166,21 @@ function setDockMode(mode: string) {
       </div>
     </div>
 
+    <!-- Recent docks on the float bar -->
+    <div class="flex flex-col gap-2">
+      <div class="flex flex-col">
+        <span class="text-sm">{{ t('appearance.recentDocks') }}</span>
+        <span class="text-xs op50">{{ t('appearance.recentDocksHint') }}</span>
+      </div>
+      <FormSelect
+        :model-value="String(settings.docksRecentLimit)"
+        :options="recentLimitOptions"
+        :aria-label="t('appearance.recentDocks')"
+        class="w-fit"
+        @update:model-value="onRecentLimitChange"
+      />
+    </div>
+
     <!-- Show iframe address bar toggle -->
     <label class="flex items-center gap-3 cursor-pointer group">
       <button
@@ -172,6 +232,24 @@ function setDockMode(mode: string) {
       <div class="flex flex-col">
         <span class="text-sm">{{ t('appearance.autoCollapse') }}</span>
         <span class="text-xs op50">{{ t('appearance.autoCollapseHint') }}</span>
+      </div>
+    </label>
+
+    <!-- Expand group sidebar toggle -->
+    <label class="flex items-center gap-3 cursor-pointer group">
+      <button
+        class="w-10 h-6 rounded-full transition-colors relative shrink-0"
+        :class="settings.expandGroupSidebar ? 'bg-primary' : 'bg-gray/30'"
+        @click="settingsStore.mutate((s) => { s.expandGroupSidebar = !settings.expandGroupSidebar })"
+      >
+        <div
+          class="absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform"
+          :class="settings.expandGroupSidebar ? 'translate-x-5' : 'translate-x-1'"
+        />
+      </button>
+      <div class="flex flex-col">
+        <span class="text-sm">{{ t('appearance.expandSidebar') }}</span>
+        <span class="text-xs op50">{{ t('appearance.expandSidebarHint') }}</span>
       </div>
     </label>
   </div>

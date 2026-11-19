@@ -44,10 +44,15 @@ function fakeCdn(files: Record<string, string>): { fetch: typeof globalThis.fetc
   const fetchImpl: typeof globalThis.fetch = async (input) => {
     const url = String(input)
     calls.push(url)
-    if (url.startsWith('https://data.jsdelivr.com/'))
-      return Response.json({ files: tree() })
+    if (url.startsWith('https://data.jsdelivr.com/')) {
+      return Response.json({
+        files: tree(),
+      })
+    }
     const prefix = 'https://cdn.jsdelivr.net/npm/@scope/demo-client@1.2.3/'
-    const filePath = url.startsWith(prefix) ? url.slice(prefix.length) : undefined
+    const filePath = url.startsWith(prefix)
+      ? url.slice(prefix.length)
+      : undefined
     if (filePath && filePath in files)
       return new Response(files[filePath])
     return new Response('not found', { status: 404 })
@@ -62,7 +67,12 @@ const CDN_FILES = {
 }
 
 function makeAssets(cdn: { fetch: typeof globalThis.fetch }, overrides?: Partial<RemoteAssets>): RemoteAssets {
-  return { package: '@scope/demo-client', version: '1.2.3', fetch: cdn.fetch, ...overrides }
+  return {
+    package: '@scope/demo-client',
+    version: '1.2.3',
+    fetch: cdn.fetch,
+    ...overrides,
+  }
 }
 
 /** Resolve `assets` into a store (fails if it resolved to a local dir instead). */
@@ -118,7 +128,9 @@ describe('resolveStaticAssetsSource (remote store)', () => {
         'cache-control': 'public, max-age=31536000',
       },
     })
-    const store = storeFor({ fetch: async () => upstream() }, makeTmp())
+    const store = storeFor({
+      fetch: async () => upstream(),
+    }, makeTmp())
 
     const res = (await store.serve('/assets/app.js'))!
     // `fetch` hands over a decoded body, so the encoded length would be a lie.
@@ -136,7 +148,11 @@ describe('resolveStaticAssetsSource (remote store)', () => {
 
   it('keeps the upstream content-length when the body arrived unencoded', async () => {
     const store = storeFor(
-      { fetch: async () => new Response('hello', { headers: { 'content-length': '5' } }) },
+      {
+        fetch: async () => new Response('hello', {
+          headers: { 'content-length': '5' },
+        }),
+      },
       makeTmp(),
     )
     expect((await store.serve('/assets/app.js'))!.headers.get('content-length')).toBe('5')
@@ -162,7 +178,9 @@ describe('resolveStaticAssetsSource (remote store)', () => {
   it('degrades to probe mode when the file listing fails (DF0059)', async () => {
     const cdn = fakeCdn(CDN_FILES)
     const fetchImpl: typeof globalThis.fetch = async input =>
-      String(input).startsWith('https://data.jsdelivr.com/') ? new Response('nope', { status: 500 }) : cdn.fetch(input)
+      String(input).startsWith('https://data.jsdelivr.com/')
+        ? new Response('nope', { status: 500 })
+        : cdn.fetch(input)
     const store = storeFor(cdn, makeTmp(), { fetch: fetchImpl })
     await expect((await store.serve('/assets/app.js'))!.text()).resolves.toBe('console.log("app")')
     expect(warnSpy.mock.calls.some(a => String(a[0]).includes('DF0059'))).toBe(true)
@@ -193,7 +211,9 @@ describe('resolveStaticAssetsSource (remote store)', () => {
     const fetchImpl: typeof globalThis.fetch = async (input) => {
       const url = String(input)
       calls.push(url)
-      return url.endsWith('/dist/assets/app.js') ? new Response('console.log("app")') : new Response('should never be served')
+      return url.endsWith('/dist/assets/app.js')
+        ? new Response('console.log("app")')
+        : new Response('should never be served')
     }
     const provider: RemoteAssetsProviderCustom = {
       fileUrl: (pkg, version, filePath) => `https://mirror.example.com/${pkg}@${version}/${filePath}`,
@@ -218,7 +238,9 @@ describe('resolveStaticAssetsSource (remote store)', () => {
     // The one normal nested asset still materializes.
     expect(readFileSync(join(target, 'assets/app.js'), 'utf8')).toBe('console.log("app")')
     // Nothing else was fetched...
-    expect(calls).toEqual([expect.stringContaining('/dist/assets/app.js')])
+    expect(calls).toEqual([
+      expect.stringContaining('/dist/assets/app.js'),
+    ])
     // ...or written, inside or outside the target directory.
     expect(existsSync(join(target, 'package.json'))).toBe(false)
     expect(existsSync(join(target, 'evil-traversal.txt'))).toBe(false)
@@ -232,8 +254,15 @@ describe('resolveStaticAssetsSource (remote store)', () => {
     const fetchImpl: typeof globalThis.fetch = async (input) => {
       const url = String(input)
       calls.push(url)
-      if (url === 'https://unpkg.com/@scope/demo-client@1.2.3/?meta')
-        return Response.json({ path: '/', type: 'directory', files: [{ path: '/dist/index.html', type: 'file' }] })
+      if (url === 'https://unpkg.com/@scope/demo-client@1.2.3/?meta') {
+        return Response.json({
+          path: '/',
+          type: 'directory',
+          files: [
+            { path: '/dist/index.html', type: 'file' },
+          ],
+        })
+      }
       if (url === 'https://unpkg.com/@scope/demo-client@1.2.3/dist/index.html')
         return new Response('<html>unpkg</html>')
       return new Response('not found', { status: 404 })
@@ -253,7 +282,10 @@ describe('resolveStaticAssetsSource (installed package)', () => {
     writeFileSync(join(pkgDir, 'dist', 'index.html'), '<html>installed</html>')
     const entry = join(root, 'entry.mjs')
     writeFileSync(entry, '')
-    return { resolveFrom: pathToFileURL(entry).href, distDir: join(pkgDir, 'dist') }
+    return {
+      resolveFrom: pathToFileURL(entry).href,
+      distDir: join(pkgDir, 'dist'),
+    }
   }
 
   it('passes local directories through', () => {
@@ -327,8 +359,17 @@ describe('resolveStaticAssetsSource (validation)', () => {
 
   it('accepts valid scoped names and semver (incl. prerelease/build)', () => {
     const tmp = makeTmp()
-    for (const version of ['1.2.3', '0.9.0-beta.4', '1.0.0+build.5', '10.20.30-rc.1+meta']) {
-      expect(() => resolveStaticAssetsSource({ package: '@devframes/plugin-git-client', version, fetch: async () => new Response(null) }, tmp)).not.toThrow()
+    for (const version of [
+      '1.2.3',
+      '0.9.0-beta.4',
+      '1.0.0+build.5',
+      '10.20.30-rc.1+meta',
+    ]) {
+      expect(() => resolveStaticAssetsSource({
+        package: '@devframes/plugin-git-client',
+        version,
+        fetch: async () => new Response(null),
+      }, tmp)).not.toThrow()
     }
   })
 })
@@ -366,7 +407,9 @@ describe('serveStaticHandler with a remote store', () => {
     const store = storeFor({ fetch: failing }, makeTmp())
     const { url, close } = await serve(store)
     try {
-      const res = await fetch(`${url}/`, { headers: { accept: 'text/html' } })
+      const res = await fetch(`${url}/`, {
+        headers: { accept: 'text/html' },
+      })
       expect(res.status).toBe(502)
       const body = await res.text()
       expect(body).toContain('Client assets unavailable')
@@ -379,7 +422,9 @@ describe('serveStaticHandler with a remote store', () => {
       expect(payload).toMatchObject({ package: '@scope/demo-client', version: '1.2.3' })
       expect(payload.reason).toContain('network down')
 
-      const asset = await fetch(`${url}/app.js`, { headers: { accept: '*/*' } })
+      const asset = await fetch(`${url}/app.js`, {
+        headers: { accept: '*/*' },
+      })
       expect(asset.status).toBe(502)
       await expect(asset.text()).resolves.toBe('')
     }

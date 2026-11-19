@@ -4,17 +4,36 @@ type Extra = Partial<DevframeDockEntry>
 
 /** An iframe dock entry (the common case). */
 export function iframe(id: string, title: string, icon: string, extra: Extra = {}): DevframeDockEntry {
-  return { id, type: 'iframe', url: '/', title, icon, ...extra } as DevframeDockEntry
+  return {
+    id,
+    type: 'iframe',
+    url: '/',
+    title,
+    icon,
+    ...extra,
+  } as DevframeDockEntry
 }
 
 /** An action dock entry: a one-shot command with no panel of its own. */
 function action(id: string, title: string, icon: string, extra: Extra = {}): DevframeDockEntry {
-  return { id, type: 'action', title, icon, ...extra } as DevframeDockEntry
+  return {
+    id,
+    type: 'action',
+    title,
+    icon,
+    ...extra,
+  } as DevframeDockEntry
 }
 
 /** A group entry: a collapse button whose members declare `groupId: id`. */
 export function group(id: string, title: string, icon: string, extra: Partial<DevframeViewGroup> = {}): DevframeDockEntry {
-  return { id, type: 'group', title, icon, ...extra } as DevframeDockEntry
+  return {
+    id,
+    type: 'group',
+    title,
+    icon,
+    ...extra,
+  } as DevframeDockEntry
 }
 
 /**
@@ -104,9 +123,25 @@ export function message(extra: Partial<DevframeMessageEntry> = {}): DevframeMess
 
 /** One message per level, covering the common shapes. */
 export const sampleMessages: DevframeMessageEntry[] = [
-  message({ level: 'error', message: 'Failed to resolve import "./missing"', description: 'in src/main.ts', category: 'runtime', labels: ['vite'] }),
+  message({
+    level: 'error',
+    message: 'Failed to resolve import "./missing"',
+    description: 'in src/main.ts',
+    category: 'runtime',
+    labels: ['vite'],
+  }),
   message({ level: 'warn', message: 'Large chunk detected (612 kB)', category: 'build' }),
   message({ level: 'success', message: 'HMR update applied', category: 'hmr' }),
-  message({ level: 'info', message: 'Server restarted', description: 'config change detected', category: 'server' }),
-  message({ level: 'warn', message: 'Checking accessibility…', status: 'loading', category: 'a11y' }),
+  message({
+    level: 'info',
+    message: 'Server restarted',
+    description: 'config change detected',
+    category: 'server',
+  }),
+  message({
+    level: 'warn',
+    message: 'Checking accessibility…',
+    status: 'loading',
+    category: 'a11y',
+  }),
 ]

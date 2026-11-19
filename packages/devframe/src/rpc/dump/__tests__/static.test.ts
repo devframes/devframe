@@ -128,7 +128,10 @@ describe('collectStaticRpcDump', () => {
         type: 'static',
         /** jsonSerializable: false (default), so fancy types must survive */
         handler: () => ({
-          nodes: new Map([['a', 1], ['b', 2]]),
+          nodes: new Map([
+            ['a', 1],
+            ['b', 2],
+          ]),
           tags: new Set(['x', 'y']),
         }),
       })
@@ -152,7 +155,9 @@ describe('collectStaticRpcDump', () => {
       const getMap = defineRpcFunction({
         name: 'test:roundtrip-map',
         type: 'static',
-        handler: () => new Map<string, number>([['k', 42]]),
+        handler: () => new Map<string, number>([
+          ['k', 42],
+        ]),
       })
 
       const result = await collectStaticRpcDump([getMap], {})
@@ -172,10 +177,16 @@ describe('collectStaticRpcDump', () => {
         name: 'test:entries',
         type: 'query',
         /** default jsonSerializable: false → sc shards. */
-        handler: (key: string) => new Map([[key, key.length]]),
+        handler: (key: string) => new Map([
+          [key, key.length],
+        ]),
         dump: {
-          inputs: [['hello']],
-          fallback: new Map([['_', 0]]),
+          inputs: [
+            ['hello'],
+          ],
+          fallback: new Map([
+            ['_', 0],
+          ]),
         },
       })
 
@@ -214,7 +225,9 @@ describe('collectStaticRpcDump', () => {
       expect(file.serialization).toBe('json')
       // Strict JSON serializer round-trips losslessly via JSON.parse.
       const wireText = strictJsonStringify(file.data, file.fnName)
-      expect(JSON.parse(wireText)).toEqual({ output: ['a', 'b', 'c'] })
+      expect(JSON.parse(wireText)).toEqual({
+        output: ['a', 'b', 'c'],
+      })
     })
 
     it('throws DF0019 at build time when a JSON-flagged fn returns non-JSON', async () => {
@@ -223,7 +236,9 @@ describe('collectStaticRpcDump', () => {
         type: 'static',
         jsonSerializable: true,
         /** Lying about the contract: handler returns a Map. */
-        handler: () => new Map([['k', 1]]) as any,
+        handler: () => new Map([
+          ['k', 1],
+        ]) as any,
       })
 
       const result = await collectStaticRpcDump([getMapJson], {})
@@ -244,7 +259,9 @@ describe('collectStaticRpcDump', () => {
         type: 'query',
         jsonSerializable: true,
         handler: (): void => {
-          throw new TypeError('boom', { cause: new Error('inner') })
+          throw new TypeError('boom', {
+            cause: new Error('inner'),
+          })
         },
         dump: {
           inputs: [[]] as [][],
@@ -276,13 +293,17 @@ describe('collectStaticRpcDump', () => {
     })
 
     it('preserves rich error info end-to-end for default (structured-clone) entries', async () => {
-      const tags = new Map<string, number>([['a', 1]])
+      const tags = new Map<string, number>([
+        ['a', 1],
+      ])
       const flaky = defineRpcFunction({
         name: 'test:flaky-roundtrip',
         type: 'query',
         /** default jsonSerializable: false → structured-clone shards */
         handler: (): void => {
-          const err = new TypeError('boom', { cause: new Error('inner') }) as Error & { tags?: unknown }
+          const err = new TypeError('boom', {
+            cause: new Error('inner'),
+          }) as Error & { tags?: unknown }
           err.tags = tags
           throw err
         },
@@ -317,7 +338,9 @@ describe('collectStaticRpcDump', () => {
         jsonSerializable: true,
         handler: (): void => {
           const err = new Error('boom') as Error & { tags?: unknown }
-          err.tags = new Map([['a', 1]])
+          err.tags = new Map([
+            ['a', 1],
+          ])
           throw err
         },
         dump: {

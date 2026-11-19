@@ -5,6 +5,7 @@ import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { createRpcServer } from 'devframe/rpc/server'
+import { getRpcHandler, getRpcResolvedSetupResult } from '../rpc/handler'
 import { diagnostics } from './diagnostics'
 
 export interface CreateContextRpcServerOptions {
@@ -62,7 +63,9 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
   // RPC functions and supplies both the resolver gate and the connect-time
   // trust hook. `authorize`/`onPeerConnect` are the lower-level escape
   // hatches for callers not using a full handler.
-  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object' ? options.auth : undefined
+  const authHandler: DevframeAuthHandler | undefined = typeof options.auth === 'object'
+    ? options.auth
+    : undefined
   const effectiveAuthorize = options.authorize ?? authHandler?.authorize
 
   if (authHandler) {
@@ -73,7 +76,8 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
   }
 
   const rpcGroup = createRpcServer<DevframeRpcClientFunctions, DevframeRpcServerFunctions>(
-    rpcHost.functions,
+    // The resolver below loads handlers from their definitions.
+    {} as DevframeRpcServerFunctions,
     {
       rpcOptions: {
         /**
@@ -90,21 +94,27 @@ export function createContextRpcServer(options: CreateContextRpcServerOptions): 
          * the call before it ever reaches the handler. Mirrors
          * `packages/core/src/node/ws.ts`'s resolver.
          */
-        resolver(name, fn) {
+        resolver(name) {
           // eslint-disable-next-line ts/no-this-alias
           const rpc = this
-          if (!fn)
+          const definition = rpcHost.definitions.get(name)
+          if (!definition)
             return undefined
           return async function (this: any, ...args) {
             const meta = rpc.$meta as DevframeNodeRpcSessionMeta
             if (effectiveAuthorize && !effectiveAuthorize(name, { meta, rpc: rpc as any }))
               throw diagnostics.DF0036({ name })
-            return await asyncStorage.run({
-              rpc,
-              meta,
-            }, async () => {
-              return (await fn).apply(this, args)
-            })
+            const inner = definition.handler
+              ?? (await getRpcResolvedSetupResult(definition, context)).handler
+            const handler = await getRpcHandler(inner
+              ? {
+                  ...definition,
+                  // Enter the session scope after argument validation, since
+                  // WebContainer does not preserve it across awaits.
+                  handler: (...handlerArgs) => asyncStorage.run({ rpc, meta }, () => inner.apply(this, handlerArgs)),
+                }
+              : definition, context)
+            return handler(...args)
           }
         },
       },

@@ -1,3 +1,4 @@
+import type { DevframeNodeContext } from './context'
 import type { McpAuthorization } from './devframe'
 
 /**
@@ -25,6 +26,26 @@ export interface CreateMcpServerOptions {
    * - `(key) => boolean`: filter
    */
   exposeSharedState?: boolean | ((key: string) => boolean)
+  /**
+   * Usage guidance sent as `instructions` in the MCP `initialize` (and
+   * `server/discover`) result. Omitted or empty sends no instructions.
+   */
+  instructions?: string
+  /**
+   * Resource templates served through `resources/templates/list`, and read
+   * through `resources/read`. Omitted or empty keeps the resources unchanged.
+   */
+  resourceTemplates?: McpResourceTemplate[]
+  /**
+   * Host subscription for resource-list changes; each `notify()` sends
+   * `notifications/resources/list_changed`. See {@link McpResourcesChangedHook}.
+   */
+  onResourcesChanged?: McpResourcesChangedHook
+  /**
+   * Prompt templates served through `prompts/list` and `prompts/get`.
+   * Omitted or empty declares no `prompts` capability.
+   */
+  prompts?: McpPrompt[]
   /** Override the name reported in the MCP handshake. */
   serverName?: string
   /** Override the version reported in the MCP handshake. Defaults to `definition.version ?? '0.0.0'`. */
@@ -32,6 +53,16 @@ export interface CreateMcpServerOptions {
   /** Called once the transport is connected. */
   onReady?: (info: { transport: 'stdio' }) => void
 }
+
+/**
+ * One MCP content block in a tool result. Attach blocks to a tool's return
+ * value with `withMcpContent` (from `devframe`) to send them in place of the
+ * default JSON text block. `data` is base64.
+ */
+export type McpContentBlock
+  = | { type: 'text', text: string }
+    | { type: 'image', data: string, mimeType: string }
+    | { type: 'audio', data: string, mimeType: string }
 
 export interface McpServerHandle {
   stop: () => Promise<void>
@@ -44,6 +75,14 @@ export interface CreateMcpFetchHandlerOptions {
   serverVersion: string
   /** Expose shared-state keys as MCP resources; see {@link CreateMcpServerOptions.exposeSharedState}. */
   exposeSharedState: boolean | ((key: string) => boolean)
+  /** Usage guidance for the handshake; see {@link CreateMcpServerOptions.instructions}. */
+  instructions?: string
+  /** Resource templates; see {@link CreateMcpServerOptions.resourceTemplates}. */
+  resourceTemplates?: McpResourceTemplate[]
+  /** Host subscription for resource-list changes; see {@link CreateMcpServerOptions.onResourcesChanged}. */
+  onResourcesChanged?: McpResourcesChangedHook
+  /** Prompt templates; see {@link CreateMcpServerOptions.prompts}. */
+  prompts?: McpPrompt[]
   /**
    * Optional identity check, layered on top of the origin gate and checked
    * **after** it: a bearer token string (matched in constant time against
@@ -88,4 +127,97 @@ export interface McpFetchHandler {
   fetch: (request: Request, connection?: McpConnectionInfo) => Promise<Response>
   /** Tear down the handler (aborts in-flight exchanges, drops the change bridge). */
   dispose: () => Promise<void>
+}
+
+/** One concrete resource that an {@link McpResourceTemplate} lists in `resources/list`. */
+export interface McpResourceTemplateEntry {
+  /** The resource URI. It SHOULD match the `uriTemplate` of its template, so `resources/read` finds it. */
+  uri: string
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  /** Defaults to the `mimeType` of the template. */
+  mimeType?: string
+}
+
+/**
+ * What an {@link McpResourceTemplate} returns from `read`, sent as the
+ * `resources/read` result: `text` as is, or else `json` as JSON text.
+ */
+export interface McpResourceTemplateContent {
+  text?: string
+  json?: unknown
+  /** Defaults to the `mimeType` of the template, then `application/json`. */
+  mimeType?: string
+}
+
+/**
+ * A resource template the MCP server lists in `resources/templates/list` and
+ * reads in `resources/read`. The `uriTemplate` uses RFC 6570 level 1 only:
+ * plain `{name}` expressions, with text between any two of them. Each
+ * expression matches a non-empty value with no `/`, and its value is
+ * percent-decoded.
+ *
+ * `list` and `read` get the node context of the devframe (or of the hub), so
+ * they can read live state such as `ctx.rpc.sharedState` or `ctx.agent`. The
+ * route options are resolved before `setup()` runs, so a template cannot
+ * capture that context in a closure.
+ */
+export interface McpResourceTemplate {
+  /** RFC 6570 level 1 URI template, e.g. `my-tool://file/{path}`. Anything else throws `DF0084`. */
+  uriTemplate: string
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  /** MIME type of every resource the template stands for. */
+  mimeType?: string
+  /** The concrete resources the template stands for right now. They are added to `resources/list`. */
+  list?: (ctx: DevframeNodeContext) => McpResourceTemplateEntry[] | Promise<McpResourceTemplateEntry[]>
+  /** Read one resource: `params` holds the decoded value of each `{name}`, `uri` the requested URI. */
+  read: (params: Record<string, string>, uri: string, ctx: DevframeNodeContext) => McpResourceTemplateContent | Promise<McpResourceTemplateContent>
+}
+
+/**
+ * A host subscription for resource-list changes. Call `notify()` each time
+ * the resources change; the MCP server then sends
+ * `notifications/resources/list_changed`. Return a function that removes the
+ * subscription; the MCP server calls it on teardown.
+ */
+export type McpResourcesChangedHook = (notify: () => void, ctx: DevframeNodeContext) => () => void
+
+/** One argument of an {@link McpPrompt}. */
+export interface McpPromptArgument {
+  name: string
+  description?: string
+  /** `prompts/get` answers invalid params when a required argument is missing or empty. */
+  required?: boolean
+}
+
+/** One message of the answer to `prompts/get`. */
+export interface McpPromptMessage {
+  role: 'user' | 'assistant'
+  content: { type: 'text', text: string }
+}
+
+/** What an {@link McpPrompt} returns from `get`, sent as the `prompts/get` result. */
+export interface McpPromptResult {
+  description?: string
+  messages: McpPromptMessage[]
+}
+
+/**
+ * A prompt template the MCP server lists in `prompts/list` and builds in
+ * `prompts/get`. A coding agent usually offers it to the user as a slash
+ * command. Each `name` is used once; a repeated name throws `DF0085`.
+ */
+export interface McpPrompt {
+  name: string
+  /** Human-readable name for display. */
+  title?: string
+  description?: string
+  arguments?: McpPromptArgument[]
+  /** Build the messages from the arguments the coding agent sent. */
+  get: (args: Record<string, string>) => McpPromptResult | Promise<McpPromptResult>
 }

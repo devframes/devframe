@@ -22,7 +22,9 @@ function getRoute(basePath: string): string {
   if (!path.startsWith(basePath))
     return '/'
   const sub = path.slice(basePath.length)
-  return sub.startsWith('/') ? sub : `/${sub}`
+  return sub.startsWith('/')
+    ? sub
+    : `/${sub}`
 }
 
 export function App() {
@@ -59,7 +61,9 @@ export function App() {
   }
 
   // Any non-/about route resolves to Home, mirroring the route switch below.
-  const active = route === '/about' ? '/about' : '/'
+  const active = route === '/about'
+    ? '/about'
+    : '/'
 
   return (
     <div class="flex flex-col min-h-screen bg-base color-base font-sans">
@@ -76,7 +80,9 @@ export function App() {
               type="button"
               role="tab"
               aria-selected={active === r}
-              data-state={active === r ? 'active' : 'inactive'}
+              data-state={active === r
+                ? 'active'
+                : 'inactive'}
               class={tabClass()}
               onClick={() => navigate(r)}
             >

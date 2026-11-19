@@ -23,7 +23,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [], changed: [] }>()
 
-const SUPPORTS_PREVIEW = new Set(['image', 'text', 'video', 'audio', 'font'])
+const SUPPORTS_PREVIEW = new Set([
+  'image',
+  'text',
+  'video',
+  'audio',
+  'font',
+])
 
 const imageMeta = ref<AssetImageMeta | null>(null)
 const textContent = ref<string | null>(null)
@@ -49,7 +55,9 @@ watch(() => props.asset.path, (path) => {
       textContent.value = c
       // Server-highlighted preview via the shiki wire service; `null` when
       // it isn't advertised, so the preview keeps its plain `<pre>`.
-      const html = c == null ? null : await highlightAsset(rpc, path, c)
+      const html = c == null
+        ? null
+        : await highlightAsset(rpc, path, c)
       if (props.asset.path === path)
         highlightedHtml.value = html
     })
@@ -72,7 +80,9 @@ watch(() => props.rpc, (rpc) => {
 }, { immediate: true })
 
 function gcd(a: number, b: number): number {
-  return b ? gcd(b, a % b) : a
+  return b
+    ? gcd(b, a % b)
+    : a
 }
 
 const aspectRatio = computed(() => {
@@ -80,7 +90,9 @@ const aspectRatio = computed(() => {
   if (!m?.width || !m?.height)
     return ''
   const ratio = gcd(m.width, m.height)
-  return ratio > 3 ? `${m.width / ratio}:${m.height / ratio}` : ''
+  return ratio > 3
+    ? `${m.width / ratio}:${m.height / ratio}`
+    : ''
 })
 
 const snippets = computed(() => buildSnippets(props.asset, imageMeta.value))
@@ -95,7 +107,9 @@ async function runAction(fn: () => Promise<void>): Promise<void> {
     await fn()
   }
   catch (cause) {
-    errorNotice.value = cause instanceof Error ? cause.message : String(cause)
+    errorNotice.value = cause instanceof Error
+      ? cause.message
+      : String(cause)
   }
   finally {
     busy.value = false
@@ -104,7 +118,9 @@ async function runAction(fn: () => Promise<void>): Promise<void> {
 
 async function handleDelete(): Promise<void> {
   await runAction(async () => {
-    await props.rpc!.call('devframes:plugin:assets:delete', { paths: [props.asset.path] })
+    await props.rpc!.call('devframes:plugin:assets:delete', {
+      paths: [props.asset.path],
+    })
     deleteOpen.value = false
     emit('changed')
     emit('close')

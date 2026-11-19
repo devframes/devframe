@@ -138,7 +138,11 @@ describe('inspector dev-server (hub)', () => {
       id: 'demo:group',
       title: 'Demo Group',
       children: [
-        { id: 'demo:group:child', title: 'Child Command', handler: () => 'child ran' },
+        {
+          id: 'demo:group:child',
+          title: 'Child Command',
+          handler: () => 'child ran',
+        },
       ],
     })
   })

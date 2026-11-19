@@ -13,5 +13,9 @@ type Story = StoryObj<typeof meta>
 
 function noop() {}
 
-export const On: Story = { args: { label: 'Auto-scan', checked: true, onChange: noop } }
-export const Off: Story = { args: { label: 'Best-practice', checked: false, onChange: noop } }
+export const On: Story = {
+  args: { label: 'Auto-scan', checked: true, onChange: noop },
+}
+export const Off: Story = {
+  args: { label: 'Best-practice', checked: false, onChange: noop },
+}

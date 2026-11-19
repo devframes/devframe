@@ -47,11 +47,19 @@ function ogDevBridge(): Plugin {
  * node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? basePath : './',
+  base: command === 'serve'
+    ? basePath
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [vue(), UnoCSS(), ogDevBridge()],
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  plugins: [
+    vue(),
+    UnoCSS(),
+    ogDevBridge(),
+  ],
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

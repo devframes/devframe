@@ -48,7 +48,9 @@ export function strictJsonStringify(value: unknown, fnName: string = ''): string
     // root, `this` is the wrapper `{ '': value }` so `this['']` is the
     // raw root value.
     const holder = this as Record<string, unknown> | unknown[] | undefined
-    const original = holder != null ? (holder as any)[key] : val
+    const original = holder != null
+      ? (holder as any)[key]
+      : val
 
     if (original === undefined) {
       if (Array.isArray(holder))

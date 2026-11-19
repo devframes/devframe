@@ -146,13 +146,21 @@ export class CodeServerSupervisor {
     this.startTimeout = options.startTimeout ?? DEFAULT_START_TIMEOUT
     this.reuseExistingServer = options.reuseExistingServer ?? false
     this.tunnelName = options.tunnel?.name || hostname().split('.').join('') || 'devframe'
-    this.sessionId = options.cookieSuffix ? `${PLUGIN_ID}:${options.cookieSuffix}` : PLUGIN_ID
+    this.sessionId = options.cookieSuffix
+      ? `${PLUGIN_ID}:${options.cookieSuffix}`
+      : PLUGIN_ID
 
     // Provisional resolution, refined by the first `detect()` (auto-detection).
     this.backend = this.explicitBackend ?? 'code-server'
     this.profile = resolveProfile(this.mode, this.backend)
     this.bin = this.explicitBin ?? this.profile.defaultBin
-    this.detection = { checked: false, installed: false, bin: this.bin, backend: this.backend, mode: this.mode }
+    this.detection = {
+      checked: false,
+      installed: false,
+      bin: this.bin,
+      backend: this.backend,
+      mode: this.mode,
+    }
   }
 
   /** Resolve shared state, register process-exit cleanup, run first detection. */
@@ -198,7 +206,14 @@ export class CodeServerSupervisor {
       }
     }
 
-    this.detection = { checked: true, installed, version, bin: this.bin, backend: this.backend, mode: this.mode }
+    this.detection = {
+      checked: true,
+      installed,
+      version,
+      bin: this.bin,
+      backend: this.backend,
+      mode: this.mode,
+    }
     this.publish()
     return this.detection
   }
@@ -280,7 +295,14 @@ export class CodeServerSupervisor {
     this.registerCleanup()
 
     this.proc = child
-    this.server = { status: 'starting', port: isLocal ? (signals.actualPort || undefined) : undefined, pid: child.pid, startedAt: Date.now() }
+    this.server = {
+      status: 'starting',
+      port: isLocal
+        ? (signals.actualPort || undefined)
+        : undefined,
+      pid: child.pid,
+      startedAt: Date.now(),
+    }
     this.publish()
 
     child.stdout?.on('data', chunk => this.consumeOutput(chunk, child, signals))
@@ -294,19 +316,27 @@ export class CodeServerSupervisor {
       return await this.finalizeLocalStart(child, portPromise)
     }
     catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = error instanceof Error
+        ? error.message
+        : String(error)
       return this.handleStartFailure(child, reason, isLocal, signals.actualPort)
     }
   }
 
   /** Adopt an already-running local server on the target port, if one answers. */
   private async tryAdopt(folder: string): Promise<CodeServerStartResult | undefined> {
-    const target = this.forcedPort && this.forcedPort !== 0 ? this.forcedPort : DEFAULT_CODE_SERVER_PORT
+    const target = this.forcedPort && this.forcedPort !== 0
+      ? this.forcedPort
+      : DEFAULT_CODE_SERVER_PORT
     if (!this.profile.healthPath || !(await probeHealth(target, this.profile.healthPath)))
       return undefined
     this.adopted = true
     this.launchCtx = this.baseCtx(folder, target, '')
-    this.server = { status: 'running', port: target, startedAt: Date.now() }
+    this.server = {
+      status: 'running',
+      port: target,
+      startedAt: Date.now(),
+    }
     this.publish()
     return this.status()
   }
@@ -415,7 +445,12 @@ export class CodeServerSupervisor {
     if (this.proc !== child)
       return this.status()
 
-    this.server = { status: 'running', port, pid: child.pid, startedAt: this.server.startedAt }
+    this.server = {
+      status: 'running',
+      port,
+      pid: child.pid,
+      startedAt: this.server.startedAt,
+    }
     this.publish()
     return this.status()
   }
@@ -521,7 +556,12 @@ export class CodeServerSupervisor {
     // once the URL is captured after the user authenticates.
     void readyUrlPromise.then(() => {
       if (this.proc === child && this.server.status !== 'running') {
-        this.server = { status: 'running', pid: child.pid, startedAt: this.server.startedAt, login: undefined }
+        this.server = {
+          status: 'running',
+          pid: child.pid,
+          startedAt: this.server.startedAt,
+          login: undefined,
+        }
         this.publish()
       }
     })
@@ -564,7 +604,9 @@ export class CodeServerSupervisor {
    */
   private resolveHubTerminals(): HubTerminalsBridge | undefined {
     const terminals = (this.ctx as { terminals?: HubTerminalsBridge }).terminals
-    return terminals && typeof terminals.startChildProcess === 'function' ? terminals : undefined
+    return terminals && typeof terminals.startChildProcess === 'function'
+      ? terminals
+      : undefined
   }
 
   /** Update the mirrored hub terminal session's status, when one exists. */
@@ -587,7 +629,9 @@ export class CodeServerSupervisor {
     folder: string,
   ): Promise<ChildProcess> {
     const hub = this.resolveHubTerminals()
-    return hub ? this.launchViaHub(hub, args, env, folder) : this.launchDirect(args, env, folder)
+    return hub
+      ? this.launchViaHub(hub, args, env, folder)
+      : this.launchDirect(args, env, folder)
   }
 
   /** Spawn through the hub's terminals subsystem so it shows as a terminal session. */
@@ -634,7 +678,9 @@ export class CodeServerSupervisor {
       return child
     }
     catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = error instanceof Error
+        ? error.message
+        : String(error)
       const orphan = hub.sessions.get(this.sessionId)
       if (orphan)
         hub.remove?.(orphan)
@@ -657,7 +703,9 @@ export class CodeServerSupervisor {
       })
     }
     catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
+      const reason = error instanceof Error
+        ? error.message
+        : String(error)
       this.server = { status: 'error', error: reason }
       this.publish()
       throw diagnostics.DP_CODE_SERVER_0003({ bin: this.bin, reason })
@@ -675,7 +723,9 @@ export class CodeServerSupervisor {
   }
 
   private lastLog(): string | undefined {
-    return this.logBuffer.length ? this.logBuffer[this.logBuffer.length - 1] : undefined
+    return this.logBuffer.length
+      ? this.logBuffer[this.logBuffer.length - 1]
+      : undefined
   }
 
   private publish(): void {
@@ -723,7 +773,13 @@ function delay(ms: number): Promise<void> {
 function probeHealth(port: number, path: string): Promise<boolean> {
   return new Promise((resolve) => {
     const req = httpRequest(
-      { host: '127.0.0.1', port, path, method: 'GET', timeout: 1500 },
+      {
+        host: '127.0.0.1',
+        port,
+        path,
+        method: 'GET',
+        timeout: 1500,
+      },
       (res) => {
         res.resume()
         resolve((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 500)

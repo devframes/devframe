@@ -34,7 +34,12 @@ export function makeSampleEntries(now: number = Date.now()): DevframeMessageEntr
       elementPosition: {
         selector: 'main > figure > img.hero',
         description: 'Hero image in the landing section',
-        boundingBox: { x: 24, y: 180, width: 640, height: 360 },
+        boundingBox: {
+          x: 24,
+          y: 180,
+          width: 640,
+          height: 360,
+        },
       },
       timestamp: now - 2 * 60_000,
     },

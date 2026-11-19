@@ -16,10 +16,15 @@ interface ProgressProps {
 export const Progress: JrComponent<ProgressProps> = ({ props }) => {
   const max = toNumber(props.max, 100)
   const value = toNumber(props.value, 0)
-  const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0
+  const ratio = max > 0
+    ? Math.min(1, Math.max(0, value / max))
+    : 0
   return h('div', { class: 'flex flex-col gap-1' }, [
     props.label
-      ? h('div', { class: 'flex justify-between text-xs color-muted' }, [h('span', props.label), h('span', `${Math.round(ratio * 100)}%`)])
+      ? h('div', { class: 'flex justify-between text-xs color-muted' }, [
+          h('span', props.label),
+          h('span', `${Math.round(ratio * 100)}%`),
+        ])
       : null,
     h(DisplayProgressBar, { value: ratio, label: props.label }),
   ])

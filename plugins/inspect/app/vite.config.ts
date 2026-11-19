@@ -50,15 +50,23 @@ function inspectDevBridge(): Plugin {
  * the node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? hostedBase : './',
+  base: command === 'serve'
+    ? hostedBase
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
-  plugins: [vue(), UnoCSS(), inspectDevBridge()],
+  plugins: [
+    vue(),
+    UnoCSS(),
+    inspectDevBridge(),
+  ],
   /**
    * `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile its
    * SFCs instead of esbuild pre-bundling them.
    */
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

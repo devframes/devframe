@@ -10,6 +10,7 @@ const debugSubscribe = createDebug('devframe:rpc:state:subscribe')
 
 export function createRpcSharedStateServerHost(
   rpc: RpcFunctionsHost,
+  resolveState?: (key: string) => SharedState<any> | undefined,
 ): RpcSharedStateHost {
   const sharedState = new Map<string, SharedState<any>>()
   const stateDisposers = new Map<string, () => void>()
@@ -46,24 +47,37 @@ export function createRpcSharedStateServerHost(
     }
   }
 
+  function addState(key: string, state: SharedState<any>) {
+    debug('new-state', key)
+    stateDisposers.set(key, registerSharedState(key, state))
+    sharedState.set(key, state)
+    for (const fn of keyAddedListeners)
+      fn(key)
+    return state
+  }
+
+  function resolve(key: string) {
+    const existing = sharedState.get(key)
+    if (existing)
+      return existing
+    const state = resolveState?.(key)
+    return state
+      ? addState(key, state)
+      : undefined
+  }
+
   const host: RpcSharedStateHost = {
     get: async <T extends object>(key: string, options?: RpcSharedStateGetOptions<T>) => {
-      if (sharedState.has(key)) {
-        return sharedState.get(key)!
-      }
+      const existing = resolve(key)
+      if (existing)
+        return existing
       if (options?.initialValue === undefined && options?.sharedState === undefined) {
         throw diagnostics.DF0013({ key })
       }
-      debug('new-state', key)
-      const state = options.sharedState ?? createSharedState<T>({
+      return addState(key, options.sharedState ?? createSharedState<T>({
         initialValue: options.initialValue as T,
         enablePatches: false,
-      })
-      stateDisposers.set(key, registerSharedState(key, state))
-      sharedState.set(key, state)
-      for (const fn of keyAddedListeners)
-        fn(key)
-      return state
+      }))
     },
     keys() {
       return Array.from(sharedState.keys())
@@ -106,10 +120,7 @@ export function createRpcSharedStateServerHost(
     name: 'devframe:rpc:server-state:get',
     type: 'query',
     handler: async (key: string) => {
-      if (!sharedState.has(key))
-        return undefined
-      const state = await host.get(key)
-      return state.value()
+      return resolve(key)?.value()
     },
     /**
      * Pre-compute snapshots for the build-mode static dump so the SPA
@@ -131,7 +142,9 @@ export function createRpcSharedStateServerHost(
         initialValue: value,
       })
       // Publish the snapshot even when get() just created the state with this value.
-      state.patch([{ op: 'replace', path: [], value }], syncId)
+      state.patch([
+        { op: 'replace', path: [], value },
+      ], syncId)
     },
   })
 
@@ -139,10 +152,7 @@ export function createRpcSharedStateServerHost(
     name: 'devframe:rpc:server-state:patch',
     type: 'query',
     handler: async (key: string, patches: SharedStatePatch[], syncId: string) => {
-      if (!sharedState.has(key))
-        return
-      const state = await host.get(key)
-      state.patch(patches, syncId)
+      resolve(key)?.patch(patches, syncId)
     },
   })
 

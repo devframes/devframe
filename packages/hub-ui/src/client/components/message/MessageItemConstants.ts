@@ -9,11 +9,36 @@ export interface LevelStyle {
 }
 
 export const levels: Record<DevframeMessageLevel, LevelStyle> = {
-  info: { icon: 'i-ph:info-duotone', color: 'text-blue', bg: 'bg-blue', label: 'Info' },
-  warn: { icon: 'i-ph:warning-duotone', color: 'text-amber', bg: 'bg-amber', label: 'Warning' },
-  error: { icon: 'i-ph:x-circle-duotone', color: 'text-red', bg: 'bg-red', label: 'Error' },
-  success: { icon: 'i-ph:check-circle-duotone', color: 'text-green', bg: 'bg-green', label: 'Success' },
-  debug: { icon: 'i-ph:bug-duotone', color: 'text-gray', bg: 'bg-gray', label: 'Debug' },
+  info: {
+    icon: 'i-ph:info-duotone',
+    color: 'text-blue',
+    bg: 'bg-blue',
+    label: 'Info',
+  },
+  warn: {
+    icon: 'i-ph:warning-duotone',
+    color: 'text-amber',
+    bg: 'bg-amber',
+    label: 'Warning',
+  },
+  error: {
+    icon: 'i-ph:x-circle-duotone',
+    color: 'text-red',
+    bg: 'bg-red',
+    label: 'Error',
+  },
+  success: {
+    icon: 'i-ph:check-circle-duotone',
+    color: 'text-green',
+    bg: 'bg-green',
+    label: 'Success',
+  },
+  debug: {
+    icon: 'i-ph:bug-duotone',
+    color: 'text-gray',
+    bg: 'bg-gray',
+    label: 'Debug',
+  },
 }
 
 /**

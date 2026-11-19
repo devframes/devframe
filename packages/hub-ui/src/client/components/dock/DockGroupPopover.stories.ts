@@ -95,7 +95,11 @@ export const WithSubcategories: Story = {
 export const Empty: Story = {
   render: () => ({
     setup: () => mountWithContext(
-      { entries: [group('empty', 'Empty', 'ph:folder-dashed-duotone')] },
+      {
+        entries: [
+          group('empty', 'Empty', 'ph:folder-dashed-duotone'),
+        ],
+      },
       ctx => stage(popover(h(DockGroupPopover, {
         context: ctx,
         group: group('empty', 'Empty', 'ph:folder-dashed-duotone') as DevframeViewGroup,

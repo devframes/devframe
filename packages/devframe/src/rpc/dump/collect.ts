@@ -77,15 +77,23 @@ async function resolveDumpTask(
     throw diagnostics.DF0024({ name: definition.name })
 
   let dump = setupResult.dump ?? definition.dump
-  if (!dump && definition.type === 'static')
-    dump = { inputs: [[]] }
+  if (!dump && definition.type === 'static') {
+    dump = {
+      inputs: [[]],
+    }
+  }
   if (!dump && definition.snapshot) {
     // Sugar: run the handler once with no args, store the result as both the
     // no-args record and the fallback, matching NMI's "getPayload() always
     // returns the baked dump" shape.
     dump = async (_ctx, h) => {
       const output = await Promise.resolve(h())
-      return { records: [{ inputs: [] as any, output }], fallback: output }
+      return {
+        records: [
+          { inputs: [] as any, output },
+        ],
+        fallback: output,
+      }
     }
   }
   if (!dump)
@@ -121,7 +129,10 @@ function collectDumpTasks(resolution: TaskResolution, store: RpcDumpStore): Arra
       store.records[recordKey] = { inputs: input, output: await Promise.resolve(handler(...input)) }
     }
     catch (error: unknown) {
-      store.records[recordKey] = { inputs: input, error: serializeDumpError(error) }
+      store.records[recordKey] = {
+        inputs: input,
+        error: serializeDumpError(error),
+      }
     }
   })
 }
@@ -213,7 +224,10 @@ export function createClientFromDump<T extends Record<string, any>>(
             return fallbackRecord.output
         }
 
-        throw diagnostics.DF0026({ name: functionName, args: JSON.stringify(args) })
+        throw diagnostics.DF0026({
+          name: functionName,
+          args: JSON.stringify(args),
+        })
       }
     },
     has(_, functionName: string) {

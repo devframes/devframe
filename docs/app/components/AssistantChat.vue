@@ -21,7 +21,9 @@ const { messages, status, error, sendMessage, regenerate, stop } = useChat({
   transport: new DefaultChatTransport({ api: '/api/assistant' }),
 })
 
-const plugins = [highlight()]
+const plugins = [
+  highlight(),
+]
 
 // Suggestions grouped by category, shown before the first message.
 const questions = computed(() => assistant?.faqQuestions ?? [])
@@ -58,7 +60,9 @@ async function copyConversation() {
   const text = messages.value
     .map((message) => {
       const content = message.parts.filter(isTextUIPart).map(part => part.text).join('\n')
-      return `${message.role === 'user' ? 'User' : 'Assistant'}:\n${content}`
+      return `${message.role === 'user'
+        ? 'User'
+        : 'Assistant'}:\n${content}`
     })
     .join('\n\n')
   await navigator.clipboard.writeText(text)
@@ -76,12 +80,23 @@ function toolMeta(part: ToolUIPart | DynamicToolUIPart) {
   const streaming = isToolStreaming(part)
   const input = part.input as Record<string, string> | undefined
   if (name === 'search_docs') {
-    return { icon: 'i-lucide-text-search', text: streaming ? 'Searching the docs' : 'Searched the docs', suffix: input?.query }
+    return {
+      icon: 'i-lucide-text-search',
+      text: streaming ? 'Searching the docs' : 'Searched the docs',
+      suffix: input?.query,
+    }
   }
   if (name === 'get_page') {
-    return { icon: 'i-lucide-book-open', text: streaming ? 'Reading a page' : 'Read a page', suffix: input?.path }
+    return {
+      icon: 'i-lucide-book-open',
+      text: streaming ? 'Reading a page' : 'Read a page',
+      suffix: input?.path,
+    }
   }
-  return { icon: 'i-lucide-wrench', text: name.replace(/_/g, ' ') }
+  return {
+    icon: 'i-lucide-wrench',
+    text: name.replace(/_/g, ' '),
+  }
 }
 
 /** Live tool rows show while the answer streams; once done they collapse into one "Used N sources" row. */
@@ -100,8 +115,11 @@ function messageSources(message: UIMessage) {
   for (const part of message.parts) {
     if (isToolUIPart(part) && getToolName(part) === 'get_page') {
       const path = (part.input as { path?: string } | undefined)?.path
-      if (path)
-        paths.add(path.startsWith('/') ? path : `/${path}`)
+      if (path) {
+        paths.add(path.startsWith('/')
+          ? path
+          : `/${path}`)
+      }
     }
   }
   return [...paths]
@@ -113,7 +131,9 @@ function messageToolCount(message: UIMessage) {
 
 function sourcesLabel(message: UIMessage) {
   const count = messageSources(message).length || messageToolCount(message)
-  return `Used ${count} source${count === 1 ? '' : 's'}`
+  return `Used ${count} source${count === 1
+    ? ''
+    : 's'}`
 }
 </script>
 

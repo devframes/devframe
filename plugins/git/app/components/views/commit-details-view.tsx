@@ -25,7 +25,9 @@ function formatDate(epoch: number): string {
 
 function RefBadge({ label }: { label: string }) {
   const isTag = label.startsWith('tag: ')
-  const text = isTag ? label.slice(5) : label
+  const text = isTag
+    ? label.slice(5)
+    : label
   return (
     <Badge variant="secondary" className="gap-1 font-mono text-[10px]">
       {isTag && <Icon name="i-ph-tag-duotone" className="size-3" />}
@@ -98,7 +100,9 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
               {data.parents.length > 0 && (
                 <>
                   <dt className="color-muted">
-                    {data.parents.length > 1 ? 'Parents' : 'Parent'}
+                    {data.parents.length > 1
+                      ? 'Parents'
+                      : 'Parent'}
                   </dt>
                   <dd className="truncate font-mono tabular-nums">
                     {data.parents.map(p => p.slice(0, 7)).join(', ')}
@@ -116,7 +120,9 @@ export function CommitDetailsView({ data, loading, error, onClose }: CommitDetai
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="color-muted text-xs font-medium tracking-wide uppercase">
-                  {`${data.files.length} ${data.files.length === 1 ? 'file' : 'files'} changed`}
+                  {`${data.files.length} ${data.files.length === 1
+                    ? 'file'
+                    : 'files'} changed`}
                 </span>
                 <span className="text-xs tabular-nums">
                   <span className="text-success">{`+${data.totalAdditions}`}</span>

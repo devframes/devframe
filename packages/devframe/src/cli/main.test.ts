@@ -30,7 +30,12 @@ describe('runDevframeCli', () => {
     // `connect --help` matches the `connect` command and prints *its* help
     // (cac's built-in per-command path) rather than the bare-invocation
     // fallback, still exactly once.
-    await runDevframeCli(['node', 'devframe', 'connect', '--help'])
+    await runDevframeCli([
+      'node',
+      'devframe',
+      'connect',
+      '--help',
+    ])
     expect(info).toHaveBeenCalledTimes(1)
     expect(info.mock.calls[0]![0]).toContain('--port')
     expect(info.mock.calls[0]![0]).toContain('--base <path>')

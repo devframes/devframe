@@ -124,7 +124,9 @@ export function createDevframeNextHandler(
     )
   }
 
-  const base = options.base ? normalizeBasePath(options.base) : resolveBasePath(def, 'hosted')
+  const base = options.base
+    ? normalizeBasePath(options.base)
+    : resolveBasePath(def, 'hosted')
   const key = options.key ?? `@devframes/next:${def.id}:${base}`
   const registry = handlerRegistry()
   const memoized = registry.get(key)
@@ -148,8 +150,12 @@ export function createDevframeNextHandler(
      * lives on a side-car server (on `options.port` when pinned, otherwise
      * a free port), advertised via `<base>__connection.json`.
      */
-    ws: options.port != null ? { port: options.port } : { sidecar: true },
-    ...(options.resolveOrigin ? { origin: options.resolveOrigin } : {}),
+    ws: options.port != null
+      ? { port: options.port }
+      : { sidecar: true },
+    ...(options.resolveOrigin
+      ? { origin: options.resolveOrigin }
+      : {}),
     getStorageDir: options.getStorageDir ?? defaultGetStorageDir,
   })
 

@@ -174,7 +174,14 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         name: 'log',
         type: 'query',
         jsonSerializable: true,
-        args: [s.object({ limit: s.optional(s.number()), skip: s.optional(s.number()), ref: s.optional(s.string()), paths: s.optional(s.array(s.string())) })],
+        args: [
+          s.object({
+            limit: s.optional(s.number()),
+            skip: s.optional(s.number()),
+            ref: s.optional(s.string()),
+            paths: s.optional(s.array(s.string())),
+          }),
+        ],
         returns: gitLogSchema,
         agent: { title: 'Git log', description: 'Commit history of the inspected repository, newest first. Paginate with limit (1-200, default 30) and skip; pass ref to read another branch, or paths to list only commits that touched those files/directories. Safe to call freely.' },
         handler: (args: LogArgs = {}): Promise<GitLog> => ops.log(args),
@@ -183,7 +190,12 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         name: 'show',
         type: 'query',
         jsonSerializable: true,
-        args: [s.object({ hash: s.string(), patch: s.optional(s.boolean()) })],
+        args: [
+          s.object({
+            hash: s.string(),
+            patch: s.optional(s.boolean()),
+          }),
+        ],
         returns: commitDetailSchema,
         agent: { title: 'Git show', description: 'Full detail of one commit by hash: metadata, changed files, and the unified patch (pass patch: false to skip it for large commits). Safe to call freely.' },
         handler: (args: ShowArgs): Promise<CommitDetail> => ops.show(args),
@@ -192,7 +204,12 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         name: 'readFile',
         type: 'query',
         jsonSerializable: true,
-        args: [s.object({ path: s.string(), ref: s.optional(s.string()) })],
+        args: [
+          s.object({
+            path: s.string(),
+            ref: s.optional(s.string()),
+          }),
+        ],
         returns: gitFileSchema,
         agent: { title: 'Git read file', description: 'Read the contents of a single file at a commit-ish (default HEAD): the raw text of a versioned file without checking it out. found is false when no such file exists at the ref; binary blobs return with content omitted. Safe to call freely.' },
         handler: (args: ReadFileArgs): Promise<GitFile> => ops.readFile(args),
@@ -201,7 +218,12 @@ export function createGitService(options?: GitServiceOptions): DevframeServiceDe
         name: 'diff',
         type: 'query',
         jsonSerializable: true,
-        args: [s.object({ path: s.optional(s.string()), staged: s.optional(s.boolean()) })],
+        args: [
+          s.object({
+            path: s.optional(s.string()),
+            staged: s.optional(s.boolean()),
+          }),
+        ],
         returns: gitDiffSchema,
         agent: { title: 'Git diff', description: 'Unified diff of uncommitted changes: the working tree by default, the index with staged: true, one file with path. Safe to call freely.' },
         handler: (args: DiffArgs = {}): Promise<GitDiff> => ops.diff(args),

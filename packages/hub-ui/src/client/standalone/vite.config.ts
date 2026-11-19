@@ -10,7 +10,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
   base: './',
-  plugins: [Vue()],
+  plugins: [
+    Vue(),
+  ],
   build: {
     outDir: fileURLToPath(new URL('../../../dist/client/standalone', import.meta.url)),
     emptyOutDir: true,

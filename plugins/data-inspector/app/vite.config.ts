@@ -48,7 +48,9 @@ function dataInspectorDevBridge(): Plugin {
  * bridges the node side there with HMR.
  */
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? basePath : './',
+  base: command === 'serve'
+    ? basePath
+    : './',
   root: fileURLToPath(new URL('.', import.meta.url)),
   resolve: { alias },
   /**
@@ -56,12 +58,18 @@ export default defineConfig(({ command }) => ({
    * by default, Vite needs the classic define.
    */
   define: { global: 'globalThis' },
-  plugins: [vue(), UnoCSS(), dataInspectorDevBridge()],
+  plugins: [
+    vue(),
+    UnoCSS(),
+    dataInspectorDevBridge(),
+  ],
   /**
    * `@antfu/design` ships raw `.ts`/`.vue`; let `@vitejs/plugin-vue` compile
    * its SFCs instead of esbuild pre-bundling them.
    */
-  optimizeDeps: { exclude: ['@antfu/design'] },
+  optimizeDeps: {
+    exclude: ['@antfu/design'],
+  },
   build: {
     outDir: fileURLToPath(new URL('../assets-pkg/dist', import.meta.url)),
     emptyOutDir: true,

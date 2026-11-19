@@ -18,9 +18,13 @@ export function serializeTraceValue(value: unknown, options: SerializeTraceValue
   function visit(input: unknown, depth: number): SerializedValue | undefined {
     switch (typeof input) {
       case 'string':
-        return input.length > maxString ? `${input.slice(0, maxString)}… (${input.length - maxString} more chars)` : input
+        return input.length > maxString
+          ? `${input.slice(0, maxString)}… (${input.length - maxString} more chars)`
+          : input
       case 'number':
-        return Number.isFinite(input) ? input : String(input)
+        return Number.isFinite(input)
+          ? input
+          : String(input)
       case 'boolean':
         return input
       case 'bigint':
@@ -40,11 +44,16 @@ export function serializeTraceValue(value: unknown, options: SerializeTraceValue
       return {
         name: input.name,
         message: input.message,
-        ...(input.stack ? { stack: input.stack } : {}),
+        ...(input.stack
+          ? { stack: input.stack }
+          : {}),
       }
     }
-    if (input instanceof Date)
-      return Number.isNaN(input.getTime()) ? 'Invalid Date' : input.toISOString()
+    if (input instanceof Date) {
+      return Number.isNaN(input.getTime())
+        ? 'Invalid Date'
+        : input.toISOString()
+    }
     if (ArrayBuffer.isView(input))
       return `[${input.constructor.name} ${input.byteLength}]`
     if (input instanceof ArrayBuffer)

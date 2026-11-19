@@ -40,7 +40,9 @@ describe('devframeDockHost remote URL enrichment', () => {
 
     const first = host.values()[0]
     expect(first.type).toBe('iframe')
-    const firstUrl = first.type === 'iframe' ? first.url : ''
+    const firstUrl = first.type === 'iframe'
+      ? first.url
+      : ''
     expect(firstUrl).toContain(`#/inspect?tab=state&${REMOTE_CONNECTION_KEY}=`)
     expect(parseRemoteConnection(firstUrl)).toMatchObject({
       backend: 'websocket',
@@ -58,7 +60,9 @@ describe('devframeDockHost remote URL enrichment', () => {
     })
 
     const second = host.values()[0]
-    const secondUrl = second.type === 'iframe' ? second.url : ''
+    const secondUrl = second.type === 'iframe'
+      ? second.url
+      : ''
     expect(secondUrl.match(new RegExp(REMOTE_CONNECTION_KEY, 'g'))).toHaveLength(1)
     expect(secondUrl).toContain('#/inspect?tab=state&')
   })
@@ -78,7 +82,9 @@ describe('devframeDockHost remote URL enrichment', () => {
     })
 
     const entry = host.values()[0]
-    const url = entry.type === 'iframe' ? entry.url : ''
+    const url = entry.type === 'iframe'
+      ? entry.url
+      : ''
     expect(url).toContain(`#section&${REMOTE_CONNECTION_KEY}=`)
     expect(parseRemoteConnection(url)?.websocket).toBe('ws://localhost:4173')
   })
@@ -197,13 +203,24 @@ describe('devframeDockHost grouping', () => {
 describe('devframeDockHost activate', () => {
   it('emits a docks:activate event carrying the id and params', () => {
     const host = new DevframeDocksHost(createContext())
-    host.register({ type: 'iframe', id: 'terminals', title: 'Terminals', icon: 'ph:terminal-window-duotone', url: '/__terminals/' })
+    host.register({
+      type: 'iframe',
+      id: 'terminals',
+      title: 'Terminals',
+      icon: 'ph:terminal-window-duotone',
+      url: '/__terminals/',
+    })
 
     const activations: Array<{ dockId: string, params?: Record<string, unknown> }> = []
     host.events.on('docks:activate', a => activations.push(a))
 
     host.activate('terminals', { sessionId: 'sess-1' })
-    expect(activations).toEqual([{ dockId: 'terminals', params: { sessionId: 'sess-1' } }])
+    expect(activations).toEqual([
+      {
+        dockId: 'terminals',
+        params: { sessionId: 'sess-1' },
+      },
+    ])
   })
 
   it('still emits for an unknown dock but warns (DF8107, graceful)', () => {
@@ -288,7 +305,9 @@ describe('devframeDockHost ~builtin category', () => {
 
     const entry = host.values()[0]
     expect(entry.type).toBe('launcher')
-    const launcher = entry.type === 'launcher' ? entry.launcher : undefined
+    const launcher = entry.type === 'launcher'
+      ? entry.launcher
+      : undefined
     expect(launcher).toMatchObject({
       command: 'app:run-build',
       terminalSessionId: 'build-session',
@@ -305,7 +324,9 @@ describe('devframeDockHost ~builtin category', () => {
       launcher: { ...launcher!, digest: 'done', status: 'success' },
     })
     const updated = host.values()[0]
-    const updatedLauncher = updated.type === 'launcher' ? updated.launcher : undefined
+    const updatedLauncher = updated.type === 'launcher'
+      ? updated.launcher
+      : undefined
     expect(updatedLauncher?.digest).toBe('done')
     expect(updatedLauncher?.status).toBe('success')
   })
@@ -327,11 +348,19 @@ describe('devframeDockHost ~builtin category', () => {
     // The launch handler patches the launcher as the process boots; the update
     // must not throw "Cannot assign to read only property" on the frozen entry.
     expect(() => handle.update({
-      launcher: { title: 'Run build', status: 'loading', command: 'app:run-build', terminalSessionId: 'build-session', digest: 'compiling…' },
+      launcher: {
+        title: 'Run build',
+        status: 'loading',
+        command: 'app:run-build',
+        terminalSessionId: 'build-session',
+        digest: 'compiling…',
+      },
     })).not.toThrow()
 
     const entry = host.values()[0]
-    const launcher = entry.type === 'launcher' ? entry.launcher : undefined
+    const launcher = entry.type === 'launcher'
+      ? entry.launcher
+      : undefined
     expect(launcher?.status).toBe('loading')
     expect(launcher?.digest).toBe('compiling…')
   })
@@ -368,7 +397,9 @@ describe('devframeDockHost bare-specifier client scripts', () => {
     withWarnSpy((warn) => {
       const context = createContext()
       ;(context as { staticConfig: Record<string, unknown> }).staticConfig
-        = { dock: { clientModuleResolution: '/@id/{specifier}' } }
+        = {
+          dock: { clientModuleResolution: '/@id/{specifier}' },
+        }
       const host = new DevframeDocksHost(context)
       host.register({
         type: 'action',

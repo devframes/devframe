@@ -44,7 +44,11 @@ export function statToAssetInfo(dir: string, baseURL: string, relPath: string, s
     publicPath: toPublicPath(baseURL, posixPath),
     size: stat.size,
     mtime: stat.mtimeMs,
-    ...(includeFsPath ? { fsPath: join(dir, relPath) } : {}),
+    ...(includeFsPath
+      ? {
+          fsPath: join(dir, relPath),
+        }
+      : {}),
   }
 }
 
@@ -52,7 +56,12 @@ export function statToAssetInfo(dir: string, baseURL: string, relPath: string, s
 export async function scanAssets(dir: string, baseURL: string, includeFsPath = false): Promise<AssetInfo[]> {
   // Never traverse into or across symlinks; a symlink inside the managed
   // directory must not expose files (or whole trees) that live outside it.
-  const files = await glob(['**/*'], { cwd: dir, onlyFiles: true, dot: false, followSymbolicLinks: false })
+  const files = await glob(['**/*'], {
+    cwd: dir,
+    onlyFiles: true,
+    dot: false,
+    followSymbolicLinks: false,
+  })
 
   const infos = await Promise.all(files.map(async (relPath): Promise<AssetInfo | undefined> => {
     try {

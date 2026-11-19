@@ -23,6 +23,8 @@ const ICON_CLASS: Record<string, string> = {
 export function iconClass(name: string | { light: string, dark: string } | undefined): string {
   if (!name)
     return ''
-  const id = typeof name === 'string' ? name : name.light
+  const id = typeof name === 'string'
+    ? name
+    : name.light
   return ICON_CLASS[id] ?? ''
 }
