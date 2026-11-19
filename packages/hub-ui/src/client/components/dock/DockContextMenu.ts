@@ -1,27 +1,56 @@
-import type { DevframeDockEntry } from '@devframes/hub'
+import type { DevframeDockEntry, DevframeDockEntryIcon } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { defineComponent, h, nextTick, onMounted, ref } from 'vue'
-import { t } from '../../i18n'
+import { locale, t } from '../../i18n'
+import { resolveDockContextMenu } from '../../state/dock-context-menu'
 import { setDockContextMenu } from '../../state/floating-tooltip'
 import { isDockPopupSupported, requestDockPopupOpen, useIsDockPopupOpen } from '../../state/popup'
+import DockIcon from './DockIcon.vue'
 
 // @unocss-include
 
-interface DockMenuItem {
+interface DockMenuButton {
+  type?: 'button'
   label: string
-  icon: string
+  /** A UnoCSS icon class for a built-in item, an Iconify name for an item from `contextMenu`. */
+  icon?: string | { type: 'iconify', icon: DevframeDockEntryIcon }
+  checked?: boolean
   action: () => void
-  visible: boolean
+}
+
+type DockMenuItem = DockMenuButton | { type: 'separator' }
+
+const MENU_ITEM_SELECTOR = '[role="menuitem"],[role="menuitemcheckbox"]'
+
+function renderIcon(icon: DockMenuButton['icon']) {
+  const box = 'size-4.5 flex-none flex items-center justify-center text-base op60'
+  if (!icon)
+    return h('div', { class: box })
+  if (typeof icon === 'string') {
+    return h('div', { class: box }, [
+      h('div', { class: icon }),
+    ])
+  }
+  return h(DockIcon, { icon: icon.icon, class: box })
 }
 
 function renderMenuItem(item: DockMenuItem) {
+  if (item.type === 'separator')
+    return h('div', { role: 'separator', class: 'my1 border-t border-base' })
+  const isCheckbox = item.checked !== undefined
   return h('button', {
-    role: 'menuitem',
-    class: 'flex items-center gap-2 px3 py1.5 rounded hover:bg-active focus-visible:bg-active outline-none transition text-left',
-    onClick: item.action,
+    'role': isCheckbox ? 'menuitemcheckbox' : 'menuitem',
+    'aria-checked': isCheckbox
+      ? String(item.checked)
+      : undefined,
+    'class': 'flex items-center gap-2 px3 py1.5 rounded hover:bg-active focus-visible:bg-active outline-none transition text-left',
+    'onClick': item.action,
   }, [
-    h('div', { class: `${item.icon} text-base op60` }),
-    h('span', item.label),
+    renderIcon(item.icon),
+    h('span', { class: 'flex-auto' }, item.label),
+    isCheckbox && item.checked
+      ? h('div', { 'class': 'i-ph-check text-base op60', 'aria-hidden': 'true' })
+      : null,
   ])
 }
 
@@ -39,7 +68,7 @@ const DockContextMenuList = defineComponent({
   },
   setup(props) {
     const root = ref<HTMLElement>()
-    const buttons = () => Array.from(root.value?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [])
+    const buttons = () => Array.from(root.value?.querySelectorAll<HTMLButtonElement>(MENU_ITEM_SELECTOR) ?? [])
 
     onMounted(() => nextTick(() => buttons()[0]?.focus({ preventScroll: true })))
 
@@ -125,6 +154,24 @@ function canRefresh(entry: DevframeDockEntry) {
   return entry.type === 'iframe'
 }
 
+/** Items from the entry's `contextMenu`. */
+function getEntryMenuItems(context: DocksContext, entry: DevframeDockEntry): DockMenuItem[] {
+  const resolved = resolveDockContextMenu(entry.contextMenu, context.commands.commands, context.when.context, locale.value)
+  return resolved.map((item): DockMenuItem => item.type === 'separator'
+    ? item
+    : {
+        label: item.title,
+        icon: item.icon
+          ? { type: 'iconify', icon: item.icon }
+          : undefined,
+        checked: item.checked,
+        action: () => {
+          setDockContextMenu(null)
+          context.commands.execute(item.command, ...item.args).catch(console.error)
+        },
+      })
+}
+
 export function openDockContextMenu(options: {
   context: DocksContext
   entry: DevframeDockEntry
@@ -134,7 +181,7 @@ export function openDockContextMenu(options: {
   const { context, entry, el, gap = 6 } = options
   const isEdgeMode = context.panel.store.mode === 'edge'
   const isPinned = context.docks.settings.value().docksPinned.includes(entry.id)
-  const items: DockMenuItem[] = [
+  const builtinItems = [
     {
       label: isPinned
         ? t('docks.unpin')
@@ -200,8 +247,21 @@ export function openDockContextMenu(options: {
       },
       visible: isDockPopupSupported() && !useIsDockPopupOpen().value && context.clientType === 'embedded',
     },
-  ].filter(item => item.visible)
+  ]
+    .filter(item => item.visible)
+    .map(({ visible: _, ...item }): DockMenuButton => item)
 
+  const entryItems = getEntryMenuItems(context, entry)
+  const items: DockMenuItem[] = entryItems.length && builtinItems.length
+    ? [
+        ...entryItems,
+        { type: 'separator' },
+        ...builtinItems,
+      ]
+    : [
+        ...entryItems,
+        ...builtinItems,
+      ]
   if (items.length === 0)
     return
 
