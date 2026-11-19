@@ -24,6 +24,12 @@ const props = withDefaults(
     badge?: string
     badgeVariant?: DevframeDockBadgeVariant
     tooltip?: boolean
+    /**
+     * The group this dock belongs to, when it sits on the bar outside its
+     * group button (pinned or recent). Draws the group icon as a corner mark,
+     * so two tools with similar icons from different groups stay apart.
+     */
+    group?: Pick<DevframeDockEntryBase, 'title' | 'icon'>
   }>(),
   {
     tooltip: true,
@@ -57,7 +63,7 @@ function updateTooltip() {
   if (!button.value)
     return
   setFloatingTooltip({
-    content: dockTooltipContent(props.dock),
+    content: dockTooltipContent(props.dock, props.group),
     el: button.value,
   })
 }
@@ -121,6 +127,13 @@ useEventListener('pointerdown', () => {
         :style="badgeStyle"
       >
         {{ badge }}
+      </div>
+      <div
+        v-if="group"
+        class="absolute bottom-0 right-0 w-3 h-3 p-0.25 rounded-full bg-base border border-base shadow-sm pointer-events-none"
+        aria-hidden="true"
+      >
+        <DockIcon :icon="group.icon" class="w-full h-full select-none" />
       </div>
     </button>
   </div>

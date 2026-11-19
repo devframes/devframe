@@ -3,7 +3,7 @@ import type { DevframeDockEntry } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import { evaluateWhen } from 'devframe/utils/when'
 import { computed, toRefs } from 'vue'
-import { getGroupMembers, resolveGroupDefaultChild } from '../../state/dock-settings'
+import { getEntryGroup, getGroupMembers, resolveGroupDefaultChild } from '../../state/dock-settings'
 import { getCurrentDockId } from '../../state/docks'
 import { useSettings } from '../../state/settings-defaults'
 import DockEntry from './DockEntry.vue'
@@ -86,6 +86,7 @@ function toggleDockEntry(dock: DevframeDockEntry) {
         :is-vertical="isVertical"
         :badge="dock.badge"
         :badge-variant="dock.badgeVariant"
+        :group="getEntryGroup(context.docks.entries, dock)"
         @click="toggleDockEntry(dock)"
       />
     </template>
