@@ -4,4 +4,5 @@
 // #region Functions
 export async function createHostContext(_) {}
 export function createStorage(_) {}
+export function createTracingRecorder() {}
 // #endregion
