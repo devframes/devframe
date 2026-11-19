@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm'
 import { describe, expect, it, vi } from 'vitest'
 import { strictJsonStringify } from './serialization'
 
@@ -9,6 +10,17 @@ describe('strictJsonStringify', () => {
       c: [true, null, 3.14],
     }
     expect(strictJsonStringify(value)).toBe(JSON.stringify(value))
+  })
+
+  it('accepts a plain object from another realm', () => {
+    const value = runInNewContext('({ nested: { x: 1 } })')
+    expect(strictJsonStringify([value])).toBe('[{"nested":{"x":1}}]')
+  })
+
+  it('rejects class instances and Maps from another realm', () => {
+    const [instance, map] = runInNewContext('[new (class Point {})(), new Map()]')
+    expect(() => strictJsonStringify(instance)).toThrowError(/is a Point/)
+    expect(() => strictJsonStringify(map)).toThrowError(/is a Map/)
   })
 
   it('rejects Map', () => {

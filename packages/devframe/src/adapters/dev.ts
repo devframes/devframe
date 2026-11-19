@@ -2,12 +2,13 @@ import type { DevframeRpcConnection, WsOriginRegistry } from 'devframe/rpc/trans
 import type { Server } from 'node:http'
 import type { DevframeAuthHandler } from '../node/auth/handler'
 import type { StartedServer } from '../node/instance-shell'
+import type { ConnectionMeta } from '../types/context'
 import type { DevframeDefinition, DevframeSseOptions, DevframeWsOptions, McpSetting } from '../types/devframe'
 import type { StaticAssetsSource } from '../types/remote-assets'
 import type { DevframeNodeRpcSession, DevframeNodeRpcSessionMeta } from '../types/rpc'
 import { createServer } from 'node:http'
 import { open } from 'devframe/utils/open'
-import { withBase } from 'devframe/utils/url'
+import { joinURL, withBase } from 'devframe/utils/url'
 import { H3, toNodeHandler } from 'h3'
 import { diagnostics } from '../node/diagnostics'
 import { isAddressInUse, listenWithLoopbackTwin } from '../node/listen'
@@ -219,8 +220,7 @@ export async function createDevServer(
   }
 
   const internals = getInstanceInternals(devframe)
-  // Every dev-server configuration binds a local transport (`server` is
-  // always passed), so the bound-transport handle is always present.
+  // The supplied HTTP server has a handle even when WS is disabled.
   const transport = internals.started!
 
   await options.onReady?.({ origin, port, app })
@@ -232,7 +232,18 @@ export async function createDevServer(
     app,
     ws: transport.ws,
     rpcGroup: transport.rpcGroup,
-    connectionMeta: transport.connectionMeta,
+    connectionMeta() {
+      // Match the JSON form published by HTTP discovery, including custom toJSON methods.
+      const meta: ConnectionMeta = JSON.parse(JSON.stringify(devframe.connectionMeta()))
+      // Callers resolve these paths against the handle origin.
+      for (const endpoint of [meta.websocket, meta.sse]) {
+        if (typeof endpoint === 'object' && endpoint.host == null && endpoint.port == null && endpoint.path != null)
+          endpoint.path = joinURL(basePath, endpoint.path)
+      }
+      if (meta.mcp && meta.mcp.port == null)
+        meta.mcp.path = joinURL(basePath, meta.mcp.path)
+      return meta
+    },
     async close() {
       // Instance teardown removes the registry record, detaches the WS
       // transport (and closes any dedicated-port socket server), and disposes

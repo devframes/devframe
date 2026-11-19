@@ -64,6 +64,19 @@ export function strictJsonStringify(value: unknown, fnName: string = ''): string
   })
 }
 
+const objectConstructorSource = Function.prototype.toString.call(Object)
+
+function isPlainObjectPrototype(proto: object | null): boolean {
+  if (proto === null || proto === Object.prototype)
+    return true
+
+  // Each realm has its own Object.prototype and native Object constructor.
+  const ctor = Object.getOwnPropertyDescriptor(proto, 'constructor')?.value
+  return typeof ctor === 'function'
+    && ctor.prototype === proto
+    && Function.prototype.toString.call(ctor) === objectConstructorSource
+}
+
 /** Throw `DF0020` when `original` is a type JSON can't round-trip losslessly. */
 function assertJsonSafe(original: unknown, holder: unknown, key: string, fnName: string): void {
   if (typeof original === 'bigint')
@@ -79,7 +92,7 @@ function assertJsonSafe(original: unknown, holder: unknown, key: string, fnName:
   if (Array.isArray(original))
     return
   const proto = Object.getPrototypeOf(original)
-  if (proto !== null && proto !== Object.prototype) {
+  if (!isPlainObjectPrototype(proto)) {
     const ctorName = (original as { constructor?: { name?: string } }).constructor?.name
       ?? 'class instance'
     throw nonJsonAt(fnName, ctorName, holder, key)

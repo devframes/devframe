@@ -30,3 +30,10 @@ export function formatHostForUrl(host: string): string {
 export function normalizeHttpServerUrl(host: string, port: number | string): string {
   return `http://${formatHostForUrl(host)}:${port}`
 }
+
+/** A relative URL for the mount root must resolve against the discovery document. */
+export function relativeDiscoveryPath(route: string): string {
+  return route === '/'
+    ? './'
+    : route
+}
