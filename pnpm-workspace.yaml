@@ -32,6 +32,7 @@ trustPolicyExclude:
 update:
   ignoreDeps:
     - typescript@7
+    - solid-js@2
 
 strictPeerDependencies: false
 shamefullyHoist: true
@@ -98,9 +99,9 @@ catalogs:
     '@nuxt/kit': ^4.6.4
     '@nuxt/schema': ^4.6.4
     '@preact/preset-vite': ^2.10.6
-    '@rsbuild/core': ^2.3.2
-    '@sveltejs/adapter-node': ^6.0.2
-    '@sveltejs/kit': ^3.2.0
+    '@rsbuild/core': ^2.3.3
+    '@sveltejs/adapter-node': ^6.0.4
+    '@sveltejs/kit': ^3.3.1
     '@vitejs/plugin-vue': ^6.0.11
     esbuild: ^0.28.2
     lightningcss: ^1.33.0
@@ -109,13 +110,13 @@ catalogs:
     nuxt: ^4.6.4
     tsdown: ^0.23.7
     tsx: ^4.23.15
-    turbo: ^2.11.11
+    turbo: ^2.11.12
     vite: ^8.3.8
     vite-plugin-solid: ^2.11.16
   deps:
     '@fastify/middie': ^9.3.6
-    '@hono/node-server': ^2.1.8
-    '@json-render/core': ^0.22.0
+    '@hono/node-server': ^2.1.9
+    '@json-render/core': ^0.23.1
     '@modelcontextprotocol/client': ^2.4.0
     '@modelcontextprotocol/server': ^2.4.0
     '@standard-schema/spec': ^1.1.0
@@ -170,8 +171,8 @@ catalogs:
     '@iconify-json/ri': ^1.2.10
     '@iconify-json/twemoji': ^1.2.5
     '@iconify-json/unjs': ^1.2.4
-    '@json-render/react': ^0.22.0
-    '@json-render/vue': ^0.22.0
+    '@json-render/react': ^0.23.1
+    '@json-render/vue': ^0.23.1
     '@radix-ui/react-scroll-area': ^1.4.0
     '@radix-ui/react-slot': ^1.5.0
     '@shikijs/magic-move': ^4.6.0
