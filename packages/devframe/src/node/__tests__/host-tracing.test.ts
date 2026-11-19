@@ -15,6 +15,7 @@ import { createHostContext } from '../context'
 import { RpcFunctionsHostImpl } from '../host-functions'
 import { DevframeTracingHostImpl, TRACING_RECORD_BUFFER } from '../host-tracing'
 import { createContextRpcServer } from '../rpc-core'
+import { createTracingRecorder } from '../tracing-recorder'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -192,6 +193,65 @@ describe('devframeTracingHost', () => {
     finally {
       await close()
     }
+  })
+
+  it('shows an attached recorder without recording through ctx', async () => {
+    const ctx = await createCtx()
+    const name = uniqueName()
+    const tool = createTracingRecorder()
+    const channel = tool.register(name, { description: 'tool query' })
+    tool.record(name)
+    channel.traceSync(() => 1, { before: true })
+
+    const detach = ctx.tracing.attach(tool)
+    const seen: DevframeTraceRecord[] = []
+    ctx.tracing.onRecord(name, record => seen.push(record))
+    let state = await channelsState(ctx)
+    expect(state[name]).toMatchObject({ source: 'registered', description: 'tool query', recording: true, count: 1 })
+    expect(state[name]!.streamId).toBeTypeOf('string')
+    expect(ctx.tracing.records(name)).toHaveLength(1)
+
+    // The tool's own subscription is the only one; ctx does not subscribe.
+    channel.traceSync(() => 2, { after: true })
+    expect(seen).toHaveLength(2)
+    expect(ctx.tracing.records(name)).toHaveLength(2)
+
+    // Wire actions reach the owner.
+    await ctx.rpc.invokeLocal('devframe:tracing:stop', name)
+    expect(channel.hasSubscribers).toBe(false)
+    state = await channelsState(ctx)
+    expect(state[name]).toMatchObject({ recording: false })
+    expect(state[name]!.streamId).toBeUndefined()
+    await ctx.rpc.invokeLocal('devframe:tracing:clear', name)
+    expect(tool.records(name)).toEqual([])
+
+    detach()
+    state = await channelsState(ctx)
+    expect(state[name]).toBeUndefined()
+    expect(ctx.tracing.list().some(info => info.name === name)).toBe(false)
+  })
+
+  it('keeps control in a source that has no record() / stop()', async () => {
+    const ctx = await createCtx()
+    const name = uniqueName()
+    let emit: (event: any) => void = () => {}
+    const record: DevframeTraceRecord = { id: 'r1', channel: name, startedAt: 0, status: 'ok', context: null, events: [] }
+    ctx.tracing.attach({
+      list: () => [{ name, source: 'registered', recording: true, count: 1 }],
+      records: () => [record],
+      subscribe: (fn) => {
+        emit = fn
+        return () => {}
+      },
+    })
+    const seen: DevframeTraceRecord[] = []
+    ctx.tracing.onRecord(name, r => seen.push(r))
+    ctx.tracing.record(name)
+    ctx.tracing.stop(name)
+    expect((await channelsState(ctx))[name]).toMatchObject({ recording: true })
+    emit({ type: 'record', record })
+    expect(seen).toEqual([record])
+    expect(ctx.tracing.records(name)).toEqual([record])
   })
 
   it('is a no-op that warns once where tracingChannel is missing', async () => {

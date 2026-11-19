@@ -434,10 +434,27 @@ export interface DevframeTracingHost {
   records: (_: string) => DevframeTraceRecord[];
   clear: (_: string) => void;
   onRecord: (_: string, _: (_: DevframeTraceRecord) => void) => () => void;
+  attach: (_: DevframeTracingSource) => () => void;
   _applyOptions: (_: DevframeTracingOptions | undefined) => void;
 }
 export interface DevframeTracingOptions {
   channels?: Array<string | DevframeTracingChannelInput>;
+}
+export interface DevframeTracingRecorder extends Required<DevframeTracingSource> {
+  readonly supported: boolean;
+  register: (_: string | TracingChannel, _?: {
+    description?: string;
+  }) => TracingChannel;
+  record: (_: string) => void;
+  onRecord: (_: string, _: (_: DevframeTraceRecord) => void) => () => void;
+}
+export interface DevframeTracingSource {
+  list: () => DevframeTracingChannelInfo[];
+  records: (_: string) => DevframeTraceRecord[];
+  subscribe: (_: (_: DevframeTracingSourceEvent) => void) => () => void;
+  record?: (_: string) => void;
+  stop?: (_: string) => void;
+  clear?: (_: string) => void;
 }
 export interface DevframeViewHost {
   buildStaticDirs: {
@@ -604,6 +621,15 @@ export type DevframeSnapshotRpcInputs = readonly (readonly unknown[])[] | ((_: D
 export type DevframeStorageScope = 'workspace' | 'project' | 'global';
 export type DevframeTracePhase = 'start' | 'end' | 'asyncStart' | 'asyncEnd' | 'error';
 export type DevframeTracingChannelSource = 'builtin' | 'registered' | 'config' | 'adhoc';
+export type DevframeTracingSourceEvent = {
+  type: 'record';
+  record: DevframeTraceRecord;
+} | {
+  type: 'channels';
+} | {
+  type: 'clear';
+  channel: string;
+};
 export type McpAuthorization = string | ((_: Request) => boolean | Promise<boolean>) | false;
 export type McpSetting = boolean | 'auto' | McpRouteOptions;
 export type RemoteAssetsProvider = 'jsdelivr' | 'unpkg' | RemoteAssetsProviderCustom;

@@ -69,6 +69,9 @@ export { DevframeTracingChannelInput }
 export { DevframeTracingChannelSource }
 export { DevframeTracingHost }
 export { DevframeTracingOptions }
+export { DevframeTracingRecorder }
+export { DevframeTracingSource }
+export { DevframeTracingSourceEvent }
 export { DevframeViewHost }
 export { DevframeWsOptions }
 export { DevframeWsPeer }

@@ -4,4 +4,5 @@
 // #region Other
 export { createHostContext }
 export { createStorage }
+export { createTracingRecorder }
 // #endregion

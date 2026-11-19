@@ -81,6 +81,56 @@ export interface DevframeTracingOptions {
   channels?: Array<string | DevframeTracingChannelInput>
 }
 
+/** What a {@link DevframeTracingSource} tells its listeners. */
+export type DevframeTracingSourceEvent
+  = | { type: 'record', record: DevframeTraceRecord }
+    | { type: 'channels' }
+    | { type: 'clear', channel: string }
+
+/**
+ * Anything that owns Tracing Channels and their records, outside of
+ * `ctx.tracing`. A tool that keeps its own tracing instance attaches it with
+ * `ctx.tracing.attach(source)`: devframe then shows the source's channels and
+ * relays its records, but never subscribes to them itself. The source records.
+ *
+ * `createTracingRecorder()` from `devframe/node` returns one. Any object with
+ * this shape works too, so a tool does not need devframe at runtime.
+ */
+export interface DevframeTracingSource {
+  /** Channels this source owns. `streamId` is ignored; devframe sets it. */
+  list: () => DevframeTracingChannelInfo[]
+  /** Buffered records of one channel, oldest first. */
+  records: (name: string) => DevframeTraceRecord[]
+  /**
+   * Push updates. Emit `record` on every record change, `channels` when the
+   * channel list or a channel's `recording` / `description` changes, and
+   * `clear` when a channel's buffer is dropped.
+   */
+  subscribe: (listener: (event: DevframeTracingSourceEvent) => void) => () => void
+  /** Called when a client asks devframe to record. Omit to keep control in the tool. */
+  record?: (name: string) => void
+  /** Called when a client asks devframe to stop. */
+  stop?: (name: string) => void
+  /** Called when a client asks devframe to clear. */
+  clear?: (name: string) => void
+}
+
+/**
+ * A standalone Tracing Channel recorder, made with `createTracingRecorder()`.
+ * It has the same recording methods as `ctx.tracing`, without the wire, and
+ * is a {@link DevframeTracingSource} that `ctx.tracing.attach()` accepts.
+ */
+export interface DevframeTracingRecorder extends Required<DevframeTracingSource> {
+  /** `false` where the runtime has no `tracingChannel`; every method is a no-op. */
+  readonly supported: boolean
+  /** Declare a Tracing Channel and get Node's `TracingChannel` back. */
+  register: (channel: string | TracingChannel, meta?: { description?: string }) => TracingChannel
+  /** Subscribe to the channel and start folding events into records. */
+  record: (name: string) => void
+  /** Called with the whole record on every lifecycle update. */
+  onRecord: (name: string, fn: (record: DevframeTraceRecord) => void) => () => void
+}
+
 /**
  * Node-side Tracing Channel host, exposed as `ctx.tracing`. Wraps
  * `node:diagnostics_channel`'s `TracingChannel`: keeps the list of known
@@ -98,7 +148,11 @@ export interface DevframeTracingHost {
    */
   register: (channel: string | TracingChannel, meta?: { description?: string }) => TracingChannel
   list: () => DevframeTracingChannelInfo[]
-  /** Subscribe to the channel and start folding events into records. */
+  /**
+   * Subscribe to the channel and start folding events into records. For a
+   * channel of an attached source, this calls the source's `record()`, or
+   * does nothing when the source has none.
+   */
   record: (name: string) => void
   /** Unsubscribe. Records stay in the buffer. */
   stop: (name: string) => void
@@ -107,6 +161,13 @@ export interface DevframeTracingHost {
   clear: (name: string) => void
   /** Called with the whole record on every lifecycle update. */
   onRecord: (name: string, fn: (record: DevframeTraceRecord) => void) => () => void
+  /**
+   * Show the channels and records of a tool's own tracing instance. Devframe
+   * relays them over the wire but does not record them; the source does.
+   * When two sources own the same name, the one attached last wins.
+   * Returns a function that detaches the source.
+   */
+  attach: (source: DevframeTracingSource) => () => void
   /**
    * Adapters call this with a definition's or hub's `tracing` field before
    * `setup()` runs. Wired by the adapters automatically.
