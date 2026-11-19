@@ -1,3 +1,4 @@
+import type { DevframeDockContextMenuItem } from '@devframes/hub'
 import type { DevframeJsonRenderSpec } from '@devframes/json-render'
 import type { DevframeJsonRenderDockEntry } from '@devframes/json-render/hub'
 import { createUi } from '@devframes/hub-ui'
@@ -115,7 +116,37 @@ export default defineConfig({
         jsonRenderUiRenderer(),
       ],
       configure(ctx) {
-        ctx.docks.register(jsonRenderDock)
+        const dock = ctx.docks.register(jsonRenderDock)
+
+        // Right-click the JSON Render dock button: its context menu lists
+        // these commands above the built-in items. `checked` shows a check
+        // mark, so the toggle updates the entry each time it runs.
+        let compact = false
+        const contextMenu = (): DevframeDockContextMenuItem[] => [
+          { command: 'example:hub-vite:json-render-ping', title: 'Ping', icon: 'ph:bell-duotone' },
+          { type: 'separator' },
+          { command: 'example:hub-vite:json-render-compact', title: 'Compact Mode', checked: compact },
+        ]
+        ctx.commands.register({
+          id: 'example:hub-vite:json-render-ping',
+          title: 'JSON Render · Ping',
+          category: 'kit',
+          handler: () => 'pong',
+        })
+        ctx.commands.register({
+          id: 'example:hub-vite:json-render-compact',
+          title: 'JSON Render · Toggle Compact Mode',
+          category: 'kit',
+          handler: () => {
+            compact = !compact
+            dock.update({
+              contextMenu: contextMenu(),
+            })
+          },
+        })
+        dock.update({
+          contextMenu: contextMenu(),
+        })
       },
       // Gate with devframe's interactive OTP (the default): the hub prints a
       // 6-digit code + magic link on startup, and the reference UI's
