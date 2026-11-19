@@ -103,7 +103,7 @@ export declare function setupCodeServer(_: DevframeNodeContext, _?: CodeServerOp
 // #endregion
 
 // #region Variables
-export declare const diagnostics: Diagnostics<{
+export declare const diagnostics: import("devframe/utils/nostics").DevframeDiagnostics<{
   readonly DP_CODE_SERVER_0001: {
     readonly why: (p: {
       bin: string;
@@ -139,9 +139,7 @@ export declare const diagnostics: Diagnostics<{
     }) => string;
     readonly fix: "Check the tunnel logs, ensure the `code` CLI is signed in, or raise `startTimeout`.";
   };
-}, readonly [(d: Diagnostic, { method }?: {
-  method?: "log" | "warn" | "error";
-}) => void], never>;
+}, []>;
 // #endregion
 
 // #region Referenced (internal)
@@ -150,18 +148,6 @@ interface DetectCodeServerResult {
   version?: string;
   bin: string;
 }
-declare class Diagnostic<Data = undefined> extends Error {
-  name: string;
-  code: string;
-  docs?: string;
-  fix?: string;
-  sources?: string[];
-  data: Data;
-  get why(): string;
-  constructor(_: DiagnosticInit<Data>, _?: StackTraceFrame);
-  toJSON(): DiagnosticJSON<Data>;
-}
-type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[], DataOverride = never> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>, [DataOverride] extends [never] ? InferCodeData<Codes[Code]> : DataOverride>; };
 interface ProfileContext {
   host: string;
   port: number;

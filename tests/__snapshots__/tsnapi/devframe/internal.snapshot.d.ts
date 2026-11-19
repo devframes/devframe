@@ -206,7 +206,7 @@ export declare function toolInputToCommandArgs(_: unknown, _?: number): unknown[
 // #endregion
 
 // #region Variables
-export declare const diagnostics: import("nostics").Diagnostics<{
+export declare const diagnostics: DevframeDiagnostics<{
   readonly DF0006: {
     readonly why: (p: {
       name: string;
@@ -546,8 +546,6 @@ export declare const diagnostics: import("nostics").Diagnostics<{
     }) => string;
     readonly fix: "Give each entry in `prompts` its own `name`. `prompts/get` finds a prompt by its name, so two prompts cannot share one.";
   };
-}, readonly [(d: import("nostics").Diagnostic, { method }?: {
-  method?: "log" | "warn" | "error";
-}) => void], never>;
+}, []>;
 export declare const LIST_CLIENTS_TOOL: string;
 // #endregion
