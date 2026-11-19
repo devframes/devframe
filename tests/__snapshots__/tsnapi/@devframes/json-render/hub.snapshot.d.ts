@@ -6,11 +6,18 @@ export interface DevframeJsonRenderDockEntry extends DevframeDockEntryBase {
   type: 'json-render';
   view: JsonRenderViewRef;
 }
+export interface JsonRenderRpcContext {
+  rpc: Pick<DevframeRpcClient, 'call' | 'sharedState'> & {
+    connectionMeta?: Pick<ConnectionMeta, 'backend'>;
+  };
+}
 // #endregion
 
 // #region Types
-export type JsonRenderDockMountOptions = DockRendererMountOptions<DevframeJsonRenderDockEntry>;
-export type JsonRenderDockRenderer = DockRenderer<DevframeJsonRenderDockEntry>;
+export type JsonRenderDockMountOptions<Context = DevframeClientContext> = Omit<DockRendererMountOptions<DevframeJsonRenderDockEntry>, 'context'> & {
+  context: Context;
+};
+export type JsonRenderDockRenderer<Context = DevframeClientContext> = (_: JsonRenderDockMountOptions<Context>) => DockRendererInstance | Promise<DockRendererInstance>;
 // #endregion
 
 // #region Functions

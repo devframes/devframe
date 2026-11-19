@@ -22,6 +22,10 @@
   "exports": {
     "./hub": "./dist/hub.mjs",
     "./spa": "./dist/spa.mjs",
+    "./renderer": {
+      "types": "./dist/renderer.d.mts",
+      "default": "./dist/renderer/json-render.mjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -39,10 +43,14 @@
   },
   "peerDependencies": {
     "@devframes/hub": "workspace:*",
+    "@devframes/json-render": "workspace:*",
     "devframe": "workspace:*"
   },
   "peerDependenciesMeta": {
     "@devframes/hub": {
+      "optional": true
+    },
+    "@devframes/json-render": {
       "optional": true
     },
     "devframe": {
