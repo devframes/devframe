@@ -455,7 +455,6 @@ export interface DevframeTracingRecorder extends Required<DevframeTracingSource>
   register: (_: string | TracingChannel, _?: {
     description?: string;
   }) => TracingChannel;
-  record: (_: string) => void;
   onRecord: (_: string, _: (_: DevframeTraceRecord) => void) => () => void;
 }
 export interface DevframeTracingSource {

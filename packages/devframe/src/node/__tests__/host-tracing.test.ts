@@ -13,9 +13,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 import { createHostContext } from '../context'
 import { RpcFunctionsHostImpl } from '../host-functions'
-import { DevframeTracingHostImpl, TRACING_RECORD_BUFFER } from '../host-tracing'
+import { DevframeTracingHostImpl } from '../host-tracing'
 import { createContextRpcServer } from '../rpc-core'
-import { createTracingRecorder } from '../tracing-recorder'
+import { createTracingRecorder, TRACING_RECORD_BUFFER } from '../tracing-recorder'
 
 vi.stubGlobal('WebSocket', WebSocket)
 
@@ -310,7 +310,6 @@ describe('devframeTracingHost', () => {
       },
       { channel: diagnosticsChannel.channel },
     )
-    expect(host.supported).toBe(false)
     const name = uniqueName()
     const channel = host.register(name)
     expect(channel.traceSync(() => 'ran')).toBe('ran')

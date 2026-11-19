@@ -32,7 +32,6 @@ interface ChannelEntry {
   records: DevframeTraceRecord[]
   byContext: WeakMap<object, DevframeTraceRecord>
   subscribers?: Partial<TracingChannelSubscribers<object>>
-  listeners: Set<(record: DevframeTraceRecord) => void>
 }
 
 /**
@@ -66,10 +65,6 @@ export class TracingRecorder implements DevframeTracingRecorder {
         : entry
       this.add(name, 'config', description)
     }
-  }
-
-  has(name: string): boolean {
-    return this.entries.has(name)
   }
 
   list(): DevframeTracingChannelInfo[] {
@@ -127,11 +122,11 @@ export class TracingRecorder implements DevframeTracingRecorder {
   }
 
   onRecord(name: string, fn: (record: DevframeTraceRecord) => void): () => void {
-    const entry = this.add(name, 'adhoc')
-    entry.listeners.add(fn)
-    return () => {
-      entry.listeners.delete(fn)
-    }
+    this.add(name, 'adhoc')
+    return this.subscribe((event) => {
+      if (event.type === 'record' && event.record.channel === name)
+        fn(event.record)
+    })
   }
 
   subscribe(listener: (event: DevframeTracingSourceEvent) => void): () => void {
@@ -155,7 +150,6 @@ export class TracingRecorder implements DevframeTracingRecorder {
         channel: channel ?? this.createChannel(name),
         records: [],
         byContext: new WeakMap(),
-        listeners: new Set(),
       }
       this.entries.set(name, entry)
       changed = true
@@ -217,8 +211,6 @@ export class TracingRecorder implements DevframeTracingRecorder {
       ...record,
       events: [...record.events],
     }
-    for (const fn of entry.listeners)
-      fn(snapshot)
     this.emit({ type: 'record', record: snapshot })
   }
 
@@ -246,10 +238,8 @@ export class TracingRecorder implements DevframeTracingRecorder {
  * tracing instance, records through it, and optionally shows it in devframe
  * with `ctx.tracing.attach(recorder)`.
  */
-export function createTracingRecorder(options?: DevframeTracingOptions): DevframeTracingRecorder {
-  const recorder = new TracingRecorder()
-  recorder.applyOptions(options)
-  return recorder
+export function createTracingRecorder(): DevframeTracingRecorder {
+  return new TracingRecorder()
 }
 
 /** `tracing:<name>:start` → `<name>`. */

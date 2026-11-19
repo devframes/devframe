@@ -125,8 +125,6 @@ export interface DevframeTracingRecorder extends Required<DevframeTracingSource>
   readonly supported: boolean
   /** Declare a Tracing Channel and get Node's `TracingChannel` back. */
   register: (channel: string | TracingChannel, meta?: { description?: string }) => TracingChannel
-  /** Subscribe to the channel and start folding events into records. */
-  record: (name: string) => void
   /** Called with the whole record on every lifecycle update. */
   onRecord: (name: string, fn: (record: DevframeTraceRecord) => void) => () => void
 }

@@ -16,8 +16,6 @@ import * as diagnosticsChannel from 'node:diagnostics_channel'
 import { DEVFRAME_EVENTS } from '../events'
 import { TRACING_RECORD_BUFFER, TracingRecorder } from './tracing-recorder'
 
-export { TRACING_RECORD_BUFFER }
-
 const COUNT_FLUSH_MS = 100
 
 /** Tracing Channels Node.js itself publishes. */
@@ -32,7 +30,6 @@ const BUILTIN_CHANNELS: Record<string, string> = {
  * records the local recorder's channels; attached sources record themselves.
  */
 export class DevframeTracingHostImpl implements DevframeTracingHost {
-  readonly supported: boolean
   private readonly local: TracingRecorder
   private readonly sources: DevframeTracingSource[] = []
   /** Channel name → the source that owns it. Attached sources win over the local one. */
@@ -48,7 +45,6 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
     module: TracingModule = diagnosticsChannel,
   ) {
     this.local = new TracingRecorder(module)
-    this.supported = this.local.supported
     this.stream = context.rpc.streaming.create<DevframeTraceRecord>(DEVFRAME_EVENTS.stream.tracing, {
       replayWindow: TRACING_RECORD_BUFFER,
       closedStreamRetention: 0,
@@ -76,32 +72,24 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
     return Array.from(this.collect().infos.values(), info => ({ ...info, streamId: this.sinks.get(info.name)?.id }))
   }
 
+  /**
+   * An attached source without `record` / `stop` / `clear` keeps control:
+   * the call does nothing, and devframe never records its channel itself.
+   */
   record(name: string): void {
-    const source = this.owners.get(name)
-    if (source && source !== this.local)
-      source.record?.(name)
-    else
-      this.local.record(name)
+    this.ownerOf(name).record?.(name)
   }
 
   stop(name: string): void {
-    const source = this.owners.get(name)
-    if (source && source !== this.local)
-      source.stop?.(name)
-    else
-      this.local.stop(name)
+    this.ownerOf(name).stop?.(name)
   }
 
   records(name: string): DevframeTraceRecord[] {
-    return (this.owners.get(name) ?? this.local).records(name)
+    return this.ownerOf(name).records(name)
   }
 
   clear(name: string): void {
-    const source = this.owners.get(name)
-    if (source && source !== this.local)
-      source.clear?.(name)
-    else
-      this.local.clear(name)
+    this.ownerOf(name).clear?.(name)
   }
 
   onRecord(name: string, fn: (record: DevframeTraceRecord) => void): () => void {
@@ -117,7 +105,7 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
   }
 
   attach(source: DevframeTracingSource): () => void {
-    if (source === this.local || this.sources.includes(source))
+    if (this.sources.includes(source))
       return () => {}
     this.sources.push(source)
     const unsubscribe = source.subscribe(event => this.onSourceEvent(source, event))
@@ -157,6 +145,11 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
     for (const fn of this.listeners.get(event.record.channel) ?? [])
       fn(event.record)
     this.scheduleCountFlush()
+  }
+
+  /** Unknown names fall to the local recorder, which adds them as `adhoc`. */
+  private ownerOf(name: string): DevframeTracingSource {
+    return this.owners.get(name) ?? this.local
   }
 
   /** Every channel with its owner. Attached sources override the local one, later ones win. */
