@@ -5,6 +5,7 @@ import type { WhenContext } from 'devframe/utils/when'
 import type { ShallowRef } from 'vue'
 import { evaluateWhen } from 'devframe/utils/when'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
+import { TOGGLE_PALETTE_COMMAND_ID } from '../constants'
 import { sharedStateToRef } from './docks'
 import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, normalizeKeyEvent } from './keybindings'
 import { localizeCommand } from './locale'
@@ -141,7 +142,22 @@ export async function createCommandsContext(
   return commandsContext
 }
 
-// --- Shortcut system ---
+// The key that opened the palette can keep repeating after focus moves out of Messages.
+const heldMessagesKey = new WeakMap<EventTarget, string>()
+
+export function handleMessagesPaletteShortcut(event: KeyboardEvent, commands: CommandsContext) {
+  if (!event.isTrusted || event.defaultPrevented || event.isComposing || event.repeat || event.target !== event.currentTarget)
+    return
+  const pressed = normalizeKeyEvent(event)
+  if (!commands.getKeybindings(TOGGLE_PALETTE_COMMAND_ID).some(binding => binding.key === pressed))
+    return
+
+  event.preventDefault()
+  const host = event.view?.parent
+  if (host)
+    heldMessagesKey.set(host, event.code || event.key)
+  commands.execute(TOGGLE_PALETTE_COMMAND_ID).catch(console.error)
+}
 
 function setupShortcutListener(
   getWhenContext: () => WhenContext,
@@ -150,6 +166,19 @@ function setupShortcutListener(
   execute: (id: string, ...args: any[]) => Promise<unknown>,
 ) {
   const handler = (e: KeyboardEvent) => {
+    const host = e.currentTarget
+    if (host && heldMessagesKey.get(host) === (e.code || e.key)) {
+      if (e.type === 'keydown' && e.repeat) {
+        e.preventDefault()
+        e.stopPropagation()
+        return
+      }
+      // A fresh keydown also ends the gesture if the release went to another window.
+      heldMessagesKey.delete(host)
+    }
+    if (e.type === 'keyup')
+      return
+
     // Let the shortcut editor record keys without executing their commands.
     // composedPath reaches the input through shadow DOM; structural checks also
     // work for elements belonging to the popup window's realm.
@@ -184,12 +213,14 @@ function setupShortcutListener(
 
   // Attach to the host window. This covers embedded (shadow DOM) mode and the
   // host page while a popup is open.
-  window.addEventListener('keydown', handler, { capture: true })
+  for (const type of ['keydown', 'keyup'] as const) {
+    window.addEventListener(type, handler, { capture: true })
 
-  watch(useDockPopupWindow(), (popup, prev) => {
-    if (prev)
-      prev.removeEventListener('keydown', handler, { capture: true })
-    if (popup)
-      popup.addEventListener('keydown', handler, { capture: true })
-  })
+    watch(useDockPopupWindow(), (popup, prev) => {
+      if (prev)
+        prev.removeEventListener(type, handler, { capture: true })
+      if (popup)
+        popup.addEventListener(type, handler, { capture: true })
+    })
+  }
 }
