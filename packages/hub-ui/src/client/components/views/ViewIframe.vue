@@ -6,8 +6,10 @@ import type { IframePanes } from 'iframe-pane'
 import type { CSSProperties } from 'vue'
 import { stripRemoteConnectionFromUrl, watchFrameLocation } from '@devframes/hub/client'
 import { DEVFRAME_REMOTE_ASSETS_ERROR_MESSAGE_TYPE } from '@devframes/hub/constants'
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { useEventListener } from '@vueuse/core'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 import { t } from '../../i18n'
+import { handleMessagesPaletteShortcut } from '../../state/commands'
 import { localizeTitle } from '../../state/locale'
 import { useSettings } from '../../state/settings-defaults'
 import ViewAssetsError from './ViewAssetsError.vue'
@@ -212,6 +214,13 @@ function openExternally() {
   catch {}
 }
 
+// A click on a message or its heading leaves focus on the panel document's body.
+// Keep keystrokes on focused controls, such as the search field, inside the panel.
+const messagesBody = shallowRef<HTMLElement | null>(null)
+useEventListener(messagesBody, 'keydown', (event) => {
+  handleMessagesPaletteShortcut(event, props.context.commands)
+})
+
 let mountedTarget: HTMLDivElement | null = null
 let onIframeLoad: (() => void) | undefined
 let stopLocationWatch: (() => void) | undefined
@@ -269,7 +278,15 @@ onMounted(() => {
   })
 
   // Listen for iframe load events
+  function bindMessagesBody() {
+    const body = iframe.contentDocument?.body
+    messagesBody.value = body?.id === 'devframes-messages'
+      ? body
+      : null
+  }
+  bindMessagesBody()
   onIframeLoad = () => {
+    bindMessagesBody()
     isIframeLoading.value = false
   }
   iframe.addEventListener('load', onIframeLoad)

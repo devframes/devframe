@@ -9,7 +9,7 @@ import { DEFAULT_STATE_USER_SETTINGS, DOCK_RENDERERS_STATE_KEY, HUB_EVENTS } fro
 import { DEVFRAME_EVENTS } from 'devframe/constants'
 import { createEventEmitter } from 'devframe/utils/events'
 import { computed, markRaw, reactive, ref, toRefs, watch, watchEffect } from 'vue'
-import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT } from '../constants'
+import { BUILTIN_ENTRIES, BUILTIN_ENTRY_SETTINGS, DEFAULT_CATEGORIES_ORDER, HUB_UI_HIDE_EVENT, TOGGLE_PALETTE_COMMAND_ID } from '../constants'
 import { t } from '../i18n'
 import { useBranding } from './branding'
 import { createCommandsContext } from './commands'
@@ -546,7 +546,7 @@ export async function createDocksContext(
     cleanupBuiltinCommands?.()
     cleanupBuiltinCommands = commandsContext.register([
       {
-        id: 'devframes:toggle-palette',
+        id: TOGGLE_PALETTE_COMMAND_ID,
         source: 'client',
         title: t('command.togglePalette'),
         icon: 'ph:magnifying-glass-duotone',
