@@ -9,6 +9,7 @@ import { sharedStateToRef } from './docks'
 import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, normalizeKeyEvent } from './keybindings'
 import { localizeCommand } from './locale'
 import { useDockPopupWindow, useIsDockPopupOpen } from './popup'
+import { resolveSettingsDefaults } from './settings-defaults'
 
 const commandsContextByRpc = new WeakMap<DevframeRpcClient, CommandsContext>()
 
@@ -32,6 +33,10 @@ export async function createCommandsContext(
   // Shortcut overrides from user settings
   const settings = sharedStateToRef(settingsState)
   const shortcutOverrides = computed(() => settings.value.commandShortcuts ?? {})
+  // The host's published defaults sit between a user override and the
+  // command's declared keybinding, so a project can leave a shortcut unbound
+  // for everyone while a developer who binds it themselves still wins.
+  const seededShortcuts = computed(() => resolveSettingsDefaults(rpc.connectionMeta.configs).commandShortcuts ?? {})
 
   const paletteOpen = ref(false)
   // See `CommandsContext.paletteScopeId` for the contract; the palette owns
@@ -116,6 +121,10 @@ export async function createCommandsContext(
     const overrides = shortcutOverrides.value[id]
     if (overrides !== undefined)
       return overrides
+
+    const seeded = seededShortcuts.value[id]
+    if (seeded !== undefined)
+      return seeded
 
     return cmd?.keybindings ?? []
   }

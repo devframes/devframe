@@ -1,5 +1,7 @@
 import type { DevframeDocksUserSettings } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
+import type { ConnectionMeta } from 'devframe/types'
+import type { Immutable } from 'devframe/utils/shared-state'
 import type { ComputedRef } from 'vue'
 import { computed } from 'vue'
 import { sharedStateToRef } from './docks'
@@ -46,6 +48,71 @@ const HUB_UI_SETTINGS_DEFAULTS: Required<HubUiSettings> = Object.freeze({
 })
 
 /**
+ * The user-settings seed a host publishes through
+ * `createUi({ settingsDefaults })` → `ConnectionMeta.configs.ui.settingsDefaults`.
+ *
+ * Every field is optional: a seed names only what the project wants to differ
+ * from the built-in defaults, and whatever it leaves out keeps falling back.
+ *
+ * The three list fields (`docksHidden`, `docksCategoriesHidden`, `docksPinned`)
+ * are left out on purpose. The stored list is always present, so a seeded list
+ * would only win by overriding the visitor's forever, and a developer could
+ * hide an entry the project seeded while never unhiding one. Records
+ * (`commandShortcuts`, `docksCustomOrder`) merge per key instead, so a seeded
+ * entry and a stored entry coexist and the stored one wins where they collide.
+ */
+export type DocksUserSettingsDefaults = Omit<
+  Partial<DevframeDocksUserSettings>,
+  'docksHidden' | 'docksCategoriesHidden' | 'docksPinned'
+>
+
+/**
+ * Read the host-published settings defaults off the connection meta.
+ *
+ * `configs` is a one-way, boot-time channel, so this is a plain lookup with no
+ * subscription: the value is fixed for the life of the page.
+ */
+export function resolveSettingsDefaults(configs: ConnectionMeta['configs'] | undefined): DocksUserSettingsDefaults {
+  return configs?.ui?.settingsDefaults ?? {}
+}
+
+/** Drop `undefined` values so a partial seed never clobbers a lower layer. */
+function omitUndefined<T extends object>(value: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entry]) => entry !== undefined),
+  ) as Partial<T>
+}
+
+/**
+ * The one place the settings layers stack: built-in hub-ui defaults, then the
+ * host's published defaults, then whatever the visitor stored. The stored
+ * value wins because a choice made in Settings means more than the project's
+ * suggestion, and "absent" stays the stored representation of "default" so a
+ * materialised value is never written back.
+ *
+ * `docksCustomOrder` stacks per key rather than as a whole object: the stored
+ * side is always `{}` at first, so a flat spread would drop every seeded order
+ * the moment the visitor reordered one dock. `commandShortcuts` resolves the
+ * same way, per command id, in the commands context: the shortcut settings
+ * page needs the visitor's own overrides apart from the seeded default, so
+ * this merged view deliberately leaves it out.
+ */
+export function resolveUserSettings(
+  stored: Immutable<DevframeDocksUserSettings>,
+  defaults: DocksUserSettingsDefaults = {},
+): ResolvedDocksUserSettings {
+  return {
+    ...HUB_UI_SETTINGS_DEFAULTS,
+    ...omitUndefined(defaults),
+    ...stored,
+    docksCustomOrder: {
+      ...defaults.docksCustomOrder,
+      ...stored.docksCustomOrder,
+    },
+  } as ResolvedDocksUserSettings
+}
+
+/**
  * Read one hub-ui setting off a settings object that may not be resolved.
  *
  * Components take {@link useSettings} instead; this is for the pure helpers in
@@ -83,10 +150,8 @@ export function useSettings(context: DocksContext): ComputedRef<ResolvedDocksUse
   let settings = settingsByContext.get(context)
   if (!settings) {
     const stored = sharedStateToRef(context.docks.settings)
-    settings = computed(() => ({
-      ...HUB_UI_SETTINGS_DEFAULTS,
-      ...stored.value,
-    }))
+    const defaults = resolveSettingsDefaults(context.rpc.connectionMeta.configs)
+    settings = computed(() => resolveUserSettings(stored.value, defaults))
     settingsByContext.set(context, settings)
   }
   return settings

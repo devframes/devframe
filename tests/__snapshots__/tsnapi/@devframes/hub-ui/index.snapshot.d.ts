@@ -8,6 +8,7 @@ export interface CreateUiOptions {
   branding?: DevframeBranding;
   embeddedVisibility?: EmbeddedVisibility;
   dockPreferences?: DevframeDockPreferences;
+  settingsDefaults?: DocksUserSettingsDefaults;
   locale?: HubUiLocale;
 }
 export interface DevframeBranding {
@@ -65,4 +66,5 @@ type BrandingLogo = string | {
   light: string;
   dark: string;
 };
+type DocksUserSettingsDefaults = Omit<Partial<DevframeDocksUserSettings>, 'docksHidden' | 'docksCategoriesHidden' | 'docksPinned'>;
 // #endregion
