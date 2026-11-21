@@ -381,7 +381,7 @@ async function resolveHubContext(
       app.use(joinURL(frameBase, DEVFRAME_CONNECTION_META_FILENAME), () => api.connectionMeta())
     },
   }
-  return createHubContext({
+  const context = await createHubContext({
     cwd,
     workspaceRoot: cwd,
     mode: 'dev',
@@ -390,6 +390,8 @@ async function resolveHubContext(
       ? { builtinRpcDeclarations: options.rpcDeclarations }
       : {}),
   })
+  api.ownTracing(context.tracing)
+  return context
 }
 
 /**

@@ -304,6 +304,7 @@ export function initDevframe(
         host: hostImpl,
         importMetaUrl: def.importMetaUrl,
       })
+      api.ownTracing(context.tracing)
       const setupInfo: DevframeSetupInfo = { flags: options.flags ?? {} }
       // Wire services are constructed and made ready BEFORE setup, so
       // `setup(ctx)` can consume them synchronously (`ctx.services.get`).
