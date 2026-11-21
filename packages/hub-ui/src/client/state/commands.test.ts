@@ -1,5 +1,6 @@
 import type { DevframeDocksUserSettings, DevframeServerCommandEntry } from '@devframes/hub'
 import type { DevframeRpcClient } from '@devframes/hub/client'
+import type { SharedState } from 'devframe/utils/shared-state'
 import { DEFAULT_STATE_USER_SETTINGS, HUB_EVENTS } from '@devframes/hub/constants'
 import { createSharedState } from 'devframe/utils/shared-state'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -25,11 +26,12 @@ it.each(['standalone', 'shadow-root', 'popup'] as const)('leaves recording keyst
   vi.mocked(useDockPopupWindow).mockReturnValue(popup)
   const scope = effectScope()
   try {
-    // eslint-disable-next-line slop/no-chained-type-assertions -- only sharedState is used by this command context fixture.
+    // eslint-disable-next-line slop/no-chained-type-assertions -- only sharedState and the connection meta are read by this command context fixture.
     const rpc = {
       sharedState: {
         get: async () => createSharedState({ initialValue: [] }),
       },
+      connectionMeta: { configs: {} },
     } as unknown as DevframeRpcClient
     const settings = createSharedState<DevframeDocksUserSettings>({
       initialValue: {
@@ -123,12 +125,13 @@ describe('command shortcut eligibility', () => {
       },
     })
     const call = vi.fn()
-    // eslint-disable-next-line slop/no-chained-type-assertions -- the command context only needs these two RPC APIs.
+    // eslint-disable-next-line slop/no-chained-type-assertions -- the command context only needs these two RPC APIs and the connection meta.
     const rpc = {
       sharedState: {
         get: async () => serverState,
       },
       call,
+      connectionMeta: { configs: {} },
     } as unknown as DevframeRpcClient
     const window = new EventTarget()
     vi.stubGlobal('window', window)
@@ -167,5 +170,111 @@ describe('command shortcut eligibility', () => {
     expect(openPalette).toHaveBeenCalledOnce()
     await context.execute(command.id, 'src/main.ts')
     expect(call).toHaveBeenCalledExactlyOnceWith(HUB_EVENTS.rpc.commandsExecute, command.id, 'src/main.ts')
+  })
+})
+
+describe('keybindings seeded by the host', () => {
+  /** An RPC fixture that answers with no server commands and carries the host's `ui` config. */
+  function createRpc(settingsDefaults?: Partial<DevframeDocksUserSettings>): DevframeRpcClient {
+    // eslint-disable-next-line slop/no-chained-type-assertions -- only shared state and the connection meta are read while the context boots.
+    return {
+      sharedState: {
+        get: async () => createSharedState({ initialValue: [] }),
+      },
+      connectionMeta: {
+        configs: settingsDefaults
+          ? {
+              ui: { settingsDefaults },
+            }
+          : {},
+      },
+    } as unknown as DevframeRpcClient
+  }
+
+  function createSettings(): SharedState<DevframeDocksUserSettings> {
+    return createSharedState<DevframeDocksUserSettings>({
+      initialValue: DEFAULT_STATE_USER_SETTINGS(),
+    })
+  }
+
+  it('binds a command to the host default when the user has no override', async () => {
+    expect.assertions(1)
+
+    const settings = createSettings()
+    const context = await createCommandsContext(
+      'standalone',
+      createRpc({
+        commandShortcuts: {
+          'test:seeded': [
+            { key: 'Mod+J' },
+          ],
+        },
+      }),
+      settings,
+    )
+    context.register({
+      id: 'test:seeded',
+      source: 'client',
+      title: 'Seeded',
+      keybindings: [
+        { key: 'Mod+K' },
+      ],
+      action: () => {},
+    })
+
+    expect(context.getKeybindings('test:seeded')).toEqual([
+      { key: 'Mod+J' },
+    ])
+  })
+
+  it('lets a user override win over the host default', async () => {
+    expect.assertions(1)
+
+    const settings = createSettings()
+    const context = await createCommandsContext(
+      'standalone',
+      createRpc({
+        commandShortcuts: {
+          'test:seeded': [
+            { key: 'Mod+J' },
+          ],
+        },
+      }),
+      settings,
+    )
+    context.register({
+      id: 'test:seeded',
+      source: 'client',
+      title: 'Seeded',
+      keybindings: [
+        { key: 'Mod+K' },
+      ],
+      action: () => {},
+    })
+    settings.mutate((state) => {
+      state.commandShortcuts['test:seeded'] = []
+    })
+
+    expect(context.getKeybindings('test:seeded')).toEqual([])
+  })
+
+  it('keeps the declared keybinding when the host seeds nothing', async () => {
+    expect.assertions(1)
+
+    const settings = createSettings()
+    const context = await createCommandsContext('standalone', createRpc(), settings)
+    context.register({
+      id: 'test:declared',
+      source: 'client',
+      title: 'Declared',
+      keybindings: [
+        { key: 'Mod+K' },
+      ],
+      action: () => {},
+    })
+
+    expect(context.getKeybindings('test:declared')).toEqual([
+      { key: 'Mod+K' },
+    ])
   })
 })

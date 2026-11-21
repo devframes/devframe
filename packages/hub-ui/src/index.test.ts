@@ -103,3 +103,26 @@ describe('createUi branding background', () => {
     expect(ui.viewer).toBeUndefined()
   })
 })
+
+describe('createUi user settings defaults', () => {
+  it('publishes the host defaults to the connection meta', () => {
+    expect.assertions(1)
+
+    const context = createContext()
+    const settingsDefaults = {
+      commandShortcuts: { 'devframes:toggle-palette': [] },
+    }
+    createUi({ settingsDefaults }).setup?.(context)
+
+    expect(context.staticConfig.ui).toEqual({ branding: {}, settingsDefaults })
+  })
+
+  it('omits the field when the host publishes none', () => {
+    expect.assertions(1)
+
+    const context = createContext()
+    createUi().setup?.(context)
+
+    expect(context.staticConfig.ui).not.toHaveProperty('settingsDefaults')
+  })
+})
