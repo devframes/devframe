@@ -91,6 +91,7 @@ export interface InstanceShellApi {
   base: string;
   app: H3;
   origin: () => string | undefined;
+  ownTracing: (_: DevframeTracingHost) => void;
   connectionMeta: () => ConnectionMeta | undefined;
 }
 export interface InstanceShellInit<TContext extends DevframeNodeContext> {

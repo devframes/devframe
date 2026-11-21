@@ -263,6 +263,25 @@ describe('devframeTracingHost', () => {
     expect(ctx.tracing.list().some(info => info.name === name)).toBe(false)
   })
 
+  it('lets a source reattach during unsubscribe and ignores its old detach handle', async () => {
+    const ctx = await createCtx()
+    const unsubscribe = vi.fn<() => void>()
+    const source = {
+      list: () => [],
+      records: () => [],
+      subscribe: vi.fn(() => unsubscribe),
+    }
+    const detach = ctx.tracing.attach(source)
+    unsubscribe.mockImplementationOnce(() => {
+      detach()
+      ctx.tracing.attach(source)
+    })
+    detach()
+    detach()
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
+    expect(source.subscribe).toHaveBeenCalledTimes(2)
+  })
+
   it('keeps control in a source that has no record() / stop()', async () => {
     const ctx = await createCtx()
     const name = uniqueName()
