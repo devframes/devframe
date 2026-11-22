@@ -251,6 +251,8 @@ function onGlobalKeyDown(e: KeyboardEvent) {
       break
 
     case 'Enter': {
+      if (e.isComposing)
+        return
       const item = filtered.value[selectedIndex.value]
       if (item) {
         e.preventDefault()

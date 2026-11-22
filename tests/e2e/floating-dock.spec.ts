@@ -30,6 +30,30 @@ async function center(locator: Locator): Promise<{ x: number, y: number }> {
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 }
 }
 
+test('leaves Enter to the input method while composing in the palette', async ({ page }) => {
+  await page.goto(`${origin}?trusted`)
+  await expect(page.locator('#devframes-dock')).toBeVisible()
+  await page.keyboard.press('ControlOrMeta+k')
+  const input = page.getByPlaceholder('Type a command...')
+  await input.fill('Open Settings')
+  await expect(page.getByRole('button', { name: 'Open Settings', exact: true })).toBeVisible()
+
+  const allowedDefault = await input.evaluate(el => el.dispatchEvent(new KeyboardEvent('keydown', {
+    key: 'Enter',
+    isComposing: true,
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+  })))
+  expect(allowedDefault).toBe(true)
+  await expect(input).toBeFocused()
+  await expect(page.locator('body')).toHaveAttribute('data-open', 'false')
+
+  await input.press('Enter')
+  await expect(page.locator('body')).toHaveAttribute('data-selected', '~settings')
+  await expect(input).toBeHidden()
+})
+
 for (const trusted of [false, true]) {
   test.describe(trusted ? 'trusted floating dock' : 'unauthorized floating dock', () => {
     const name = trusted ? 'Settings' : 'Unauthorized'
