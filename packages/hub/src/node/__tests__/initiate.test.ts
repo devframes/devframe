@@ -137,6 +137,7 @@ describe('initHub', () => {
       // the aggregate MCP route.
       expect(hubRef.connectionMeta()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '/__devframes/__ws' },
         sse: { path: '/__devframes/__sse' },
         mcp: { path: '__mcp' },
@@ -750,6 +751,7 @@ describe('initHub', () => {
       await hub.ready
       expect(hub.connectionMeta()).toEqual({
         backend: 'websocket',
+        jsonSerializableMethods: expect.any(Array),
         websocket: { path: '/__devframes/__ws' },
         sse: { path: '/__devframes/__sse' },
         mcp: { path: '__mcp' },

@@ -7,6 +7,7 @@ import { cleanDoubleSlashes, withLeadingSlash, withoutLeadingSlash, withTrailing
 import { getPort } from 'get-port-please'
 import { DEVFRAME_MCP_ROUTE } from '../constants'
 import { importAgenticMcp, isAgenticInstalled, warnAgenticMcpMissingOnce } from '../node/agentic'
+import { relativeDiscoveryPath } from '../node/utils'
 
 const DEFAULT_PORT = 9999
 
@@ -181,5 +182,7 @@ export function resolveMcpConnectionMeta(
         path: withLeadingSlash(route),
         port,
       }
-    : { path: route }
+    : {
+        path: relativeDiscoveryPath(route),
+      }
 }
