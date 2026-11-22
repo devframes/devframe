@@ -16,3 +16,4 @@ export * from './context'
 // pulling in the implementation's `@internal` members.
 export type { RpcFunctionsHost } from './host-functions'
 export * from './storage'
+export { createTracingRecorder } from './tracing-recorder'

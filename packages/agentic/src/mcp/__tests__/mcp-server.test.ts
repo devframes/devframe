@@ -514,10 +514,10 @@ describe('mcp adapter (in-memory)', () => {
       expect(tool).toBeDefined()
       expect(tool!.annotations?.readOnlyHint).toBe(true)
 
-      // No key → key list.
+      // No key → key list, alongside the core's own keys.
       const keys = await client.callTool({ name: 'devframe_state_read', arguments: {} })
       expect(keys.structuredContent).toEqual({
-        keys: ['my-plugin:counter'],
+        keys: ['devframe:tracing:channels', 'my-plugin:counter'],
       })
 
       // With key → the value.
@@ -726,6 +726,12 @@ describe('mcp adapter (in-memory)', () => {
         resources: [
           { uri: 'devframe://resource/status', name: 'Status', mimeType: 'application/json' },
           {
+            uri: 'devframe://state/devframe%3Atracing%3Achannels',
+            name: 'devframe:tracing:channels',
+            description: 'Shared state: devframe:tracing:channels',
+            mimeType: 'application/json',
+          },
+          {
             uri: 'devframe://state/my-plugin%3Acounter',
             name: 'my-plugin:counter',
             description: 'Shared state: my-plugin:counter',
@@ -875,8 +881,11 @@ describe('mcp adapter (in-memory)', () => {
           initialValue: { count: 3 },
         })
         const { resources } = await client.listResources()
-        expect(resources.map(r => r.uri)).toEqual(['test://state/my-plugin%3Acounter'])
-        const read = await client.readResource({ uri: resources[0]!.uri })
+        expect(resources.map(r => r.uri)).toEqual([
+          'test://state/devframe%3Atracing%3Achannels',
+          'test://state/my-plugin%3Acounter',
+        ])
+        const read = await client.readResource({ uri: resources[1]!.uri })
         expect(JSON.parse((read.contents[0] as { text: string }).text)).toEqual({ count: 3 })
       }
       finally {

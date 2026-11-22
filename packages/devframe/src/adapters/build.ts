@@ -84,6 +84,7 @@ export async function createBuild(d: DevframeDefinition, options: CreateBuildOpt
   for (const input of d.services ?? [])
     void ctx.services.install(input, { resolveFrom: d.importMetaUrl })
   await ctx.services.ready()
+  ctx.tracing._applyOptions(d.tracing)
   await d.setup(ctx)
 
   // Bake declared `rpc.snapshot` methods (typically a wire service's RPC the

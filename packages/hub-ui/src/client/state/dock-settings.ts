@@ -209,6 +209,61 @@ export function getGroupMembers(
 }
 
 /**
+ * The `docksCustomOrder` writes that store `ids` as the order of one container
+ * (a category, or one sub-category of a group). Each id maps to its new index.
+ * When `ids` already matches `defaultIds`, each id maps to `undefined` instead,
+ * which means "delete the custom order", so the default order applies again.
+ */
+export function resolveCustomOrderPatch(ids: readonly string[], defaultIds: readonly string[]): Record<string, number | undefined> {
+  const isDefault = ids.length === defaultIds.length && ids.every((id, i) => id === defaultIds[i])
+  return Object.fromEntries(ids.map((id, index) => [
+    id,
+    isDefault ? undefined : index,
+  ]))
+}
+
+/** Write a {@link resolveCustomOrderPatch} result into a settings draft. */
+export function applyCustomOrderPatch(state: DevframeDocksUserSettings, patch: Record<string, number | undefined>): void {
+  for (const [id, index] of Object.entries(patch)) {
+    if (index === undefined)
+      delete state.docksCustomOrder[id]
+    else
+      state.docksCustomOrder[id] = index
+  }
+}
+
+/**
+ * Move the group member `fromId` to the slot that `toId` holds, and return the
+ * `docksCustomOrder` writes for it (see {@link resolveCustomOrderPatch}). Both
+ * members must be in the same in-group sub-category, else this returns `null`.
+ * Hidden members count too, so their saved order stays stable.
+ */
+export function resolveGroupMemberMove(
+  entries: DevframeDockEntry[],
+  groupId: string,
+  settings: Immutable<DevframeDocksUserSettings>,
+  fromId: string,
+  toId: string,
+): Record<string, number | undefined> | null {
+  if (fromId === toId)
+    return null
+  const found = getGroupMembersGrouped(entries, groupId, settings, { includeHidden: true })
+    .find(([, items]) => items.some(item => item.id === fromId))
+  if (!found)
+    return null
+  const [subcategory, items] = found
+  const ids = items.map(item => item.id)
+  const toIndex = ids.indexOf(toId)
+  if (toIndex === -1)
+    return null
+  ids.splice(toIndex, 0, ids.splice(ids.indexOf(fromId), 1)[0]!)
+  const defaultIds = getGroupMembersGrouped(entries, groupId, { ...settings, docksCustomOrder: {} }, { includeHidden: true })
+    .find(([category]) => category === subcategory)?.[1]
+    .map(item => item.id) ?? []
+  return resolveCustomOrderPatch(ids, defaultIds)
+}
+
+/**
  * Resolve a group's `defaultChildId` to its target member, for the "clicking
  * the group button jumps straight to this member" behavior (the dock-bar
  * button and `switchEntry`'s own group→member resolution both need this).

@@ -2,7 +2,7 @@ import type { DevframeDockEntriesGrouped, DevframeDockEntry, DevframeViewGroup }
 import type { WhenContext } from 'devframe/utils/when'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
 import { describe, expect, it } from 'vitest'
-import { docksGroupByCategories, docksSplitGroupsBySize, docksSplitGroupsWithCapacity, getGroupMembersGrouped, resolveGroupPreferredChild, resolveNextRecentDockIds, resolveRecentDockEntries } from './dock-settings'
+import { applyCustomOrderPatch, docksGroupByCategories, docksSplitGroupsBySize, docksSplitGroupsWithCapacity, getGroupMembersGrouped, resolveCustomOrderPatch, resolveGroupMemberMove, resolveGroupPreferredChild, resolveNextRecentDockIds, resolveRecentDockEntries } from './dock-settings'
 
 function iframe(id: string, extra: Partial<DevframeDockEntry> = {}): DevframeDockEntry {
   return {
@@ -421,5 +421,67 @@ describe('resolveRecentDockEntries', () => {
   it('caps the list at the limit', () => {
     expect(resolve(['d', 'e', 'g:member'], 2)).toEqual([d, e])
     expect(resolve(['d'], 0)).toEqual([])
+  })
+})
+
+describe('resolveCustomOrderPatch', () => {
+  it('maps each id to its index', () => {
+    expect(resolveCustomOrderPatch(['b', 'a'], ['a', 'b'])).toEqual({ b: 0, a: 1 })
+  })
+
+  it('clears the custom order when the order matches the default', () => {
+    expect(resolveCustomOrderPatch(['a', 'b'], ['a', 'b'])).toEqual({ a: undefined, b: undefined })
+  })
+})
+
+describe('resolveGroupMemberMove', () => {
+  const entries = [
+    group('g'),
+    iframe('a', { groupId: 'g', defaultOrder: 1 }),
+    iframe('b', { groupId: 'g', defaultOrder: 2 }),
+    iframe('c', { groupId: 'g', defaultOrder: 3 }),
+    iframe('x', { groupId: 'g', category: 'other' }),
+  ]
+
+  function move(fromId: string, toId: string, docksCustomOrder: Record<string, number> = {}) {
+    const settings = {
+      ...DEFAULT_STATE_USER_SETTINGS(),
+      docksCustomOrder,
+    }
+    const patch = resolveGroupMemberMove(entries, 'g', settings, fromId, toId)
+    if (patch)
+      applyCustomOrderPatch(settings, patch)
+    const order = getGroupMembersGrouped(entries, 'g', settings).find(([category]) => category === 'default')![1]
+    return {
+      patch,
+      order: order.map(item => item.id),
+    }
+  }
+
+  it('moves a member down into the slot of the target', () => {
+    expect(move('a', 'c').order).toEqual(['b', 'c', 'a'])
+  })
+
+  it('moves a member up into the slot of the target', () => {
+    expect(move('c', 'a').order).toEqual(['c', 'a', 'b'])
+  })
+
+  it('clears the custom order when the move restores the default', () => {
+    const { patch, order } = move('a', 'b', { b: 0, a: 1, c: 2 })
+    expect(order).toEqual(['a', 'b', 'c'])
+    expect(patch).toEqual({ a: undefined, b: undefined, c: undefined })
+  })
+
+  it('counts hidden members so their place stays stable', () => {
+    const settings = {
+      ...DEFAULT_STATE_USER_SETTINGS(),
+      docksHidden: ['b'],
+    }
+    expect(resolveGroupMemberMove(entries, 'g', settings, 'c', 'a')).toEqual({ c: 0, a: 1, b: 2 })
+  })
+
+  it('refuses a move across sub-categories', () => {
+    expect(move('a', 'x').patch).toBeNull()
+    expect(move('a', 'a').patch).toBeNull()
   })
 })
