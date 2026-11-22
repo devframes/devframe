@@ -29,13 +29,13 @@ export interface DevframeTracingChannelInfo {
   name: string
   description?: string
   source: DevframeTracingChannelSource
-  /** `true` while devframe is subscribed to the Node channel. */
+  /** Whether the selected source is recording this channel. */
   recording: boolean
   /**
    * Id of the live stream on the `devframe:tracing` streaming channel that
-   * carries this channel's records. Set while recording; a fresh id is
-   * issued on every `record()` and `clear()`, so a client re-subscribes
-   * when it changes.
+   * carries this channel's records. Published in `devframe:tracing:channels` while recording. Devframe starts
+   * a new stream when recording starts or the selected source reports a
+   * clear during recording. Subscribe again when the published ID changes.
    */
   streamId?: string
   /** Records currently held in the ring buffer. */
@@ -91,7 +91,7 @@ export type DevframeTracingSourceEvent
  * Anything that owns Tracing Channels and their records, outside of
  * `ctx.tracing`. A tool that keeps its own tracing instance attaches it with
  * `ctx.tracing.attach(source)`: devframe then shows the source's channels and
- * relays its records, but never subscribes to them itself. The source records.
+ * relays its records. Other recorders keep their own recording state.
  *
  * `createTracingRecorder()` from `devframe/node` returns one. Any object with
  * this shape works too, so a tool does not need devframe at runtime.
@@ -161,8 +161,8 @@ export interface DevframeTracingHost {
   onRecord: (name: string, fn: (record: DevframeTraceRecord) => void) => () => void
   /**
    * Show the channels and records of a tool's own tracing instance. Devframe
-   * relays them over the wire but does not record them; the source does.
-   * When two sources own the same name, the one attached last wins.
+   * relays records from the source attached last for each name. Attaching
+   * or detaching a source preserves the other recorders' recording state.
    * Returns a function that detaches the source.
    */
   attach: (source: DevframeTracingSource) => () => void
