@@ -50,7 +50,7 @@ export declare function setupTerminals(_: DevframeNodeContext, _?: TerminalsOpti
 // #endregion
 
 // #region Variables
-export declare const diagnostics: Diagnostics<{
+export declare const diagnostics: import("devframe/utils/nostics").DevframeDiagnostics<{
   readonly DP_TERMINALS_0001: {
     readonly why: (p: {
       id: string;
@@ -88,22 +88,5 @@ export declare const diagnostics: Diagnostics<{
     readonly why: "Terminals manager is not initialised on this context";
     readonly fix: "Call setupTerminals(ctx) (or use createTerminalsDevframe) before invoking terminal RPCs.";
   };
-}, readonly [(d: Diagnostic, { method }?: {
-  method?: "log" | "warn" | "error";
-}) => void], never>;
-// #endregion
-
-// #region Referenced (internal)
-declare class Diagnostic<Data = undefined> extends Error {
-  name: string;
-  code: string;
-  docs?: string;
-  fix?: string;
-  sources?: string[];
-  data: Data;
-  get why(): string;
-  constructor(_: DiagnosticInit<Data>, _?: StackTraceFrame);
-  toJSON(): DiagnosticJSON<Data>;
-}
-type Diagnostics<Codes extends Record<string, DiagnosticDefinition>, Reporters extends readonly AnyDiagnosticReporter[], DataOverride = never> = { [Code in keyof Codes]: DiagnosticHandle<InferCodeParams<Codes[Code]>, Prettify<ExtractReportersOptions<Reporters>>, [DataOverride] extends [never] ? InferCodeData<Codes[Code]> : DataOverride>; };
+}, []>;
 // #endregion

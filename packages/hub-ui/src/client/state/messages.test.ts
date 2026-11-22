@@ -87,6 +87,38 @@ it.each([false, true])('removes visible toasts and timers when the message is re
   expect(clearTimer).toHaveBeenCalledOnce()
 })
 
+it('waits for trust without a deadline before the initial fetch', async () => {
+  expect.assertions(3)
+  const { useMessages } = await import('./messages')
+  const trust = Promise.withResolvers<boolean>()
+  const ensureTrusted = vi.fn(() => trust.promise)
+  const call = vi.fn(async () => ({
+    entries: [],
+    removedIds: [],
+    version: 0,
+    full: true,
+  }))
+  // eslint-disable-next-line slop/no-chained-type-assertions -- Only the RPC trust gate and feed participate in this state test.
+  useMessages({
+    rpc: {
+      call,
+      isTrusted: false,
+      ensureTrusted,
+      client: {
+        register: () => {},
+      },
+    },
+  } as unknown as DocksContext)
+
+  await Promise.resolve()
+  expect(ensureTrusted).toHaveBeenCalledWith(0)
+  expect(call).not.toHaveBeenCalled()
+
+  trust.resolve(true)
+  await vi.waitUntil(() => call.mock.calls.length === 1)
+  expect(call).toHaveBeenCalledOnce()
+})
+
 it('keeps surviving toasts and unread counts when receiving a full snapshot', async () => {
   expect.assertions(3)
   const { state, toasts, publish, message } = await fixture()

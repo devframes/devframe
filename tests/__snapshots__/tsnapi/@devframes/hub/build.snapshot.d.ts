@@ -5,9 +5,11 @@
 export interface BuildHubOptions {
   outDir: string;
   base?: string;
+  deployBase?: string;
   devframes?: DevframesInput;
   context?: DevframeHubContext;
   services?: DevframeServiceInput[];
+  tracing?: DevframeTracingOptions;
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations'];
   configure?: (_: DevframeHubContext) => void | Promise<void>;
   ui?: DevframeHubUi;

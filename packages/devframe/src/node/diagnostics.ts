@@ -242,5 +242,10 @@ export const diagnostics = defineDiagnostics({
         `MCP prompt "${p.name}" is listed more than once.`,
       fix: 'Give each entry in `prompts` its own `name`. `prompts/get` finds a prompt by its name, so two prompts cannot share one.',
     },
+    DF0086: {
+      why: (p: { runtime: string }) =>
+        `Tracing Channels are unavailable: this runtime (${p.runtime}) does not provide \`node:diagnostics_channel\`'s \`tracingChannel\`, so \`ctx.tracing\` records nothing.`,
+      fix: 'Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` and `createTracingRecorder()` method is a no-op here.',
+    },
   },
 })

@@ -13,12 +13,22 @@ const docksOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const docksSidebarOverflowPanel = shallowRef<FloatingPopoverProps | null>(null)
 const dockContextMenu = shallowRef<FloatingPopoverProps | null>(null)
 
-/** A dock entry's tooltip: its title, with its `description` below when set. */
-export function dockTooltipContent(entry: { title: string, description?: string }): FloatingPopoverProps['content'] {
+/**
+ * A dock entry's tooltip: its title, with its `description` below when set.
+ * When `group` is set, the title is prefixed with the group title, so a dock
+ * shown outside its group button still tells which group it comes from.
+ */
+export function dockTooltipContent(
+  entry: { title: string, description?: string },
+  group?: { title: string },
+): FloatingPopoverProps['content'] {
+  const title = group
+    ? `${group.title} › ${entry.title}`
+    : entry.title
   if (!entry.description)
-    return entry.title
+    return title
   return () => h('div', { class: 'flex flex-col gap-0.5 max-w-64' }, [
-    h('span', entry.title),
+    h('span', title),
     h('span', { class: 'text-xs color-muted' }, entry.description),
   ])
 }

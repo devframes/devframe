@@ -111,6 +111,9 @@ export function useMessages({ rpc }: DocksContext): Reactive<MessagesState> {
     },
   })
 
-  rpc.ensureTrusted().then(() => refresh())
+  // Background initialization waits for trust without a deadline. A page can
+  // stay untrusted while the user authorizes DevTools, and the default 60s
+  // deadline would only surface an unhandled rejection in the app.
+  rpc.ensureTrusted(0).then(() => refresh())
   return state
 }

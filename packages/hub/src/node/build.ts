@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import type { ConnectionMeta, DevframeServiceInput, DevframeStorageScope } from 'devframe/types'
+import type { ConnectionMeta, DevframeServiceInput, DevframeStorageScope, DevframeTracingOptions } from 'devframe/types'
 import type { ClientScriptEntry } from '../types/docks'
 import type { CreateHubContextOptions, DevframeHubContext } from './context'
 import type { DevframeHubUi, DevframesInput, DockRendererRegistration } from './initiate'
@@ -12,7 +12,7 @@ import { collectStaticRpcDump, writeStaticRpcDump } from 'devframe/rpc/dump'
 import { colors as c } from 'devframe/utils/colors'
 import { resolveStaticAssetsSource } from 'devframe/utils/remote-assets'
 import { joinURL } from 'devframe/utils/url'
-import { dirname, resolve } from 'pathe'
+import { dirname, extname, resolve } from 'pathe'
 import { DEVFRAMES_HUB_BASE, DOCK_RENDERERS_STATE_KEY, normalizeHubBase } from '../constants'
 import { mountDevframes, renderClientImportsModule, resolveDevframesInput, resolveRendererRegistrations } from './assemble'
 import { createHubContext } from './context'
@@ -35,6 +35,13 @@ export interface BuildHubOptions {
    * pointers). Default: `/__devframes/`.
    */
   base?: string
+  /**
+   * URL prefix the deploy root is served under (e.g. `/ci-build-123456/`).
+   * Root-absolute URLs the build emits are rebased under it, so the output
+   * works below the domain root. Must be a prefix of
+   * {@link BuildHubOptions.base}. Default: `/`.
+   */
+  deployBase?: string
   /** Devframes to bake as docks, same input as `initHub({ devframes })`. */
   devframes?: DevframesInput
   /**
@@ -50,6 +57,8 @@ export interface BuildHubOptions {
   context?: DevframeHubContext
   /** Host-level wire services, same contract as `initHub({ services })`. */
   services?: DevframeServiceInput[]
+  /** Host-level Tracing Channels, same contract as `initHub({ tracing })`. */
+  tracing?: DevframeTracingOptions
   /** Extra RPC declarations registered at context creation. */
   rpcDeclarations?: CreateHubContextOptions['builtinRpcDeclarations']
   /**
@@ -113,6 +122,9 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
     throw diagnostics.DF8002()
 
   const base = normalizeHubBase(options.base ?? DEVFRAMES_HUB_BASE)
+  const deployBase = normalizeHubBase(options.deployBase ?? '/')
+  if (deployBase !== '/' && !base.startsWith(deployBase))
+    throw diagnostics.DF8007({ base, deployBase })
   const cwd = options.cwd ?? process.cwd()
   const outDir = resolve(cwd, options.outDir)
   const rendererRegistrations = resolveRendererRegistrations(options.renderers ?? [])
@@ -132,32 +144,165 @@ export async function buildHub(options: BuildHubOptions): Promise<void> {
    * corresponds to the hub base). A base outside it is a deploy-root sibling:
    * `outDir`'s parent is the deploy root, and the base resolves under it by its
    * absolute path. This is the layout Vite DevTools serves, where devframe SPAs
-   * and assets sit beside `/__devtools/` rather than under it.
+   * and assets sit beside `/__devtools/` rather than under it. The deploy
+   * prefix, when set, is stripped first: it moves the URLs, not the files.
    */
   const deployRoot = dirname(outDir)
+  const hubBase = stripDeployBase(base, deployBase)
   const resolveOutPath = (urlBase: string): string => {
-    if (urlBase.startsWith(base))
-      return resolve(outDir, urlBase.slice(base.length))
-    if (!urlBase.startsWith('/'))
+    const localBase = stripDeployBase(urlBase, deployBase)
+    if (localBase.startsWith(hubBase))
+      return resolve(outDir, localBase.slice(hubBase.length))
+    if (!localBase.startsWith('/'))
       throw diagnostics.DF8006({ urlBase, base })
-    return resolve(deployRoot, urlBase.slice(1))
+    return resolve(deployRoot, localBase.slice(1))
   }
 
-  await copyBuildStatics(ctx, resolveOutPath)
+  // Everything served outside the deploy prefix needs it added to the baked
+  // URLs. Longest first, so a nested mount is rewritten before its parent.
+  const servedBases = new Set([
+    ...ctx.frames.map(frame => frame.base),
+    ...ctx.views.buildStaticDirs.map(dir => dir.baseUrl),
+  ])
+  const rewrites = deployBase === '/'
+    ? []
+    : [...servedBases]
+        .filter(url => url.startsWith('/') && !isUnderDeployBase(url, deployBase))
+        .sort((a, b) => b.length - a.length)
+        .map(url => [
+          url,
+          serveUrl(url, deployBase),
+        ] as const)
+  const rebaseText = createTextRebaser(rewrites, deployBase)
+  const rebaseValue = rewrites.length
+    ? createUrlValueRebaser(rewrites)
+    : <T>(value: T): T => value
+
+  await copyBuildStatics(ctx, resolveOutPath, rewrites.length ? rebaseText : undefined)
   await publishRendererManifest(ctx, rendererRegistrations, base, outDir)
   await writeUiArtifacts(options.ui, outDir)
-  await fs.writeFile(resolve(outDir, DEVFRAME_DOCK_IMPORTS_FILENAME), renderClientImportsModule(ctx), 'utf-8')
-  await writeHubIndex(ctx, base, outDir, options)
-  await writeConnectionMetas(ctx, base, outDir, resolveOutPath)
+  await fs.writeFile(
+    resolve(outDir, DEVFRAME_DOCK_IMPORTS_FILENAME),
+    rebaseText(renderClientImportsModule(ctx)),
+    'utf-8',
+  )
+  await writeHubIndex(ctx, base, outDir, options, deployBase)
+  await writeConnectionMetas(ctx, base, outDir, resolveOutPath, rebaseValue)
 
   console.log(c.cyan`[devframes-hub] writing RPC dump to ${resolve(outDir, '__rpc-dump')}`)
   const dump = await collectStaticRpcDump(ctx.rpc.definitions.values(), ctx)
+  for (const file of Object.values(dump.files))
+    file.data = rebaseValue(file.data)
   await writeStaticRpcDump(dump, outDir, { pretty: options.pretty })
 
   const count = ctx.frames.length
   console.log(c.green`[devframes-hub] built ${count} devframe${count === 1
     ? ''
     : 's'} -> ${outDir}`)
+}
+
+/** File types that can carry absolute URLs. */
+const TEXT_ASSET_EXTENSIONS = new Set([
+  '.css',
+  '.html',
+  '.js',
+  '.json',
+  '.mjs',
+  '.svg',
+])
+
+/** Whether a root-absolute URL already sits under the deploy prefix. */
+function isUnderDeployBase(url: string, deployBase: string): boolean {
+  return deployBase === '/' || url === deployBase || url.startsWith(deployBase)
+}
+
+/**
+ * `url` without the deploy prefix, so a served URL maps onto its on-disk
+ * layout. The prefix moves URLs, not files.
+ */
+function stripDeployBase(url: string, deployBase: string): string {
+  return deployBase !== '/' && url.startsWith(deployBase)
+    ? `/${url.slice(deployBase.length)}`
+    : url
+}
+
+/** Prefix a root-absolute URL with the deploy base. Idempotent. */
+function serveUrl(url: string, deployBase: string): string {
+  if (!url.startsWith('/') || isUnderDeployBase(url, deployBase))
+    return url
+  return joinURL(deployBase, url)
+}
+
+/**
+ * Rewrite each URL prefix in a text asset, skipping occurrences that already
+ * carry the deploy prefix.
+ */
+function createTextRebaser(
+  rewrites: readonly (readonly [string, string])[],
+  deployBase: string,
+): (text: string) => string {
+  if (!rewrites.length || deployBase === '/')
+    return text => text
+  const prefixedBefore = deployBase.slice(0, -1)
+  return (text) => {
+    let result = text
+    for (const [from, to] of rewrites) {
+      result = result.replaceAll(from, (match: string, offset: number, whole: string) => {
+        const alreadyPrefixed = offset >= prefixedBefore.length
+          && whole.startsWith(prefixedBefore, offset - prefixedBefore.length)
+        return alreadyPrefixed ? match : to
+      })
+    }
+    return result
+  }
+}
+
+/** Rebase strings in an RPC payload that start with a registered URL prefix. */
+function createUrlValueRebaser(
+  rewrites: readonly (readonly [string, string])[],
+): <T>(value: T) => T {
+  const rebaseString = (value: string): string => {
+    for (const [from, to] of rewrites) {
+      if (value === from.slice(0, -1))
+        return to.slice(0, -1)
+      if (value.startsWith(from))
+        return `${to}${value.slice(from.length)}`
+    }
+    return value
+  }
+  const visit = <T>(value: T): T => {
+    if (typeof value === 'string')
+      return rebaseString(value) as T
+    if (Array.isArray(value))
+      return value.map(item => visit(item)) as T
+    if (value && typeof value === 'object') {
+      const prototype = Object.getPrototypeOf(value)
+      if (prototype !== Object.prototype && prototype !== null)
+        return value
+      return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          visit(item),
+        ]),
+      ) as T
+    }
+    return value
+  }
+  return visit
+}
+
+/** Rewrite the text assets under a copied static dir in place. */
+async function rebaseTextAssets(dir: string, rebase: (text: string) => string): Promise<void> {
+  const entries = await fs.readdir(dir, { recursive: true, withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isFile() || !TEXT_ASSET_EXTENSIONS.has(extname(entry.name)))
+      continue
+    const filepath = resolve(entry.parentPath, entry.name)
+    const text = await fs.readFile(filepath, 'utf-8')
+    const next = rebase(text)
+    if (next !== text)
+      await fs.writeFile(filepath, next, 'utf-8')
+  }
 }
 
 /**
@@ -194,6 +339,7 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
   const devframes = await resolveDevframesInput(options.devframes ?? [])
   for (const input of options.services ?? [])
     void ctx.services.install(input)
+  ctx.tracing._applyOptions(options.tracing)
   const setups = await mountDevframes(ctx, devframes, base)
 
   await ctx.services.ready()
@@ -213,7 +359,11 @@ async function createAndMountContext(options: BuildHubOptions, base: string, cwd
  * remote source (e.g. a plugin's `--assets` package) resolves to the same
  * locally-installed copy it would serve live.
  */
-async function copyBuildStatics(ctx: DevframeHubContext, resolveOutPath: (urlBase: string) => string): Promise<void> {
+async function copyBuildStatics(
+  ctx: DevframeHubContext,
+  resolveOutPath: (urlBase: string) => string,
+  rebaseText?: (text: string) => string,
+): Promise<void> {
   const storageDir = ctx.host.getStorageDir('project')
   for (const { baseUrl, source, resolveFrom } of ctx.views.buildStaticDirs) {
     const target = resolveOutPath(baseUrl)
@@ -223,6 +373,8 @@ async function copyBuildStatics(ctx: DevframeHubContext, resolveOutPath: (urlBas
       await fs.cp(resolved, target, { recursive: true })
     else
       await resolved.materialize(target)
+    if (rebaseText)
+      await rebaseTextAssets(target, rebaseText)
   }
 }
 
@@ -278,12 +430,17 @@ async function writeHubIndex(
   base: string,
   outDir: string,
   options: BuildHubOptions,
+  deployBase: string,
 ): Promise<void> {
   await fs.writeFile(resolve(outDir, '__index.json'), `${JSON.stringify({
     name: options.name,
     version: options.version,
     base,
-    frames: ctx.frames.map(({ id, base, title }) => ({ id, base, title })),
+    frames: ctx.frames.map(({ id, base, title }) => ({
+      id,
+      base: serveUrl(base, deployBase),
+      title,
+    })),
     endpoints: {
       connection: DEVFRAME_CONNECTION_META_FILENAME,
       clientImports: DEVFRAME_DOCK_IMPORTS_FILENAME,
@@ -307,19 +464,20 @@ async function writeConnectionMetas(
   base: string,
   outDir: string,
   resolveOutPath: (urlBase: string) => string,
+  rebaseValue: <T>(value: T) => T,
 ): Promise<void> {
   const jsonSerializableMethods: string[] = []
   for (const def of ctx.rpc.definitions.values()) {
     if (def.jsonSerializable === true)
       jsonSerializableMethods.push(def.name)
   }
-  const meta: ConnectionMeta = {
+  const meta: ConnectionMeta = rebaseValue({
     backend: 'static',
     jsonSerializableMethods,
     ...(Object.keys(ctx.staticConfig).length > 0
       ? { configs: ctx.staticConfig }
       : {}),
-  }
+  } satisfies ConnectionMeta)
   await fs.writeFile(resolve(outDir, DEVFRAME_CONNECTION_META_FILENAME), JSON.stringify(meta, null, 2), 'utf-8')
   const frameMeta: ConnectionMeta = {
     ...meta,

@@ -5,7 +5,7 @@ import type { DevframeDockEntriesGrouped } from '../../state/dock-settings'
 import { useDraggable } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
 import { t } from '../../i18n'
-import { docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable } from '../../state/dock-settings'
+import { applyCustomOrderPatch, docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable, resolveCustomOrderPatch } from '../../state/dock-settings'
 import { useSettings } from '../../state/settings-defaults'
 import HashBadge from '../display/HashBadge.vue'
 import DockIcon from '../dock/DockIcon.vue'
@@ -104,16 +104,11 @@ function isInteractiveElement(el: HTMLElement | null): boolean {
 }
 
 function applyOrder(container: string, items: DevframeDockEntry[]) {
-  const def = defaultItemsOfContainer(container).map(i => i.id)
-  const isDefault = items.length === def.length && items.every((item, i) => item.id === def[i])
-  settingsStore.mutate((state) => {
-    items.forEach((item, index) => {
-      if (isDefault)
-        delete state.docksCustomOrder[item.id]
-      else
-        state.docksCustomOrder[item.id] = index
-    })
-  })
+  const patch = resolveCustomOrderPatch(
+    items.map(i => i.id),
+    defaultItemsOfContainer(container).map(i => i.id),
+  )
+  settingsStore.mutate(state => applyCustomOrderPatch(state, patch))
 }
 
 useDraggable(sortContainerEl, {

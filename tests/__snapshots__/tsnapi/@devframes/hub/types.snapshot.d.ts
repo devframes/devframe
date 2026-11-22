@@ -84,6 +84,19 @@ export interface DevframeDockActivation {
   dockId: string;
   params?: Record<string, unknown>;
 }
+export interface DevframeDockContextMenuCommand {
+  type?: 'command';
+  command: string;
+  args?: readonly DevframeDockContextMenuArg[];
+  title?: string;
+  titleLocales?: DevframeTitleLocales;
+  icon?: DevframeDockEntryIcon;
+  when?: string;
+  checked?: boolean;
+}
+export interface DevframeDockContextMenuSeparator {
+  type: 'separator';
+}
 export interface DevframeDockEntryBase {
   id: string;
   title: string;
@@ -97,6 +110,7 @@ export interface DevframeDockEntryBase {
   badge?: string;
   badgeVariant?: DevframeDockBadgeVariant;
   groupId?: string;
+  contextMenu?: readonly DevframeDockContextMenuItem[];
 }
 export interface DevframeDockEntryRegistry {
   'iframe': DevframeViewIframe;
@@ -372,6 +386,8 @@ export interface RemoteDockOptions {
 // #region Types
 export type DevframeCommandEntry = DevframeServerCommandEntry | DevframeClientCommand;
 export type DevframeDockBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'danger';
+export type DevframeDockContextMenuArg = string | number | boolean | null;
+export type DevframeDockContextMenuItem = DevframeDockContextMenuCommand | DevframeDockContextMenuSeparator;
 export type DevframeDockEntriesGrouped = [category: string, entries: DevframeDockEntry[]][];
 export type DevframeDockEntry = DevframeDockUserEntry;
 export type DevframeDockEntryCategory = 'framework' | 'app' | 'ui' | 'data' | 'web' | 'performance' | 'advanced' | 'docs' | 'default' | '~builtin' | (string & {});
