@@ -5,6 +5,7 @@ import type { WhenContext } from 'devframe/utils/when'
 import type { ShallowRef } from 'vue'
 import { evaluateWhen } from 'devframe/utils/when'
 import { computed, markRaw, reactive, ref, watch } from 'vue'
+import { TOGGLE_PALETTE_COMMAND_ID } from '../constants'
 import { sharedStateToRef } from './docks'
 import { collectAllKeybindings, filterCommandsByWhen, findCommandDeep, normalizeKeyEvent } from './keybindings'
 import { localizeCommand } from './locale'
@@ -141,7 +142,33 @@ export async function createCommandsContext(
   return commandsContext
 }
 
-// --- Shortcut system ---
+// The key that opened the palette can keep repeating after focus moves out of Messages.
+const heldMessagesKey = new WeakMap<EventTarget, string>()
+
+// A release or a fresh press can reach either Messages or the viewer.
+function updateHeldMessagesKey(host: EventTarget, event: KeyboardEvent): boolean {
+  if (heldMessagesKey.get(host) !== (event.code || event.key))
+    return false
+  if (event.type === 'keydown' && event.repeat)
+    return true
+  heldMessagesKey.delete(host)
+  return false
+}
+
+export function handleMessagesPaletteShortcut(event: KeyboardEvent, commands: CommandsContext) {
+  const host = event.view?.parent
+  if (!event.isTrusted || !host)
+    return
+  if (updateHeldMessagesKey(host, event) || event.type !== 'keydown' || event.defaultPrevented || event.isComposing || event.repeat || event.target !== event.currentTarget)
+    return
+  const pressed = normalizeKeyEvent(event)
+  if (!commands.getKeybindings(TOGGLE_PALETTE_COMMAND_ID).some(binding => binding.key === pressed))
+    return
+
+  event.preventDefault()
+  heldMessagesKey.set(host, event.code || event.key)
+  commands.execute(TOGGLE_PALETTE_COMMAND_ID).catch(console.error)
+}
 
 function setupShortcutListener(
   getWhenContext: () => WhenContext,
@@ -150,6 +177,16 @@ function setupShortcutListener(
   execute: (id: string, ...args: any[]) => Promise<unknown>,
 ) {
   const handler = (e: KeyboardEvent) => {
+    const host = e.currentTarget
+    if (host && updateHeldMessagesKey(host, e)) {
+      e.preventDefault()
+      // The embedded dock visibility shortcut also listens on this window.
+      e.stopImmediatePropagation()
+      return
+    }
+    if (e.type === 'keyup')
+      return
+
     // Let the shortcut editor record keys without executing their commands.
     // composedPath reaches the input through shadow DOM; structural checks also
     // work for elements belonging to the popup window's realm.
@@ -184,12 +221,22 @@ function setupShortcutListener(
 
   // Attach to the host window. This covers embedded (shadow DOM) mode and the
   // host page while a popup is open.
-  window.addEventListener('keydown', handler, { capture: true })
-
-  watch(useDockPopupWindow(), (popup, prev) => {
-    if (prev)
-      prev.removeEventListener('keydown', handler, { capture: true })
+  function listen(host: Window) {
+    // Another document can receive both the release and the next press.
+    const onBlur = () => heldMessagesKey.delete(host)
+    host.addEventListener('blur', onBlur)
+    host.addEventListener('keydown', handler, true)
+    host.addEventListener('keyup', handler, true)
+    return () => {
+      onBlur()
+      host.removeEventListener('blur', onBlur)
+      host.removeEventListener('keydown', handler, true)
+      host.removeEventListener('keyup', handler, true)
+    }
+  }
+  listen(window)
+  watch(useDockPopupWindow(), (popup, _, onCleanup) => {
     if (popup)
-      popup.addEventListener('keydown', handler, { capture: true })
+      onCleanup(listen(popup))
   })
 }

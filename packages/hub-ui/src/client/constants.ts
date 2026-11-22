@@ -30,6 +30,8 @@ export const TERMINALS_DOCK_ID = 'devframes_plugin_terminals'
  */
 export const MESSAGES_DOCK_ID = 'devframes_plugin_messages'
 
+export const TOGGLE_PALETTE_COMMAND_ID = 'devframes:toggle-palette'
+
 export const BUILTIN_ENTRY_CLIENT_AUTH_NOTICE: DevframeViewBuiltin = Object.freeze({
   type: '~builtin',
   category: '~builtin',
