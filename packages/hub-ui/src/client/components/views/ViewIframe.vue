@@ -217,7 +217,7 @@ function openExternally() {
 // A click on a message or its heading leaves focus on the panel document's body.
 // Keep keystrokes on focused controls, such as the search field, inside the panel.
 const messagesBody = shallowRef<HTMLElement | null>(null)
-useEventListener(messagesBody, 'keydown', (event) => {
+useEventListener(messagesBody, ['keydown', 'keyup'], (event) => {
   handleMessagesPaletteShortcut(event, props.context.commands)
 })
 

@@ -145,17 +145,28 @@ export async function createCommandsContext(
 // The key that opened the palette can keep repeating after focus moves out of Messages.
 const heldMessagesKey = new WeakMap<EventTarget, string>()
 
+// A release or a fresh press can reach either Messages or the viewer.
+function updateHeldMessagesKey(host: EventTarget, event: KeyboardEvent): boolean {
+  if (heldMessagesKey.get(host) !== (event.code || event.key))
+    return false
+  if (event.type === 'keydown' && event.repeat)
+    return true
+  heldMessagesKey.delete(host)
+  return false
+}
+
 export function handleMessagesPaletteShortcut(event: KeyboardEvent, commands: CommandsContext) {
-  if (!event.isTrusted || event.defaultPrevented || event.isComposing || event.repeat || event.target !== event.currentTarget)
+  const host = event.view?.parent
+  if (!event.isTrusted || !host)
+    return
+  if (updateHeldMessagesKey(host, event) || event.type !== 'keydown' || event.defaultPrevented || event.isComposing || event.repeat || event.target !== event.currentTarget)
     return
   const pressed = normalizeKeyEvent(event)
   if (!commands.getKeybindings(TOGGLE_PALETTE_COMMAND_ID).some(binding => binding.key === pressed))
     return
 
   event.preventDefault()
-  const host = event.view?.parent
-  if (host)
-    heldMessagesKey.set(host, event.code || event.key)
+  heldMessagesKey.set(host, event.code || event.key)
   commands.execute(TOGGLE_PALETTE_COMMAND_ID).catch(console.error)
 }
 
@@ -167,14 +178,11 @@ function setupShortcutListener(
 ) {
   const handler = (e: KeyboardEvent) => {
     const host = e.currentTarget
-    if (host && heldMessagesKey.get(host) === (e.code || e.key)) {
-      if (e.type === 'keydown' && e.repeat) {
-        e.preventDefault()
-        e.stopPropagation()
-        return
-      }
-      // A fresh keydown also ends the gesture if the release went to another window.
-      heldMessagesKey.delete(host)
+    if (host && updateHeldMessagesKey(host, e)) {
+      e.preventDefault()
+      // The embedded dock visibility shortcut also listens on this window.
+      e.stopImmediatePropagation()
+      return
     }
     if (e.type === 'keyup')
       return
@@ -213,14 +221,22 @@ function setupShortcutListener(
 
   // Attach to the host window. This covers embedded (shadow DOM) mode and the
   // host page while a popup is open.
-  for (const type of ['keydown', 'keyup'] as const) {
-    window.addEventListener(type, handler, { capture: true })
-
-    watch(useDockPopupWindow(), (popup, prev) => {
-      if (prev)
-        prev.removeEventListener(type, handler, { capture: true })
-      if (popup)
-        popup.addEventListener(type, handler, { capture: true })
-    })
+  function listen(host: Window) {
+    // Another document can receive both the release and the next press.
+    const onBlur = () => heldMessagesKey.delete(host)
+    host.addEventListener('blur', onBlur)
+    host.addEventListener('keydown', handler, true)
+    host.addEventListener('keyup', handler, true)
+    return () => {
+      onBlur()
+      host.removeEventListener('blur', onBlur)
+      host.removeEventListener('keydown', handler, true)
+      host.removeEventListener('keyup', handler, true)
+    }
   }
+  listen(window)
+  watch(useDockPopupWindow(), (popup, _, onCleanup) => {
+    if (popup)
+      onCleanup(listen(popup))
+  })
 }
