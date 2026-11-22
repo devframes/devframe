@@ -118,8 +118,8 @@ export interface CreateDevServerOptions {
    */
   onPeerDisconnect?: (connection: DevframeRpcConnection, meta: DevframeNodeRpcSessionMeta) => void
   /**
-   * Called once the WS server is bound. Devframe stays headless
-   * otherwise, so wire this if you want a startup banner.
+   * Runs once the HTTP server is listening and the devframe is ready.
+   * Use this callback to print a startup banner.
    */
   onReady?: (info: { origin: string, port: number, app: H3 }) => void | Promise<void>
   /**
