@@ -7,7 +7,7 @@ import { t } from '../../i18n'
 import { applyCustomOrderPatch, deriveSidebarCapacity, docksSplitGroupsWithCapacity, getGroupMembersGrouped, resolveGroupMemberMove } from '../../state/dock-settings'
 import { getCurrentDockId } from '../../state/docks'
 import { dockTooltipContent, setDocksSidebarOverflowPanel, setFloatingTooltip, useDocksSidebarOverflowPanel } from '../../state/floating-tooltip'
-import { useSettings } from '../../state/settings-defaults'
+import { resolveDefaultDocksCustomOrder, useSettings } from '../../state/settings-defaults'
 import { accentVarStyle } from '../../utils/accent-color'
 import { openDockContextMenu } from './DockContextMenu'
 import DockGroupPopover from './DockGroupPopover.vue'
@@ -31,6 +31,9 @@ const DIVIDER_HEIGHT = 7 // 5 divider + 2 gap
 const RESERVED_HEIGHT = 53
 
 const settings = useSettings(props.context)
+// What a sub-category falls back to when the visitor has not reordered it: the
+// host seed over the declared order, not the declared order alone.
+const fallbackCustomOrder = resolveDefaultDocksCustomOrder(props.context.rpc.connectionMeta.configs)
 
 // Expanded: a wider rail with each member's title next to its icon. Row
 // heights stay the same, so the capacity math below holds in both modes.
@@ -123,7 +126,7 @@ const dragOverId = ref<string | null>(null)
 let dragStart: { id: string, y: number } | null = null
 
 function moveMember(fromId: string, toId: string): boolean {
-  const patch = resolveGroupMemberMove(props.context.docks.entries, props.group.id, settings.value, fromId, toId)
+  const patch = resolveGroupMemberMove(props.context.docks.entries, props.group.id, settings.value, fromId, toId, fallbackCustomOrder)
   if (!patch)
     return false
   props.context.docks.settings.mutate(state => applyCustomOrderPatch(state, patch))

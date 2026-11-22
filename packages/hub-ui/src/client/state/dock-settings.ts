@@ -213,6 +213,10 @@ export function getGroupMembers(
  * (a category, or one sub-category of a group). Each id maps to its new index.
  * When `ids` already matches `defaultIds`, each id maps to `undefined` instead,
  * which means "delete the custom order", so the default order applies again.
+ *
+ * `defaultIds` is the order the container falls back to, which includes the
+ * host seed (see `resolveDefaultDocksCustomOrder`), not the declared order
+ * alone.
  */
 export function resolveCustomOrderPatch(ids: readonly string[], defaultIds: readonly string[]): Record<string, number | undefined> {
   const isDefault = ids.length === defaultIds.length && ids.every((id, i) => id === defaultIds[i])
@@ -237,6 +241,11 @@ export function applyCustomOrderPatch(state: DevframeDocksUserSettings, patch: R
  * `docksCustomOrder` writes for it (see {@link resolveCustomOrderPatch}). Both
  * members must be in the same in-group sub-category, else this returns `null`.
  * Hidden members count too, so their saved order stays stable.
+ *
+ * `fallbackCustomOrder` is what the sub-category falls back to when the visitor
+ * has not reordered it (the host seed, `resolveDefaultDocksCustomOrder`). A
+ * move that lands on the declared order is still a move when the seed put the
+ * members elsewhere, so this must not default to the declared order.
  */
 export function resolveGroupMemberMove(
   entries: DevframeDockEntry[],
@@ -244,6 +253,7 @@ export function resolveGroupMemberMove(
   settings: Immutable<DevframeDocksUserSettings>,
   fromId: string,
   toId: string,
+  fallbackCustomOrder: Immutable<DevframeDocksUserSettings>['docksCustomOrder'] = {},
 ): Record<string, number | undefined> | null {
   if (fromId === toId)
     return null
@@ -257,7 +267,7 @@ export function resolveGroupMemberMove(
   if (toIndex === -1)
     return null
   ids.splice(toIndex, 0, ids.splice(ids.indexOf(fromId), 1)[0]!)
-  const defaultIds = getGroupMembersGrouped(entries, groupId, { ...settings, docksCustomOrder: {} }, { includeHidden: true })
+  const defaultIds = getGroupMembersGrouped(entries, groupId, { ...settings, docksCustomOrder: fallbackCustomOrder }, { includeHidden: true })
     .find(([category]) => category === subcategory)?.[1]
     .map(item => item.id) ?? []
   return resolveCustomOrderPatch(ids, defaultIds)

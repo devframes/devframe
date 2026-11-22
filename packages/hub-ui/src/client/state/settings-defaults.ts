@@ -76,6 +76,19 @@ export function resolveSettingsDefaults(configs: ConnectionMeta['configs'] | und
   return configs?.ui?.settingsDefaults ?? {}
 }
 
+/**
+ * The `docksCustomOrder` a container falls back to when the visitor has not
+ * reordered it: the host seed, or an empty map (the declared order) when the
+ * host seeds none.
+ *
+ * This is the baseline a reorder is compared against. Comparing against the
+ * declared order instead would read a move that lands there as "no change" and
+ * delete it, and the seed would put the dock straight back.
+ */
+export function resolveDefaultDocksCustomOrder(configs: ConnectionMeta['configs'] | undefined): Record<string, number> {
+  return resolveSettingsDefaults(configs).docksCustomOrder ?? {}
+}
+
 /** Drop `undefined` values so a partial seed never clobbers a lower layer. */
 function omitUndefined<T extends object>(value: T): Partial<T> {
   return Object.fromEntries(

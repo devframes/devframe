@@ -6,7 +6,7 @@ import { useDraggable } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
 import { t } from '../../i18n'
 import { applyCustomOrderPatch, docksGroupByCategories, getCategoryLabel, getGroupMembers, getGroupMembersGrouped, isCategoryHideable, resolveCustomOrderPatch } from '../../state/dock-settings'
-import { useSettings } from '../../state/settings-defaults'
+import { resolveDefaultDocksCustomOrder, useSettings } from '../../state/settings-defaults'
 import HashBadge from '../display/HashBadge.vue'
 import DockIcon from '../dock/DockIcon.vue'
 
@@ -16,6 +16,9 @@ const props = defineProps<{
 
 const settings = useSettings(props.context)
 const settingsStore = props.context.docks.settings
+// What a container's order falls back to when the visitor has not reordered
+// it. Seeded by the host, so "the default order" is not the declared order.
+const fallbackCustomOrder = resolveDefaultDocksCustomOrder(props.context.rpc.connectionMeta.configs)
 
 // Top-level rows are grouped by category with members collapsed under their
 // group button. A group's members are split by their in-group sub-category, and
@@ -64,14 +67,14 @@ function itemsOfContainer(container: string): DevframeDockEntry[] {
 }
 
 function defaultItemsOfContainer(container: string): DevframeDockEntry[] {
-  const noCustomOrder = { ...settings.value, docksCustomOrder: {} }
+  const fallback = { ...settings.value, docksCustomOrder: fallbackCustomOrder }
   if (container.startsWith('grp:')) {
     const { groupId, subcategory } = parseGroupContainer(container)
-    return getGroupMembersGrouped(props.context.docks.entries, groupId, noCustomOrder, { includeHidden: true })
+    return getGroupMembersGrouped(props.context.docks.entries, groupId, fallback, { includeHidden: true })
       .find(([cat]) => cat === subcategory)?.[1] ?? []
   }
   const category = container.slice(4)
-  return docksGroupByCategories(props.context.docks.entries, noCustomOrder, { includeHidden: true, collapseGroups: true })
+  return docksGroupByCategories(props.context.docks.entries, fallback, { includeHidden: true, collapseGroups: true })
     .find(([cat]) => cat === category)?.[1] ?? []
 }
 
