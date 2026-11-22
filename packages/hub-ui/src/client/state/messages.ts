@@ -1,11 +1,13 @@
-import type { DevframeMessageEntry, DevframeMessagesListDelta, DevframeRpcClientFunctions } from '@devframes/hub'
+import type { DevframeMessageEntry, DevframeMessagesListDelta } from '@devframes/hub'
 import type { DocksContext } from '@devframes/hub/client'
 import type { Reactive } from 'vue'
+import { HUB_EVENTS } from '@devframes/hub/constants'
 import { reactive } from 'vue'
-import { addToast, dismissToast } from './toasts'
+import { createToastStore } from './toasts'
 
 export interface MessagesState {
   entries: DevframeMessageEntry[]
+  toasts: ReturnType<typeof createToastStore>
   unreadCount: number
   pendingSelectId: string | null
 }
@@ -21,31 +23,45 @@ function shouldToast(entry: DevframeMessageEntry, prev: DevframeMessageEntry | u
   return JSON.stringify(entry) !== JSON.stringify(prev)
 }
 
-let _messagesState: Reactive<MessagesState> | undefined
+const states = new WeakMap<DocksContext['rpc'], Reactive<MessagesState>>()
 
-export function useMessages(context: DocksContext): Reactive<MessagesState> {
-  if (_messagesState)
-    return _messagesState
+export function useMessages({ rpc }: DocksContext): Reactive<MessagesState> {
+  const cached = states.get(rpc)
+  if (cached)
+    return cached
 
-  const state: Reactive<MessagesState> = _messagesState = reactive({
+  const state: Reactive<MessagesState> = reactive({
     entries: [],
+    toasts: createToastStore(),
     unreadCount: 0,
     pendingSelectId: null,
   })
 
+  states.set(rpc, state)
+
   const entryMap = new Map<string, DevframeMessageEntry>()
   let isInitialFetch = true
   let lastVersion: number | null = null
+  let lastInstanceId: string | null = null
 
   async function updateMessages() {
     // The feed is served by `@devframes/plugin-messages` (the hub itself ships
     // no list RPC). Cast because the plugin's RPC augmentation is not imported
     // here; hub-ui must not depend on the plugin package.
-    const result = await context.rpc.call(
+    const result = await rpc.call(
       'devframes:plugin:messages:list' as any,
       lastVersion,
+      lastInstanceId,
     ) as DevframeMessagesListDelta
     let newCount = 0
+
+    if (result.full && lastInstanceId != null && result.instanceId != null && lastInstanceId !== result.instanceId) {
+      for (const id of entryMap.keys())
+        state.toasts.dismiss(id)
+      entryMap.clear()
+      state.pendingSelectId = null
+      state.unreadCount = 0
+    }
 
     /** Preserve surviving entries so a full snapshot does not notify them again. */
     let removedIds = result.removedIds
@@ -57,7 +73,7 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
     }
     for (const id of removedIds) {
       entryMap.delete(id)
-      dismissToast(id)
+      state.toasts.dismiss(id)
     }
 
     // Apply new/updated entries. On initial fetch (page refresh) only entries
@@ -67,25 +83,30 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
       if (!prev)
         newCount++
       if (shouldToast(entry, prev, isInitialFetch))
-        addToast(entry)
+        state.toasts.add(entry)
       entryMap.set(entry.id, entry)
     }
 
     state.entries = Array.from(entryMap.values())
     state.unreadCount += newCount
     lastVersion = result.version
+    lastInstanceId = result.instanceId ?? null
     isInitialFetch = false
   }
 
   // A hub without `@devframes/plugin-messages` serves no list RPC, so degrade
   // to an empty feed instead of surfacing unhandled rejections.
-  const refresh = () => updateMessages().catch(() => {})
+  let queue = Promise.resolve()
+  const refresh = () => {
+    queue = queue.then(updateMessages).catch(() => {})
+    return queue
+  }
 
-  context.rpc.client.register({
-    name: 'devframe:messages:updated' satisfies keyof DevframeRpcClientFunctions,
+  rpc.client.register({
+    name: HUB_EVENTS.broadcast.messagesUpdated,
     type: 'action',
     handler: () => {
-      if (context.rpc.isTrusted)
+      if (rpc.isTrusted)
         refresh()
     },
   })
@@ -93,11 +114,6 @@ export function useMessages(context: DocksContext): Reactive<MessagesState> {
   // Background initialization waits for trust without a deadline. A page can
   // stay untrusted while the user authorizes DevTools, and the default 60s
   // deadline would only surface an unhandled rejection in the app.
-  context.rpc.ensureTrusted(0).then(() => refresh())
+  rpc.ensureTrusted(0).then(() => refresh())
   return state
-}
-
-export function selectMessage(id: string): void {
-  if (_messagesState)
-    _messagesState.pendingSelectId = id
 }

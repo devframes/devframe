@@ -2,50 +2,43 @@ import type { DevframeMessageEntry } from '@devframes/hub'
 import type { Reactive } from 'vue'
 import { reactive } from 'vue'
 
-export interface ToastItem {
+interface ToastItem {
   id: string
   entry: DevframeMessageEntry
 }
 
-const toasts: Reactive<ToastItem[]> = reactive([])
-const timers = new Map<string, ReturnType<typeof setTimeout>>()
+export function createToastStore() {
+  const items: Reactive<ToastItem[]> = reactive([])
+  const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
-export function useToasts(): Reactive<ToastItem[]> {
-  return toasts
-}
-
-export function addToast(entry: DevframeMessageEntry): void {
-  // Dedupe: update existing toast with same id
-  const existing = toasts.find(t => t.id === entry.id)
-  if (existing) {
-    existing.entry = entry
-    // Reset auto-dismiss timer
-    const timer = timers.get(entry.id)
-    if (timer) {
+  function cancelTimer(id: string): void {
+    const timer = timers.get(id)
+    if (timer !== undefined) {
       clearTimeout(timer)
-      timers.delete(entry.id)
+      timers.delete(id)
+    }
+  }
+
+  function dismiss(id: string): void {
+    const index = items.findIndex(toast => toast.id === id)
+    if (index !== -1)
+      items.splice(index, 1)
+    cancelTimer(id)
+  }
+
+  function add(entry: DevframeMessageEntry): void {
+    const existing = items.find(toast => toast.id === entry.id)
+    if (existing) {
+      existing.entry = entry
+      cancelTimer(entry.id)
+    }
+    else {
+      items.push({ id: entry.id, entry })
     }
     const timeout = entry.autoDismiss ?? 5000
     if (timeout !== false)
-      timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
-    return
+      timers.set(entry.id, setTimeout(dismiss, timeout, entry.id))
   }
 
-  const item: ToastItem = { id: entry.id, entry }
-  toasts.push(item)
-
-  const timeout = entry.autoDismiss ?? 5000
-  if (timeout !== false)
-    timers.set(entry.id, setTimeout(dismissToast, timeout, entry.id))
-}
-
-export function dismissToast(id: string): void {
-  const idx = toasts.findIndex(t => t.id === id)
-  if (idx !== -1)
-    toasts.splice(idx, 1)
-  const timer = timers.get(id)
-  if (timer) {
-    clearTimeout(timer)
-    timers.delete(id)
-  }
+  return { items, add, dismiss }
 }

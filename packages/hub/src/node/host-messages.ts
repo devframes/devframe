@@ -24,6 +24,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
   readonly removals: Array<{ id: string, time: number }> = []
 
   private _autoDeleteTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private readonly _instanceId = nanoid()
   private _clock = 0
   /**
    * The tick of the newest removal record dropped from the capped
@@ -159,16 +160,16 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
     this.events.emit(HUB_EVENTS.bus.messagesCleared)
   }
 
-  listSince(since?: number | null): DevframeMessagesListDelta {
+  listSince(since?: number | null, instanceId?: string | null): DevframeMessagesListDelta {
     const version = this._clock
-    // Fall back to a full snapshot when there is no cursor, when the cursor
-    // predates removal records already trimmed from the capped log, or when
-    // it comes from another host incarnation (ahead of our clock).
-    if (since == null || since < this._removalsTrimmedAt || since > version) {
+    // A numeric cursor alone cannot identify the instance that issued it.
+    // Legacy readers receive full snapshots until they return the instance ID.
+    if (instanceId !== this._instanceId || since == null || since < this._removalsTrimmedAt || since > version) {
       return {
         entries: Array.from(this.entries.values()),
         removedIds: [],
         version,
+        instanceId: this._instanceId,
         full: true,
       }
     }
@@ -188,6 +189,7 @@ export class DevframeMessagesHost implements DevframeMessagesHostType {
       entries,
       removedIds,
       version,
+      instanceId: this._instanceId,
       full: false,
     }
   }
