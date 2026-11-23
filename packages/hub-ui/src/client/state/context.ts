@@ -19,6 +19,7 @@ import { localizeTitle } from './locale'
 import { createClientMessagesClient } from './messages-client'
 import { dockCommandId } from './palette'
 import { registerMainFrameDockActionHandler, triggerMainFrameDockAction, useIsDockPopupOpen } from './popup'
+import { resolveSettingsDefaults, resolveUserSettings } from './settings-defaults'
 import { clientScriptOf, executeSetupScript } from './setup-script'
 
 const docksContextByRpc = new WeakMap<DevframeRpcClient, DocksContext>()
@@ -217,10 +218,14 @@ export async function createDocksContext(
   // Get settings store ahead of `switchEntry`, whose group→member resolution
   // needs `getWhenContext` to honor a `defaultChildId` target's `when` clause.
   const settingsStore = markRaw(await getSettingsStore())
-  // Raw, not `useSettings`: the context this would key off doesn't exist yet,
-  // and the only consumers are the `dock-settings.ts` helpers below, which
-  // resolve hub-ui's own defaults themselves.
-  const settings = sharedStateToRef(settingsStore)
+  // Resolved, not raw: the dock grouping below and the `dock-settings.ts`
+  // helpers read a settings object directly, so the host's published defaults
+  // (`createUi({ settingsDefaults })`) and hub-ui's fallbacks are merged in
+  // first. Writes keep going to `settingsStore`, never to this view.
+  // `sharedStateToRef` registers a listener per call, so it stays outside.
+  const storedSettings = sharedStateToRef(settingsStore)
+  const settingsDefaults = resolveSettingsDefaults(rpc.connectionMeta.configs)
+  const settings = computed(() => resolveUserSettings(storedSettings.value, settingsDefaults))
 
   // Shared when-context provider, used by both commands and docks
   let commandsContext: CommandsContext

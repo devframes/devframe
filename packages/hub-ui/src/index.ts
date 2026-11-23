@@ -1,6 +1,6 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
 import type { HubUiLocale } from './locales'
-import type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
+import type { DevframeBranding, DevframeDockPreferences, DocksUserSettingsDefaults, EmbeddedVisibility } from './types'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,6 +15,15 @@ declare module 'devframe/types' {
       branding?: DevframeBranding
       embeddedVisibility?: EmbeddedVisibility
       dockPreferences?: DevframeDockPreferences
+      /**
+       * User settings the reference UI resolves *below* the visitor's own
+       * stored value: `createUi({ settingsDefaults })` publishes the project's
+       * idea of the panel defaults (a disabled shortcut, a different
+       * recent-dock limit, the default order of the dock bar), which a choice
+       * in Settings then overrides. Absent fields fall back to the UI's
+       * built-in defaults.
+       */
+      settingsDefaults?: DocksUserSettingsDefaults
       /**
        * The hub UI language. `createUi({ locale })` publishes the host's
        * default; the running hub UI then overwrites it with the language it
@@ -77,6 +86,18 @@ export interface CreateUiOptions {
    */
   dockPreferences?: DevframeDockPreferences
   /**
+   * Seed the user settings the reference UI resolves below the visitor's own
+   * stored value. Use it for defaults that belong to the project rather than
+   * the person: leaving `Mod+K` unbound
+   * (`{ commandShortcuts: { 'devframes:toggle-palette': [] } }`), ordering the
+   * dock bar, or a different recent-dock limit.
+   *
+   * Published as `ConnectionMeta.configs.ui.settingsDefaults`. Settings the
+   * visitor changed themselves win, and a reset in Settings returns to these
+   * defaults rather than to the built-in ones.
+   */
+  settingsDefaults?: DocksUserSettingsDefaults
+  /**
    * Default UI language, one of {@link HUB_UI_LOCALES}. Published as
    * `ConnectionMeta.configs.ui.locale` and, like the dock mode, only a
    * seed: a visitor's own pick in Settings → Appearance wins. Without it
@@ -132,6 +153,9 @@ export function createUi(options: CreateUiOptions = {}): DevframeHubUi {
           : {}),
         ...(options.dockPreferences
           ? { dockPreferences: options.dockPreferences }
+          : {}),
+        ...(options.settingsDefaults
+          ? { settingsDefaults: options.settingsDefaults }
           : {}),
         ...(options.locale
           ? { locale: options.locale }

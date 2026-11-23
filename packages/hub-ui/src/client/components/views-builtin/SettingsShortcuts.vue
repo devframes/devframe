@@ -6,7 +6,7 @@ import DisplayKbd from '@antfu/design/components/Display/DisplayKbd.vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { t } from '../../i18n'
 import { filterCommandsByWhen, findCommandDeep, findKeybindingConflict, formatKeybinding, getShortcutRows, isKeybindingOverrideDifferentFromDefault, isMac, KNOWN_BROWSER_SHORTCUTS } from '../../state/keybindings'
-import { useSettings } from '../../state/settings-defaults'
+import { resolveSettingsDefaults, useSettings } from '../../state/settings-defaults'
 import DockIcon from '../dock/DockIcon.vue'
 
 const props = defineProps<{
@@ -67,7 +67,16 @@ function isOverridden(id: string): boolean {
   return isKeybindingOverrideDifferentFromDefault(shortcutOverrides.value[id], getDefaultKeybindings(id))
 }
 
+/**
+ * What a reset returns to: the host's published default for this command
+ * (`createUi({ settingsDefaults })`), else the command's own binding. Comparing
+ * against it rather than against the declared binding keeps a seeded shortcut
+ * from reading as "overridden", and makes the clear button put the seed back.
+ */
 function getDefaultKeybindings(id: string): DevframeCommandKeybinding[] {
+  const seeded = resolveSettingsDefaults(props.context.rpc.connectionMeta.configs).commandShortcuts?.[id]
+  if (seeded !== undefined)
+    return seeded
   return findCommandDeep(commandsCtx.commands, id)?.keybindings ?? []
 }
 

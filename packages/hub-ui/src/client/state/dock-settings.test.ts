@@ -443,12 +443,12 @@ describe('resolveGroupMemberMove', () => {
     iframe('x', { groupId: 'g', category: 'other' }),
   ]
 
-  function move(fromId: string, toId: string, docksCustomOrder: Record<string, number> = {}) {
+  function move(fromId: string, toId: string, docksCustomOrder: Record<string, number> = {}, fallbackCustomOrder: Record<string, number> = {}) {
     const settings = {
       ...DEFAULT_STATE_USER_SETTINGS(),
       docksCustomOrder,
     }
-    const patch = resolveGroupMemberMove(entries, 'g', settings, fromId, toId)
+    const patch = resolveGroupMemberMove(entries, 'g', settings, fromId, toId, fallbackCustomOrder)
     if (patch)
       applyCustomOrderPatch(settings, patch)
     const order = getGroupMembersGrouped(entries, 'g', settings).find(([category]) => category === 'default')![1]
@@ -470,6 +470,16 @@ describe('resolveGroupMemberMove', () => {
     const { patch, order } = move('a', 'b', { b: 0, a: 1, c: 2 })
     expect(order).toEqual(['a', 'b', 'c'])
     expect(patch).toEqual({ a: undefined, b: undefined, c: undefined })
+  })
+
+  it('writes a move off the seeded order even when it matches the declared order', () => {
+    // The host seeds b,a,c. Moving b back under a lands on the declared order,
+    // but it is still the visitor's choice, so it has to be written down:
+    // deleting it would let the seed put b first again.
+    const seeded = { b: 0, a: 1, c: 2 }
+    const { patch, order } = move('b', 'a', seeded, seeded)
+    expect(order).toEqual(['a', 'b', 'c'])
+    expect(patch).toEqual({ a: 0, b: 1, c: 2 })
   })
 
   it('counts hidden members so their place stays stable', () => {

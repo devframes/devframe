@@ -1,50 +1,11 @@
 import type { DevframeViewLauncher } from '@devframes/hub/types'
+// Applies src/types.ts, which owns the published `createUi()` config types and
+// registers hub-ui's own settings fields on `DevframeDocksUserSettings`.
+import '../types'
 // Registers the json-render `'json-render'` dock entry on the hub's open dock
 // union via declaration merging. Must be a value import (TS rejects a type-only
 // side-effect import), but is fully erased since nothing in dist references it.
 import '@devframes/json-render/hub'
-
-/**
- * hub-ui's own reference-UI settings, merged onto the hub's generic
- * {@link DevframeDocksUserSettings}; the hub core stays unaware of them.
- * Every field is optional so the hub's `DEFAULT_STATE_USER_SETTINGS()` (which
- * knows nothing about them) stays assignable; what an absent value means lives
- * in one place, `HUB_UI_SETTINGS_DEFAULTS` (`state/settings-defaults.ts`),
- * merged in once by `useSettings()` so readers see resolved values rather than
- * repeating a per-call-site fallback.
- */
-declare module '@devframes/hub/types' {
-  interface DevframeDocksUserSettings {
-    /** Show the address-bar chrome on iframe dock views. */
-    showIframeAddressBar?: boolean
-    /** Close the floating dock panel when clicking outside it. */
-    closeOnOutsideClick?: boolean
-    /**
-     * Auto-collapse the edge-mode toolbar to a small handle when idle (no
-     * hover or drag) and the panel content is closed, instead of permanently
-     * spanning the full edge.
-     */
-    autoCollapseEdgeToolbar?: boolean
-    /**
-     * Reveal the Devframe Inspector dock (the "devtools for the devtools"
-     * meta-introspection panel) on the dock bar. Users opt in from
-     * Settings → Advanced.
-     */
-    showDevframeInspector?: boolean
-    /**
-     * How many recently opened docks the float bar keeps in their own slots
-     * after its visible items. Only docks opened from beyond the bar (the
-     * overflow popover or a group popover) take a slot. `0` turns the slots
-     * off.
-     */
-    docksRecentLimit?: number
-    /**
-     * Widen the group sidebar so each member shows its title next to its
-     * icon, instead of an icon-only rail with hover tooltips.
-     */
-    expandGroupSidebar?: boolean
-  }
-}
 
 /**
  * A selectable launch root offered by a launcher dock entry.
