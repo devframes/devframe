@@ -3,6 +3,7 @@ import type { DocksContext } from '@devframes/hub/client'
 import type { ConnectionMeta } from 'devframe/types'
 import type { Immutable } from 'devframe/utils/shared-state'
 import type { ComputedRef } from 'vue'
+import type { DocksUserSettingsDefaults } from '../../types'
 import { computed } from 'vue'
 import { sharedStateToRef } from './docks'
 // Registers hub-ui's own settings fields onto DevframeDocksUserSettings.
@@ -46,25 +47,6 @@ const HUB_UI_SETTINGS_DEFAULTS: Required<HubUiSettings> = Object.freeze({
   /** The group sidebar stays an icon-only rail. */
   expandGroupSidebar: false,
 })
-
-/**
- * The user-settings seed a host publishes through
- * `createUi({ settingsDefaults })` → `ConnectionMeta.configs.ui.settingsDefaults`.
- *
- * Every field is optional: a seed names only what the project wants to differ
- * from the built-in defaults, and whatever it leaves out keeps falling back.
- *
- * The three list fields (`docksHidden`, `docksCategoriesHidden`, `docksPinned`)
- * are left out on purpose. The stored list is always present, so a seeded list
- * would only win by overriding the visitor's forever, and a developer could
- * hide an entry the project seeded while never unhiding one. Records
- * (`commandShortcuts`, `docksCustomOrder`) merge per key instead, so a seeded
- * entry and a stored entry coexist and the stored one wins where they collide.
- */
-export type DocksUserSettingsDefaults = Omit<
-  Partial<DevframeDocksUserSettings>,
-  'docksHidden' | 'docksCategoriesHidden' | 'docksPinned'
->
 
 /**
  * Read the host-published settings defaults off the connection meta.

@@ -1,7 +1,6 @@
 import type { DevframeHubUi } from '@devframes/hub/initiate'
-import type { DocksUserSettingsDefaults } from './client/state/settings-defaults'
 import type { HubUiLocale } from './locales'
-import type { DevframeBranding, DevframeDockPreferences, EmbeddedVisibility } from './types'
+import type { DevframeBranding, DevframeDockPreferences, DocksUserSettingsDefaults, EmbeddedVisibility } from './types'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
