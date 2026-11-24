@@ -187,7 +187,7 @@ export interface DevframeScopedNodeRpc<NS extends string = string> {
    * namespace; pass a fully-qualified key (containing `:`) to opt out.
    */
   sharedState: {
-    <T extends keyof ScopedSharedStates<NS> & string>(key: T, options?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>
+    <T extends keyof ScopedSharedStates<NS>>(key: T & string, options?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>
     <T extends Record<string, any> = Record<string, any>>(key: string, options?: RpcSharedStateGetOptions<T>): Promise<SharedState<T>>
   }
 

@@ -65,7 +65,7 @@ export interface DevframeScopedClientRpc<NS extends string = string> {
 
   /** Resolve a namespaced shared state. Bare keys resolve within this namespace. */
   sharedState: {
-    <T extends keyof ScopedSharedStates<NS> & string>(key: T, options?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>
+    <T extends keyof ScopedSharedStates<NS>>(key: T & string, options?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>
     <T extends Record<string, any> = Record<string, any>>(key: string, options?: RpcSharedStateGetOptions<T>): Promise<SharedState<T>>
   }
 
