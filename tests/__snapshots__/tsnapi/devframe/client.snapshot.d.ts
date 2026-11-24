@@ -92,7 +92,7 @@ export interface DevframeScopedClientRpc<NS extends string = string> {
     (_: string, ..._: any[]): Promise<any>;
   };
   sharedState: {
-    <T extends keyof ScopedSharedStates<NS>>(_: T, _?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>;
+    <T extends keyof ScopedSharedStates<NS>>(_: T & string, _?: RpcSharedStateGetOptions<ScopedSharedStates<NS>[T]>): Promise<SharedState<ScopedSharedStates<NS>[T]>>;
     <T extends Record<string, any> = Record<string, any>>(_: string, _?: RpcSharedStateGetOptions<T>): Promise<SharedState<T>>;
   };
   streaming: DevframeScopedClientStreamingHost;
