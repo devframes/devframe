@@ -3,6 +3,10 @@
  * page. Class names are prefixed anyway so the generated stylesheet reads
  * clearly next to the utilities.
  */
+:host {
+  --uno: fixed bottom-0 left-0 z-floating-anchor;
+}
+
 .devframes-onboard-root:hover .devframes-onboard-glow {
   --uno: opacity-60;
 }
