@@ -35,6 +35,7 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
   private readonly failedDetaches = new Set<() => void>()
   private readonly unsubscribeLocal: () => void
   private disposed = false
+  private closedChannelsReady?: Promise<void>
   /** Channel name → the source that owns it. Attached sources win over the local one. */
   private owners = new Map<string, DevframeTracingSource>()
   private readonly sinks = new Map<string, StreamSink<DevframeTraceRecord>>()
@@ -74,12 +75,32 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
     for (const sink of this.sinks.values())
       sink.close()
     this.sinks.clear()
+    if (!this.closedChannelsReady) {
+      // A borrowing hub can still clear history or declare channels. Mirror only those changes.
+      const unsubscribe = this.local.subscribe((event) => {
+        if (event.type === 'channels')
+          void this.publishClosedChannels()
+      })
+      this.closedChannelsReady = this.publishClosedChannels().catch((error) => {
+        unsubscribe()
+        this.closedChannelsReady = undefined
+        throw error
+      })
+    }
     // Each source owns its recorder. Unsubscribe without stopping it.
     const detaches = [
       ...this.sources.values(),
       ...this.failedDetaches,
     ]
-    await Promise.all(detaches.map(async detach => detach()))
+    await Promise.all([
+      this.closedChannelsReady,
+      ...detaches.map(async detach => detach()),
+    ])
+  }
+
+  private async publishClosedChannels(): Promise<void> {
+    const state = await this.state
+    state.mutate(() => Object.fromEntries(this.local.list().map(info => [info.name, info])))
   }
 
   _applyOptions(options: DevframeTracingOptions | undefined): void {

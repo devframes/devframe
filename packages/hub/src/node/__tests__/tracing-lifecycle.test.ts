@@ -119,3 +119,33 @@ it('keeps tracing on a caller-supplied hub context through close and failed setu
   }
   expect(channel.hasSubscribers).toBe(false)
 })
+
+it('publishes stopped channels to a borrowing hub when the owner closes first', async () => {
+  const owner = initHub(options)
+  const context = await owner.context
+  const borrower = initHub({ ...options, context })
+  const name = 'test:owner-closes-first'
+  try {
+    const { rpc } = await borrower.context
+    const readChannels = () => rpc.invokeLocal('devframe:rpc:server-state:get', DEVFRAME_EVENTS.sharedState.tracingChannels)
+    const channel = context.tracing.register(name)
+    context.tracing.record(name)
+    channel.traceSync(() => 1)
+    expect((await readChannels())[name]).toMatchObject({
+      recording: true,
+      streamId: expect.any(String),
+    })
+
+    await owner.close()
+    const stopped = (await readChannels())[name]
+    expect(stopped).toMatchObject({ recording: false, count: 1 })
+    expect(stopped.streamId).toBeUndefined()
+
+    await rpc.invokeLocal('devframe:tracing:clear', name)
+    expect((await readChannels())[name].count).toBe(0)
+  }
+  finally {
+    await borrower.close()
+    await owner.close()
+  }
+})
