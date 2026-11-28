@@ -16,6 +16,10 @@ export interface FilterOptions {
   excludeUnderscoreProps?: boolean;
   excludeDollarProps?: boolean;
 }
+export interface LegacyQueriesReport {
+  records: SavedQuery[];
+  total: number;
+}
 export interface NormalizeOptions {
   maxDepth?: number;
   maxEntries?: number;
@@ -79,6 +83,7 @@ export interface WriteApplyOptions {
 // #endregion
 
 // #region Types
+export type LegacyQueriesMode = 'claim' | 'discard';
 export type NodePath = PathSegment[];
 export type PathSegment = ['k', string] | ['i', number] | ['s', number] | ['mk', number] | ['mv', number];
 export type QueryOutcome = {

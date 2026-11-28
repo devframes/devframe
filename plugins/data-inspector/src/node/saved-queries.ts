@@ -103,6 +103,21 @@ export function saveQuery(ctx: DevframeNodeContext, input: SaveQueryInput): Save
   return { ...record, scope: input.scope }
 }
 
+/**
+ * Write records straight into the current project store, keeping their ids.
+ *
+ * Unlike {@link saveQuery}, this skips the cross-scope move: an imported
+ * record whose id matches a workspace-scoped query must not delete the team's
+ * copy. The one-time legacy import in `legacy-queries.ts` is the only caller.
+ */
+export function importSavedQueries(ctx: DevframeNodeContext, records: readonly Omit<SavedQuery, 'scope'>[]): void {
+  const project = storesFor(ctx).project
+  project.mutate((draft) => {
+    for (const record of records)
+      draft.queries[record.id] = record
+  })
+}
+
 export function deleteSavedQuery(ctx: DevframeNodeContext, id: string, scope: SavedQueryScope): boolean {
   const byScope = storesFor(ctx)
   const exists = !!byScope[scope].value().queries[id]

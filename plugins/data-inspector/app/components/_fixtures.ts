@@ -58,10 +58,39 @@ export const sampleSaved: SavedQuery[] = [
     updatedAt: Date.now() - 1000 * 60 * 12,
   },
   {
+    id: 'legacy-slow-requests',
+    query: 'playground.requests.entries.mapEntries().value.[ms > 250]',
+    title: 'Slowest requests',
+    description: 'Requests that took over 250 ms.',
+    scope: 'project',
+    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 40,
+  },
+  {
     id: 'slow-requests',
     query: 'playground.requests.entries.mapEntries().value.[ms > 100]',
     title: 'Slow requests',
     scope: 'workspace',
     updatedAt: Date.now() - 1000 * 60 * 60 * 26,
+  },
+]
+
+/**
+ * Unclaimed records from the pre-scope-split machine-wide file. They are
+ * project-scoped by definition: the file never carried a project field.
+ */
+export const sampleLegacy: SavedQuery[] = [
+  {
+    id: 'legacy-vue-plugins',
+    query: 'build.plugins.[name ~= "vue"]',
+    title: 'Vue plugins',
+    scope: 'project',
+    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 60,
+  },
+  {
+    id: 'legacy-big-chunks',
+    query: 'playground.build.modules.[sizeKb > 200]',
+    title: 'Chunks over 200 kB',
+    scope: 'project',
+    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 12,
   },
 ]
