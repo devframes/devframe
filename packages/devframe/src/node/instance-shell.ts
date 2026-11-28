@@ -6,7 +6,7 @@ import type { H3, H3Event } from 'h3'
 import type { Buffer } from 'node:buffer'
 import type { IncomingMessage, Server as NodeHttpServer, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
-import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions } from '../types'
+import type { ConnectionMeta, DevframeNodeContext, DevframeNodeRpcSession, DevframeNodeRpcSessionMeta, DevframeRpcClientFunctions, DevframeRpcServerFunctions, DevframeTracingHost } from '../types'
 import type { DevframeSseOptions, DevframeWsOptions } from '../types/devframe'
 import type { DevframeAuthHandler } from './auth'
 import type { RpcFunctionsHostImpl } from './host-functions'
@@ -21,6 +21,7 @@ import { defineHandler, fromNodeHandler, H3 as H3App, toNodeHandler } from 'h3'
 import { DEVFRAME_SSE_ROUTE, DEVFRAME_WS_ROUTE } from '../constants'
 import { createInteractiveAuth } from '../recipes/interactive-auth'
 import { diagnostics } from './diagnostics'
+import { DevframeTracingHostImpl } from './host-tracing'
 import { getInternalContext } from './hub-internals/context'
 import { listenWithLoopbackTwin } from './listen'
 import { detectServerRuntime } from './runtime'
@@ -369,6 +370,8 @@ export interface InstanceShellApi {
   app: H3
   /** The public origin, once known (pinned, or derived from the first request). */
   origin: () => string | undefined
+  /** Release tracing for a context the instance created, even if setup fails. */
+  ownTracing: (tracing: DevframeTracingHost) => void
   /** The connection meta, once the transport has resolved. */
   connectionMeta: () => ConnectionMeta | undefined
 }
@@ -695,12 +698,17 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
   let started: StartedServer | undefined
   let transport: WsRpcTransport | undefined
   let dispose: (() => Promise<void>) | undefined
+  let ownedTracing: DevframeTracingHostImpl | undefined
   let ctx: TContext
 
   const api: InstanceShellApi = {
     base,
     app,
     origin: currentOrigin,
+    ownTracing(tracing) {
+      if (tracing instanceof DevframeTracingHostImpl)
+        ownedTracing = tracing
+    },
     connectionMeta: () => meta,
   }
 
@@ -931,7 +939,10 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     maybeRegister()
   }
 
-  const initPromise = init()
+  const initPromise = init().catch(async (error) => {
+    await ownedTracing?.dispose().catch(() => {})
+    throw error
+  })
   // Surface init failures through `ready`/`handler`, never as an unhandled
   // rejection from the eager kick-off.
   initPromise.catch(() => {})
@@ -1090,12 +1101,17 @@ export function createInstanceShell<TContext extends DevframeNodeContext>(
     attach,
     async close() {
       await initPromise.catch(() => {})
-      await registerPromise?.catch(() => {})
-      registration?.unregister()
-      await dispose?.()
-      await ssePromise?.then(live => live.close()).catch(() => {})
-      await started?.close()
-      await transportPromise?.then(live => live.close()).catch(() => {})
+      try {
+        await ownedTracing?.dispose()
+      }
+      finally {
+        await registerPromise?.catch(() => {})
+        registration?.unregister()
+        await dispose?.()
+        await ssePromise?.then(live => live.close()).catch(() => {})
+        await started?.close()
+        await transportPromise?.then(live => live.close()).catch(() => {})
+      }
     },
     internals: {
       get started() {

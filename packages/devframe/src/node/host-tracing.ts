@@ -31,7 +31,11 @@ const BUILTIN_CHANNELS: Record<string, string> = {
  */
 export class DevframeTracingHostImpl implements DevframeTracingHost {
   private readonly local: TracingRecorder
-  private readonly sources: DevframeTracingSource[] = []
+  private readonly sources = new Map<DevframeTracingSource, () => void>()
+  private readonly failedDetaches = new Set<() => void>()
+  private readonly unsubscribeLocal: () => void
+  private disposed = false
+  private closedChannelsReady?: Promise<void>
   /** Channel name → the source that owns it. Attached sources win over the local one. */
   private owners = new Map<string, DevframeTracingSource>()
   private readonly sinks = new Map<string, StreamSink<DevframeTraceRecord>>()
@@ -55,9 +59,48 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
     )
     for (const [name, description] of Object.entries(BUILTIN_CHANNELS))
       this.local.add(name, 'builtin', description)
-    this.local.subscribe(event => this.onSourceEvent(this.local, event))
+    this.unsubscribeLocal = this.local.subscribe(event => this.onSourceEvent(this.local, event))
     this.refresh()
     this.registerRpc()
+  }
+
+  async dispose(): Promise<void> {
+    this.disposed = true
+    clearTimeout(this.countTimer)
+    this.unsubscribeLocal()
+    this.listeners.clear()
+    this.owners.clear()
+    for (const { name } of this.local.list())
+      this.local.stop(name)
+    for (const sink of this.sinks.values())
+      sink.close()
+    this.sinks.clear()
+    if (!this.closedChannelsReady) {
+      // A borrowing hub can still clear history or declare channels. Mirror only those changes.
+      const unsubscribe = this.local.subscribe((event) => {
+        if (event.type === 'channels')
+          void this.publishClosedChannels()
+      })
+      this.closedChannelsReady = this.publishClosedChannels().catch((error) => {
+        unsubscribe()
+        this.closedChannelsReady = undefined
+        throw error
+      })
+    }
+    // Each source owns its recorder. Unsubscribe without stopping it.
+    const detaches = [
+      ...this.sources.values(),
+      ...this.failedDetaches,
+    ]
+    await Promise.all([
+      this.closedChannelsReady,
+      ...detaches.map(async detach => detach()),
+    ])
+  }
+
+  private async publishClosedChannels(): Promise<void> {
+    const state = await this.state
+    state.mutate(() => Object.fromEntries(this.local.list().map(info => [info.name, info])))
   }
 
   _applyOptions(options: DevframeTracingOptions | undefined): void {
@@ -77,7 +120,8 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
    * the call does nothing, and devframe never records its channel itself.
    */
   record(name: string): void {
-    this.ownerOf(name).record?.(name)
+    if (!this.disposed)
+      this.ownerOf(name).record?.(name)
   }
 
   stop(name: string): void {
@@ -93,6 +137,8 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
   }
 
   onRecord(name: string, fn: (record: DevframeTraceRecord) => void): () => void {
+    if (this.disposed)
+      return () => {}
     if (!this.owners.has(name))
       this.local.add(name, 'adhoc')
     let set = this.listeners.get(name)
@@ -105,22 +151,33 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
   }
 
   attach(source: DevframeTracingSource): () => void {
-    if (this.sources.includes(source))
+    if (this.disposed || this.sources.has(source))
       return () => {}
-    this.sources.push(source)
-    const unsubscribe = source.subscribe(event => this.onSourceEvent(source, event))
-    this.refresh()
-    return () => {
-      const index = this.sources.indexOf(source)
-      if (index === -1)
+    let unsubscribe: (() => void) | undefined
+    const detach = () => {
+      if (this.sources.get(source) === detach)
+        this.sources.delete(source)
+      else if (!this.failedDetaches.delete(detach))
         return
-      this.sources.splice(index, 1)
-      unsubscribe()
-      this.refresh()
+      try {
+        unsubscribe?.()
+      }
+      catch (error) {
+        this.failedDetaches.add(detach)
+        throw error
+      }
+      if (!this.disposed)
+        this.refresh()
     }
+    this.sources.set(source, detach)
+    unsubscribe = source.subscribe(event => this.onSourceEvent(source, event))
+    this.refresh()
+    return detach
   }
 
   private onSourceEvent(source: DevframeTracingSource, event: DevframeTracingSourceEvent): void {
+    if (this.disposed)
+      return
     if (event.type === 'channels') {
       this.refresh()
       return
@@ -156,7 +213,10 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
   private collect(): { owners: Map<string, DevframeTracingSource>, infos: Map<string, DevframeTracingChannelInfo> } {
     const owners = new Map<string, DevframeTracingSource>()
     const infos = new Map<string, DevframeTracingChannelInfo>()
-    for (const source of [this.local, ...this.sources]) {
+    for (const source of [
+      this.local,
+      ...this.sources.keys(),
+    ]) {
       for (const info of source.list()) {
         owners.set(info.name, source)
         infos.set(info.name, info)
@@ -196,6 +256,8 @@ export class DevframeTracingHostImpl implements DevframeTracingHost {
 
   private async publish(infos: Map<string, DevframeTracingChannelInfo>): Promise<void> {
     const state = await this.state
+    if (this.disposed)
+      return
     const next: Record<string, DevframeTracingChannelInfo> = {}
     for (const [name, info] of infos)
       next[name] = { ...info, streamId: this.sinks.get(name)?.id }
