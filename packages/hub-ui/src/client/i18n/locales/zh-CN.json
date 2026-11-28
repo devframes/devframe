@@ -119,6 +119,9 @@
   "advanced.revokeHint": "取消此浏览器的授权并撤销其访问令牌；你需要使用新的验证码重新授权",
   "advanced.revokeAction": "撤销访问",
   "advanced.revokeConfirm": "撤销此浏览器对 {productName} 的访问权限？重新连接时需要使用新的验证码再次授权。",
+  "advanced.legacySettings": "\u8bbe\u7f6e\u73b0\u5728\u6309\u9879\u76ee\u5206\u5f00\u4fdd\u5b58",
+  "advanced.legacySettingsHint": "\u4ee5\u524d\u9879\u76ee\u548c\u5168\u5c40\u8bbe\u7f6e\u5171\u7528\u540c\u4e00\u4e2a\u6587\u4ef6\uff0c\u6240\u4ee5\u8fd9\u53f0\u673a\u5668\u4e0a\u7684\u6bcf\u4e2a\u9879\u76ee\u8bfb\u5230\u7684\u662f\u540c\u4e00\u4efd\u914d\u7f6e\u3002\u73b0\u5728\u5b83\u4eec\u5df2\u7ecf\u5206\u5f00\uff0c\u4f5c\u4e3a\u9879\u76ee\u8986\u76d6\u4fdd\u5b58\u7684\u503c\u53ea\u5bf9\u90a3\u4e2a\u9879\u76ee\u751f\u6548\uff0c\u5df2\u6709\u7684\u503c\u6309\u5168\u5c40\u8bbe\u7f6e\u8bfb\u53d6\u3002",
+  "advanced.legacySettingsDismiss": "\u77e5\u9053\u4e86",
 
   "auth.title": "授权 {productName}",
   "auth.intro": "{productName} 可以访问你的服务器、读取文件系统并运行命令。继续之前请确认是你本人。",

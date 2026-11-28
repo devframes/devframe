@@ -119,6 +119,9 @@
   "advanced.revokeHint": "Retire l'autorisation de ce navigateur et révoque son jeton d'accès ; vous devrez autoriser à nouveau avec un nouveau code",
   "advanced.revokeAction": "Révoquer l'accès",
   "advanced.revokeConfirm": "Révoquer l'accès de ce navigateur à {productName} ? Vous devrez autoriser à nouveau avec un nouveau code pour vous reconnecter.",
+  "advanced.legacySettings": "Les r\u00e9glages sont d\u00e9sormais enregistr\u00e9s par projet",
+  "advanced.legacySettingsHint": "Auparavant, les r\u00e9glages de projet et globaux partageaient un m\u00eame fichier, donc tous les projets de cette machine lisaient la m\u00eame configuration. Ils sont maintenant s\u00e9par\u00e9s, et une valeur enregistr\u00e9e comme surcharge de projet ne s'applique qu'\u00e0 ce projet. Les valeurs existantes sont lues comme globales.",
+  "advanced.legacySettingsDismiss": "Compris",
 
   "auth.title": "Autoriser {productName}",
   "auth.intro": "{productName} peut accéder à votre serveur, lire votre système de fichiers et exécuter des commandes. Confirmez que c'est bien vous avant de continuer.",

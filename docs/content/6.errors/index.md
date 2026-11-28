@@ -92,6 +92,7 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0084](/errors/DF0084) | error | Invalid MCP Resource Template |
 | [DF0085](/errors/DF0085) | error | Repeated MCP Prompt Name |
 | [DF0086](/errors/DF0086) | warn | Tracing Channels Unavailable |
+| [DF0087](/errors/DF0087) | warn | Settings Notice Marker Not Written |
 
 ## Hub: context & lifecycle (DF80xx)
 

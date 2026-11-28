@@ -119,6 +119,9 @@
   "advanced.revokeHint": "이 브라우저의 인증을 해제하고 액세스 토큰을 취소합니다. 새 코드로 다시 인증해야 합니다",
   "advanced.revokeAction": "액세스 취소",
   "advanced.revokeConfirm": "이 브라우저의 {productName} 액세스를 취소할까요? 다시 연결하려면 새 코드로 다시 인증해야 합니다.",
+  "advanced.legacySettings": "\uc124\uc815\uc740 \uc774\uc81c \ud504\ub85c\uc81d\ud2b8\ubcc4\ub85c \uc800\uc7a5\ub429\ub2c8\ub2e4",
+  "advanced.legacySettingsHint": "\uc774\uc804\uc5d0\ub294 \ud504\ub85c\uc81d\ud2b8 \uc124\uc815\uacfc \uc804\uc5ed \uc124\uc815\uc774 \uac19\uc740 \ud30c\uc77c\uc744 \uacf5\uc720\ud574\uc11c \uc774 \uba38\uc2e0\uc758 \ubaa8\ub4e0 \ud504\ub85c\uc81d\ud2b8\uac00 \uac19\uc740 \uad6c\uc131\uc744 \uc77d\uc5c8\uc2b5\ub2c8\ub2e4. \uc774\uc81c\ub294 \ubd84\ub9ac\ub418\uc5b4, \ud504\ub85c\uc81d\ud2b8 \uc7ac\uc815\uc758\ub85c \uc800\uc7a5\ud55c \uac12\uc740 \ud574\ub2f9 \ud504\ub85c\uc81d\ud2b8\uc5d0\ub9cc \uc801\uc6a9\ub429\ub2c8\ub2e4. \uae30\uc874 \uac12\uc740 \uc804\uc5ed \uc124\uc815\uc73c\ub85c \uc77d\ud799\ub2c8\ub2e4.",
+  "advanced.legacySettingsDismiss": "\ud655\uc778",
 
   "auth.title": "{productName} 인증",
   "auth.intro": "{productName}은(는) 서버에 접근하고 파일 시스템을 읽고 명령을 실행할 수 있습니다. 계속하기 전에 본인임을 확인하세요.",

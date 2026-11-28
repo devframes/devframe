@@ -119,6 +119,9 @@
   "advanced.revokeHint": "Remove a autorização deste navegador e revoga seu token de acesso; você precisará autorizar novamente com um novo código",
   "advanced.revokeAction": "Revogar acesso",
   "advanced.revokeConfirm": "Revogar o acesso deste navegador ao {productName}? Você precisará autorizar novamente com um novo código para reconectar.",
+  "advanced.legacySettings": "As configura\u00e7\u00f5es agora s\u00e3o salvas por projeto",
+  "advanced.legacySettingsHint": "Antes, as configura\u00e7\u00f5es de projeto e globais dividiam o mesmo arquivo, ent\u00e3o todos os projetos nesta m\u00e1quina liam a mesma configura\u00e7\u00e3o. Agora est\u00e3o separadas, e um valor salvo como substitui\u00e7\u00e3o do projeto se aplica s\u00f3 a esse projeto. Os valores existentes s\u00e3o lidos como globais.",
+  "advanced.legacySettingsDismiss": "Entendi",
 
   "auth.title": "Autorizar {productName}",
   "auth.intro": "O {productName} pode acessar seu servidor, ler seu sistema de arquivos e executar comandos. Confirme que é você antes de continuar.",

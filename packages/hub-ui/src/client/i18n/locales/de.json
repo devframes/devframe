@@ -119,6 +119,9 @@
   "advanced.revokeHint": "Entzieht diesem Browser die Autorisierung und widerruft sein Zugriffstoken; du musst dich mit einem neuen Code erneut autorisieren",
   "advanced.revokeAction": "Zugriff widerrufen",
   "advanced.revokeConfirm": "Den Zugriff dieses Browsers auf {productName} widerrufen? Zum erneuten Verbinden musst du dich mit einem neuen Code autorisieren.",
+  "advanced.legacySettings": "Einstellungen werden jetzt pro Projekt gespeichert",
+  "advanced.legacySettingsHint": "Fr\u00fcher teilten sich Projekt- und globale Einstellungen eine Datei, sodass jedes Projekt auf dieser Maschine dieselbe Konfiguration las. Jetzt sind sie getrennt, und ein als Projekt-Override gespeicherter Wert gilt nur f\u00fcr dieses Projekt. Vorhandene Werte werden als global gelesen.",
+  "advanced.legacySettingsDismiss": "Verstanden",
 
   "auth.title": "{productName} autorisieren",
   "auth.intro": "{productName} kann auf deinen Server zugreifen, dein Dateisystem lesen und Befehle ausführen. Bestätige, dass du es bist, bevor du fortfährst.",

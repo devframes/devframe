@@ -247,5 +247,10 @@ export const diagnostics = defineDiagnostics({
         `Tracing Channels are unavailable: this runtime (${p.runtime}) does not provide \`node:diagnostics_channel\`'s \`tracingChannel\`, so \`ctx.tracing\` records nothing.`,
       fix: 'Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` and `createTracingRecorder()` method is a no-op here.',
     },
+    DF0087: {
+      why: (p: { filepath: string }) =>
+        `Could not write the settings notice marker "${p.filepath}".`,
+      fix: 'Make the global storage directory writable. Until the marker can be written, the one-time shared-scope settings notice shows again on the next start.',
+    },
   },
 })
