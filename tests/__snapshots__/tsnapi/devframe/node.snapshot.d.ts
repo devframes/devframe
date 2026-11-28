@@ -32,4 +32,5 @@ export type RpcFunctionsHost = RpcFunctionsCollectorBase<DevframeRpcServerFuncti
 export declare function createHostContext(_: CreateHostContextOptions): Promise<DevframeNodeContext>;
 export declare function createStorage<T extends object>(_: CreateStorageOptions<T>): SharedState<T>;
 export declare function createTracingRecorder(): DevframeTracingRecorder;
+export declare function resolveLegacyStorageDir(_: DevframeHost, _: DevframeStorageScope): string | undefined;
 // #endregion

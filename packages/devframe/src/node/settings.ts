@@ -9,6 +9,11 @@ import { createStorage } from './storage'
 // host's ignored `project` dir (not the committable `workspace` one).
 const STORAGE_SCOPE = { global: 'global', project: 'project' } as const
 
+/** Directory holding the per-namespace settings files of a scope. */
+export function settingsDirectory(context: DevframeNodeContext, scope: 'global' | 'project'): string {
+  return join(context.host.getStorageDir(STORAGE_SCOPE[scope]), 'settings')
+}
+
 /** Resolve reserved settings keys before the sync protocol creates an in-memory state. */
 export function resolveSettingsState(context: DevframeNodeContext, key: string): SharedState<Record<string, any>> | undefined {
   const match = /^devframe:settings:(global|project):(.+)$/.exec(key)
@@ -16,7 +21,7 @@ export function resolveSettingsState(context: DevframeNodeContext, key: string):
     return
   const scope = match[1] as keyof typeof STORAGE_SCOPE
   const namespace = match[2]!
-  const dir = join(context.host.getStorageDir(STORAGE_SCOPE[scope]), 'settings')
+  const dir = settingsDirectory(context, scope)
   const filepath = join(dir, `${namespace}.json`)
   const path = relative(dir, filepath)
   // Keys arrive from RPC clients, so they must stay within the settings directory.

@@ -9,6 +9,7 @@ import { DevframeServicesHostImpl } from './host-services'
 import { DevframeTracingHostImpl } from './host-tracing'
 import { DevframeViewHost } from './host-views'
 import { BUILTIN_AGENT_RPC } from './rpc'
+import { BUILTIN_SETTINGS_RPC } from './rpc/settings-legacy-notice'
 import { createScopedNodeContext } from './scope'
 
 export interface CreateHostContextOptions {
@@ -92,6 +93,12 @@ export async function createHostContext(options: CreateHostContextOptions): Prom
   // the MCP adapter and any future agent CLI. They are not themselves
   // agent-exposed (no `agent` field).
   for (const fn of BUILTIN_AGENT_RPC) {
+    rpcHost.register(fn)
+  }
+
+  // Settings state is core, so its notice RPCs ship with every context: a
+  // viewer renders the notice without the host adding anything.
+  for (const fn of BUILTIN_SETTINGS_RPC) {
     rpcHost.register(fn)
   }
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DocksContext } from '@devframes/hub/client'
 import { DEFAULT_STATE_USER_SETTINGS } from '@devframes/hub/constants'
+import { onMounted, ref } from 'vue'
 import { t } from '../../i18n'
 import { useBranding } from '../../state/branding'
 import { useConfirm } from '../../state/confirm'
@@ -14,6 +15,24 @@ const settings = useSettings(props.context)
 const settingsStore = props.context.docks.settings
 const branding = useBranding()
 const confirm = useConfirm()
+
+/**
+ * Namespaces whose global settings file predates the project/global split.
+ * Non-empty on a machine that ran an earlier version; empty once dismissed.
+ */
+const legacySettings = ref<string[]>([])
+
+onMounted(async () => {
+  // Optional: a server without the built-in notice RPCs answers `undefined`,
+  // and the card stays hidden.
+  const notice = await props.context.rpc.callOptional('devframe:settings:legacy-notice')
+  legacySettings.value = notice?.namespaces ?? []
+})
+
+async function dismissLegacySettings() {
+  legacySettings.value = []
+  await props.context.rpc.callOptional('devframe:settings:legacy-notice-dismiss')
+}
 
 async function resetAllSettings() {
   if (await confirm({
@@ -67,6 +86,28 @@ async function deauthorize() {
 
 <template>
   <div class="flex flex-col gap-6">
+    <!-- One-time notice: project and global settings used to share one file -->
+    <div
+      v-if="legacySettings.length"
+      class="flex items-start gap-3 p-4 rounded-lg border border-base bg-secondary"
+    >
+      <div class="i-ph-info-duotone w-4 h-4 shrink-0 mt-0.5 op60" />
+      <div class="flex flex-col gap-0.5 flex-1">
+        <div class="text-sm">
+          {{ t('advanced.legacySettings') }}
+        </div>
+        <div class="text-xs op50">
+          {{ t('advanced.legacySettingsHint') }}
+        </div>
+      </div>
+      <button
+        class="px-3 py-1.5 rounded bg-active hover:bg-secondary transition-colors text-xs shrink-0"
+        @click="dismissLegacySettings"
+      >
+        {{ t('advanced.legacySettingsDismiss') }}
+      </button>
+    </div>
+
     <!-- Show Devframe Inspector toggle -->
     <label class="flex items-center gap-3 cursor-pointer group">
       <button

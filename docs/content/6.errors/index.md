@@ -92,6 +92,7 @@ Emitted by `devframe`: the framework-neutral host, RPC, streaming, assets, servi
 | [DF0084](/errors/DF0084) | error | Invalid MCP Resource Template |
 | [DF0085](/errors/DF0085) | error | Repeated MCP Prompt Name |
 | [DF0086](/errors/DF0086) | warn | Tracing Channels Unavailable |
+| [DF0087](/errors/DF0087) | warn | Settings Notice Marker Not Written |
 
 ## Hub: context & lifecycle (DF80xx)
 
@@ -120,6 +121,7 @@ Emitted by `@devframes/hub` while assembling and mounting the unified surface.
 | [DF8109](/errors/DF8109) | error | Renderer Module File Missing |
 | [DF8110](/errors/DF8110) | error | Renderer Type Is Not URL-Safe |
 | [DF8111](/errors/DF8111) | warn | Bare-Specifier Client Script Without Host Resolution |
+| [DF8112](/errors/DF8112) | warn | Legacy Dock Settings Unreadable |
 
 ## Hub: terminals (DF82xx)
 

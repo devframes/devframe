@@ -119,6 +119,9 @@
   "advanced.revokeHint": "取消此瀏覽器的授權並撤銷其存取權杖；你需要使用新的驗證碼重新授權",
   "advanced.revokeAction": "撤銷存取",
   "advanced.revokeConfirm": "撤銷此瀏覽器對 {productName} 的存取權限？重新連線時需要使用新的驗證碼再次授權。",
+  "advanced.legacySettings": "\u8a2d\u5b9a\u73fe\u5728\u4f9d\u5c08\u6848\u5206\u958b\u4fdd\u5b58",
+  "advanced.legacySettingsHint": "\u4ee5\u524d\u5c08\u6848\u8207\u5168\u57df\u8a2d\u5b9a\u5171\u7528\u540c\u4e00\u500b\u6a94\u6848\uff0c\u56e0\u6b64\u9019\u53f0\u6a5f\u5668\u4e0a\u7684\u6bcf\u500b\u5c08\u6848\u8b80\u5230\u7684\u662f\u540c\u4e00\u4efd\u8a2d\u5b9a\u3002\u73fe\u5728\u5b83\u5011\u5df2\u7d93\u5206\u958b\uff0c\u5b58\u6210\u5c08\u6848\u8986\u5beb\u7684\u503c\u53ea\u5c0d\u8a72\u5c08\u6848\u751f\u6548\uff0c\u65e2\u6709\u7684\u503c\u6703\u7576\u4f5c\u5168\u57df\u8a2d\u5b9a\u8b80\u53d6\u3002",
+  "advanced.legacySettingsDismiss": "\u77e5\u9053\u4e86",
 
   "auth.title": "授權 {productName}",
   "auth.intro": "{productName} 可以存取你的伺服器、讀取檔案系統並執行命令。繼續之前請確認是你本人。",

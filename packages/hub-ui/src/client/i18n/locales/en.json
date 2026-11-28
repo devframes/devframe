@@ -119,6 +119,9 @@
   "advanced.revokeHint": "De-authorize this browser and revoke its access token; you'll re-authorize with a new code",
   "advanced.revokeAction": "Revoke Access",
   "advanced.revokeConfirm": "Revoke this browser's access to {productName}? You'll need to authorize again with a new code to reconnect.",
+  "advanced.legacySettings": "Settings are now stored per project",
+  "advanced.legacySettingsHint": "Project and global settings used to share one file, so every project on this machine read the same configuration. They are separate now, and a value saved as a project override applies to that project only. Existing values read as global.",
+  "advanced.legacySettingsDismiss": "Got it",
 
   "auth.title": "Authorize {productName}",
   "auth.intro": "{productName} can access your server, read your filesystem, and run commands. Confirm it's you before continuing.",

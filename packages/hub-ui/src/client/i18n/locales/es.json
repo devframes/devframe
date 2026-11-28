@@ -119,6 +119,9 @@
   "advanced.revokeHint": "Desautoriza este navegador y revoca su token de acceso; tendrás que volver a autorizar con un código nuevo",
   "advanced.revokeAction": "Revocar acceso",
   "advanced.revokeConfirm": "¿Revocar el acceso de este navegador a {productName}? Tendrás que autorizar de nuevo con un código nuevo para volver a conectar.",
+  "advanced.legacySettings": "Los ajustes ahora se guardan por proyecto",
+  "advanced.legacySettingsHint": "Antes, los ajustes de proyecto y globales compart\u00edan un archivo, as\u00ed que todos los proyectos de esta m\u00e1quina le\u00edan la misma configuraci\u00f3n. Ahora est\u00e1n separados, y un valor guardado como anulaci\u00f3n de proyecto se aplica solo a ese proyecto. Los valores existentes se leen como globales.",
+  "advanced.legacySettingsDismiss": "Entendido",
 
   "auth.title": "Autorizar {productName}",
   "auth.intro": "{productName} puede acceder a tu servidor, leer tu sistema de archivos y ejecutar comandos. Confirma que eres tú antes de continuar.",

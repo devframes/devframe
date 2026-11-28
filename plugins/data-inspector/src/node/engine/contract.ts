@@ -139,6 +139,19 @@ export interface SavedQuery extends Query {
   updatedAt: number
 }
 
+/**
+ * The pre-split machine-wide saved-query file, as the data inspector reports
+ * it: the records nobody claimed yet, plus how many the file holds in total.
+ * `total` lets a caller tell "nothing left to import" from "no legacy file".
+ */
+export interface LegacyQueriesReport {
+  records: SavedQuery[]
+  total: number
+}
+
+/** What to do with the selected legacy records. */
+export type LegacyQueriesMode = 'claim' | 'discard'
+
 export interface SaveQueryInput extends Query {
   id?: string
   scope: SavedQueryScope

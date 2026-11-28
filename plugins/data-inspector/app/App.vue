@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SavedQueryScope } from '@devframes/plugin-data-inspector/engine'
+import type { LegacyQueriesMode, SavedQueryScope } from '@devframes/plugin-data-inspector/engine'
 import LayoutSplitPane from '@antfu/design/components/Layout/LayoutSplitPane.vue'
 import { provideColorScheme } from '@antfu/design/composables/colorScheme'
 import { Pane } from 'splitpanes'
@@ -9,6 +9,7 @@ import DataSourcePanel from './components/DataSourcePanel.vue'
 import QueryPanel from './components/QueryPanel.vue'
 import ResultViewer from './components/ResultViewer.vue'
 import SavedQueriesPanel from './components/SavedQueriesPanel.vue'
+import { useLegacyQueries } from './composables/legacy-queries'
 import { backend, connect, connection, onDockActivation } from './composables/rpc'
 import { useSavedQueries } from './composables/saved'
 import { colorScheme } from './composables/scheme'
@@ -17,6 +18,7 @@ import '@antfu/design/styles.css'
 
 const wb = useWorkbench()
 const savedApi = useSavedQueries()
+const legacyApi = useLegacyQueries()
 
 // The workbench is the app's shared context; panels inject it rather than
 // receiving it (and mutating it) through props.
@@ -34,6 +36,7 @@ onMounted(async () => {
   await Promise.all([
     wb.loadSources(),
     savedApi.refresh(),
+    legacyApi.refresh(),
   ])
   // Sources registered/unregistered after boot refresh the picker live.
   backend().onSourcesChanged(() => void wb.loadSources())
@@ -58,6 +61,14 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
     excludeDollarProps: wb.settings.excludeDollarProps || undefined,
   })
 }
+
+// Resolving legacy records either lands them in the project store (refresh the
+// list) or drops them; both leave the report smaller.
+async function resolveLegacy(input: { ids: string[], mode: LegacyQueriesMode }): Promise<void> {
+  await legacyApi.resolve(input.ids, input.mode)
+  if (input.mode === 'claim')
+    await savedApi.refresh()
+}
 </script>
 
 <template>
@@ -77,10 +88,12 @@ function saveCurrent(input: { title?: string, description?: string, scope: Saved
                   :current-query="wb.query.value"
                   :current-filters="wb.settings"
                   :readonly="connection.mode === 'static'"
+                  :legacy="legacyApi.report.value.records"
                   class="px3 py2"
                   @load="wb.applyRecipe($event)"
                   @remove="savedApi.remove($event)"
                   @save="saveCurrent"
+                  @legacy-resolve="resolveLegacy"
                 />
               </div>
             </div>

@@ -15,5 +15,8 @@ export * from './context'
 // `RpcFunctionsHost` type so consumers can type/cast `ctx.rpc` without
 // pulling in the implementation's `@internal` members.
 export type { RpcFunctionsHost } from './host-functions'
+// Optional host capability for a one-time read of state written before a host
+// moved a storage scope. New state always goes to `ctx.host.getStorageDir`.
+export { resolveLegacyStorageDir } from './legacy-storage'
 export * from './storage'
 export { createTracingRecorder } from './tracing-recorder'

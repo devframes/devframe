@@ -86,6 +86,10 @@ export const diagnostics = defineDiagnostics({
       why: (p: { id: string, specifier: string }) => `Dock "${p.id}" declares the bare-specifier client script "${p.specifier}", but this host advertises no client-module resolution, and the browser cannot resolve a bare npm specifier natively, so the script will fail to load.`,
       fix: 'Run under a host framework that declares `initHub({ clientModuleResolution })` (e.g. Vite\'s `\'/@id/{specifier}\'`), ship the script as a self-contained bundle served by URL, or resolve it in the hub UI provider via `createDevframeClientRuntime({ resolveClientModule })` (then disregard this warning).',
     },
+    DF8112: {
+      why: (p: { filepath: string }) => `Could not read the legacy dock settings file "${p.filepath}".`,
+      fix: 'The hub falls back to default dock settings. Fix or delete the file to silence this; nothing else reads it, and the one-time fallback is removed in a later release.',
+    },
     DF8200: {
       why: (p: { id: string }) => `Terminal session with id "${p.id}" already registered`,
     },

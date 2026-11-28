@@ -1,7 +1,7 @@
 import type { RpcDefinitionsToFunctions } from 'devframe/rpc'
 import { query } from './functions/query'
 import { queryPath } from './functions/query-path'
-import { savedDelete, savedList, savedSave } from './functions/saved'
+import { savedDelete, savedLegacyList, savedLegacyResolve, savedList, savedSave } from './functions/saved'
 import { skeleton } from './functions/skeleton'
 import { sources } from './functions/sources'
 import { suggest } from './functions/suggest'
@@ -20,6 +20,8 @@ export const serverFunctions = [
   savedList,
   savedSave,
   savedDelete,
+  savedLegacyList,
+  savedLegacyResolve,
   write,
 ] as const
 

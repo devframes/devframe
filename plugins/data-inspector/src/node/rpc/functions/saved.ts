@@ -1,5 +1,6 @@
-import type { SavedQueryScope, SaveQueryInput } from '../../engine/contract'
+import type { LegacyQueriesMode, SavedQueryScope, SaveQueryInput } from '../../engine/contract'
 import { defineRpcFunction } from 'devframe'
+import { listLegacyQueries, resolveLegacyQueries } from '../../legacy-queries'
 import { deleteSavedQuery, listSavedQueries, saveQuery } from '../../saved-queries'
 import { NS } from './_define'
 
@@ -27,5 +28,25 @@ export const savedDelete = defineRpcFunction({
   jsonSerializable: true,
   setup: ctx => ({
     handler: async (id: string, scope: SavedQueryScope) => deleteSavedQuery(ctx, id, scope),
+  }),
+})
+
+/** Unclaimed records from the pre-scope-split machine-wide queries file. */
+export const savedLegacyList = defineRpcFunction({
+  name: `${NS}:saved:legacy:list`,
+  type: 'query',
+  jsonSerializable: true,
+  setup: ctx => ({
+    handler: async () => listLegacyQueries(ctx),
+  }),
+})
+
+/** Claim the selected legacy records into this project, or discard them. */
+export const savedLegacyResolve = defineRpcFunction({
+  name: `${NS}:saved:legacy:resolve`,
+  type: 'action',
+  jsonSerializable: true,
+  setup: ctx => ({
+    handler: async (ids: readonly string[], mode: LegacyQueriesMode) => resolveLegacyQueries(ctx, ids, mode),
   }),
 })

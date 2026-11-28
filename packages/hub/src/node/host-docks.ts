@@ -11,7 +11,8 @@ import type {
 } from '../types/docks'
 import type { DevframeDocksUserSettings } from '../types/settings'
 import type { DevframeHubContext } from './context'
-import { createStorage } from 'devframe/node'
+import { existsSync, readFileSync } from 'node:fs'
+import { createStorage, resolveLegacyStorageDir } from 'devframe/node'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { createEventEmitter } from 'devframe/utils/events'
 import { join } from 'pathe'
@@ -36,6 +37,40 @@ function normaliseRemoteOptions(remote: true | RemoteDockOptions): Required<Remo
   }
 }
 
+/**
+ * TEMPORARY: earlier hosts kept the hub's `settings.json` in the old
+ * machine-wide `project` directory, so every project on the machine shared one
+ * dock layout. When this checkout has no settings file yet, seed the initial
+ * value from that file once.
+ *
+ * Writes always go to the new project file, and nothing else reads the legacy
+ * one. Remove this fallback in a later release, once the notice shipped in
+ * `devframe` has been out for a version.
+ */
+function readLegacyUserSettings(
+  host: DevframeHubContext['host'],
+  projectFile: string,
+): DevframeDocksUserSettings | undefined {
+  if (existsSync(projectFile))
+    return
+  const legacyDir = resolveLegacyStorageDir(host, 'project')
+  if (!legacyDir)
+    return
+  const filepath = join(legacyDir, 'settings.json')
+  if (!existsSync(filepath))
+    return
+  try {
+    const saved = JSON.parse(readFileSync(filepath, 'utf-8')) as Partial<DevframeDocksUserSettings>
+    return {
+      ...DEFAULT_STATE_USER_SETTINGS(),
+      ...saved,
+    }
+  }
+  catch (error) {
+    diagnostics.DF8112({ filepath, cause: error })
+  }
+}
+
 export class DevframeDocksHost implements DevframeDocksHostType {
   public readonly views: DevframeDocksHostType['views'] = new Map()
   public readonly events: DevframeDocksHostType['events'] = createEventEmitter()
@@ -49,11 +84,13 @@ export class DevframeDocksHost implements DevframeDocksHostType {
   ) {}
 
   async init() {
+    const filepath = join(this.context.host.getStorageDir('project'), 'settings.json')
+    const legacySettings = readLegacyUserSettings(this.context.host, filepath)
     this.userSettings = await this.context.rpc.sharedState.get(HUB_EVENTS.sharedState.userSettings, {
       sharedState: createStorage({
         /** Personal dock layout/preferences: per-checkout private state. */
-        filepath: join(this.context.host.getStorageDir('project'), 'settings.json'),
-        initialValue: DEFAULT_STATE_USER_SETTINGS(),
+        filepath,
+        initialValue: legacySettings ?? DEFAULT_STATE_USER_SETTINGS(),
       }),
     })
   }

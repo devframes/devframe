@@ -5,4 +5,5 @@
 export async function createHostContext(_) {}
 export function createStorage(_) {}
 export function createTracingRecorder() {}
+export function resolveLegacyStorageDir(_, _) {}
 // #endregion

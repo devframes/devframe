@@ -107,3 +107,7 @@ The inject entry binds `127.0.0.1`, requires devframe's trust handshake with a p
 ## Saved queries
 
 Recipes (`{ query, title?, description?, ...filters }`) persist id-keyed in two scopes: **workspace** (committable, `getStorageDir('workspace')/data-inspector/queries.json`, shared with the team) and **project** (per-checkout, under `node_modules`).
+
+### Importing queries from a pre-split install
+
+Earlier versions kept private queries from every project on the machine in one file, and a record carries no project field, so the host cannot say which project one belongs to. When the host still exposes its old storage directory (`getLegacyStorageDir('project')`), the saved-queries panel shows the records nobody has claimed and lets you claim them into the open project or discard them. Claim state lives in `queries.claims.json` next to the legacy file, so another checkout is only offered what is still unclaimed. Nothing is imported automatically and nothing is copied between projects.

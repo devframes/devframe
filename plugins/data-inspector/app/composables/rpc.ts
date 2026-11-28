@@ -1,6 +1,8 @@
 import type {
   DataSourceMeta,
   FilterOptions,
+  LegacyQueriesMode,
+  LegacyQueriesReport,
   NodePath,
   QueryOutcome,
   SavedQuery,
@@ -58,6 +60,10 @@ export interface DataBackend {
   savedList: () => Promise<SavedQuery[]>
   savedSave: (input: SaveQueryInput) => Promise<SavedQuery>
   savedDelete: (id: string, scope: SavedQueryScope) => Promise<void>
+  /** Unclaimed records from the pre-scope-split machine-wide queries file. */
+  legacyList: () => Promise<LegacyQueriesReport>
+  /** Claim the selected legacy records into this project, or discard them. */
+  legacyResolve: (ids: string[], mode: LegacyQueriesMode) => Promise<LegacyQueriesReport>
   /** Mutate a writable source's live object (rpc mode only). */
   write: (sourceId: string, request: WriteRequest, options: FilterOptions) => Promise<WriteOutcome>
   /** Fires when the server's source registry changes (rpc mode only). */
@@ -142,6 +148,9 @@ function createRpcBackend(client: DevframeRpcClient): DataBackend {
     savedDelete: async (id, scope) => {
       await call('devframes:plugin:data-inspector:saved:delete', id, scope)
     },
+    legacyList: () => call<LegacyQueriesReport>('devframes:plugin:data-inspector:saved:legacy:list'),
+    legacyResolve: (ids, mode) =>
+      call<LegacyQueriesReport>('devframes:plugin:data-inspector:saved:legacy:resolve', ids, mode),
     write: (sourceId, request, options) =>
       call<WriteOutcome>('devframes:plugin:data-inspector:write', sourceId, request, options),
     onSourcesChanged: (listener) => {
@@ -224,6 +233,12 @@ function createStaticBackend(dataset: StaticDataset): DataBackend {
     },
     async savedDelete() {
       throw new Error('saved queries are unavailable in static mode')
+    },
+    async legacyList() {
+      return { records: [], total: 0 }
+    },
+    async legacyResolve() {
+      return { records: [], total: 0 }
     },
     async write() {
       throw new Error('editing is unavailable in static mode')

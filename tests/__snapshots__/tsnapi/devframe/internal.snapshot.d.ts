@@ -552,6 +552,12 @@ export declare const diagnostics: DevframeDiagnostics<{
     }) => string;
     readonly fix: "Run under Node.js 22+ or Bun to record Tracing Channels. Every `ctx.tracing` and `createTracingRecorder()` method is a no-op here.";
   };
+  readonly DF0087: {
+    readonly why: (p: {
+      filepath: string;
+    }) => string;
+    readonly fix: "Make the global storage directory writable. Until the marker can be written, the one-time shared-scope settings notice shows again on the next start.";
+  };
 }, []>;
 export declare const LIST_CLIENTS_TOOL: string;
 // #endregion
