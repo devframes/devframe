@@ -1,12 +1,13 @@
 import type { DevframeViewLauncher } from '../../types/docks'
 import type { DevframeHubContext } from '../context'
-import { mkdtempSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { REMOTE_CONNECTION_KEY } from 'devframe/constants'
 import { getInternalContext } from 'devframe/node/hub-internals'
 import { describe, expect, it, vi } from 'vitest'
 import { parseRemoteConnection } from '../../client/remote'
+import { DEFAULT_STATE_USER_SETTINGS } from '../../constants'
 import { DevframeDocksHost } from '../host-docks'
 
 type DeepPartial<T> = { [K in keyof T]?: DeepPartial<T[K]> }
@@ -425,5 +426,97 @@ describe('devframeDockHost bare-specifier client scripts', () => {
       })
       expect(warn).not.toHaveBeenCalled()
     })
+  })
+})
+
+function createInitContext(options: { projectDir: string, legacyDir?: string }): DevframeHubContext {
+  const host = {
+    mountStatic: () => {},
+    resolveOrigin: () => 'http://localhost:5173',
+    getStorageDir: () => options.projectDir,
+  }
+  // The optional legacy capability is not part of `DevframeHost`; attach it
+  // duck-typed, the way a host that moved its storage exposes it.
+  if (options.legacyDir) {
+    Object.assign(host, {
+      getLegacyStorageDir: () => options.legacyDir!,
+    })
+  }
+  // A minimal stub for an unused part of the wide hub context surface.
+  // eslint-disable-next-line slop/no-chained-type-assertions -- minimal stub for an unused-surface boundary
+  return {
+    host,
+    rpc: {
+      // The fallback under test only decides the initial value; the shared
+      // state itself is the real one in production.
+      sharedState: {
+        get: async (_key: string, init: { sharedState?: unknown }) => init.sharedState,
+      },
+    },
+  } as unknown as DevframeHubContext
+}
+
+describe('devframeDockHost settings fallback', () => {
+  function dirs() {
+    const projectDir = mkdtempSync(join(tmpdir(), 'devframe-hub-project-'))
+    const legacyDir = mkdtempSync(join(tmpdir(), 'devframe-hub-legacy-'))
+    return { projectDir, legacyDir }
+  }
+
+  it('seeds the dock layout from the legacy settings file', async () => {
+    const { projectDir, legacyDir } = dirs()
+    writeFileSync(join(legacyDir, 'settings.json'), JSON.stringify({
+      docksHidden: ['a11y'],
+      docksPinned: ['terminals'],
+    }))
+
+    const host = new DevframeDocksHost(createInitContext({ projectDir, legacyDir }))
+    await host.init()
+
+    expect(host.userSettings.value()).toMatchObject({
+      docksHidden: ['a11y'],
+      docksPinned: ['terminals'],
+      // Missing fields keep the documented defaults.
+      commandShortcuts: {},
+      docksCustomOrder: {},
+    })
+  })
+
+  it('ignores the legacy file once this checkout has its own settings', async () => {
+    const { projectDir, legacyDir } = dirs()
+    writeFileSync(join(legacyDir, 'settings.json'), JSON.stringify({
+      docksHidden: ['legacy'],
+    }))
+    mkdirSync(projectDir, { recursive: true })
+    writeFileSync(join(projectDir, 'settings.json'), JSON.stringify({
+      docksHidden: ['own'],
+    }))
+
+    const host = new DevframeDocksHost(createInitContext({ projectDir, legacyDir }))
+    await host.init()
+
+    expect(host.userSettings.value().docksHidden).toEqual(['own'])
+  })
+
+  it('keeps the defaults when the host exposes no legacy directory', async () => {
+    const { projectDir } = dirs()
+    const host = new DevframeDocksHost(createInitContext({ projectDir }))
+    await host.init()
+    expect(host.userSettings.value()).toEqual(DEFAULT_STATE_USER_SETTINGS())
+  })
+
+  it('keeps the defaults when the legacy file is unreadable', async () => {
+    const { projectDir, legacyDir } = dirs()
+    writeFileSync(join(legacyDir, 'settings.json'), '{ not json')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const host = new DevframeDocksHost(createInitContext({ projectDir, legacyDir }))
+      await host.init()
+      expect(host.userSettings.value()).toEqual(DEFAULT_STATE_USER_SETTINGS())
+      expect(warn).toHaveBeenCalled()
+    }
+    finally {
+      warn.mockRestore()
+    }
   })
 })
